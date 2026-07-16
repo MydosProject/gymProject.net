@@ -1,26 +1,45 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @inject SignInManager<IdentityUser> SignInManager
-@inject UserManager<IdentityUser> UserManager
 
-<ul class="navbar-nav">
+<ul class="navbar-nav no23-auth-nav align-items-lg-center">
 @if (SignInManager.IsSignedIn(User))
 {
     <li class="nav-item">
-        <a  class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @User.Identity?.Name!</a>
+        <a class="nav-link no23-account-link"
+           asp-area="Identity"
+           asp-page="/Account/Manage/Index"
+           title="Hesabım">
+            Hesabım
+        </a>
     </li>
+
     <li class="nav-item">
-        <form  class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-            <button  type="submit" class="nav-link btn btn-link text-dark">Logout</button>
+        <form class="no23-logout-form"
+              asp-area="Identity"
+              asp-page="/Account/Logout"
+              asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+            <button type="submit" class="btn no23-logout-button">
+                Çıkış Yap
+            </button>
         </form>
     </li>
 }
 else
 {
     <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Register">Register</a>
+        <a class="nav-link no23-login-link"
+           asp-area="Identity"
+           asp-page="/Account/Login">
+            Giriş Yap
+        </a>
     </li>
+
     <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Login</a>
+        <a class="btn no23-register-button"
+           asp-area="Identity"
+           asp-page="/Account/Register">
+            Üye Ol
+        </a>
     </li>
 }
 </ul>

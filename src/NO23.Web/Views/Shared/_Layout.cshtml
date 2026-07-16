@@ -1,51 +1,188 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - NO23.Web</title>
+
+    <title>@ViewData["Title"] | NO23 Sports Club</title>
+    <meta name="description"
+          content="NO23 Sports Club; antrenman, beslenme ve yaşam tarzını tek platformda buluşturur." />
+    <meta name="theme-color" content="#0b0b0b" />
+
     <script type="importmap"></script>
+
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/NO23.Web.styles.css" asp-append-version="true" />
+
+    @await RenderSectionAsync("Styles", required: false)
 </head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">NO23.Web</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+
+<body class="d-flex flex-column min-vh-100">
+    <header class="site-header sticky-top">
+        <nav class="navbar navbar-expand-lg navbar-dark no23-navbar">
+            <div class="container">
+                <a class="navbar-brand no23-brand"
+                   asp-area=""
+                   asp-controller="Home"
+                   asp-action="Index">
+                    <span class="no23-brand-number">NO23</span>
+                    <span class="no23-brand-name">Sports Club</span>
+                </a>
+
+                <button class="navbar-toggler"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#mainNavigation"
+                        aria-controls="mainNavigation"
+                        aria-expanded="false"
+                        aria-label="Menüyü aç veya kapat">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+
+                <div class="collapse navbar-collapse" id="mainNavigation">
+                    <ul class="navbar-nav mx-auto align-items-lg-center">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link"
+                               asp-area=""
+                               asp-controller="Home"
+                               asp-action="Index">
+                                Ana Sayfa
+                            </a>
                         </li>
+
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link"
+                               asp-area=""
+                               asp-controller="Home"
+                               asp-action="Index"
+                               asp-fragment="services">
+                                Hizmetler
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               asp-area=""
+                               asp-controller="Home"
+                               asp-action="Index"
+                               asp-fragment="memberships">
+                                Üyelik
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               asp-area=""
+                               asp-controller="Home"
+                               asp-action="Index"
+                               asp-fragment="kitchen">
+                                NO23 Kitchen
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               asp-area=""
+                               asp-controller="Home"
+                               asp-action="Index"
+                               asp-fragment="community">
+                                Community
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               asp-area=""
+                               asp-controller="Home"
+                               asp-action="Index"
+                               asp-fragment="contact">
+                                İletişim
+                            </a>
                         </li>
                     </ul>
+
                     <partial name="_LoginPartial" />
                 </div>
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
 
-    <footer class="border-top footer text-muted">
+    <main role="main" class="flex-grow-1">
+        @RenderBody()
+    </main>
+
+    <footer class="no23-footer">
         <div class="container">
-            &copy; 2026 - NO23.Web - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            <div class="row g-4">
+                <div class="col-lg-5">
+                    <a class="no23-brand footer-brand"
+                       asp-area=""
+                       asp-controller="Home"
+                       asp-action="Index">
+                        <span class="no23-brand-number">NO23</span>
+                        <span class="no23-brand-name">Sports Club</span>
+                    </a>
+
+                    <p class="footer-description">
+                        Daha iyi antrenman, doğru beslenme ve güçlü bir
+                        topluluk için tasarlanan yeni nesil spor kulübü.
+                    </p>
+                </div>
+
+                <div class="col-6 col-lg-3">
+                    <h2 class="footer-title">Keşfet</h2>
+                    <ul class="footer-links">
+                        <li>
+                            <a asp-controller="Home"
+                               asp-action="Index"
+                               asp-fragment="services">Hizmetler</a>
+                        </li>
+                        <li>
+                            <a asp-controller="Home"
+                               asp-action="Index"
+                               asp-fragment="memberships">Üyelik Paketleri</a>
+                        </li>
+                        <li>
+                            <a asp-controller="Home"
+                               asp-action="Index"
+                               asp-fragment="kitchen">NO23 Kitchen</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="col-6 col-lg-4">
+                    <h2 class="footer-title">NO23 Deneyimi</h2>
+                    <ul class="footer-links">
+                        <li>
+                            <a asp-controller="Home"
+                               asp-action="Index"
+                               asp-fragment="community">Community</a>
+                        </li>
+                        <li>
+                            <a asp-controller="Home"
+                               asp-action="Index"
+                               asp-fragment="contact">İletişim</a>
+                        </li>
+                        <li>
+                            <a asp-controller="Home"
+                               asp-action="Privacy">Gizlilik Politikası</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <span>&copy; @DateTime.Now.Year NO23 Sports Club</span>
+                <span>Train Better. Eat Better. Live Better.</span>
+            </div>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
