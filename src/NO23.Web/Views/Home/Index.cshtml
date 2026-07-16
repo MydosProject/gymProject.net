@@ -238,3 +238,137 @@
         </div>
     </div>
 </section>
+
+<section class="memberships-section" id="memberships">
+    <div class="container">
+        <div class="memberships-heading">
+            <div>
+                <p class="section-kicker">Üyelik Paketleri</p>
+                <h2>Hedefine uygun planı seç.</h2>
+            </div>
+
+            <p>
+                Başlangıç seviyesinden performans odaklı programlara kadar
+                sana uygun NO23 deneyimini keşfet.
+            </p>
+        </div>
+
+        <div class="membership-grid">
+            <article class="membership-card">
+                <div class="membership-card-header">
+                    <span class="membership-order">01</span>
+                    <span class="membership-level">Başlangıç</span>
+                </div>
+
+                <div>
+                    <h3>START</h3>
+                    <p class="membership-audience">Yeni başlayanlar için</p>
+                </div>
+
+                <ul class="membership-features">
+                    <li>Haftada 2 ders</li>
+                    <li>Başlangıç ölçümü</li>
+                    <li>Kişisel antrenman programı</li>
+                </ul>
+
+                <a class="membership-button"
+                   asp-area="Identity"
+                   asp-page="/Account/Register"
+                   asp-route-package="START">
+                    Başvuru Yap
+                </a>
+            </article>
+
+            <article class="membership-card">
+                <div class="membership-card-header">
+                    <span class="membership-order">02</span>
+                    <span class="membership-level">Düzenli</span>
+                </div>
+
+                <div>
+                    <h3>PLUS</h3>
+                    <p class="membership-audience">Düzenli spor yapanlar için</p>
+                </div>
+
+                <ul class="membership-features">
+                    <li>Haftada 3 ders</li>
+                    <li>Vücut analizi</li>
+                    <li>Beslenme önerisi</li>
+                </ul>
+
+                <a class="membership-button"
+                   asp-area="Identity"
+                   asp-page="/Account/Register"
+                   asp-route-package="PLUS">
+                    Başvuru Yap
+                </a>
+            </article>
+
+            <article class="membership-card membership-card-featured">
+                <span class="membership-recommended">Önerilen</span>
+
+                <div class="membership-card-header">
+                    <span class="membership-order">03</span>
+                    <span class="membership-level">Hedef Odaklı</span>
+                </div>
+
+                <div>
+                    <h3>PRO</h3>
+                    <p class="membership-audience">Net hedefleri olanlar için</p>
+                </div>
+
+                <ul class="membership-features">
+                    <li>Haftada 4 ders</li>
+                    <li>Detaylı gelişim takibi</li>
+                    <li>Aylık performans analizi</li>
+                    <li>Öncelikli rezervasyon</li>
+                </ul>
+
+                <a class="membership-button"
+                   asp-area="Identity"
+                   asp-page="/Account/Register"
+                   asp-route-package="PRO">
+                    PRO’ya Başvur
+                </a>
+            </article>
+
+            <article class="membership-card membership-card-elite">
+                <div class="membership-card-header">
+                    <span class="membership-order">04</span>
+                    <span class="membership-level">Tam Deneyim</span>
+                </div>
+
+                <div>
+                    <h3>ELITE</h3>
+                    <p class="membership-audience">
+                        En kapsamlı NO23 deneyimi
+                    </p>
+                </div>
+
+                <ul class="membership-features">
+                    <li>Sınırsız grup dersleri</li>
+                    <li>Personal Training desteği</li>
+                    <li>NO23 Kitchen avantajları</li>
+                    <li>Özel etkinlik davetleri</li>
+                    <li>Community üyeliği</li>
+                </ul>
+
+                <a class="membership-button"
+                   asp-area="Identity"
+                   asp-page="/Account/Register"
+                   asp-route-package="ELITE">
+                    ELITE’a Başvur
+                </a>
+            </article>
+        </div>
+
+        <div class="membership-note">
+            <div>
+                <strong>Hangi paketin sana uygun olduğundan emin değil misin?</strong>
+                <span>Hedeflerini birlikte değerlendirelim.</span>
+            </div>
+
+            <a href="#contact">Bizimle İletişime Geç</a>
+        </div>
+    </div>
+</section>
