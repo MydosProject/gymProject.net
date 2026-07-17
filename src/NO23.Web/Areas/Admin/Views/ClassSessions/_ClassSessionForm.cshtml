@@ -1,0 +1,34 @@
+@model ClassSessionFormViewModel
+
+<form method="post" class="bg-white border rounded-3 p-4 text-dark">
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+    <input type="hidden" asp-for="Id" />
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label asp-for="GroupClassId" class="form-label"></label>
+            <select asp-for="GroupClassId" asp-items="Model.GroupClassOptions" class="form-select"></select>
+            <span asp-validation-for="GroupClassId" class="text-danger"></span>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="StartsAtLocal" class="form-label"></label>
+            <input asp-for="StartsAtLocal" type="datetime-local" class="form-control" />
+            <span asp-validation-for="StartsAtLocal" class="text-danger"></span>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="CapacityOverride" class="form-label"></label>
+            <input asp-for="CapacityOverride" class="form-control" />
+            <span asp-validation-for="CapacityOverride" class="text-danger"></span>
+            <small class="text-muted">Boşsa ders kapasitesi kullanılır.</small>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="Status" class="form-label"></label>
+            <select asp-for="Status" asp-items="Html.GetEnumSelectList<ClassSessionStatus>()" class="form-select"></select>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2 mt-4">
+        <a asp-action="Index" class="btn btn-outline-secondary">Vazgeç</a>
+        <button type="submit" class="btn btn-dark">Kaydet</button>
+    </div>
+</form>

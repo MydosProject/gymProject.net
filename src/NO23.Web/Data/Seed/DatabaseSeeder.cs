@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using NO23.Web.Data;
 using NO23.Web.Domain.Entities;
+using NO23.Web.Domain.Enums;
 
 namespace NO23.Web.Data.Seed;
 
@@ -17,6 +18,7 @@ public static class DatabaseSeeder
 
         await SeedRolesAsync(roleManager);
         await SeedMembershipPackagesAsync(dbContext);
+        await SeedClassOperationsAsync(dbContext);
         await SeedAdminUserAsync(userManager, configuration);
     }
 
@@ -84,6 +86,80 @@ public static class DatabaseSeeder
                 continue;
             }
         }
+
+        await dbContext.SaveChangesAsync();
+    }
+
+    private static async Task SeedClassOperationsAsync(ApplicationDbContext dbContext)
+    {
+        if (await dbContext.Trainers.AnyAsync() || await dbContext.GroupClasses.AnyAsync())
+        {
+            return;
+        }
+
+        var trainers = new[]
+        {
+            new Trainer
+            {
+                FirstName = "Deniz",
+                LastName = "Arslan",
+                Specialty = "Functional Training",
+                Certifications = "NASM CPT, Functional Training Specialist",
+                Bio = "Metcon, bootcamp ve kuvvet odaklı grup dersleri verir."
+            },
+            new Trainer
+            {
+                FirstName = "Ece",
+                LastName = "Kaya",
+                Specialty = "Pilates",
+                Certifications = "Mat Pilates, Reformer Pilates",
+                Bio = "Postür, core ve mobilite odaklı pilates dersleri verir."
+            }
+        };
+
+        var bootcamp = new GroupClass
+        {
+            Name = "Bootcamp",
+            Description = "Yüksek tempo, kuvvet ve kondisyon odaklı grup dersi.",
+            DurationMinutes = 50,
+            DifficultyLevel = ClassDifficultyLevel.Intermediate,
+            AverageCaloriesBurned = 520,
+            Capacity = 16,
+            Trainer = trainers[0]
+        };
+
+        var reformerPilates = new GroupClass
+        {
+            Name = "Reformer Pilates",
+            Description = "Kontrollü güç, core stabilizasyonu ve mobilite odaklı ders.",
+            DurationMinutes = 45,
+            DifficultyLevel = ClassDifficultyLevel.AllLevels,
+            AverageCaloriesBurned = 280,
+            Capacity = 8,
+            Trainer = trainers[1]
+        };
+
+        var tomorrow = DateTime.UtcNow.Date.AddDays(1);
+        var nextDay = DateTime.UtcNow.Date.AddDays(2);
+
+        bootcamp.Sessions.Add(new ClassSession
+        {
+            StartsAtUtc = tomorrow.AddHours(15)
+        });
+
+        bootcamp.Sessions.Add(new ClassSession
+        {
+            StartsAtUtc = nextDay.AddHours(16)
+        });
+
+        reformerPilates.Sessions.Add(new ClassSession
+        {
+            StartsAtUtc = tomorrow.AddHours(8),
+            CapacityOverride = 6
+        });
+
+        dbContext.Trainers.AddRange(trainers);
+        dbContext.GroupClasses.AddRange(bootcamp, reformerPilates);
 
         await dbContext.SaveChangesAsync();
     }
