@@ -1,0 +1,53 @@
+@model IReadOnlyList<MemberListItemViewModel>
+@{
+    ViewData["Title"] = "Üyeler";
+}
+
+<section class="py-5">
+    <div class="container">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            <div>
+                <p class="text-uppercase text-muted small mb-1">Admin</p>
+                <h1 class="h3 mb-0">Üyeler</h1>
+            </div>
+
+            <a class="btn btn-outline-dark"
+               asp-area="Admin"
+               asp-controller="MembershipPackages"
+               asp-action="Index">
+                Paketleri Yönet
+            </a>
+        </div>
+
+        <div class="table-responsive bg-white border rounded-3">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Üye</th>
+                        <th>İletişim</th>
+                        <th>Paket</th>
+                        <th>Hedef</th>
+                        <th>Kalan Ders</th>
+                        <th>Kayıt</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var member in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div>@(string.IsNullOrWhiteSpace(member.FullName) ? "İsimsiz üye" : member.FullName)</div>
+                                <small class="text-muted">@member.Email</small>
+                            </td>
+                            <td>@(member.PhoneNumber ?? "-")</td>
+                            <td><strong>@member.PackageName</strong></td>
+                            <td>@(member.FitnessGoal ?? "-")</td>
+                            <td>@(member.RemainingClassCredits == 0 ? "Sınırsız" : member.RemainingClassCredits)</td>
+                            <td>@member.CreatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
