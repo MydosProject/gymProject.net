@@ -1,0 +1,47 @@
+@model IReadOnlyList<ClassSessionListItemViewModel>
+@{
+    ViewData["Title"] = "Ders Programı";
+}
+
+<section class="py-5">
+    <div class="container">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            <div>
+                <p class="text-uppercase text-muted small mb-1">Admin</p>
+                <h1 class="h3 mb-0">Ders Programı</h1>
+            </div>
+
+            <a class="btn btn-dark" asp-action="Create">Programa Ders Ekle</a>
+        </div>
+
+        <div class="table-responsive bg-white border rounded-3">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Ders</th>
+                        <th>Eğitmen</th>
+                        <th>Tarih/Saat</th>
+                        <th>Kontenjan</th>
+                        <th>Durum</th>
+                        <th class="text-end">İşlem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var session in Model)
+                    {
+                        <tr>
+                            <td><strong>@session.ClassName</strong></td>
+                            <td>@session.TrainerName</td>
+                            <td>@session.StartsAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
+                            <td>@session.ReservedCount / @session.Capacity</td>
+                            <td>@session.Status</td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-outline-dark" asp-action="Edit" asp-route-id="@session.Id">Düzenle</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,19 @@
+@model TrainerFormViewModel
+@{
+    ViewData["Title"] = "Eğitmen Düzenle";
+}
+
+<section class="py-5">
+    <div class="container">
+        <div class="mb-4">
+            <a asp-action="Index" class="text-muted text-decoration-none">← Eğitmenlere dön</a>
+            <h1 class="h3 mt-2">Eğitmen Düzenle</h1>
+        </div>
+
+        <partial name="_TrainerForm" model="Model" />
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
