@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using NO23.Web.Data;
 using NO23.Web.Domain.Entities;
 
 namespace NO23.Web.Data.Seed;
@@ -10,9 +12,11 @@ public static class DatabaseSeeder
         using var scope = serviceProvider.CreateScope();
         var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
 
         await SeedRolesAsync(roleManager);
+        await SeedMembershipPackagesAsync(dbContext);
         await SeedAdminUserAsync(userManager, configuration);
     }
 
@@ -65,5 +69,22 @@ public static class DatabaseSeeder
         {
             await userManager.AddToRoleAsync(adminUser, ApplicationRoles.Admin);
         }
+    }
+
+    private static async Task SeedMembershipPackagesAsync(ApplicationDbContext dbContext)
+    {
+        foreach (var defaultPackage in MembershipPackageSeed.Defaults)
+        {
+            var package = await dbContext.MembershipPackages
+                .FirstOrDefaultAsync(existing => existing.Code == defaultPackage.Code);
+
+            if (package is null)
+            {
+                dbContext.MembershipPackages.Add(defaultPackage);
+                continue;
+            }
+        }
+
+        await dbContext.SaveChangesAsync();
     }
 }

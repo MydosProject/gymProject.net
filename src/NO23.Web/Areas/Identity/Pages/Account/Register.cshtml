@@ -1,0 +1,87 @@
+@page
+@model NO23.Web.Areas.Identity.Pages.Account.RegisterModel
+@{
+    ViewData["Title"] = "Üye Ol";
+}
+
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-7 col-xl-6">
+                <div class="p-4 p-md-5 border rounded-3 bg-white text-dark">
+                    <p class="text-uppercase text-muted small mb-2">NO23 Membership</p>
+                    <h1 class="h3 mb-4">Üyelik başvurusu</h1>
+
+                    <form id="registerForm" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+
+                        <input type="hidden" asp-for="ReturnUrl" />
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="Input.FirstName" class="form-label"></label>
+                                <input asp-for="Input.FirstName" class="form-control" autocomplete="given-name" />
+                                <span asp-validation-for="Input.FirstName" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Input.LastName" class="form-label"></label>
+                                <input asp-for="Input.LastName" class="form-control" autocomplete="family-name" />
+                                <span asp-validation-for="Input.LastName" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Input.Email" class="form-label"></label>
+                                <input asp-for="Input.Email" class="form-control" autocomplete="username" />
+                                <span asp-validation-for="Input.Email" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Input.PhoneNumber" class="form-label"></label>
+                                <input asp-for="Input.PhoneNumber" class="form-control" autocomplete="tel" />
+                                <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-12">
+                                <label asp-for="Input.PackageCode" class="form-label"></label>
+                                <select asp-for="Input.PackageCode" class="form-select">
+                                    @foreach (var package in Model.PackageOptions)
+                                    {
+                                        <option value="@package.Code">@package.Name - @package.Audience</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="Input.PackageCode" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-12">
+                                <label asp-for="Input.FitnessGoal" class="form-label"></label>
+                                <input asp-for="Input.FitnessGoal" class="form-control" placeholder="Yağ yakımı, kas kazanımı, performans..." />
+                                <span asp-validation-for="Input.FitnessGoal" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Input.Password" class="form-label"></label>
+                                <input asp-for="Input.Password" class="form-control" autocomplete="new-password" />
+                                <span asp-validation-for="Input.Password" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Input.ConfirmPassword" class="form-label"></label>
+                                <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" />
+                                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <button id="registerSubmit" type="submit" class="btn btn-dark w-100 mt-4">
+                            Üyeliği Başlat
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
