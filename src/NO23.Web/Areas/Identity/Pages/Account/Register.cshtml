@@ -4,47 +4,135 @@
     ViewData["Title"] = "Üye Ol";
 }
 
-<section class="py-5">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-7 col-xl-6">
-                <div class="p-4 p-md-5 border rounded-3 bg-white text-dark">
-                    <p class="text-uppercase text-muted small mb-2">NO23 Membership</p>
-                    <h1 class="h3 mb-4">Üyelik başvurusu</h1>
+<section class="no23-register-page">
+    <div class="register-page-grid" aria-hidden="true"></div>
+    <div class="register-page-glow" aria-hidden="true"></div>
 
-                    <form id="registerForm" method="post">
-                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+    <div class="container position-relative">
+        <div class="no23-register-shell">
+            <aside class="register-intro-panel">
+                <a class="register-back-link"
+                   asp-area=""
+                   asp-controller="Home"
+                   asp-action="Index">
+                    <span aria-hidden="true">←</span>
+                    Ana sayfaya dön
+                </a>
 
-                        <input type="hidden" asp-for="ReturnUrl" />
+                <div class="register-intro-content">
+                    <p class="register-kicker">NO23 Membership</p>
 
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label asp-for="Input.FirstName" class="form-label"></label>
-                                <input asp-for="Input.FirstName" class="form-control" autocomplete="given-name" />
-                                <span asp-validation-for="Input.FirstName" class="text-danger"></span>
+                    <h1>
+                        Hedefine giden yol
+                        <span>burada başlıyor.</span>
+                    </h1>
+
+                    <p class="register-intro-description">
+                        Sana uygun üyeliği seç, hedefini belirle ve NO23
+                        deneyimine katıl.
+                    </p>
+
+                    <ul class="register-benefits">
+                        <li>
+                            <span>01</span>
+                            <div>
+                                <strong>Kişisel plan</strong>
+                                <small>Hedefine göre şekillenen program</small>
                             </div>
-
-                            <div class="col-md-6">
-                                <label asp-for="Input.LastName" class="form-label"></label>
-                                <input asp-for="Input.LastName" class="form-control" autocomplete="family-name" />
-                                <span asp-validation-for="Input.LastName" class="text-danger"></span>
+                        </li>
+                        <li>
+                            <span>02</span>
+                            <div>
+                                <strong>Profesyonel takip</strong>
+                                <small>Eğitmen ve gelişim desteği</small>
                             </div>
-
-                            <div class="col-md-6">
-                                <label asp-for="Input.Email" class="form-label"></label>
-                                <input asp-for="Input.Email" class="form-control" autocomplete="username" />
-                                <span asp-validation-for="Input.Email" class="text-danger"></span>
+                        </li>
+                        <li>
+                            <span>03</span>
+                            <div>
+                                <strong>Tek ekosistem</strong>
+                                <small>Antrenman, beslenme ve community</small>
                             </div>
+                        </li>
+                    </ul>
+                </div>
 
-                            <div class="col-md-6">
-                                <label asp-for="Input.PhoneNumber" class="form-label"></label>
-                                <input asp-for="Input.PhoneNumber" class="form-control" autocomplete="tel" />
-                                <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+                <p class="register-intro-footer">
+                    Train Better. Eat Better. Live Better.
+                </p>
+            </aside>
+
+            <div class="register-form-panel">
+                <div class="register-form-heading">
+                    <div>
+                        <p class="register-form-kicker">Üyelik Başvurusu</p>
+                        <h2>Bilgilerini tamamla.</h2>
+                    </div>
+
+                    <span class="register-step">01 / 01</span>
+                </div>
+
+                <p class="register-form-description">
+                    Birkaç temel bilgiyle hesabını ve üyelik profilini oluşturalım.
+                </p>
+
+                <form id="registerForm" method="post" class="no23-register-form">
+                    <div asp-validation-summary="ModelOnly"
+                         class="register-validation-summary"
+                         role="alert"></div>
+
+                    <input type="hidden" asp-for="ReturnUrl" />
+
+                    <div class="row g-3 g-lg-4">
+                        <div class="col-md-6">
+                            <div class="no23-form-field">
+                                <label asp-for="Input.FirstName"></label>
+                                <input asp-for="Input.FirstName"
+                                       class="form-control no23-form-control"
+                                       autocomplete="given-name"
+                                       placeholder="Adın" />
+                                <span asp-validation-for="Input.FirstName"></span>
                             </div>
+                        </div>
 
-                            <div class="col-12">
-                                <label asp-for="Input.PackageCode" class="form-label"></label>
-                                <select asp-for="Input.PackageCode" class="form-select">
+                        <div class="col-md-6">
+                            <div class="no23-form-field">
+                                <label asp-for="Input.LastName"></label>
+                                <input asp-for="Input.LastName"
+                                       class="form-control no23-form-control"
+                                       autocomplete="family-name"
+                                       placeholder="Soyadın" />
+                                <span asp-validation-for="Input.LastName"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="no23-form-field">
+                                <label asp-for="Input.Email"></label>
+                                <input asp-for="Input.Email"
+                                       class="form-control no23-form-control"
+                                       autocomplete="username"
+                                       placeholder="ornek@email.com" />
+                                <span asp-validation-for="Input.Email"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="no23-form-field">
+                                <label asp-for="Input.PhoneNumber"></label>
+                                <input asp-for="Input.PhoneNumber"
+                                       class="form-control no23-form-control"
+                                       autocomplete="tel"
+                                       placeholder="05xx xxx xx xx" />
+                                <span asp-validation-for="Input.PhoneNumber"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="no23-form-field no23-package-field">
+                                <label asp-for="Input.PackageCode"></label>
+                                <select asp-for="Input.PackageCode"
+                                        class="form-select no23-form-select">
                                     @foreach (var package in Model.PackageOptions)
                                     {
                                         <option value="@package.Code"
@@ -54,37 +142,61 @@
                                                     StringComparison.OrdinalIgnoreCase)
                                                         ? "selected"
                                                         : null)">
-                                            @package.Name - @package.Audience
+                                            @package.Name — @package.Audience
                                         </option>
                                     }
                                 </select>
-                                <span asp-validation-for="Input.PackageCode" class="text-danger"></span>
-                            </div>
-
-                            <div class="col-12">
-                                <label asp-for="Input.FitnessGoal" class="form-label"></label>
-                                <input asp-for="Input.FitnessGoal" class="form-control" placeholder="Yağ yakımı, kas kazanımı, performans..." />
-                                <span asp-validation-for="Input.FitnessGoal" class="text-danger"></span>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label asp-for="Input.Password" class="form-label"></label>
-                                <input asp-for="Input.Password" class="form-control" autocomplete="new-password" />
-                                <span asp-validation-for="Input.Password" class="text-danger"></span>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label asp-for="Input.ConfirmPassword" class="form-label"></label>
-                                <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" />
-                                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                                <span asp-validation-for="Input.PackageCode"></span>
                             </div>
                         </div>
 
-                        <button id="registerSubmit" type="submit" class="btn btn-dark w-100 mt-4">
-                            Üyeliği Başlat
-                        </button>
-                    </form>
-                </div>
+                        <div class="col-12">
+                            <div class="no23-form-field">
+                                <label asp-for="Input.FitnessGoal"></label>
+                                <input asp-for="Input.FitnessGoal"
+                                       class="form-control no23-form-control"
+                                       placeholder="Yağ yakımı, kas kazanımı, performans..." />
+                                <span asp-validation-for="Input.FitnessGoal"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="no23-form-field">
+                                <label asp-for="Input.Password"></label>
+                                <input asp-for="Input.Password"
+                                       class="form-control no23-form-control"
+                                       autocomplete="new-password"
+                                       placeholder="En az 6 karakter" />
+                                <span asp-validation-for="Input.Password"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="no23-form-field">
+                                <label asp-for="Input.ConfirmPassword"></label>
+                                <input asp-for="Input.ConfirmPassword"
+                                       class="form-control no23-form-control"
+                                       autocomplete="new-password"
+                                       placeholder="Parolanı tekrar yaz" />
+                                <span asp-validation-for="Input.ConfirmPassword"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button id="registerSubmit"
+                            type="submit"
+                            class="no23-register-submit">
+                        <span>Üyeliği Başlat</span>
+                        <span aria-hidden="true">→</span>
+                    </button>
+
+                    <p class="register-login-link">
+                        Zaten hesabın var mı?
+                        <a asp-area="Identity" asp-page="/Account/Login">
+                            Giriş yap
+                        </a>
+                    </p>
+                </form>
             </div>
         </div>
     </div>
