@@ -47,7 +47,15 @@
                                 <select asp-for="Input.PackageCode" class="form-select">
                                     @foreach (var package in Model.PackageOptions)
                                     {
-                                        <option value="@package.Code">@package.Name - @package.Audience</option>
+                                        <option value="@package.Code"
+                                                selected="@(string.Equals(
+                                                    package.Code,
+                                                    Model.Input.PackageCode,
+                                                    StringComparison.OrdinalIgnoreCase)
+                                                        ? "selected"
+                                                        : null)">
+                                            @package.Name - @package.Audience
+                                        </option>
                                     }
                                 </select>
                                 <span asp-validation-for="Input.PackageCode" class="text-danger"></span>
