@@ -1,4 +1,6 @@
-﻿@{
+﻿@model NO23.Web.ViewModels.Home.HomeIndexViewModel
+
+@{
     ViewData["Title"] = "Ana Sayfa";
 }
 
@@ -254,112 +256,75 @@
         </div>
 
         <div class="membership-grid">
-            <article class="membership-card">
-                <div class="membership-card-header">
-                    <span class="membership-order">01</span>
-                    <span class="membership-level">Başlangıç</span>
-                </div>
+            @foreach (var package in Model.MembershipPackages)
+            {
+                var isPro = package.Code.Equals(
+                    "PRO",
+                    StringComparison.OrdinalIgnoreCase);
 
-                <div>
-                    <h3>START</h3>
-                    <p class="membership-audience">Yeni başlayanlar için</p>
-                </div>
+                var isElite = package.Code.Equals(
+                    "ELITE",
+                    StringComparison.OrdinalIgnoreCase);
 
-                <ul class="membership-features">
-                    <li>Haftada 2 ders</li>
-                    <li>Başlangıç ölçümü</li>
-                    <li>Kişisel antrenman programı</li>
-                </ul>
+                var cardClass = isPro
+                    ? "membership-card membership-card-featured"
+                    : isElite
+                        ? "membership-card membership-card-elite"
+                        : "membership-card";
 
-                <a class="membership-button"
-                   asp-area="Identity"
-                   asp-page="/Account/Register"
-                   asp-route-package="START">
-                    Başvuru Yap
-                </a>
-            </article>
+                var level = package.Code.ToUpperInvariant() switch
+                {
+                    "START" => "Başlangıç",
+                    "PLUS" => "Düzenli",
+                    "PRO" => "Hedef Odaklı",
+                    "ELITE" => "Tam Deneyim",
+                    _ => "Üyelik"
+                };
 
-            <article class="membership-card">
-                <div class="membership-card-header">
-                    <span class="membership-order">02</span>
-                    <span class="membership-level">Düzenli</span>
-                </div>
+                var buttonText = package.Code.ToUpperInvariant() switch
+                {
+                    "PRO" => "PRO’ya Başvur",
+                    "ELITE" => "ELITE’a Başvur",
+                    _ => "Başvuru Yap"
+                };
 
-                <div>
-                    <h3>PLUS</h3>
-                    <p class="membership-audience">Düzenli spor yapanlar için</p>
-                </div>
+                <article class="@cardClass">
+                    @if (isPro)
+                    {
+                        <span class="membership-recommended">Önerilen</span>
+                    }
 
-                <ul class="membership-features">
-                    <li>Haftada 3 ders</li>
-                    <li>Vücut analizi</li>
-                    <li>Beslenme önerisi</li>
-                </ul>
+                    <div class="membership-card-header">
+                        <span class="membership-order">
+                            @package.DisplayOrder.ToString("00")
+                        </span>
 
-                <a class="membership-button"
-                   asp-area="Identity"
-                   asp-page="/Account/Register"
-                   asp-route-package="PLUS">
-                    Başvuru Yap
-                </a>
-            </article>
+                        <span class="membership-level">@level</span>
+                    </div>
 
-            <article class="membership-card membership-card-featured">
-                <span class="membership-recommended">Önerilen</span>
+                    <div>
+                        <h3>@package.Name</h3>
 
-                <div class="membership-card-header">
-                    <span class="membership-order">03</span>
-                    <span class="membership-level">Hedef Odaklı</span>
-                </div>
+                        <p class="membership-audience">
+                            @package.Audience
+                        </p>
+                    </div>
 
-                <div>
-                    <h3>PRO</h3>
-                    <p class="membership-audience">Net hedefleri olanlar için</p>
-                </div>
+                    <ul class="membership-features">
+                        @foreach (var feature in package.Features)
+                        {
+                            <li>@feature</li>
+                        }
+                    </ul>
 
-                <ul class="membership-features">
-                    <li>Haftada 4 ders</li>
-                    <li>Detaylı gelişim takibi</li>
-                    <li>Aylık performans analizi</li>
-                    <li>Öncelikli rezervasyon</li>
-                </ul>
-
-                <a class="membership-button"
-                   asp-area="Identity"
-                   asp-page="/Account/Register"
-                   asp-route-package="PRO">
-                    PRO’ya Başvur
-                </a>
-            </article>
-
-            <article class="membership-card membership-card-elite">
-                <div class="membership-card-header">
-                    <span class="membership-order">04</span>
-                    <span class="membership-level">Tam Deneyim</span>
-                </div>
-
-                <div>
-                    <h3>ELITE</h3>
-                    <p class="membership-audience">
-                        En kapsamlı NO23 deneyimi
-                    </p>
-                </div>
-
-                <ul class="membership-features">
-                    <li>Sınırsız grup dersleri</li>
-                    <li>Personal Training desteği</li>
-                    <li>NO23 Kitchen avantajları</li>
-                    <li>Özel etkinlik davetleri</li>
-                    <li>Community üyeliği</li>
-                </ul>
-
-                <a class="membership-button"
-                   asp-area="Identity"
-                   asp-page="/Account/Register"
-                   asp-route-package="ELITE">
-                    ELITE’a Başvur
-                </a>
-            </article>
+                    <a class="membership-button"
+                       asp-area="Identity"
+                       asp-page="/Account/Register"
+                       asp-route-package="@package.Code">
+                        @buttonText
+                    </a>
+                </article>
+            }
         </div>
 
         <div class="membership-note">

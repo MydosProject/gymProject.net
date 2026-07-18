@@ -23,21 +23,28 @@ public class RegisterModel(
 
     public IReadOnlyList<PackageOption> PackageOptions { get; private set; } = [];
 
-    public async Task OnGetAsync(string? package = null, string? returnUrl = null)
+    public async Task OnGetAsync(
+        string? package = null,
+        string? returnUrl = null)
     {
         ReturnUrl = returnUrl;
         await LoadPackageOptionsAsync(package);
     }
 
-    public async Task<IActionResult> OnPostAsync(string? returnUrl = null)
+    public async Task<IActionResult> OnPostAsync(
+        string? returnUrl = null)
     {
         ReturnUrl = returnUrl ?? ReturnUrl;
         await LoadPackageOptionsAsync(Input.PackageCode);
 
-        var selectedPackage = await FindSelectedPackageAsync(Input.PackageCode);
+        var selectedPackage =
+            await FindSelectedPackageAsync(Input.PackageCode);
+
         if (selectedPackage is null)
         {
-            ModelState.AddModelError(nameof(Input.PackageCode), "Geçerli bir üyelik paketi seçmelisin.");
+            ModelState.AddModelError(
+                nameof(Input.PackageCode),
+                "Geçerli bir üyelik paketi seçmelisin.");
         }
 
         if (!ModelState.IsValid)
@@ -55,70 +62,106 @@ public class RegisterModel(
             LastName = Input.LastName
         };
 
-        var createResult = await userManager.CreateAsync(user, Input.Password);
+        var createResult =
+            await userManager.CreateAsync(user, Input.Password);
 
         if (!createResult.Succeeded)
         {
             foreach (var error in createResult.Errors)
             {
-                ModelState.AddModelError(string.Empty, error.Description);
+                ModelState.AddModelError(
+                    string.Empty,
+                    error.Description);
             }
 
             return Page();
         }
 
-        await userManager.AddToRoleAsync(user, ApplicationRoles.Member);
+        await userManager.AddToRoleAsync(
+            user,
+            ApplicationRoles.Member);
 
         dbContext.MemberProfiles.Add(new MemberProfile
         {
             ApplicationUserId = user.Id,
             MembershipPackageId = selectedPackage!.Id,
             FitnessGoal = Input.FitnessGoal,
-            RemainingClassCredits = CalculateInitialClassCredits(selectedPackage)
+            RemainingClassCredits =
+                CalculateInitialClassCredits(selectedPackage)
         });
 
         await dbContext.SaveChangesAsync();
-        await signInManager.SignInAsync(user, isPersistent: false);
 
-        return LocalRedirect(ReturnUrl ?? Url.Content("~/"));
+        await signInManager.SignInAsync(
+            user,
+            isPersistent: false);
+
+        return LocalRedirect(
+            ReturnUrl ?? Url.Content("~/"));
     }
 
-    private async Task LoadPackageOptionsAsync(string? selectedPackageCode)
+    private async Task LoadPackageOptionsAsync(
+        string? selectedPackageCode)
     {
-        PackageOptions = await dbContext.MembershipPackages
+        var packages = await dbContext.MembershipPackages
             .AsNoTracking()
             .Where(package => package.IsActive)
             .OrderBy(package => package.DisplayOrder)
-            .Select(package => new PackageOption(
-                package.Code.ToString().ToUpper(),
+            .Select(package => new
+            {
+                package.Code,
                 package.Name,
-                package.Audience))
+                package.Audience
+            })
             .ToListAsync();
 
-        Input.PackageCode = ResolvePackageCode(selectedPackageCode)
+        PackageOptions = packages
+            .Select(package => new PackageOption(
+                package.Code
+                    .ToString()
+                    .ToUpperInvariant(),
+                package.Name,
+                package.Audience))
+            .ToList();
+
+        Input.PackageCode =
+            ResolvePackageCode(selectedPackageCode)
             ?? PackageOptions.FirstOrDefault()?.Code
             ?? string.Empty;
     }
 
-    private async Task<MembershipPackage?> FindSelectedPackageAsync(string? packageCode)
+    private async Task<MembershipPackage?>
+        FindSelectedPackageAsync(string? packageCode)
     {
-        if (!Enum.TryParse<MembershipPackageCode>(packageCode, ignoreCase: true, out var parsedCode))
+        if (!Enum.TryParse<MembershipPackageCode>(
+                packageCode,
+                ignoreCase: true,
+                out var parsedCode))
         {
             return null;
         }
 
         return await dbContext.MembershipPackages
-            .FirstOrDefaultAsync(package => package.Code == parsedCode && package.IsActive);
+            .FirstOrDefaultAsync(package =>
+                package.Code == parsedCode
+                && package.IsActive);
     }
 
-    private static string? ResolvePackageCode(string? packageCode)
+    private static string? ResolvePackageCode(
+        string? packageCode)
     {
-        return Enum.TryParse<MembershipPackageCode>(packageCode, ignoreCase: true, out var parsedCode)
-            ? parsedCode.ToString().ToUpper()
-            : null;
+        return Enum.TryParse<MembershipPackageCode>(
+            packageCode,
+            ignoreCase: true,
+            out var parsedCode)
+                ? parsedCode
+                    .ToString()
+                    .ToUpperInvariant()
+                : null;
     }
 
-    private static int CalculateInitialClassCredits(MembershipPackage package)
+    private static int CalculateInitialClassCredits(
+        MembershipPackage package)
     {
         return package.WeeklyClassLimit.HasValue
             ? package.WeeklyClassLimit.Value * 4
@@ -155,16 +198,26 @@ public class RegisterModel(
         public string? FitnessGoal { get; set; }
 
         [Required(ErrorMessage = "Parola alanı zorunludur.")]
-        [StringLength(100, ErrorMessage = "{0} en az {2}, en fazla {1} karakter olmalıdır.", MinimumLength = 6)]
+        [StringLength(
+            100,
+            ErrorMessage =
+                "{0} en az {2}, en fazla {1} karakter olmalıdır.",
+            MinimumLength = 6)]
         [DataType(DataType.Password)]
         [Display(Name = "Parola")]
         public string Password { get; set; } = string.Empty;
 
         [DataType(DataType.Password)]
         [Display(Name = "Parola tekrar")]
-        [Compare(nameof(Password), ErrorMessage = "Parola ve tekrar alanı eşleşmiyor.")]
+        [Compare(
+            nameof(Password),
+            ErrorMessage =
+                "Parola ve tekrar alanı eşleşmiyor.")]
         public string ConfirmPassword { get; set; } = string.Empty;
     }
 
-    public record PackageOption(string Code, string Name, string Audience);
+    public record PackageOption(
+        string Code,
+        string Name,
+        string Audience);
 }
