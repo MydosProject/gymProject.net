@@ -1,7 +1,9 @@
 @page
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @model NO23.Web.Areas.Identity.Pages.Account.RegisterModel
 @{
     ViewData["Title"] = "Üye Ol";
+    Layout = "/Views/Shared/_Layout.cshtml";
 }
 
 <section class="no23-register-page">
@@ -76,7 +78,11 @@
                     Birkaç temel bilgiyle hesabını ve üyelik profilini oluşturalım.
                 </p>
 
-                <form id="registerForm" method="post" class="no23-register-form">
+                <form id="registerForm"
+                      method="post"
+                      asp-antiforgery="true"
+                      class="no23-register-form">
+
                     <div asp-validation-summary="ModelOnly"
                          class="register-validation-summary"
                          role="alert"></div>
