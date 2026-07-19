@@ -1,0 +1,164 @@
+@page
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model NO23.Web.Areas.Identity.Pages.Account.LoginModel
+@{
+    ViewData["Title"] = "Giriş Yap";
+    Layout = "/Views/Shared/_Layout.cshtml";
+}
+
+<section class="no23-register-page">
+    <div class="register-page-grid" aria-hidden="true"></div>
+    <div class="register-page-glow" aria-hidden="true"></div>
+
+    <div class="container position-relative">
+        <div class="no23-register-shell">
+            <aside class="register-intro-panel">
+                <a class="register-back-link"
+                   asp-area=""
+                   asp-controller="Home"
+                   asp-action="Index">
+                    <span aria-hidden="true">←</span>
+                    Ana sayfaya dön
+                </a>
+
+                <div class="register-intro-content">
+                    <p class="register-kicker">NO23 Member Access</p>
+
+                    <h1>
+                        Kaldığın yerden
+                        <span>devam et.</span>
+                    </h1>
+
+                    <p class="register-intro-description">
+                        Antrenmanlarına, üyelik bilgilerine ve NO23 deneyimine
+                        tek hesabından ulaş.
+                    </p>
+
+                    <ul class="register-benefits">
+                        <li>
+                            <span>01</span>
+
+                            <div>
+                                <strong>Üyelik takibi</strong>
+                                <small>Paketini ve kalan derslerini görüntüle</small>
+                            </div>
+                        </li>
+
+                        <li>
+                            <span>02</span>
+
+                            <div>
+                                <strong>Rezervasyonlar</strong>
+                                <small>Yaklaşan antrenmanlarını yönet</small>
+                            </div>
+                        </li>
+
+                        <li>
+                            <span>03</span>
+
+                            <div>
+                                <strong>Gelişim paneli</strong>
+                                <small>Hedeflerini ve ilerlemeni takip et</small>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <p class="register-intro-footer">
+                    Train Better. Eat Better. Live Better.
+                </p>
+            </aside>
+
+            <div class="register-form-panel d-flex flex-column justify-content-center">
+                <div class="register-form-heading">
+                    <div>
+                        <p class="register-form-kicker">Üye Girişi</p>
+                        <h2>Tekrar hoş geldin.</h2>
+                    </div>
+
+                    <span class="register-step">NO23</span>
+                </div>
+
+                <p class="register-form-description">
+                    Hesabına erişmek için e-posta adresini ve parolanı gir.
+                </p>
+
+                <form id="account"
+                      method="post"
+                      asp-antiforgery="true"
+                      class="no23-register-form">
+
+                    <div asp-validation-summary="ModelOnly"
+                         class="register-validation-summary"
+                         role="alert"></div>
+
+                    <input type="hidden" asp-for="ReturnUrl" />
+
+                    <div class="row g-3 g-lg-4">
+                        <div class="col-12">
+                            <div class="no23-form-field">
+                                <label asp-for="Input.Email"></label>
+
+                                <input asp-for="Input.Email"
+                                       class="form-control no23-form-control"
+                                       autocomplete="username"
+                                       placeholder="ornek@email.com" />
+
+                                <span asp-validation-for="Input.Email"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="no23-form-field">
+                                <label asp-for="Input.Password"></label>
+
+                                <input asp-for="Input.Password"
+                                       class="form-control no23-form-control"
+                                       autocomplete="current-password"
+                                       placeholder="Parolan" />
+
+                                <span asp-validation-for="Input.Password"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center flex-wrap gap-3 mt-3 w-100">
+                        <div class="form-check m-0">
+                            <input asp-for="Input.RememberMe"
+                                   class="form-check-input" />
+
+                            <label asp-for="Input.RememberMe"
+                                   class="form-check-label small">
+                                Beni hatırla
+                            </label>
+                        </div>
+
+                        <a asp-page="./ForgotPassword"
+                           class="small fw-bold text-dark text-decoration-underline ms-auto">
+                            Parolamı unuttum
+                        </a>
+                    </div>
+
+                    <button id="login-submit"
+                            type="submit"
+                            class="no23-register-submit">
+                        <span>Giriş Yap</span>
+                        <span aria-hidden="true">→</span>
+                    </button>
+
+                    <p class="register-login-link">
+                        Henüz hesabın yok mu?
+
+                        <a href="/Identity/Account/Register">
+                            Üye ol
+                        </a>
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
