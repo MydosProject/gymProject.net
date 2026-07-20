@@ -1,0 +1,44 @@
+@model IReadOnlyList<KitchenSubscriptionListItemViewModel>
+@{
+    ViewData["Title"] = "Kitchen Abonelikleri";
+}
+
+<section class="py-5">
+    <div class="container">
+        <div class="mb-4">
+            <p class="text-uppercase text-muted small mb-1">Admin</p>
+            <h1 class="h3 mb-0">Kitchen Abonelikleri</h1>
+        </div>
+
+        <div class="table-responsive bg-white border rounded-3">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Üye</th>
+                        <th>Plan</th>
+                        <th>Hedef</th>
+                        <th>Makro</th>
+                        <th>Tarih</th>
+                        <th>Durum</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var subscription in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div>@(string.IsNullOrWhiteSpace(subscription.MemberName) ? "İsimsiz üye" : subscription.MemberName)</div>
+                                <small class="text-muted">@subscription.MemberEmail</small>
+                            </td>
+                            <td>@subscription.Plan</td>
+                            <td>@subscription.Goal</td>
+                            <td>@subscription.DailyCalories kcal · P @subscription.ProteinGrams / K @subscription.CarbohydrateGrams / Y @subscription.FatGrams</td>
+                            <td>@subscription.StartsOn.ToString("dd.MM.yyyy") - @subscription.EndsOn.ToString("dd.MM.yyyy")</td>
+                            <td>@subscription.Status</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>

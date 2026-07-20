@@ -1,0 +1,158 @@
+@model KitchenDashboardViewModel
+@{
+    ViewData["Title"] = "NO23 Kitchen";
+}
+
+<section class="py-5">
+    <div class="container">
+        <div class="mb-4">
+            <p class="text-uppercase text-muted small mb-1">NO23 Kitchen</p>
+            <h1 class="h3 mb-0">Kalori ve Beslenme Planı</h1>
+        </div>
+
+        @if (TempData["SuccessMessage"] is string successMessage)
+        {
+            <div class="alert alert-success">@successMessage</div>
+        }
+
+        @if (TempData["ErrorMessage"] is string errorMessage)
+        {
+            <div class="alert alert-danger">@errorMessage</div>
+        }
+
+        <div class="row g-4 mb-4">
+            <div class="col-lg-5">
+                <div class="bg-white text-dark border rounded-3 p-4 h-100">
+                    <h2 class="h5 mb-3">Kalori Hesapla</h2>
+
+                    <form asp-action="Calculate" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="CalculatorInput.HeightCm" class="form-label"></label>
+                                <input asp-for="CalculatorInput.HeightCm" class="form-control" />
+                                <span asp-validation-for="CalculatorInput.HeightCm" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="CalculatorInput.WeightKg" class="form-label"></label>
+                                <input asp-for="CalculatorInput.WeightKg" class="form-control" />
+                                <span asp-validation-for="CalculatorInput.WeightKg" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="CalculatorInput.Age" class="form-label"></label>
+                                <input asp-for="CalculatorInput.Age" class="form-control" />
+                                <span asp-validation-for="CalculatorInput.Age" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="CalculatorInput.Gender" class="form-label"></label>
+                                <select asp-for="CalculatorInput.Gender" asp-items="Html.GetEnumSelectList<Gender>()" class="form-select"></select>
+                            </div>
+                            <div class="col-12">
+                                <label asp-for="CalculatorInput.ActivityLevel" class="form-label"></label>
+                                <select asp-for="CalculatorInput.ActivityLevel" asp-items="Html.GetEnumSelectList<ActivityLevel>()" class="form-select"></select>
+                            </div>
+                            <div class="col-12">
+                                <label asp-for="CalculatorInput.Goal" class="form-label"></label>
+                                <select asp-for="CalculatorInput.Goal" asp-items="Html.GetEnumSelectList<NutritionGoal>()" class="form-select"></select>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-dark w-100 mt-4">Hesapla</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-lg-7">
+                <div class="bg-white text-dark border rounded-3 p-4 h-100">
+                    <h2 class="h5 mb-3">Sonuç ve Abonelik</h2>
+
+                    @if (Model.Recommendation is null)
+                    {
+                        <p class="text-muted mb-0">Bilgilerini girip hesapladığında günlük kalori ve makro hedeflerin burada görünür.</p>
+                    }
+                    else
+                    {
+                        <div class="row g-3 mb-4">
+                            <div class="col-6 col-md-3">
+                                <div class="border rounded-3 p-3">
+                                    <small class="text-muted">Kalori</small>
+                                    <strong class="d-block">@Model.Recommendation.DailyCalories</strong>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="border rounded-3 p-3">
+                                    <small class="text-muted">Protein</small>
+                                    <strong class="d-block">@Model.Recommendation.ProteinGrams g</strong>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="border rounded-3 p-3">
+                                    <small class="text-muted">Karbonhidrat</small>
+                                    <strong class="d-block">@Model.Recommendation.CarbohydrateGrams g</strong>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="border rounded-3 p-3">
+                                    <small class="text-muted">Yağ</small>
+                                    <strong class="d-block">@Model.Recommendation.FatGrams g</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3">
+                            @foreach (var plan in Model.SubscriptionPlans)
+                            {
+                                <div class="col-md-6">
+                                    <form asp-action="Subscribe" method="post" class="border rounded-3 p-3 h-100">
+                                        <input type="hidden" name="plan" value="@plan.Plan" />
+                                        <input type="hidden" name="input.HeightCm" value="@Model.CalculatorInput.HeightCm" />
+                                        <input type="hidden" name="input.WeightKg" value="@Model.CalculatorInput.WeightKg" />
+                                        <input type="hidden" name="input.Age" value="@Model.CalculatorInput.Age" />
+                                        <input type="hidden" name="input.Gender" value="@Model.CalculatorInput.Gender" />
+                                        <input type="hidden" name="input.ActivityLevel" value="@Model.CalculatorInput.ActivityLevel" />
+                                        <input type="hidden" name="input.Goal" value="@Model.CalculatorInput.Goal" />
+
+                                        <h3 class="h6">@plan.Name</h3>
+                                        <p class="text-muted mb-3">@plan.Days gün beslenme planı</p>
+                                        <button type="submit" class="btn btn-outline-dark btn-sm">Abonelik Oluştur</button>
+                                    </form>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white text-dark border rounded-3 p-4">
+            <h2 class="h5 mb-3">Menü Ürünleri</h2>
+            <div class="row g-3">
+                @foreach (var item in Model.MenuItems)
+                {
+                    <div class="col-md-6 col-xl-4">
+                        <article class="border rounded-3 p-3 h-100">
+                            <small class="text-muted">@item.Category</small>
+                            <h3 class="h6 mt-1">@item.Name</h3>
+                            <p class="text-muted small">@item.Ingredients</p>
+                            <div class="small mb-2">
+                                @item.Calories kcal · P @item.ProteinGrams / K @item.CarbohydrateGrams / Y @item.FatGrams
+                            </div>
+                            <small class="text-muted">Alerjen: @(item.Allergens ?? "-")</small>
+                            @if (!string.IsNullOrWhiteSpace(item.Tags))
+                            {
+                                <div class="mt-2">
+                                    <span class="badge text-bg-light">@item.Tags</span>
+                                </div>
+                            }
+                        </article>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
