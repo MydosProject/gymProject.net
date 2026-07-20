@@ -33,6 +33,14 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
 
+    public DbSet<CommunityEvent> CommunityEvents => Set<CommunityEvent>();
+
+    public DbSet<CommunityChallenge> CommunityChallenges => Set<CommunityChallenge>();
+
+    public DbSet<BlogPost> BlogPosts => Set<BlogPost>();
+
+    public DbSet<SuccessStory> SuccessStories => Set<SuccessStory>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

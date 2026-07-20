@@ -1,0 +1,33 @@
+@model IReadOnlyList<BlogPostCardViewModel>
+@{
+    ViewData["Title"] = "Blog";
+}
+
+<section class="py-5">
+    <div class="container">
+        <div class="mb-4">
+            <p class="text-uppercase text-muted small mb-1">NO23 Blog</p>
+            <h1 class="h3 mb-0">Training, Nutrition and Lifestyle</h1>
+        </div>
+
+        <div class="row g-3">
+            @foreach (var item in Model)
+            {
+                <div class="col-md-6 col-xl-4">
+                    <article class="bg-white text-dark border rounded-3 p-4 h-100">
+                        <small class="text-muted">@item.Category</small>
+                        <h2 class="h5 mt-1">@item.Title</h2>
+                        <p class="text-muted small">@item.Summary</p>
+                        <div class="small text-muted">
+                            @(item.PublishedAtUtc?.ToString("dd.MM.yyyy") ?? "-")
+                            @if (!string.IsNullOrWhiteSpace(item.Tags))
+                            {
+                                <span>- @item.Tags</span>
+                            }
+                        </div>
+                    </article>
+                </div>
+            }
+        </div>
+    </div>
+</section>

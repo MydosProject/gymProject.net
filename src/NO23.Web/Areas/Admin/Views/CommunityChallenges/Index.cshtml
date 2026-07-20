@@ -1,0 +1,46 @@
+@model IReadOnlyList<CommunityChallengeListItemViewModel>
+@{
+    ViewData["Title"] = "Community Challenges";
+}
+
+<section class="py-5">
+    <div class="container">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            <div>
+                <p class="text-uppercase text-muted small mb-1">Admin</p>
+                <h1 class="h3 mb-0">Community Challenges</h1>
+            </div>
+            <a class="btn btn-dark" asp-action="Create">New Challenge</a>
+        </div>
+
+        <div class="table-responsive bg-white border rounded-3">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Order</th>
+                        <th>Challenge</th>
+                        <th>Status</th>
+                        <th>Dates</th>
+                        <th>Goal</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.DisplayOrder</td>
+                            <td><strong>@item.Title</strong></td>
+                            <td>@item.Status</td>
+                            <td>@item.StartsOn.ToString("dd.MM.yyyy") - @item.EndsOn.ToString("dd.MM.yyyy")</td>
+                            <td>@item.Goal</td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-outline-dark" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
