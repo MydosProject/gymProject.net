@@ -10,6 +10,8 @@ public class KitchenMenuItemCardViewModel
 
     public int Calories { get; init; }
 
+    public decimal UnitPrice { get; init; }
+
     public decimal ProteinGrams { get; init; }
 
     public decimal CarbohydrateGrams { get; init; }

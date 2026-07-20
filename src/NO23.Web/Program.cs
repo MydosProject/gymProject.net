@@ -24,6 +24,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<ClassReservationService>();
 builder.Services.AddScoped<CalorieCalculatorService>();
+builder.Services.AddScoped<CommerceService>();
 
 var app = builder.Build();
 
@@ -124,6 +125,7 @@ if (app.Environment.IsDevelopment())
                 Name = item.Name,
                 Category = item.Category.ToString(),
                 Calories = item.Calories,
+                UnitPrice = item.UnitPrice,
                 ProteinGrams = item.ProteinGrams,
                 CarbohydrateGrams = item.CarbohydrateGrams,
                 FatGrams = item.FatGrams,
@@ -135,6 +137,30 @@ if (app.Environment.IsDevelopment())
     })
     .WithName("GetKitchenMenuItems")
     .Produces<IReadOnlyList<KitchenMenuItemResponse>>();
+
+    api.MapGet("/shop-products", async (ApplicationDbContext dbContext) =>
+    {
+        return await dbContext.ShopProducts
+            .AsNoTracking()
+            .Where(product => product.IsActive)
+            .OrderBy(product => product.DisplayOrder)
+            .ThenBy(product => product.Name)
+            .Select(product => new ShopProductResponse
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Sku = product.Sku,
+                Category = product.Category,
+                UnitPrice = product.UnitPrice,
+                StockQuantity = product.StockQuantity,
+                Description = product.Description,
+                ImageUrl = product.ImageUrl,
+                Tags = product.Tags
+            })
+            .ToListAsync();
+    })
+    .WithName("GetShopProducts")
+    .Produces<IReadOnlyList<ShopProductResponse>>();
 
     api.MapPost("/calorie/calculate", (
         CalorieCalculationApiRequest request,

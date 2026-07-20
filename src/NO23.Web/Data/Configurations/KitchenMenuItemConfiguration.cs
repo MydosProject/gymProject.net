@@ -19,6 +19,9 @@ public class KitchenMenuItemConfiguration : IEntityTypeConfiguration<KitchenMenu
             .HasConversion<string>()
             .HasMaxLength(40);
 
+        builder.Property(item => item.UnitPrice)
+            .HasPrecision(10, 2);
+
         builder.Property(item => item.ProteinGrams)
             .HasPrecision(6, 2);
 

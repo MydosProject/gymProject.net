@@ -20,6 +20,7 @@ public static class DatabaseSeeder
         await SeedMembershipPackagesAsync(dbContext);
         await SeedClassOperationsAsync(dbContext);
         await SeedKitchenMenuItemsAsync(dbContext);
+        await SeedShopProductsAsync(dbContext);
         await SeedAdminUserAsync(userManager, configuration);
     }
 
@@ -167,12 +168,42 @@ public static class DatabaseSeeder
 
     private static async Task SeedKitchenMenuItemsAsync(ApplicationDbContext dbContext)
     {
-        if (await dbContext.KitchenMenuItems.AnyAsync())
+        foreach (var defaultItem in KitchenMenuItemSeed.Defaults)
+        {
+            var item = await dbContext.KitchenMenuItems
+                .FirstOrDefaultAsync(existing => existing.Name == defaultItem.Name);
+
+            if (item is null)
+            {
+                dbContext.KitchenMenuItems.Add(defaultItem);
+                continue;
+            }
+
+            item.Description = defaultItem.Description;
+            item.Category = defaultItem.Category;
+            item.Calories = defaultItem.Calories;
+            item.UnitPrice = defaultItem.UnitPrice;
+            item.ProteinGrams = defaultItem.ProteinGrams;
+            item.CarbohydrateGrams = defaultItem.CarbohydrateGrams;
+            item.FatGrams = defaultItem.FatGrams;
+            item.Ingredients = defaultItem.Ingredients;
+            item.Allergens = defaultItem.Allergens;
+            item.Tags = defaultItem.Tags;
+            item.DisplayOrder = defaultItem.DisplayOrder;
+            item.UpdatedAtUtc = DateTime.UtcNow;
+        }
+
+        await dbContext.SaveChangesAsync();
+    }
+
+    private static async Task SeedShopProductsAsync(ApplicationDbContext dbContext)
+    {
+        if (await dbContext.ShopProducts.AnyAsync())
         {
             return;
         }
 
-        dbContext.KitchenMenuItems.AddRange(KitchenMenuItemSeed.Defaults);
+        dbContext.ShopProducts.AddRange(ShopProductSeed.Defaults);
         await dbContext.SaveChangesAsync();
     }
 }

@@ -23,6 +23,10 @@ public class KitchenMenuItemFormViewModel
     [Display(Name = "Kalori")]
     public int Calories { get; set; }
 
+    [Range(0, 100000)]
+    [Display(Name = "Fiyat")]
+    public decimal UnitPrice { get; set; }
+
     [Range(0, 300)]
     [Display(Name = "Protein")]
     public decimal ProteinGrams { get; set; }
