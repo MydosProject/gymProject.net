@@ -23,4 +23,8 @@ public class MemberProfile
     public ICollection<ClassReservation> ClassReservations { get; set; } = [];
 
     public ICollection<KitchenSubscription> KitchenSubscriptions { get; set; } = [];
+
+    public ShoppingCart? ShoppingCart { get; set; }
+
+    public ICollection<Order> Orders { get; set; } = [];
 }

@@ -23,6 +23,16 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<KitchenSubscription> KitchenSubscriptions => Set<KitchenSubscription>();
 
+    public DbSet<ShopProduct> ShopProducts => Set<ShopProduct>();
+
+    public DbSet<ShoppingCart> ShoppingCarts => Set<ShoppingCart>();
+
+    public DbSet<CartItem> CartItems => Set<CartItem>();
+
+    public DbSet<Order> Orders => Set<Order>();
+
+    public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

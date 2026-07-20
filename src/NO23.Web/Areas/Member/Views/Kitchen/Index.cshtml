@@ -136,7 +136,7 @@
                             <h3 class="h6 mt-1">@item.Name</h3>
                             <p class="text-muted small">@item.Ingredients</p>
                             <div class="small mb-2">
-                                @item.Calories kcal · P @item.ProteinGrams / K @item.CarbohydrateGrams / Y @item.FatGrams
+                                @item.UnitPrice.ToString("C0") · @item.Calories kcal · P @item.ProteinGrams / K @item.CarbohydrateGrams / Y @item.FatGrams
                             </div>
                             <small class="text-muted">Alerjen: @(item.Allergens ?? "-")</small>
                             @if (!string.IsNullOrWhiteSpace(item.Tags))

@@ -126,6 +126,7 @@ public class KitchenController(
                 Name = item.Name,
                 Category = item.Category.ToString(),
                 Calories = item.Calories,
+                UnitPrice = item.UnitPrice,
                 ProteinGrams = item.ProteinGrams,
                 CarbohydrateGrams = item.CarbohydrateGrams,
                 FatGrams = item.FatGrams,

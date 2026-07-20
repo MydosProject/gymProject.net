@@ -1,0 +1,177 @@
+@model ShopDashboardViewModel
+@{
+    ViewData["Title"] = "NO23 Shop";
+}
+
+<section class="py-5">
+    <div class="container">
+        <div class="mb-4">
+            <p class="text-uppercase text-muted small mb-1">Member</p>
+            <h1 class="h3 mb-0">NO23 Shop & Orders</h1>
+        </div>
+
+        @if (TempData["SuccessMessage"] is string successMessage)
+        {
+            <div class="alert alert-success">@successMessage</div>
+        }
+
+        @if (TempData["ErrorMessage"] is string errorMessage)
+        {
+            <div class="alert alert-danger">@errorMessage</div>
+        }
+
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="bg-white text-dark border rounded-3 p-4 mb-4">
+                    <h2 class="h5 mb-3">Shop Products</h2>
+                    <div class="row g-3">
+                        @foreach (var product in Model.ShopProducts)
+                        {
+                            <div class="col-md-6">
+                                <article class="border rounded-3 p-3 h-100">
+                                    <small class="text-muted">@product.Category</small>
+                                    <h3 class="h6 mt-1">@product.Name</h3>
+                                    <p class="text-muted small">@product.Description</p>
+                                    <div class="d-flex justify-content-between align-items-center gap-3">
+                                        <strong>@product.UnitPrice.ToString("C0")</strong>
+                                        <span class="small text-muted">Stock: @product.StockQuantity</span>
+                                    </div>
+                                    <form asp-action="AddShopProduct" method="post" class="d-flex gap-2 mt-3">
+                                        <input type="hidden" name="productId" value="@product.Id" />
+                                        <input type="number" name="quantity" value="1" min="1" max="@product.StockQuantity" class="form-control form-control-sm" />
+                                        <button type="submit" class="btn btn-sm btn-dark">Add</button>
+                                    </form>
+                                </article>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="bg-white text-dark border rounded-3 p-4">
+                    <h2 class="h5 mb-3">Kitchen Items</h2>
+                    <div class="row g-3">
+                        @foreach (var item in Model.KitchenMenuItems)
+                        {
+                            <div class="col-md-6">
+                                <article class="border rounded-3 p-3 h-100">
+                                    <small class="text-muted">@item.Category</small>
+                                    <h3 class="h6 mt-1">@item.Name</h3>
+                                    <p class="text-muted small">@item.Ingredients</p>
+                                    <div class="small mb-2">
+                                        @item.UnitPrice.ToString("C0") - @item.Calories kcal - P @item.ProteinGrams / K @item.CarbohydrateGrams / Y @item.FatGrams
+                                    </div>
+                                    <form asp-action="AddKitchenMenuItem" method="post" class="d-flex gap-2 mt-3">
+                                        <input type="hidden" name="menuItemId" value="@item.Id" />
+                                        <input type="number" name="quantity" value="1" min="1" max="20" class="form-control form-control-sm" />
+                                        <button type="submit" class="btn btn-sm btn-dark">Add</button>
+                                    </form>
+                                </article>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="bg-white text-dark border rounded-3 p-4 mb-4">
+                    <h2 class="h5 mb-3">Cart</h2>
+                    @if (Model.CartItems.Count == 0)
+                    {
+                        <p class="text-muted mb-0">Your cart is empty.</p>
+                    }
+                    else
+                    {
+                        <div class="vstack gap-3">
+                            @foreach (var cartItem in Model.CartItems)
+                            {
+                                <div class="border-bottom pb-3">
+                                    <div class="d-flex justify-content-between gap-3">
+                                        <div>
+                                            <strong class="d-block">@cartItem.ProductName</strong>
+                                            <small class="text-muted">@cartItem.ItemType - @cartItem.Quantity x @cartItem.UnitPrice.ToString("C0")</small>
+                                        </div>
+                                        <strong>@cartItem.LineTotal.ToString("C0")</strong>
+                                    </div>
+                                    <form asp-action="RemoveCartItem" method="post" class="mt-2">
+                                        <input type="hidden" name="cartItemId" value="@cartItem.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary">Remove</button>
+                                    </form>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-3">
+                            <span>Subtotal</span>
+                            <strong>@Model.CartSubtotal.ToString("C0")</strong>
+                        </div>
+                    }
+                </div>
+
+                <div class="bg-white text-dark border rounded-3 p-4">
+                    <h2 class="h5 mb-3">Delivery</h2>
+                    <form asp-action="Checkout" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                        <div class="mb-3">
+                            <label asp-for="CheckoutInput.FullName" class="form-label"></label>
+                            <input asp-for="CheckoutInput.FullName" class="form-control" />
+                            <span asp-validation-for="CheckoutInput.FullName" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="CheckoutInput.PhoneNumber" class="form-label"></label>
+                            <input asp-for="CheckoutInput.PhoneNumber" class="form-control" />
+                            <span asp-validation-for="CheckoutInput.PhoneNumber" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="CheckoutInput.AddressLine" class="form-label"></label>
+                            <textarea asp-for="CheckoutInput.AddressLine" class="form-control" rows="2"></textarea>
+                            <span asp-validation-for="CheckoutInput.AddressLine" class="text-danger"></span>
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-6 mb-3">
+                                <label asp-for="CheckoutInput.District" class="form-label"></label>
+                                <input asp-for="CheckoutInput.District" class="form-control" />
+                                <span asp-validation-for="CheckoutInput.District" class="text-danger"></span>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label asp-for="CheckoutInput.City" class="form-label"></label>
+                                <input asp-for="CheckoutInput.City" class="form-control" />
+                                <span asp-validation-for="CheckoutInput.City" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="CheckoutInput.PostalCode" class="form-label"></label>
+                            <input asp-for="CheckoutInput.PostalCode" class="form-control" />
+                            <span asp-validation-for="CheckoutInput.PostalCode" class="text-danger"></span>
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-6 mb-3">
+                                <label asp-for="CheckoutInput.DeliveryDate" class="form-label"></label>
+                                <input asp-for="CheckoutInput.DeliveryDate" class="form-control" type="date" />
+                                <span asp-validation-for="CheckoutInput.DeliveryDate" class="text-danger"></span>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label asp-for="CheckoutInput.DeliveryTimeSlot" class="form-label"></label>
+                                <select asp-for="CheckoutInput.DeliveryTimeSlot" class="form-select">
+                                    <option value="10:00-13:00">10:00-13:00</option>
+                                    <option value="13:00-16:00">13:00-16:00</option>
+                                    <option value="16:00-19:00">16:00-19:00</option>
+                                </select>
+                                <span asp-validation-for="CheckoutInput.DeliveryTimeSlot" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="CheckoutInput.Notes" class="form-label"></label>
+                            <textarea asp-for="CheckoutInput.Notes" class="form-control" rows="2"></textarea>
+                            <span asp-validation-for="CheckoutInput.Notes" class="text-danger"></span>
+                        </div>
+                        <button type="submit" class="btn btn-dark w-100" @(Model.CartItems.Count == 0 ? "disabled" : null)>Create Order</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
