@@ -21,6 +21,7 @@
                         <th>Sıra</th>
                         <th>Ürün</th>
                         <th>Kategori</th>
+                        <th>Fiyat</th>
                         <th>Kalori</th>
                         <th>Makro</th>
                         <th>Etiket</th>
@@ -35,6 +36,7 @@
                             <td>@item.DisplayOrder</td>
                             <td><strong>@item.Name</strong></td>
                             <td>@item.Category</td>
+                            <td>@item.UnitPrice.ToString("C0")</td>
                             <td>@item.Calories</td>
                             <td>P @item.ProteinGrams / K @item.CarbohydrateGrams / Y @item.FatGrams</td>
                             <td>@(item.Tags ?? "-")</td>

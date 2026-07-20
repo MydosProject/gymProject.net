@@ -24,6 +24,7 @@ public class KitchenMenuItemsController(ApplicationDbContext dbContext) : Contro
                 Name = item.Name,
                 Category = item.Category.ToString(),
                 Calories = item.Calories,
+                UnitPrice = item.UnitPrice,
                 ProteinGrams = item.ProteinGrams,
                 CarbohydrateGrams = item.CarbohydrateGrams,
                 FatGrams = item.FatGrams,
@@ -41,6 +42,7 @@ public class KitchenMenuItemsController(ApplicationDbContext dbContext) : Contro
         return View(new KitchenMenuItemFormViewModel
         {
             Calories = 450,
+            UnitPrice = 250,
             ProteinGrams = 30,
             CarbohydrateGrams = 45,
             FatGrams = 15,
@@ -118,6 +120,7 @@ public class KitchenMenuItemsController(ApplicationDbContext dbContext) : Contro
         item.Description = model.Description?.Trim();
         item.Category = model.Category;
         item.Calories = model.Calories;
+        item.UnitPrice = model.UnitPrice;
         item.ProteinGrams = model.ProteinGrams;
         item.CarbohydrateGrams = model.CarbohydrateGrams;
         item.FatGrams = model.FatGrams;
@@ -138,6 +141,7 @@ public class KitchenMenuItemsController(ApplicationDbContext dbContext) : Contro
             Description = item.Description,
             Category = item.Category,
             Calories = item.Calories,
+            UnitPrice = item.UnitPrice,
             ProteinGrams = item.ProteinGrams,
             CarbohydrateGrams = item.CarbohydrateGrams,
             FatGrams = item.FatGrams,
