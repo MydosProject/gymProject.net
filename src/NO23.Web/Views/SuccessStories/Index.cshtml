@@ -1,34 +1,134 @@
 @model IReadOnlyList<SuccessStoryCardViewModel>
+
 @{
-    ViewData["Title"] = "Success Stories";
+    ViewData["Title"] = "Başarı Hikâyeleri";
 }
 
-<section class="py-5">
-    <div class="container">
-        <div class="mb-4">
-            <p class="text-uppercase text-muted small mb-1">NO23 Stories</p>
-            <h1 class="h3 mb-0">Member Success Stories</h1>
-        </div>
+<section class="stories-page content-page">
+    <div class="content-page-grid" aria-hidden="true"></div>
+    <div class="stories-page-glow" aria-hidden="true"></div>
 
-        <div class="row g-3">
-            @foreach (var item in Model)
+    <div class="container position-relative">
+        <header class="content-hero stories-hero">
+            <div class="content-hero-copy">
+                <p class="content-kicker">NO23 Stories · Real Progress</p>
+                <h1>
+                    Değişim bir anda değil,
+                    <span>her gün başlar.</span>
+                </h1>
+                <p class="content-hero-description">
+                    Gerçek üyeler, gerçek hedefler ve sürdürülebilir sonuçlar.
+                    NO23 topluluğunun kendi ritmini bulan dönüşüm hikâyeleri.
+                </p>
+                <a href="#member-stories" class="content-primary-link">
+                    Hikâyeleri Keşfet
+                    <span aria-hidden="true">↓</span>
+                </a>
+            </div>
+
+            <aside class="stories-hero-quote">
+                <span>NO23 / Progress</span>
+                <blockquote>
+                    “En güçlü sonuç, devam edebildiğin sonuçtur.”
+                </blockquote>
+                <strong>@Model.Count.ToString("00") · Hikâye</strong>
+            </aside>
+        </header>
+
+        <section class="content-section" id="member-stories">
+            <div class="content-section-heading">
+                <div>
+                    <p class="content-section-kicker">Üye dönüşümleri</p>
+                    <h2>Rakamların arkasındaki emek.</h2>
+                </div>
+                <p>
+                    Her ilerleme kişisel. Her hikâye, doğru planın ve istikrarlı
+                    çalışmanın neleri değiştirebileceğini gösteriyor.
+                </p>
+            </div>
+
+            @if (Model.Count == 0)
             {
-                <div class="col-md-6">
-                    <article class="bg-white text-dark border rounded-3 p-4 h-100">
-                        <small class="text-muted">@item.MemberName</small>
-                        <h2 class="h5 mt-1">@item.Title</h2>
-                        <p class="text-muted">@item.Summary</p>
-                        @if (!string.IsNullOrWhiteSpace(item.AchievementMetric))
-                        {
-                            <strong class="d-block small">@item.AchievementMetric</strong>
-                        }
-                        @if (!string.IsNullOrWhiteSpace(item.VideoUrl))
-                        {
-                            <small class="text-muted d-block mt-2">Video story available</small>
-                        }
-                    </article>
+                <div class="content-empty-state">
+                    <span>23</span>
+                    <div>
+                        <h3>Yeni hikâyeler hazırlanıyor.</h3>
+                        <p>NO23 üyelerinin yolculukları çok yakında burada.</p>
+                    </div>
                 </div>
             }
-        </div>
+            else
+            {
+                <div class="stories-list">
+                    @for (var index = 0; index < Model.Count; index++)
+                    {
+                        var item = Model[index];
+
+                        <article class="story-card">
+                            <div class="story-card-visual">
+                                @if (!string.IsNullOrWhiteSpace(item.BeforeImageUrl) ||
+                                     !string.IsNullOrWhiteSpace(item.AfterImageUrl))
+                                {
+                                    <div class="story-image-grid">
+                                        @if (!string.IsNullOrWhiteSpace(item.BeforeImageUrl))
+                                        {
+                                            <figure>
+                                                <img src="@item.BeforeImageUrl"
+                                                     alt="@item.MemberName değişim öncesi"
+                                                     loading="lazy" />
+                                                <figcaption>Başlangıç</figcaption>
+                                            </figure>
+                                        }
+                                        @if (!string.IsNullOrWhiteSpace(item.AfterImageUrl))
+                                        {
+                                            <figure>
+                                                <img src="@item.AfterImageUrl"
+                                                     alt="@item.MemberName güncel durum"
+                                                     loading="lazy" />
+                                                <figcaption>Şimdi</figcaption>
+                                            </figure>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span>NO23 Member</span>
+                                    <strong>@((index + 1).ToString("00"))</strong>
+                                    <small>Real progress / Real story</small>
+                                }
+                            </div>
+
+                            <div class="story-card-content">
+                                <div class="story-card-meta">
+                                    <span>@item.MemberName</span>
+                                    <span>@(item.PublishedAtUtc?.ToString("dd.MM.yyyy") ?? "NO23 Story")</span>
+                                </div>
+                                <h3>@item.Title</h3>
+                                <p>@item.Summary</p>
+
+                                @if (!string.IsNullOrWhiteSpace(item.AchievementMetric))
+                                {
+                                    <div class="story-metric">
+                                        <span>Sonuç</span>
+                                        <strong>@item.AchievementMetric</strong>
+                                    </div>
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(item.VideoUrl))
+                                {
+                                    <a class="story-video-link"
+                                       href="@item.VideoUrl"
+                                       target="_blank"
+                                       rel="noopener noreferrer">
+                                        Video Hikâyeyi İzle
+                                        <span aria-hidden="true">↗</span>
+                                    </a>
+                                }
+                            </div>
+                        </article>
+                    }
+                </div>
+            }
+        </section>
     </div>
 </section>

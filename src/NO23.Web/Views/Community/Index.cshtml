@@ -1,53 +1,204 @@
 @model CommunityIndexViewModel
+
 @{
     ViewData["Title"] = "NO23 Community";
+
+    string GetEventTypeName(string type)
+    {
+        return type switch
+        {
+            "RunningGroup" => "Koşu Grubu",
+            "Workshop" => "Workshop",
+            "Seminar" => "Seminer",
+            "SocialEvent" => "Sosyal Buluşma",
+            "OutdoorTraining" => "Outdoor Antrenman",
+            "Competition" => "Yarışma",
+            _ => type
+        };
+    }
+
+    string GetChallengeStatusName(string status)
+    {
+        return status switch
+        {
+            "Upcoming" => "Yakında",
+            "Active" => "Devam Ediyor",
+            "Completed" => "Tamamlandı",
+            _ => status
+        };
+    }
 }
 
-<section class="py-5">
-    <div class="container">
-        <div class="mb-4">
-            <p class="text-uppercase text-muted small mb-1">NO23 Community</p>
-            <h1 class="h3 mb-0">Events and Challenges</h1>
-        </div>
+<section class="community-page content-page">
+    <div class="content-page-grid" aria-hidden="true"></div>
+    <div class="content-page-orbit" aria-hidden="true"></div>
 
-        <div class="bg-white text-dark border rounded-3 p-4 mb-4">
-            <h2 class="h5 mb-3">Upcoming Events</h2>
-            <div class="row g-3">
-                @foreach (var item in Model.Events)
-                {
-                    <div class="col-md-6">
-                        <article class="border rounded-3 p-3 h-100">
-                            <small class="text-muted">@item.Type</small>
-                            <h3 class="h6 mt-1">@item.Title</h3>
-                            <p class="text-muted small">@item.Summary</p>
-                            <div class="small">
-                                @item.StartsAtUtc.ToString("dd.MM.yyyy HH:mm") - @item.Location
+    <div class="container position-relative">
+        <header class="content-hero community-hero">
+            <div class="content-hero-copy">
+                <p class="content-kicker">NO23 Community · Together Stronger</p>
+                <h1>
+                    Aynı hedefte
+                    <span>buluşuyoruz.</span>
+                </h1>
+                <p class="content-hero-description">
+                    Birlikte hareket et, deneyimini paylaş ve sınırlarını topluluğun
+                    enerjisiyle yeniden tanımla. NO23 yalnızca bir kulüp değil;
+                    sürdürülebilir bir yaşam ritmi.
+                </p>
+                <div class="content-hero-actions">
+                    <a href="#events" class="content-primary-link">
+                        Etkinlikleri Keşfet
+                        <span aria-hidden="true">↓</span>
+                    </a>
+                    <a href="#challenges" class="content-secondary-link">
+                        Challenge'lar
+                    </a>
+                </div>
+            </div>
+
+            <aside class="community-manifesto">
+                <div class="community-manifesto-top">
+                    <span>Community Code</span>
+                    <strong>23</strong>
+                </div>
+                <p>Birlikte</p>
+                <h2>Başla.<br />Devam et.<br />Güçlen.</h2>
+                <div class="community-manifesto-stats">
+                    <span><strong>@Model.Events.Count</strong> Etkinlik</span>
+                    <span><strong>@Model.Challenges.Count</strong> Challenge</span>
+                </div>
+            </aside>
+        </header>
+
+        <section class="content-section" id="events">
+            <div class="content-section-heading">
+                <div>
+                    <p class="content-section-kicker">01 · Yaklaşan etkinlikler</p>
+                    <h2>Takvime değil, ritme katıl.</h2>
+                </div>
+                <p>
+                    Antrenmandan workshop'a, NO23 üyelerini aynı deneyimde
+                    buluşturan yeni etkinlikleri keşfet.
+                </p>
+            </div>
+
+            @if (Model.Events.Count == 0)
+            {
+                <div class="content-empty-state">
+                    <span>01</span>
+                    <div>
+                        <h3>Yeni etkinlikler hazırlanıyor.</h3>
+                        <p>Community takvimi güncellendiğinde burada görebileceksin.</p>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="community-event-grid">
+                    @for (var index = 0; index < Model.Events.Count; index++)
+                    {
+                        var item = Model.Events[index];
+
+                        <article class="community-event-card">
+                            <div class="community-event-visual">
+                                @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
+                                {
+                                    <img src="@item.ImageUrl" alt="@item.Title" loading="lazy" />
+                                }
+                                else
+                                {
+                                    <span>@item.StartsAtUtc.ToString("MMM").ToUpperInvariant()</span>
+                                    <strong>@item.StartsAtUtc.ToString("dd")</strong>
+                                }
+                                <small>@((index + 1).ToString("00"))</small>
                             </div>
-                            <small class="text-muted">
-                                @(item.IsMembersOnly ? "Members only" : "Open event") - Capacity: @(item.Capacity?.ToString() ?? "-")
-                            </small>
-                        </article>
-                    </div>
-                }
-            </div>
-        </div>
 
-        <div class="bg-white text-dark border rounded-3 p-4">
-            <h2 class="h5 mb-3">Challenges</h2>
-            <div class="row g-3">
-                @foreach (var item in Model.Challenges)
-                {
-                    <div class="col-md-6">
-                        <article class="border rounded-3 p-3 h-100">
-                            <small class="text-muted">@item.Status</small>
-                            <h3 class="h6 mt-1">@item.Title</h3>
-                            <p class="text-muted small">@item.Summary</p>
-                            <p class="small mb-2">@item.Goal</p>
-                            <small class="text-muted">@item.StartsOn.ToString("dd.MM.yyyy") - @item.EndsOn.ToString("dd.MM.yyyy")</small>
+                            <div class="community-event-content">
+                                <div class="community-event-meta">
+                                    <span>@GetEventTypeName(item.Type)</span>
+                                    <span>@(item.IsMembersOnly ? "Üyelere Özel" : "Herkese Açık")</span>
+                                </div>
+                                <h3>@item.Title</h3>
+                                <p>@item.Summary</p>
+
+                                <div class="community-event-details">
+                                    <span>
+                                        <small>Tarih ve saat</small>
+                                        <strong>@item.StartsAtUtc.ToString("dd.MM.yyyy · HH:mm")</strong>
+                                    </span>
+                                    <span>
+                                        <small>Konum</small>
+                                        <strong>@item.Location</strong>
+                                    </span>
+                                    <span>
+                                        <small>Kapasite</small>
+                                        <strong>@(item.Capacity?.ToString() ?? "Sınırsız")</strong>
+                                    </span>
+                                </div>
+                            </div>
                         </article>
-                    </div>
-                }
+                    }
+                </div>
+            }
+        </section>
+
+        <section class="content-section" id="challenges">
+            <div class="content-section-heading">
+                <div>
+                    <p class="content-section-kicker">02 · Community challenge</p>
+                    <h2>Hedefini görünür kıl.</h2>
+                </div>
+                <p>
+                    Küçük adımları güçlü bir alışkanlığa dönüştür. Hedefi takip et,
+                    toplulukla birlikte ilerle.
+                </p>
             </div>
-        </div>
+
+            @if (Model.Challenges.Count == 0)
+            {
+                <div class="content-empty-state">
+                    <span>02</span>
+                    <div>
+                        <h3>Yeni challenge hazırlanıyor.</h3>
+                        <p>Bir sonraki hedef çok yakında açıklanacak.</p>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="community-challenge-list">
+                    @for (var index = 0; index < Model.Challenges.Count; index++)
+                    {
+                        var item = Model.Challenges[index];
+
+                        <article class="community-challenge-card">
+                            <div class="community-challenge-number">
+                                <span>Challenge</span>
+                                <strong>@((index + 1).ToString("00"))</strong>
+                            </div>
+
+                            <div class="community-challenge-content">
+                                <div class="community-challenge-meta">
+                                    <span>@GetChallengeStatusName(item.Status)</span>
+                                    <span>@item.StartsOn.ToString("dd.MM") – @item.EndsOn.ToString("dd.MM.yyyy")</span>
+                                </div>
+                                <h3>@item.Title</h3>
+                                <p>@item.Summary</p>
+                            </div>
+
+                            <div class="community-challenge-goal">
+                                <span>Hedef</span>
+                                <p>@item.Goal</p>
+                                @if (!string.IsNullOrWhiteSpace(item.Reward))
+                                {
+                                    <small><strong>Ödül:</strong> @item.Reward</small>
+                                }
+                            </div>
+                        </article>
+                    }
+                </div>
+            }
+        </section>
     </div>
 </section>

@@ -1,33 +1,143 @@
 @model IReadOnlyList<BlogPostCardViewModel>
+
 @{
-    ViewData["Title"] = "Blog";
+    ViewData["Title"] = "NO23 Journal";
+    var featuredPost = Model.FirstOrDefault();
+    var remainingPosts = Model.Skip(1).ToList();
+
+    string GetCategoryName(string category)
+    {
+        return category switch
+        {
+            "Training" => "Antrenman",
+            "Nutrition" => "Beslenme",
+            "Lifestyle" => "Yaşam",
+            "Recovery" => "Toparlanma",
+            _ => category
+        };
+    }
 }
 
-<section class="py-5">
-    <div class="container">
-        <div class="mb-4">
-            <p class="text-uppercase text-muted small mb-1">NO23 Blog</p>
-            <h1 class="h3 mb-0">Training, Nutrition and Lifestyle</h1>
-        </div>
+<section class="blog-page content-page">
+    <div class="content-page-grid" aria-hidden="true"></div>
 
-        <div class="row g-3">
-            @foreach (var item in Model)
-            {
-                <div class="col-md-6 col-xl-4">
-                    <article class="bg-white text-dark border rounded-3 p-4 h-100">
-                        <small class="text-muted">@item.Category</small>
-                        <h2 class="h5 mt-1">@item.Title</h2>
-                        <p class="text-muted small">@item.Summary</p>
-                        <div class="small text-muted">
-                            @(item.PublishedAtUtc?.ToString("dd.MM.yyyy") ?? "-")
-                            @if (!string.IsNullOrWhiteSpace(item.Tags))
-                            {
-                                <span>- @item.Tags</span>
-                            }
-                        </div>
-                    </article>
+    <div class="container position-relative">
+        <header class="content-hero blog-hero">
+            <div class="content-hero-copy">
+                <p class="content-kicker">NO23 Journal · Knowledge in Motion</p>
+                <h1>
+                    Bilgiyi
+                    <span>harekete dönüştür.</span>
+                </h1>
+                <p class="content-hero-description">
+                    Antrenman, beslenme, toparlanma ve yaşam tarzı üzerine sade,
+                    uygulanabilir ve hedef odaklı NO23 içerikleri.
+                </p>
+            </div>
+
+            <aside class="blog-hero-index">
+                <span>Journal / @DateTime.Now.Year</span>
+                <strong>@Model.Count.ToString("00")</strong>
+                <p>Güncel içerik</p>
+            </aside>
+        </header>
+
+        @if (featuredPost is null)
+        {
+            <div class="content-empty-state blog-empty-state">
+                <span>J</span>
+                <div>
+                    <h3>Yeni içerikler hazırlanıyor.</h3>
+                    <p>NO23 Journal çok yakında yeni yazılarla burada.</p>
                 </div>
+            </div>
+        }
+        else
+        {
+            <section class="blog-featured-section">
+                <p class="content-section-kicker">Öne çıkan içerik</p>
+
+                <article class="blog-featured-card">
+                    <div class="blog-featured-visual">
+                        @if (!string.IsNullOrWhiteSpace(featuredPost.CoverImageUrl))
+                        {
+                            <img src="@featuredPost.CoverImageUrl"
+                                 alt="@featuredPost.Title"
+                                 loading="eager" />
+                        }
+                        else
+                        {
+                            <span>NO23</span>
+                            <strong>JOURNAL</strong>
+                            <small>01 / @DateTime.Now.Year</small>
+                        }
+                    </div>
+
+                    <div class="blog-featured-content">
+                        <div class="blog-post-meta">
+                            <span>@GetCategoryName(featuredPost.Category)</span>
+                            <span>@(featuredPost.PublishedAtUtc?.ToString("dd.MM.yyyy") ?? "Yeni")</span>
+                        </div>
+
+                        <h2>@featuredPost.Title</h2>
+                        <p>@featuredPost.Summary</p>
+
+                        @if (!string.IsNullOrWhiteSpace(featuredPost.Tags))
+                        {
+                            <div class="blog-tag-list" aria-label="Etiketler">
+                                @foreach (var tag in featuredPost.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                                {
+                                    <span>#@tag.Trim()</span>
+                                }
+                            </div>
+                        }
+                    </div>
+                </article>
+            </section>
+
+            @if (remainingPosts.Count > 0)
+            {
+                <section class="content-section blog-latest-section">
+                    <div class="content-section-heading">
+                        <div>
+                            <p class="content-section-kicker">Son yazılar</p>
+                            <h2>Ritmini geliştiren fikirler.</h2>
+                        </div>
+                        <p>
+                            Karmaşık bilgiyi günlük rutinde uygulayabileceğin net
+                            adımlara dönüştürüyoruz.
+                        </p>
+                    </div>
+
+                    <div class="blog-post-grid">
+                        @for (var index = 0; index < remainingPosts.Count; index++)
+                        {
+                            var item = remainingPosts[index];
+
+                            <article class="blog-post-card">
+                                <div class="blog-post-card-top">
+                                    <span>@GetCategoryName(item.Category)</span>
+                                    <strong>@((index + 2).ToString("00"))</strong>
+                                </div>
+                                <div class="blog-post-card-content">
+                                    <p>@(item.PublishedAtUtc?.ToString("dd.MM.yyyy") ?? "Yeni")</p>
+                                    <h3>@item.Title</h3>
+                                    <p>@item.Summary</p>
+                                </div>
+                                @if (!string.IsNullOrWhiteSpace(item.Tags))
+                                {
+                                    <div class="blog-tag-list">
+                                        @foreach (var tag in item.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                                        {
+                                            <span>#@tag.Trim()</span>
+                                        }
+                                    </div>
+                                }
+                            </article>
+                        }
+                    </div>
+                </section>
             }
-        </div>
+        }
     </div>
 </section>
