@@ -1,4 +1,5 @@
 ﻿@using Microsoft.AspNetCore.Identity
+@using NO23.Web.Data.Seed
 @using NO23.Web.Domain.Entities
 @inject SignInManager<ApplicationUser> SignInManager
 
@@ -6,19 +7,33 @@
 @if (SignInManager.IsSignedIn(User))
 {
     <li class="nav-item">
-        <a class="nav-link no23-account-link"
-           asp-area="Identity"
-           asp-page="/Account/Manage/Index"
-           title="Hesabım">
-            Hesabım
-        </a>
+        @if (User.IsInRole(ApplicationRoles.Member))
+        {
+            <a class="nav-link no23-account-link"
+               asp-area="Member"
+               asp-controller="Home"
+               asp-action="Index"
+               title="Üye panelim">
+                Hesabım
+            </a>
+        }
+        else
+        {
+            <a class="nav-link no23-account-link"
+               asp-area="Identity"
+               asp-page="/Account/Manage/Index"
+               title="Hesabım">
+                Hesabım
+            </a>
+        }
     </li>
 
     <li class="nav-item">
         <form class="no23-logout-form"
               asp-area="Identity"
               asp-page="/Account/Logout"
-              asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+              asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })"
+              method="post">
             <button type="submit" class="btn no23-logout-button">
                 Çıkış Yap
             </button>

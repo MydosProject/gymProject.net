@@ -1,121 +1,354 @@
+@using System.Globalization
 @model MemberDashboardViewModel
+
 @{
     ViewData["Title"] = "Üye Paneli";
+
+    var turkishCulture = CultureInfo.GetCultureInfo("tr-TR");
+
+    var memberName = string.IsNullOrWhiteSpace(Model.MemberName)
+        ? "NO23 Member"
+        : Model.MemberName;
+
+    var packageName = string.IsNullOrWhiteSpace(Model.PackageName)
+        ? "Paket bilgisi bulunamadı"
+        : Model.PackageName;
 }
 
-<section class="py-5">
-    <div class="container">
-        <div class="mb-4">
-            <p class="text-uppercase text-muted small mb-1">Member Panel</p>
-            <h1 class="h3 mb-0">Merhaba @Model.MemberName</h1>
-        </div>
+<section class="member-dashboard-page">
+    <div class="member-dashboard-grid" aria-hidden="true"></div>
+    <div class="member-dashboard-glow" aria-hidden="true"></div>
+
+    <div class="container position-relative">
+        <header class="member-dashboard-hero">
+            <div>
+                <p class="member-dashboard-kicker">NO23 Member Dashboard</p>
+
+                <h1>
+                    Tekrar hoş geldin,
+                    <span>@memberName.</span>
+                </h1>
+
+                <p class="member-dashboard-description">
+                    Üyeliğini takip et, yaklaşan antrenmanlarını görüntüle
+                    ve yeni dersini planla.
+                </p>
+            </div>
+
+            <div class="member-dashboard-badge" aria-hidden="true">
+                <span>NO</span>
+                <strong>23</strong>
+            </div>
+        </header>
 
         @if (TempData["SuccessMessage"] is string successMessage)
         {
-            <div class="alert alert-success">@successMessage</div>
+            <div class="member-dashboard-alert member-dashboard-alert-success"
+                 role="status">
+                <span aria-hidden="true">✓</span>
+
+                <div>
+                    <strong>İşlem tamamlandı</strong>
+                    <p>@successMessage</p>
+                </div>
+            </div>
         }
 
         @if (TempData["ErrorMessage"] is string errorMessage)
         {
-            <div class="alert alert-danger">@errorMessage</div>
+            <div class="member-dashboard-alert member-dashboard-alert-error"
+                 role="alert">
+                <span aria-hidden="true">!</span>
+
+                <div>
+                    <strong>İşlem gerçekleştirilemedi</strong>
+                    <p>@errorMessage</p>
+                </div>
+            </div>
         }
 
-        <div class="row g-3 mb-4">
-            <div class="col-md-6">
-                <div class="bg-white text-dark border rounded-3 p-4 h-100">
-                    <p class="text-muted mb-1">Aktif paket</p>
-                    <h2 class="h4 mb-0">@Model.PackageName</h2>
+        <div class="member-dashboard-stats">
+            <article class="member-stat-card member-stat-card-accent">
+                <div class="member-stat-card-top">
+                    <span class="member-stat-number">01</span>
+                    <span class="member-stat-label">Aktif üyelik</span>
                 </div>
-            </div>
-            <div class="col-md-6">
-                <div class="bg-white text-dark border rounded-3 p-4 h-100">
-                    <p class="text-muted mb-1">Kalan ders hakkı</p>
-                    <h2 class="h4 mb-0">@(Model.HasUnlimitedClasses ? "Sınırsız" : Model.RemainingClassCredits)</h2>
+
+                <div>
+                    <p>Paketin</p>
+                    <h2>@packageName</h2>
                 </div>
-            </div>
+            </article>
+
+            <article class="member-stat-card">
+                <div class="member-stat-card-top">
+                    <span class="member-stat-number">02</span>
+                    <span class="member-stat-label">Ders kullanımı</span>
+                </div>
+
+                <div>
+                    <p>Kalan ders hakkın</p>
+
+                    <h2>
+                        @(Model.HasUnlimitedClasses
+                            ? "Sınırsız"
+                            : Model.RemainingClassCredits.ToString())
+                    </h2>
+                </div>
+            </article>
+
+            <article class="member-stat-card">
+                <div class="member-stat-card-top">
+                    <span class="member-stat-number">03</span>
+                    <span class="member-stat-label">Planın</span>
+                </div>
+
+                <div>
+                    <p>Yaklaşan rezervasyon</p>
+                    <h2>@Model.UpcomingReservations.Count</h2>
+                </div>
+            </article>
         </div>
 
-        <div class="bg-white text-dark border rounded-3 p-4 mb-4">
-            <h2 class="h5 mb-3">Yaklaşan Rezervasyonlar</h2>
+        <section class="member-dashboard-section">
+            <div class="member-section-heading">
+                <div>
+                    <p class="member-section-kicker">Takvimin</p>
+                    <h2>Yaklaşan rezervasyonlar</h2>
+                </div>
+
+                <span class="member-section-count">
+                    @Model.UpcomingReservations.Count.ToString("00")
+                </span>
+            </div>
+
             @if (Model.UpcomingReservations.Count == 0)
             {
-                <p class="text-muted mb-0">Henüz yaklaşan rezervasyonun yok.</p>
+                <div class="member-empty-state">
+                    <span class="member-empty-number">00</span>
+
+                    <div>
+                        <h3>Henüz yaklaşan rezervasyonun yok.</h3>
+
+                        <p>
+                            Aşağıdaki uygun dersleri inceleyerek ilk
+                            antrenmanını planlayabilirsin.
+                        </p>
+                    </div>
+
+                    <a href="#available-classes"
+                       class="member-empty-link">
+                        Dersleri incele
+                        <span aria-hidden="true">↓</span>
+                    </a>
+                </div>
             }
             else
             {
-                <div class="table-responsive">
-                    <table class="table align-middle mb-0">
-                        <thead>
-                            <tr>
-                                <th>Ders</th>
-                                <th>Eğitmen</th>
-                                <th>Tarih/Saat</th>
-                                <th class="text-end">İşlem</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var reservation in Model.UpcomingReservations)
-                            {
-                                <tr>
-                                    <td>@reservation.ClassName</td>
-                                    <td>@reservation.TrainerName</td>
-                                    <td>@reservation.StartsAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
-                                    <td class="text-end">
-                                        <form asp-action="Cancel" method="post">
-                                            <input type="hidden" name="reservationId" value="@reservation.ReservationId" />
-                                            <button type="submit" class="btn btn-sm btn-outline-danger">İptal Et</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+                <div class="member-reservation-list">
+                    @foreach (var reservation in Model.UpcomingReservations)
+                    {
+                        var localStart = reservation.StartsAtUtc.ToLocalTime();
+
+                        <article class="member-reservation-card">
+                            <div class="member-reservation-date">
+                                <strong>@localStart.ToString("dd")</strong>
+                                <span>@localStart.ToString("MMM", turkishCulture)</span>
+                            </div>
+
+                            <div class="member-reservation-info">
+                                <p>
+                                    @localStart.ToString(
+                                        "dddd · HH:mm",
+                                        turkishCulture)
+                                </p>
+
+                                <h3>@reservation.ClassName</h3>
+
+                                <span>
+                                    Eğitmen: @reservation.TrainerName
+                                </span>
+                            </div>
+
+                            <form asp-area="Member"
+                                  asp-controller="Home"
+                                  asp-action="Cancel"
+                                  asp-antiforgery="true"
+                                  method="post"
+                                  class="member-reservation-action">
+
+                                <input type="hidden"
+                                       name="reservationId"
+                                       value="@reservation.ReservationId" />
+
+                                <button type="submit"
+                                        class="member-cancel-button">
+                                    İptal Et
+                                </button>
+                            </form>
+                        </article>
+                    }
                 </div>
             }
-        </div>
+        </section>
 
-        <div class="bg-white text-dark border rounded-3 p-4">
-            <h2 class="h5 mb-3">Uygun Dersler</h2>
-            <div class="table-responsive">
-                <table class="table align-middle mb-0">
-                    <thead>
-                        <tr>
-                            <th>Ders</th>
-                            <th>Eğitmen</th>
-                            <th>Tarih/Saat</th>
-                            <th>Detay</th>
-                            <th>Kontenjan</th>
-                            <th class="text-end">İşlem</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var session in Model.AvailableSessions)
-                        {
-                            var isFull = session.ReservedCount >= session.Capacity;
-                            <tr>
-                                <td><strong>@session.ClassName</strong></td>
-                                <td>@session.TrainerName</td>
-                                <td>@session.StartsAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
-                                <td>@session.DurationMinutes dk · @session.DifficultyLevel · @session.AverageCaloriesBurned kcal</td>
-                                <td>@session.ReservedCount / @session.Capacity</td>
-                                <td class="text-end">
-                                    @if (session.IsReservedByMember)
-                                    {
-                                        <span class="badge text-bg-success">Rezervasyonun var</span>
-                                    }
-                                    else
-                                    {
-                                        <form asp-action="Reserve" method="post">
-                                            <input type="hidden" name="classSessionId" value="@session.SessionId" />
-                                            <button type="submit" class="btn btn-sm btn-dark" disabled="@isFull">Rezervasyon Yap</button>
-                                        </form>
-                                    }
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+        <section class="member-dashboard-section"
+                 id="available-classes">
+
+            <div class="member-section-heading">
+                <div>
+                    <p class="member-section-kicker">Yeni antrenman</p>
+                    <h2>Uygun dersler</h2>
+                </div>
+
+                <span class="member-section-count">
+                    @Model.AvailableSessions.Count.ToString("00")
+                </span>
             </div>
-        </div>
+
+            @if (Model.AvailableSessions.Count == 0)
+            {
+                <div class="member-empty-state">
+                    <span class="member-empty-number">—</span>
+
+                    <div>
+                        <h3>Şu anda uygun ders bulunmuyor.</h3>
+
+                        <p>
+                            Yeni ders programı yayınlandığında burada
+                            görüntülenecek.
+                        </p>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="member-session-grid">
+                    @foreach (var session in Model.AvailableSessions)
+                    {
+                        var isFull =
+                            session.ReservedCount >= session.Capacity;
+
+                        var remainingCapacity = Math.Max(
+                            0,
+                            session.Capacity - session.ReservedCount);
+
+                        var localStart = session.StartsAtUtc.ToLocalTime();
+
+                        <article class="member-session-card
+                            @(session.IsReservedByMember
+                                ? "member-session-card-reserved"
+                                : string.Empty)">
+
+                            <div class="member-session-card-top">
+                                <div class="member-session-date">
+                                    <strong>
+                                        @localStart.ToString("dd")
+                                    </strong>
+
+                                    <span>
+                                        @localStart.ToString(
+                                            "MMM",
+                                            turkishCulture)
+                                    </span>
+                                </div>
+
+                                @if (session.IsReservedByMember)
+                                {
+                                    <span class="member-session-status reserved">
+                                        Rezervasyonun var
+                                    </span>
+                                }
+                                else if (isFull)
+                                {
+                                    <span class="member-session-status full">
+                                        Kontenjan dolu
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="member-session-status available">
+                                        @remainingCapacity kişilik yer
+                                    </span>
+                                }
+                            </div>
+
+                            <div class="member-session-content">
+                                <p class="member-session-time">
+                                    @localStart.ToString(
+                                        "dddd · HH:mm",
+                                        turkishCulture)
+                                </p>
+
+                                <h3>@session.ClassName</h3>
+
+                                <p class="member-session-trainer">
+                                    @session.TrainerName
+                                </p>
+
+                                <div class="member-session-details">
+                                    <span>
+                                        <small>Süre</small>
+                                        @session.DurationMinutes dk
+                                    </span>
+
+                                    <span>
+                                        <small>Seviye</small>
+                                        @session.DifficultyLevel
+                                    </span>
+
+                                    <span>
+                                        <small>Ortalama</small>
+                                        @session.AverageCaloriesBurned kcal
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="member-session-footer">
+                                <div class="member-capacity">
+                                    <span>Kontenjan</span>
+
+                                    <strong>
+                                        @session.ReservedCount /
+                                        @session.Capacity
+                                    </strong>
+                                </div>
+
+                                @if (session.IsReservedByMember)
+                                {
+                                    <span class="member-reserved-message">
+                                        Planına eklendi
+                                        <span aria-hidden="true">✓</span>
+                                    </span>
+                                }
+                                else
+                                {
+                                    <form asp-area="Member"
+                                          asp-controller="Home"
+                                          asp-action="Reserve"
+                                          asp-antiforgery="true"
+                                          method="post">
+
+                                        <input type="hidden"
+                                               name="classSessionId"
+                                               value="@session.SessionId" />
+
+                                        <button type="submit"
+                                                class="member-reserve-button"
+                                                disabled="@isFull">
+                                            @(isFull
+                                                ? "Ders Dolu"
+                                                : "Rezervasyon Yap")
+
+                                            <span aria-hidden="true">→</span>
+                                        </button>
+                                    </form>
+                                }
+                            </div>
+                        </article>
+                    }
+                </div>
+            }
+        </section>
     </div>
 </section>
