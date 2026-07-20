@@ -1,158 +1,711 @@
+@using NO23.Web.Domain.Enums
 @model KitchenDashboardViewModel
+
 @{
     ViewData["Title"] = "NO23 Kitchen";
+
+    string GetGoalName(NutritionGoal goal)
+    {
+        return goal switch
+        {
+            NutritionGoal.FatLoss => "Yağ Yakımı",
+            NutritionGoal.MuscleGain => "Kas Kazanımı",
+            NutritionGoal.WeightMaintenance => "Kilo Koruma",
+            NutritionGoal.PerformanceNutrition => "Performans Beslenmesi",
+            NutritionGoal.HealthyLifestyle => "Sağlıklı Yaşam",
+            _ => "Kişisel Hedef"
+        };
+    }
+
+    string GetCategoryName(string category)
+    {
+        return category switch
+        {
+            nameof(MenuItemCategory.Breakfast) => "Kahvaltı",
+            nameof(MenuItemCategory.MainMeal) => "Ana Öğün",
+            nameof(MenuItemCategory.Snack) => "Ara Öğün",
+            nameof(MenuItemCategory.Dessert) => "Tatlı",
+            nameof(MenuItemCategory.Beverage) => "İçecek",
+            _ => category
+        };
+    }
+
+    string GetCategoryNumber(string category)
+    {
+        return category switch
+        {
+            nameof(MenuItemCategory.Breakfast) => "01",
+            nameof(MenuItemCategory.MainMeal) => "02",
+            nameof(MenuItemCategory.Snack) => "03",
+            nameof(MenuItemCategory.Dessert) => "04",
+            nameof(MenuItemCategory.Beverage) => "05",
+            _ => "23"
+        };
+    }
 }
 
-<section class="py-5">
-    <div class="container">
-        <div class="mb-4">
-            <p class="text-uppercase text-muted small mb-1">NO23 Kitchen</p>
-            <h1 class="h3 mb-0">Kalori ve Beslenme Planı</h1>
-        </div>
+<section class="kitchen-page">
+    <div class="kitchen-page-grid" aria-hidden="true"></div>
+    <div class="kitchen-page-glow" aria-hidden="true"></div>
+
+    <div class="container position-relative">
+        <header class="kitchen-hero">
+            <div class="kitchen-hero-content">
+                <p class="kitchen-kicker">NO23 Kitchen · Personal Nutrition</p>
+
+                <h1>
+                    İyi antrenman
+                    <span>doğru yakıtla başlar.</span>
+                </h1>
+
+                <p class="kitchen-hero-description">
+                    Günlük enerji ihtiyacını hesapla, makro hedeflerini öğren
+                    ve hedefin için hazırlanan NO23 Kitchen menülerini keşfet.
+                </p>
+
+                <div class="kitchen-hero-actions">
+                    <a href="#calculator"
+                       class="kitchen-primary-link">
+                        Kalorini Hesapla
+                        <span aria-hidden="true">↓</span>
+                    </a>
+
+                    <a href="#menu"
+                       class="kitchen-secondary-link">
+                        Menüyü Keşfet
+                    </a>
+                </div>
+            </div>
+
+            <aside class="kitchen-hero-card">
+                <div class="kitchen-hero-card-top">
+                    <span>NO23 Nutrition System</span>
+                    <strong>23</strong>
+                </div>
+
+                <div class="kitchen-hero-card-content">
+                    <p>Tek platformda</p>
+
+                    <h2>
+                        Hesapla.<br />
+                        Planla.<br />
+                        İyi beslen.
+                    </h2>
+                </div>
+
+                <ul>
+                    <li>
+                        <span>01</span>
+                        Kişisel kalori hedefi
+                    </li>
+
+                    <li>
+                        <span>02</span>
+                        Dengeli makro planı
+                    </li>
+
+                    <li>
+                        <span>03</span>
+                        Hedef odaklı öğünler
+                    </li>
+                </ul>
+            </aside>
+        </header>
 
         @if (TempData["SuccessMessage"] is string successMessage)
         {
-            <div class="alert alert-success">@successMessage</div>
+            <div class="kitchen-alert kitchen-alert-success"
+                 role="status">
+                <span aria-hidden="true">✓</span>
+
+                <div>
+                    <strong>Kitchen aboneliğin hazır</strong>
+                    <p>@successMessage</p>
+                </div>
+            </div>
         }
 
         @if (TempData["ErrorMessage"] is string errorMessage)
         {
-            <div class="alert alert-danger">@errorMessage</div>
+            <div class="kitchen-alert kitchen-alert-error"
+                 role="alert">
+                <span aria-hidden="true">!</span>
+
+                <div>
+                    <strong>İşlem gerçekleştirilemedi</strong>
+                    <p>@errorMessage</p>
+                </div>
+            </div>
         }
 
-        <div class="row g-4 mb-4">
-            <div class="col-lg-5">
-                <div class="bg-white text-dark border rounded-3 p-4 h-100">
-                    <h2 class="h5 mb-3">Kalori Hesapla</h2>
+        <section class="kitchen-calculator-section"
+                 id="calculator">
 
-                    <form asp-action="Calculate" method="post">
-                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            <div class="kitchen-section-heading">
+                <div>
+                    <p class="kitchen-section-kicker">Kişisel hesaplama</p>
+                    <h2>Vücudunun ihtiyacını öğren.</h2>
+                </div>
 
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label asp-for="CalculatorInput.HeightCm" class="form-label"></label>
-                                <input asp-for="CalculatorInput.HeightCm" class="form-control" />
-                                <span asp-validation-for="CalculatorInput.HeightCm" class="text-danger"></span>
+                <p>
+                    Bilgilerini gir; günlük kalori, protein, karbonhidrat
+                    ve yağ hedefini birlikte oluşturalım.
+                </p>
+            </div>
+
+            <div class="kitchen-calculator-layout">
+                <div class="kitchen-calculator-panel">
+                    <div class="kitchen-panel-heading">
+                        <span>01</span>
+
+                        <div>
+                            <p>Kalori hesaplama</p>
+                            <h3>Bilgilerini tamamla.</h3>
+                        </div>
+                    </div>
+
+                    <form asp-area="Member"
+                          asp-controller="Kitchen"
+                          asp-action="Calculate"
+                          asp-fragment="calculator"
+                          asp-antiforgery="true"
+                          method="post"
+                          class="kitchen-calculator-form">
+
+                        <div asp-validation-summary="ModelOnly"
+                             class="kitchen-validation-summary"
+                             role="alert"></div>
+
+                        <div class="kitchen-form-grid">
+                            <div class="kitchen-form-field">
+                                <label asp-for="CalculatorInput.HeightCm">
+                                    Boy
+                                    <small>cm</small>
+                                </label>
+
+                                <input asp-for="CalculatorInput.HeightCm"
+                                       type="number"
+                                       min="120"
+                                       max="230"
+                                       inputmode="numeric"
+                                       placeholder="170" />
+
+                                <span asp-validation-for="CalculatorInput.HeightCm"></span>
                             </div>
-                            <div class="col-md-6">
-                                <label asp-for="CalculatorInput.WeightKg" class="form-label"></label>
-                                <input asp-for="CalculatorInput.WeightKg" class="form-control" />
-                                <span asp-validation-for="CalculatorInput.WeightKg" class="text-danger"></span>
+
+                            <div class="kitchen-form-field">
+                                <label asp-for="CalculatorInput.WeightKg">
+                                    Kilo
+                                    <small>kg</small>
+                                </label>
+
+                                <input asp-for="CalculatorInput.WeightKg"
+                                       type="number"
+                                       min="35"
+                                       max="250"
+                                       step="0.1"
+                                       inputmode="decimal"
+                                       placeholder="70" />
+
+                                <span asp-validation-for="CalculatorInput.WeightKg"></span>
                             </div>
-                            <div class="col-md-6">
-                                <label asp-for="CalculatorInput.Age" class="form-label"></label>
-                                <input asp-for="CalculatorInput.Age" class="form-control" />
-                                <span asp-validation-for="CalculatorInput.Age" class="text-danger"></span>
+
+                            <div class="kitchen-form-field">
+                                <label asp-for="CalculatorInput.Age">
+                                    Yaş
+                                </label>
+
+                                <input asp-for="CalculatorInput.Age"
+                                       type="number"
+                                       min="13"
+                                       max="90"
+                                       inputmode="numeric"
+                                       placeholder="28" />
+
+                                <span asp-validation-for="CalculatorInput.Age"></span>
                             </div>
-                            <div class="col-md-6">
-                                <label asp-for="CalculatorInput.Gender" class="form-label"></label>
-                                <select asp-for="CalculatorInput.Gender" asp-items="Html.GetEnumSelectList<Gender>()" class="form-select"></select>
+
+                            <div class="kitchen-form-field">
+                                <label asp-for="CalculatorInput.Gender">
+                                    Cinsiyet
+                                </label>
+
+                                <select asp-for="CalculatorInput.Gender">
+                                    <option value="@Gender.Female">Kadın</option>
+                                    <option value="@Gender.Male">Erkek</option>
+                                </select>
+
+                                <span asp-validation-for="CalculatorInput.Gender"></span>
                             </div>
-                            <div class="col-12">
-                                <label asp-for="CalculatorInput.ActivityLevel" class="form-label"></label>
-                                <select asp-for="CalculatorInput.ActivityLevel" asp-items="Html.GetEnumSelectList<ActivityLevel>()" class="form-select"></select>
+
+                            <div class="kitchen-form-field kitchen-form-field-wide">
+                                <label asp-for="CalculatorInput.ActivityLevel">
+                                    Günlük aktivite
+                                </label>
+
+                                <select asp-for="CalculatorInput.ActivityLevel">
+                                    <option value="@ActivityLevel.Sedentary">
+                                        Hareketsiz
+                                    </option>
+
+                                    <option value="@ActivityLevel.LightlyActive">
+                                        Hafif aktif
+                                    </option>
+
+                                    <option value="@ActivityLevel.ModeratelyActive">
+                                        Orta düzey aktif
+                                    </option>
+
+                                    <option value="@ActivityLevel.VeryActive">
+                                        Çok aktif
+                                    </option>
+
+                                    <option value="@ActivityLevel.Athlete">
+                                        Sporcu
+                                    </option>
+                                </select>
+
+                                <span asp-validation-for="CalculatorInput.ActivityLevel"></span>
                             </div>
-                            <div class="col-12">
-                                <label asp-for="CalculatorInput.Goal" class="form-label"></label>
-                                <select asp-for="CalculatorInput.Goal" asp-items="Html.GetEnumSelectList<NutritionGoal>()" class="form-select"></select>
+
+                            <div class="kitchen-form-field kitchen-form-field-wide">
+                                <label asp-for="CalculatorInput.Goal">
+                                    Hedefin
+                                </label>
+
+                                <select asp-for="CalculatorInput.Goal">
+                                    <option value="@NutritionGoal.FatLoss">
+                                        Yağ Yakımı
+                                    </option>
+
+                                    <option value="@NutritionGoal.MuscleGain">
+                                        Kas Kazanımı
+                                    </option>
+
+                                    <option value="@NutritionGoal.WeightMaintenance">
+                                        Kilo Koruma
+                                    </option>
+
+                                    <option value="@NutritionGoal.PerformanceNutrition">
+                                        Performans Beslenmesi
+                                    </option>
+
+                                    <option value="@NutritionGoal.HealthyLifestyle">
+                                        Sağlıklı Yaşam
+                                    </option>
+                                </select>
+
+                                <span asp-validation-for="CalculatorInput.Goal"></span>
                             </div>
                         </div>
 
-                        <button type="submit" class="btn btn-dark w-100 mt-4">Hesapla</button>
+                        <button type="submit"
+                                class="kitchen-calculate-button">
+                            <span>Hedefimi Hesapla</span>
+                            <span aria-hidden="true">→</span>
+                        </button>
                     </form>
                 </div>
-            </div>
 
-            <div class="col-lg-7">
-                <div class="bg-white text-dark border rounded-3 p-4 h-100">
-                    <h2 class="h5 mb-3">Sonuç ve Abonelik</h2>
+                <div class="kitchen-result-panel">
+                    <div class="kitchen-panel-heading">
+                        <span>02</span>
+
+                        <div>
+                            <p>Kişisel sonuç</p>
+                            <h3>Günlük beslenme planın.</h3>
+                        </div>
+                    </div>
 
                     @if (Model.Recommendation is null)
                     {
-                        <p class="text-muted mb-0">Bilgilerini girip hesapladığında günlük kalori ve makro hedeflerin burada görünür.</p>
+                        <div class="kitchen-result-placeholder">
+                            <div class="kitchen-result-rings"
+                                 aria-hidden="true">
+                                <span>23</span>
+                            </div>
+
+                            <h4>Sonuçların burada görünecek.</h4>
+
+                            <p>
+                                Kalori formunu doldurduğunda günlük enerji
+                                ihtiyacını ve makro dağılımını göstereceğiz.
+                            </p>
+                        </div>
                     }
                     else
                     {
-                        <div class="row g-3 mb-4">
-                            <div class="col-6 col-md-3">
-                                <div class="border rounded-3 p-3">
-                                    <small class="text-muted">Kalori</small>
-                                    <strong class="d-block">@Model.Recommendation.DailyCalories</strong>
-                                </div>
-                            </div>
-                            <div class="col-6 col-md-3">
-                                <div class="border rounded-3 p-3">
-                                    <small class="text-muted">Protein</small>
-                                    <strong class="d-block">@Model.Recommendation.ProteinGrams g</strong>
-                                </div>
-                            </div>
-                            <div class="col-6 col-md-3">
-                                <div class="border rounded-3 p-3">
-                                    <small class="text-muted">Karbonhidrat</small>
-                                    <strong class="d-block">@Model.Recommendation.CarbohydrateGrams g</strong>
-                                </div>
-                            </div>
-                            <div class="col-6 col-md-3">
-                                <div class="border rounded-3 p-3">
-                                    <small class="text-muted">Yağ</small>
-                                    <strong class="d-block">@Model.Recommendation.FatGrams g</strong>
-                                </div>
-                            </div>
-                        </div>
+                        <div class="kitchen-result-content">
+                            <div class="kitchen-result-goal">
+                                <span>Seçilen hedef</span>
 
-                        <div class="row g-3">
-                            @foreach (var plan in Model.SubscriptionPlans)
-                            {
-                                <div class="col-md-6">
-                                    <form asp-action="Subscribe" method="post" class="border rounded-3 p-3 h-100">
-                                        <input type="hidden" name="plan" value="@plan.Plan" />
-                                        <input type="hidden" name="input.HeightCm" value="@Model.CalculatorInput.HeightCm" />
-                                        <input type="hidden" name="input.WeightKg" value="@Model.CalculatorInput.WeightKg" />
-                                        <input type="hidden" name="input.Age" value="@Model.CalculatorInput.Age" />
-                                        <input type="hidden" name="input.Gender" value="@Model.CalculatorInput.Gender" />
-                                        <input type="hidden" name="input.ActivityLevel" value="@Model.CalculatorInput.ActivityLevel" />
-                                        <input type="hidden" name="input.Goal" value="@Model.CalculatorInput.Goal" />
+                                <strong>
+                                    @GetGoalName(Model.Recommendation.Goal)
+                                </strong>
+                            </div>
 
-                                        <h3 class="h6">@plan.Name</h3>
-                                        <p class="text-muted mb-3">@plan.Days gün beslenme planı</p>
-                                        <button type="submit" class="btn btn-outline-dark btn-sm">Abonelik Oluştur</button>
+                            <div class="kitchen-calorie-result">
+                                <div>
+                                    <span>Günlük hedef</span>
+
+                                    <strong>
+                                        @Model.Recommendation.DailyCalories
+                                    </strong>
+
+                                    <small>kcal</small>
+                                </div>
+
+                                <span class="kitchen-result-mark">
+                                    NO23
+                                </span>
+                            </div>
+
+                            <div class="kitchen-macro-grid">
+                                <article>
+                                    <span>Protein</span>
+
+                                    <strong>
+                                        @Model.Recommendation.ProteinGrams
+                                        <small>g</small>
+                                    </strong>
+                                </article>
+
+                                <article>
+                                    <span>Karbonhidrat</span>
+
+                                    <strong>
+                                        @Model.Recommendation.CarbohydrateGrams
+                                        <small>g</small>
+                                    </strong>
+                                </article>
+
+                                <article>
+                                    <span>Yağ</span>
+
+                                    <strong>
+                                        @Model.Recommendation.FatGrams
+                                        <small>g</small>
+                                    </strong>
+                                </article>
+                            </div>
+
+                            <div class="kitchen-plan-heading">
+                                <p>Abonelik süreni seç</p>
+
+                                <span>
+                                    Planın yarın başlar
+                                </span>
+                            </div>
+
+                            <div class="kitchen-plan-grid">
+                                @foreach (var plan in Model.SubscriptionPlans)
+                                {
+                                    <form asp-area="Member"
+                                          asp-controller="Kitchen"
+                                          asp-action="Subscribe"
+                                          asp-antiforgery="true"
+                                          method="post"
+                                          class="kitchen-plan-card">
+
+                                        <input type="hidden"
+                                               name="plan"
+                                               value="@plan.Plan" />
+
+                                        <input type="hidden"
+                                               name="input.HeightCm"
+                                               value="@Model.CalculatorInput.HeightCm" />
+
+                                        <input type="hidden"
+                                               name="input.WeightKg"
+                                               value="@Model.CalculatorInput.WeightKg" />
+
+                                        <input type="hidden"
+                                               name="input.Age"
+                                               value="@Model.CalculatorInput.Age" />
+
+                                        <input type="hidden"
+                                               name="input.Gender"
+                                               value="@Model.CalculatorInput.Gender" />
+
+                                        <input type="hidden"
+                                               name="input.ActivityLevel"
+                                               value="@Model.CalculatorInput.ActivityLevel" />
+
+                                        <input type="hidden"
+                                               name="input.Goal"
+                                               value="@Model.CalculatorInput.Goal" />
+
+                                        <span class="kitchen-plan-days">
+                                            @plan.Days gün
+                                        </span>
+
+                                        <h4>@plan.Name</h4>
+
+                                        <p>
+                                            Hedefine göre hazırlanan günlük
+                                            beslenme planı.
+                                        </p>
+
+                                        <button type="submit">
+                                            Aboneliği Başlat
+                                            <span aria-hidden="true">→</span>
+                                        </button>
                                     </form>
-                                </div>
-                            }
+                                }
+                            </div>
                         </div>
                     }
                 </div>
             </div>
-        </div>
+        </section>
 
-        <div class="bg-white text-dark border rounded-3 p-4">
-            <h2 class="h5 mb-3">Menü Ürünleri</h2>
-            <div class="row g-3">
-                @foreach (var item in Model.MenuItems)
-                {
-                    <div class="col-md-6 col-xl-4">
-                        <article class="border rounded-3 p-3 h-100">
-                            <small class="text-muted">@item.Category</small>
-                            <h3 class="h6 mt-1">@item.Name</h3>
-                            <p class="text-muted small">@item.Ingredients</p>
-                            <div class="small mb-2">
-                                @item.UnitPrice.ToString("C0") · @item.Calories kcal · P @item.ProteinGrams / K @item.CarbohydrateGrams / Y @item.FatGrams
-                            </div>
-                            <small class="text-muted">Alerjen: @(item.Allergens ?? "-")</small>
-                            @if (!string.IsNullOrWhiteSpace(item.Tags))
-                            {
-                                <div class="mt-2">
-                                    <span class="badge text-bg-light">@item.Tags</span>
-                                </div>
-                            }
-                        </article>
-                    </div>
-                }
+        <section class="kitchen-menu-section"
+                 id="menu">
+
+            <div class="kitchen-section-heading">
+                <div>
+                    <p class="kitchen-section-kicker">NO23 menü</p>
+                    <h2>Hedefine uygun öğünü seç.</h2>
+                </div>
+
+                <p>
+                    Kalori ve makroları şeffaf biçimde gösterilen,
+                    dengeli ve performans odaklı öğünleri keşfet.
+                </p>
             </div>
-        </div>
+
+            <div class="kitchen-menu-filters"
+                 aria-label="Menü kategorileri">
+
+                <button type="button"
+                        class="kitchen-filter-button active"
+                        data-kitchen-filter="all"
+                        aria-pressed="true">
+                    Tümü
+                </button>
+
+                <button type="button"
+                        class="kitchen-filter-button"
+                        data-kitchen-filter="@nameof(MenuItemCategory.Breakfast)"
+                        aria-pressed="false">
+                    Kahvaltılar
+                </button>
+
+                <button type="button"
+                        class="kitchen-filter-button"
+                        data-kitchen-filter="@nameof(MenuItemCategory.MainMeal)"
+                        aria-pressed="false">
+                    Ana Öğünler
+                </button>
+
+                <button type="button"
+                        class="kitchen-filter-button"
+                        data-kitchen-filter="@nameof(MenuItemCategory.Snack)"
+                        aria-pressed="false">
+                    Ara Öğünler
+                </button>
+
+                <button type="button"
+                        class="kitchen-filter-button"
+                        data-kitchen-filter="@nameof(MenuItemCategory.Dessert)"
+                        aria-pressed="false">
+                    Tatlılar
+                </button>
+
+                <button type="button"
+                        class="kitchen-filter-button"
+                        data-kitchen-filter="@nameof(MenuItemCategory.Beverage)"
+                        aria-pressed="false">
+                    İçecekler
+                </button>
+            </div>
+
+            @if (Model.MenuItems.Count == 0)
+            {
+                <div class="kitchen-menu-empty">
+                    <span>00</span>
+
+                    <div>
+                        <h3>Menü hazırlanıyor.</h3>
+
+                        <p>
+                            Yeni NO23 Kitchen ürünleri yakında burada
+                            yayınlanacak.
+                        </p>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="kitchen-menu-grid">
+                    @foreach (var item in Model.MenuItems)
+                    {
+                        var tags = string.IsNullOrWhiteSpace(item.Tags)
+                            ? Array.Empty<string>()
+                            : item.Tags.Split(
+                                new[] { ',', ';' },
+                                StringSplitOptions.RemoveEmptyEntries |
+                                StringSplitOptions.TrimEntries);
+
+                        <div class="kitchen-menu-card-wrapper"
+                             data-kitchen-category="@item.Category">
+
+                            <article class="kitchen-menu-card">
+                                <div class="kitchen-menu-visual">
+                                    <span class="kitchen-menu-category">
+                                        @GetCategoryName(item.Category)
+                                    </span>
+
+                                    <strong aria-hidden="true">
+                                        @GetCategoryNumber(item.Category)
+                                    </strong>
+
+                                    <div>
+                                        <span>@item.Calories</span>
+                                        <small>kcal</small>
+                                    </div>
+                                </div>
+
+                                <div class="kitchen-menu-card-content">
+                                    <div class="kitchen-menu-card-heading">
+                                        <div>
+                                            <p>
+                                                @GetCategoryName(item.Category)
+                                            </p>
+
+                                            <h3>@item.Name</h3>
+                                        </div>
+                                        <span class="kitchen-menu-id">
+                                            @item.UnitPrice.ToString("N0") ₺ · #@item.Id.ToString("00")
+                                        </span>
+                                    </div>
+
+                                    <p class="kitchen-menu-ingredients">
+                                        @item.Ingredients
+                                    </p>
+
+                                    <div class="kitchen-menu-macros">
+                                        <span>
+                                            <small>Protein</small>
+                                            @item.ProteinGrams.ToString("0.#") g
+                                        </span>
+
+                                        <span>
+                                            <small>Karbonhidrat</small>
+                                            @item.CarbohydrateGrams.ToString("0.#") g
+                                        </span>
+
+                                        <span>
+                                            <small>Yağ</small>
+                                            @item.FatGrams.ToString("0.#") g
+                                        </span>
+                                    </div>
+
+                                    <div class="kitchen-menu-meta">
+                                        <div class="kitchen-menu-tags">
+                                            @foreach (var tag in tags)
+                                            {
+                                                <span>@tag</span>
+                                            }
+                                        </div>
+
+                                        @if (!string.IsNullOrWhiteSpace(item.Allergens))
+                                        {
+                                            <p class="kitchen-allergen">
+                                                <strong>Alerjen:</strong>
+                                                @item.Allergens
+                                            </p>
+                                        }
+                                        else
+                                        {
+                                            <p class="kitchen-allergen">
+                                                Alerjen bilgisi bulunmuyor
+                                            </p>
+                                        }
+                                    </div>
+                                </div>
+                            </article>
+                        </div>
+                    }
+                </div>
+
+                <div class="kitchen-menu-empty kitchen-filter-empty"
+                     hidden>
+                    <span>00</span>
+
+                    <div>
+                        <h3>Bu kategoride ürün bulunamadı.</h3>
+
+                        <p>
+                            Diğer menü kategorilerini inceleyebilirsin.
+                        </p>
+                    </div>
+                </div>
+            }
+        </section>
     </div>
 </section>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const filterButtons = document.querySelectorAll(
+                "[data-kitchen-filter]"
+            );
+
+            const menuCards = document.querySelectorAll(
+                "[data-kitchen-category]"
+            );
+
+            const emptyState = document.querySelector(
+                ".kitchen-filter-empty"
+            );
+
+            if (!filterButtons.length || !menuCards.length) {
+                return;
+            }
+
+            filterButtons.forEach(function (button) {
+                button.addEventListener("click", function () {
+                    const selectedCategory =
+                        button.dataset.kitchenFilter;
+
+                    let visibleCardCount = 0;
+
+                    filterButtons.forEach(function (filterButton) {
+                        const isActive = filterButton === button;
+
+                        filterButton.classList.toggle(
+                            "active",
+                            isActive
+                        );
+
+                        filterButton.setAttribute(
+                            "aria-pressed",
+                            isActive ? "true" : "false"
+                        );
+                    });
+
+                    menuCards.forEach(function (card) {
+                        const shouldShow =
+                            selectedCategory === "all" ||
+                            card.dataset.kitchenCategory ===
+                                selectedCategory;
+
+                        card.hidden = !shouldShow;
+
+                        if (shouldShow) {
+                            visibleCardCount += 1;
+                        }
+                    });
+
+                    if (emptyState) {
+                        emptyState.hidden = visibleCardCount !== 0;
+                    }
+                });
+            });
+        });
+    </script>
 }
