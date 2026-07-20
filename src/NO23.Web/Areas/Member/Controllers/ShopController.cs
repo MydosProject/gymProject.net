@@ -33,7 +33,7 @@ public class ShopController(
 
         var result = await commerceService.AddShopProductToCartAsync(userId, productId, quantity);
         TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] =
-            result.Succeeded ? "Product added to cart." : result.ErrorMessage;
+            result.Succeeded ? "Ürün sepetine eklendi." : GetLocalizedErrorMessage(result.ErrorMessage);
 
         return RedirectToAction(nameof(Index));
     }
@@ -51,7 +51,7 @@ public class ShopController(
 
         var result = await commerceService.AddKitchenMenuItemToCartAsync(userId, menuItemId, quantity);
         TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] =
-            result.Succeeded ? "Kitchen item added to cart." : result.ErrorMessage;
+            result.Succeeded ? "Kitchen öğünü sepetine eklendi." : GetLocalizedErrorMessage(result.ErrorMessage);
 
         return RedirectToAction(nameof(Index));
     }
@@ -69,7 +69,7 @@ public class ShopController(
 
         var result = await commerceService.RemoveCartItemAsync(userId, cartItemId);
         TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] =
-            result.Succeeded ? "Item removed from cart." : result.ErrorMessage;
+            result.Succeeded ? "Ürün sepetinden kaldırıldı." : GetLocalizedErrorMessage(result.ErrorMessage);
 
         return RedirectToAction(nameof(Index));
     }
@@ -104,7 +104,7 @@ public class ShopController(
         });
 
         TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] =
-            result.Succeeded ? "Order created." : result.ErrorMessage;
+            result.Succeeded ? "Siparişin başarıyla oluşturuldu." : GetLocalizedErrorMessage(result.ErrorMessage);
 
         return RedirectToAction(nameof(Index));
     }
@@ -178,6 +178,35 @@ public class ShopController(
             KitchenMenuItems = kitchenMenuItems,
             CartItems = cartItems,
             CheckoutInput = checkoutInput
+        };
+    }
+
+    private static string GetLocalizedErrorMessage(string? message)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            return "İşlem gerçekleştirilemedi. Lütfen tekrar dene.";
+        }
+
+        const string insufficientStockSuffix = " does not have enough stock.";
+
+        if (message.EndsWith(insufficientStockSuffix, StringComparison.Ordinal))
+        {
+            var productName = message[..^insufficientStockSuffix.Length];
+            return $"{productName} için yeterli stok bulunmuyor.";
+        }
+
+        return message switch
+        {
+            "Quantity must be greater than zero." => "Ürün adedi sıfırdan büyük olmalı.",
+            "Member profile was not found." => "Üye profili bulunamadı.",
+            "Product was not found." => "Ürün bulunamadı.",
+            "Insufficient product stock." => "Bu ürün için yeterli stok bulunmuyor.",
+            "Kitchen menu item was not found." => "Kitchen öğünü bulunamadı.",
+            "Cart item was not found." => "Sepet ürünü bulunamadı.",
+            "Cart is empty." => "Sepetin boş.",
+            "Active kitchen subscription was not found." => "Aktif Kitchen aboneliği bulunamadı.",
+            _ => message
         };
     }
 }
