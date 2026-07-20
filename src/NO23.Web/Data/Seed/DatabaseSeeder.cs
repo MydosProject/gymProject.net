@@ -19,6 +19,7 @@ public static class DatabaseSeeder
         await SeedRolesAsync(roleManager);
         await SeedMembershipPackagesAsync(dbContext);
         await SeedClassOperationsAsync(dbContext);
+        await SeedKitchenMenuItemsAsync(dbContext);
         await SeedAdminUserAsync(userManager, configuration);
     }
 
@@ -161,6 +162,17 @@ public static class DatabaseSeeder
         dbContext.Trainers.AddRange(trainers);
         dbContext.GroupClasses.AddRange(bootcamp, reformerPilates);
 
+        await dbContext.SaveChangesAsync();
+    }
+
+    private static async Task SeedKitchenMenuItemsAsync(ApplicationDbContext dbContext)
+    {
+        if (await dbContext.KitchenMenuItems.AnyAsync())
+        {
+            return;
+        }
+
+        dbContext.KitchenMenuItems.AddRange(KitchenMenuItemSeed.Defaults);
         await dbContext.SaveChangesAsync();
     }
 }

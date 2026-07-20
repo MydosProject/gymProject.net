@@ -23,6 +23,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<ClassReservationService>();
+builder.Services.AddScoped<CalorieCalculatorService>();
 
 var app = builder.Build();
 
@@ -109,6 +110,56 @@ if (app.Environment.IsDevelopment())
     })
     .WithName("GetClassSessions")
     .Produces<IReadOnlyList<ClassSessionResponse>>();
+
+    api.MapGet("/kitchen-menu-items", async (ApplicationDbContext dbContext) =>
+    {
+        return await dbContext.KitchenMenuItems
+            .AsNoTracking()
+            .Where(item => item.IsActive)
+            .OrderBy(item => item.DisplayOrder)
+            .ThenBy(item => item.Name)
+            .Select(item => new KitchenMenuItemResponse
+            {
+                Id = item.Id,
+                Name = item.Name,
+                Category = item.Category.ToString(),
+                Calories = item.Calories,
+                ProteinGrams = item.ProteinGrams,
+                CarbohydrateGrams = item.CarbohydrateGrams,
+                FatGrams = item.FatGrams,
+                Ingredients = item.Ingredients,
+                Allergens = item.Allergens,
+                Tags = item.Tags
+            })
+            .ToListAsync();
+    })
+    .WithName("GetKitchenMenuItems")
+    .Produces<IReadOnlyList<KitchenMenuItemResponse>>();
+
+    api.MapPost("/calorie/calculate", (
+        CalorieCalculationApiRequest request,
+        CalorieCalculatorService calculator) =>
+    {
+        var result = calculator.Calculate(new CalorieCalculationRequest
+        {
+            HeightCm = request.HeightCm,
+            WeightKg = request.WeightKg,
+            Age = request.Age,
+            Gender = request.Gender,
+            ActivityLevel = request.ActivityLevel,
+            Goal = request.Goal
+        });
+
+        return Results.Ok(new CalorieCalculationResponse
+        {
+            DailyCalories = result.DailyCalories,
+            ProteinGrams = result.ProteinGrams,
+            CarbohydrateGrams = result.CarbohydrateGrams,
+            FatGrams = result.FatGrams
+        });
+    })
+    .WithName("CalculateCalories")
+    .Produces<CalorieCalculationResponse>();
 }
 
 app.MapStaticAssets();

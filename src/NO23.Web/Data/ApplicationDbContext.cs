@@ -19,6 +19,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<ClassReservation> ClassReservations => Set<ClassReservation>();
 
+    public DbSet<KitchenMenuItem> KitchenMenuItems => Set<KitchenMenuItem>();
+
+    public DbSet<KitchenSubscription> KitchenSubscriptions => Set<KitchenSubscription>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

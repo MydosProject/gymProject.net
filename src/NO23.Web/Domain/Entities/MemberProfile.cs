@@ -21,4 +21,6 @@ public class MemberProfile
     public DateTime? UpdatedAtUtc { get; set; }
 
     public ICollection<ClassReservation> ClassReservations { get; set; } = [];
+
+    public ICollection<KitchenSubscription> KitchenSubscriptions { get; set; } = [];
 }
