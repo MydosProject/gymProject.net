@@ -60,10 +60,12 @@
                             <span>01</span>
                             Sports Club
                         </li>
+
                         <li>
                             <span>02</span>
                             NO23 Kitchen
                         </li>
+
                         <li>
                             <span>03</span>
                             NO23 Community
@@ -75,12 +77,17 @@
     </div>
 </section>
 
-<section class="quick-access" aria-labelledby="quick-access-title">
+<section class="quick-access"
+         aria-labelledby="quick-access-title">
+
     <div class="container">
         <div class="quick-access-heading">
             <div>
                 <p class="section-kicker">Hızlı Erişim</p>
-                <h2 id="quick-access-title">Bugün ne yapmak istersin?</h2>
+
+                <h2 id="quick-access-title">
+                    Bugün ne yapmak istersin?
+                </h2>
             </div>
 
             <p>
@@ -89,37 +96,49 @@
         </div>
 
         <div class="quick-access-grid">
-            <a class="quick-access-card" href="#memberships">
+            <a class="quick-access-card"
+               href="#memberships">
                 <span class="quick-access-number">01</span>
                 <strong>Üyelik Paketleri</strong>
                 <small>Sana uygun paketi keşfet</small>
             </a>
 
-            <a class="quick-access-card" href="#schedule">
+            <a class="quick-access-card"
+               href="#schedule">
                 <span class="quick-access-number">02</span>
                 <strong>Ders Programı</strong>
                 <small>Grup derslerini incele</small>
             </a>
 
-            <a class="quick-access-card" href="#kitchen">
+            <a class="quick-access-card"
+               asp-area="Member"
+               asp-controller="Kitchen"
+               asp-action="Index"
+               asp-fragment="menu">
                 <span class="quick-access-number">03</span>
                 <strong>NO23 Kitchen</strong>
                 <small>Sağlıklı menülere ulaş</small>
             </a>
 
-            <a class="quick-access-card" href="#calorie">
+            <a class="quick-access-card"
+               asp-area="Member"
+               asp-controller="Kitchen"
+               asp-action="Index"
+               asp-fragment="calculator">
                 <span class="quick-access-number">04</span>
                 <strong>Kalori Hesapla</strong>
                 <small>Günlük ihtiyacını öğren</small>
             </a>
 
-            <a class="quick-access-card" href="#order">
+            <a class="quick-access-card"
+               href="#order">
                 <span class="quick-access-number">05</span>
                 <strong>Online Sipariş</strong>
                 <small>Öğünlerini kolayca seç</small>
             </a>
 
-            <a class="quick-access-card" href="#appointment">
+            <a class="quick-access-card"
+               href="#appointment">
                 <span class="quick-access-number">06</span>
                 <strong>Randevu Al</strong>
                 <small>Antrenmanını planla</small>
@@ -128,11 +147,14 @@
     </div>
 </section>
 
-<section class="services-section" id="services">
+<section class="services-section"
+         id="services">
+
     <div class="container">
         <div class="services-heading">
             <div>
                 <p class="section-kicker">Hizmetlerimiz</p>
+
                 <h2>
                     Sadece spor değil.<br />
                     Bütünsel gelişim.
@@ -169,7 +191,9 @@
                 </div>
             </article>
 
-            <article class="service-card" id="schedule">
+            <article class="service-card"
+                     id="schedule">
+
                 <div class="service-card-top">
                     <span class="service-number">02</span>
                     <span class="service-category">Birlikte</span>
@@ -241,7 +265,9 @@
     </div>
 </section>
 
-<section class="memberships-section" id="memberships">
+<section class="memberships-section"
+         id="memberships">
+
     <div class="container">
         <div class="memberships-heading">
             <div>
@@ -291,7 +317,9 @@
                 <article class="@cardClass">
                     @if (isPro)
                     {
-                        <span class="membership-recommended">Önerilen</span>
+                        <span class="membership-recommended">
+                            Önerilen
+                        </span>
                     }
 
                     <div class="membership-card-header">
@@ -299,7 +327,9 @@
                             @package.DisplayOrder.ToString("00")
                         </span>
 
-                        <span class="membership-level">@level</span>
+                        <span class="membership-level">
+                            @level
+                        </span>
                     </div>
 
                     <div>
@@ -329,11 +359,18 @@
 
         <div class="membership-note">
             <div>
-                <strong>Hangi paketin sana uygun olduğundan emin değil misin?</strong>
-                <span>Hedeflerini birlikte değerlendirelim.</span>
+                <strong>
+                    Hangi paketin sana uygun olduğundan emin değil misin?
+                </strong>
+
+                <span>
+                    Hedeflerini birlikte değerlendirelim.
+                </span>
             </div>
 
-            <a href="#contact">Bizimle İletişime Geç</a>
+            <a href="#contact">
+                Bizimle İletişime Geç
+            </a>
         </div>
     </div>
 </section>
