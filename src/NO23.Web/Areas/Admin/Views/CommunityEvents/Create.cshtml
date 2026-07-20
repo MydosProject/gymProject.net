@@ -1,0 +1,18 @@
+@model CommunityEventFormViewModel
+@{
+    ViewData["Title"] = "New Community Event";
+}
+
+<section class="py-5">
+    <div class="container">
+        <div class="mb-4">
+            <p class="text-uppercase text-muted small mb-1">Admin</p>
+            <h1 class="h3 mt-2">New Community Event</h1>
+        </div>
+        <partial name="_CommunityEventForm" model="Model" />
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

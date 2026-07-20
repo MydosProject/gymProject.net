@@ -162,6 +162,104 @@ if (app.Environment.IsDevelopment())
     .WithName("GetShopProducts")
     .Produces<IReadOnlyList<ShopProductResponse>>();
 
+    api.MapGet("/community-events", async (ApplicationDbContext dbContext) =>
+    {
+        return await dbContext.CommunityEvents
+            .AsNoTracking()
+            .Where(item => item.Status == CommunityEventStatus.Scheduled)
+            .OrderBy(item => item.StartsAtUtc)
+            .Select(item => new CommunityEventResponse
+            {
+                Id = item.Id,
+                Title = item.Title,
+                Slug = item.Slug,
+                Summary = item.Summary,
+                Type = item.Type.ToString(),
+                Status = item.Status.ToString(),
+                StartsAtUtc = item.StartsAtUtc,
+                EndsAtUtc = item.EndsAtUtc,
+                Location = item.Location,
+                Capacity = item.Capacity,
+                IsMembersOnly = item.IsMembersOnly,
+                ImageUrl = item.ImageUrl
+            })
+            .ToListAsync();
+    })
+    .WithName("GetCommunityEvents")
+    .Produces<IReadOnlyList<CommunityEventResponse>>();
+
+    api.MapGet("/community-challenges", async (ApplicationDbContext dbContext) =>
+    {
+        return await dbContext.CommunityChallenges
+            .AsNoTracking()
+            .Where(item =>
+                item.Status == CommunityChallengeStatus.Upcoming ||
+                item.Status == CommunityChallengeStatus.Active)
+            .OrderBy(item => item.StartsOn)
+            .Select(item => new CommunityChallengeResponse
+            {
+                Id = item.Id,
+                Title = item.Title,
+                Slug = item.Slug,
+                Summary = item.Summary,
+                Goal = item.Goal,
+                Reward = item.Reward,
+                StartsOn = item.StartsOn,
+                EndsOn = item.EndsOn,
+                Status = item.Status.ToString(),
+                ImageUrl = item.ImageUrl
+            })
+            .ToListAsync();
+    })
+    .WithName("GetCommunityChallenges")
+    .Produces<IReadOnlyList<CommunityChallengeResponse>>();
+
+    api.MapGet("/blog-posts", async (ApplicationDbContext dbContext) =>
+    {
+        return await dbContext.BlogPosts
+            .AsNoTracking()
+            .Where(item => item.Status == ContentStatus.Published)
+            .OrderByDescending(item => item.PublishedAtUtc ?? item.CreatedAtUtc)
+            .Select(item => new BlogPostResponse
+            {
+                Id = item.Id,
+                Title = item.Title,
+                Slug = item.Slug,
+                Summary = item.Summary,
+                Category = item.Category,
+                Tags = item.Tags,
+                CoverImageUrl = item.CoverImageUrl,
+                PublishedAtUtc = item.PublishedAtUtc
+            })
+            .ToListAsync();
+    })
+    .WithName("GetBlogPosts")
+    .Produces<IReadOnlyList<BlogPostResponse>>();
+
+    api.MapGet("/success-stories", async (ApplicationDbContext dbContext) =>
+    {
+        return await dbContext.SuccessStories
+            .AsNoTracking()
+            .Where(item => item.Status == ContentStatus.Published)
+            .OrderByDescending(item => item.PublishedAtUtc ?? item.CreatedAtUtc)
+            .Select(item => new SuccessStoryResponse
+            {
+                Id = item.Id,
+                MemberName = item.MemberName,
+                Title = item.Title,
+                Slug = item.Slug,
+                Summary = item.Summary,
+                AchievementMetric = item.AchievementMetric,
+                BeforeImageUrl = item.BeforeImageUrl,
+                AfterImageUrl = item.AfterImageUrl,
+                VideoUrl = item.VideoUrl,
+                PublishedAtUtc = item.PublishedAtUtc
+            })
+            .ToListAsync();
+    })
+    .WithName("GetSuccessStories")
+    .Produces<IReadOnlyList<SuccessStoryResponse>>();
+
     api.MapPost("/calorie/calculate", (
         CalorieCalculationApiRequest request,
         CalorieCalculatorService calculator) =>

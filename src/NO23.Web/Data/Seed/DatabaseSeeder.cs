@@ -21,6 +21,7 @@ public static class DatabaseSeeder
         await SeedClassOperationsAsync(dbContext);
         await SeedKitchenMenuItemsAsync(dbContext);
         await SeedShopProductsAsync(dbContext);
+        await SeedCommunityContentAsync(dbContext);
         await SeedAdminUserAsync(userManager, configuration);
     }
 
@@ -204,6 +205,43 @@ public static class DatabaseSeeder
         }
 
         dbContext.ShopProducts.AddRange(ShopProductSeed.Defaults);
+        await dbContext.SaveChangesAsync();
+    }
+
+    private static async Task SeedCommunityContentAsync(ApplicationDbContext dbContext)
+    {
+        foreach (var defaultEvent in CommunityContentSeed.Events)
+        {
+            if (!await dbContext.CommunityEvents.AnyAsync(item => item.Slug == defaultEvent.Slug))
+            {
+                dbContext.CommunityEvents.Add(defaultEvent);
+            }
+        }
+
+        foreach (var defaultChallenge in CommunityContentSeed.Challenges)
+        {
+            if (!await dbContext.CommunityChallenges.AnyAsync(item => item.Slug == defaultChallenge.Slug))
+            {
+                dbContext.CommunityChallenges.Add(defaultChallenge);
+            }
+        }
+
+        foreach (var defaultPost in CommunityContentSeed.BlogPosts)
+        {
+            if (!await dbContext.BlogPosts.AnyAsync(item => item.Slug == defaultPost.Slug))
+            {
+                dbContext.BlogPosts.Add(defaultPost);
+            }
+        }
+
+        foreach (var defaultStory in CommunityContentSeed.SuccessStories)
+        {
+            if (!await dbContext.SuccessStories.AnyAsync(item => item.Slug == defaultStory.Slug))
+            {
+                dbContext.SuccessStories.Add(defaultStory);
+            }
+        }
+
         await dbContext.SaveChangesAsync();
     }
 }

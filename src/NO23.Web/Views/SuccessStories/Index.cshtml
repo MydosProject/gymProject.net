@@ -1,0 +1,34 @@
+@model IReadOnlyList<SuccessStoryCardViewModel>
+@{
+    ViewData["Title"] = "Success Stories";
+}
+
+<section class="py-5">
+    <div class="container">
+        <div class="mb-4">
+            <p class="text-uppercase text-muted small mb-1">NO23 Stories</p>
+            <h1 class="h3 mb-0">Member Success Stories</h1>
+        </div>
+
+        <div class="row g-3">
+            @foreach (var item in Model)
+            {
+                <div class="col-md-6">
+                    <article class="bg-white text-dark border rounded-3 p-4 h-100">
+                        <small class="text-muted">@item.MemberName</small>
+                        <h2 class="h5 mt-1">@item.Title</h2>
+                        <p class="text-muted">@item.Summary</p>
+                        @if (!string.IsNullOrWhiteSpace(item.AchievementMetric))
+                        {
+                            <strong class="d-block small">@item.AchievementMetric</strong>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(item.VideoUrl))
+                        {
+                            <small class="text-muted d-block mt-2">Video story available</small>
+                        }
+                    </article>
+                </div>
+            }
+        </div>
+    </div>
+</section>

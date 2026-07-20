@@ -1,0 +1,18 @@
+@model BlogPostFormViewModel
+@{
+    ViewData["Title"] = "New Blog Post";
+}
+
+<section class="py-5">
+    <div class="container">
+        <div class="mb-4">
+            <p class="text-uppercase text-muted small mb-1">Admin</p>
+            <h1 class="h3 mt-2">New Blog Post</h1>
+        </div>
+        <partial name="_BlogPostForm" model="Model" />
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
