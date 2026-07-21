@@ -19,7 +19,7 @@ public static class KitchenMenuItemSeed
             FatGrams = 18,
             Ingredients = "Izgara tavuk, kinoa, avokado, roka, cherry domates, zeytinyağı",
             Allergens = "Yok",
-            Tags = "High Protein, Performance",
+            Tags = "yüksek protein, performans",
             DisplayOrder = 1
         },
         new()
@@ -34,7 +34,7 @@ public static class KitchenMenuItemSeed
             FatGrams = 12,
             Ingredients = "Yumurta beyazı, lor peyniri, tam tahıllı ekmek, salatalık, domates",
             Allergens = "Yumurta, süt, gluten",
-            Tags = "High Protein, Low Calorie",
+            Tags = "yüksek protein, düşük kalori",
             DisplayOrder = 2
         },
         new()
@@ -49,7 +49,7 @@ public static class KitchenMenuItemSeed
             FatGrams = 4,
             Ingredients = "Muz, ıspanak, whey protein, badem sütü",
             Allergens = "Süt, badem",
-            Tags = "Recovery, Beverage",
+            Tags = "toparlanma, içecek",
             DisplayOrder = 3
         },
         new()
@@ -64,7 +64,7 @@ public static class KitchenMenuItemSeed
             FatGrams = 9,
             Ingredients = "Badem unu, kakao, hurma, yumurta, bitter çikolata",
             Allergens = "Yumurta, badem",
-            Tags = "Gluten Free, Dessert",
+            Tags = "glutensiz, tatlı",
             DisplayOrder = 4
         }
     ];
