@@ -1,43 +1,46 @@
 @model IReadOnlyList<SuccessStoryListItemViewModel>
 @{
-    ViewData["Title"] = "Success Stories";
+    ViewData["Title"] = "Başarı Hikâyeleri";
+    var publishedCount = Model.Count(item => item.PublishedAtUtc.HasValue);
 }
 
-<section class="py-5">
+<section class="admin-page">
     <div class="container">
-        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <header class="admin-page-head">
             <div>
-                <p class="text-uppercase text-muted small mb-1">Admin</p>
-                <h1 class="h3 mb-0">Success Stories</h1>
+                <p class="admin-eyebrow">İÇERİK / ÜYE DÖNÜŞÜMLERİ</p>
+                <h1>Başarı hikâyeleri</h1>
+                <p class="admin-page-description">Üye gelişimlerini, sonuç metriklerini ve yayın durumunu yönet.</p>
             </div>
-            <a class="btn btn-dark" asp-action="Create">New Story</a>
+            <a class="btn btn-dark" asp-action="Create">+ Yeni hikâye</a>
+        </header>
+
+        <div class="admin-metrics admin-metrics-two">
+            <article><span>Toplam hikâye</span><strong>@Model.Count</strong><small>Üye dönüşümü</small></article>
+            <article><span>Yayın tarihli</span><strong>@publishedCount</strong><small>Planlanmış / yayında</small></article>
         </div>
 
-        <div class="table-responsive bg-white border rounded-3">
+        <div class="table-responsive admin-table-card">
             <table class="table align-middle mb-0">
-                <thead>
-                    <tr>
-                        <th>Member</th>
-                        <th>Title</th>
-                        <th>Metric</th>
-                        <th>Status</th>
-                        <th>Published</th>
-                        <th class="text-end">Action</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>Üye</th><th>Hikâye</th><th>Sonuç</th><th>Durum</th><th>Yayın tarihi</th><th class="text-end">İşlem</th></tr></thead>
                 <tbody>
-                    @foreach (var item in Model)
+                    @if (Model.Count == 0)
                     {
-                        <tr>
-                            <td>@item.MemberName</td>
-                            <td><strong>@item.Title</strong></td>
-                            <td>@(item.AchievementMetric ?? "-")</td>
-                            <td>@item.Status</td>
-                            <td>@(item.PublishedAtUtc?.ToString("dd.MM.yyyy") ?? "-")</td>
-                            <td class="text-end">
-                                <a class="btn btn-sm btn-outline-dark" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
-                            </td>
-                        </tr>
+                        <tr><td colspan="6"><div class="admin-empty-row">Henüz başarı hikâyesi eklenmedi.</div></td></tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td><strong>@item.MemberName</strong></td>
+                                <td>@item.Title</td>
+                                <td>@(item.AchievementMetric ?? "-")</td>
+                                <td><span class="admin-status">@item.Status</span></td>
+                                <td>@(item.PublishedAtUtc?.ToLocalTime().ToString("dd.MM.yyyy") ?? "-")</td>
+                                <td class="text-end"><a class="btn btn-sm btn-outline-dark" asp-action="Edit" asp-route-id="@item.Id">Düzenle</a></td>
+                            </tr>
+                        }
                     }
                 </tbody>
             </table>

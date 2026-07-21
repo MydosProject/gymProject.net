@@ -1,14 +1,18 @@
 @model SuccessStoryFormViewModel
 @{
-    ViewData["Title"] = "New Success Story";
+    ViewData["Title"] = "Yeni Başarı Hikâyesi";
 }
 
-<section class="py-5">
+<section class="admin-page">
     <div class="container">
-        <div class="mb-4">
-            <p class="text-uppercase text-muted small mb-1">Admin</p>
-            <h1 class="h3 mt-2">New Success Story</h1>
-        </div>
+        <header class="admin-page-head admin-form-head">
+            <div>
+                <a asp-action="Index" class="admin-back-link">← Hikâyelere dön</a>
+                <p class="admin-eyebrow">İçerik / Başarı Hikâyeleri</p>
+                <h1>Yeni başarı hikâyesi</h1>
+                <p class="admin-page-description">Üye dönüşümünü, sonucu ve görsel içerikleriyle birlikte yayınla.</p>
+            </div>
+        </header>
         <partial name="_SuccessStoryForm" model="Model" />
     </div>
 </section>

@@ -1,20 +1,28 @@
 @model IReadOnlyList<KitchenMenuItemListItemViewModel>
 @{
     ViewData["Title"] = "Kitchen Menü";
+    var activeCount = Model.Count(item => item.IsActive);
+    var averageCalories = Model.Count == 0 ? 0 : (int)Model.Average(item => item.Calories);
 }
 
-<section class="py-5">
+<section class="admin-page">
     <div class="container">
-        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <header class="admin-page-head">
             <div>
-                <p class="text-uppercase text-muted small mb-1">Admin</p>
-                <h1 class="h3 mb-0">Kitchen Menü</h1>
+                <p class="admin-eyebrow">NO23 KITCHEN / MENÜ</p>
+                <h1>Kitchen ürünleri</h1>
+                <p class="admin-page-description">Öğünleri, fiyatları, besin değerlerini ve menü görünürlüğünü yönet.</p>
             </div>
+            <a class="btn btn-dark" asp-action="Create">+ Yeni ürün</a>
+        </header>
 
-            <a class="btn btn-dark" asp-action="Create">Yeni Ürün</a>
+        <div class="admin-metrics">
+            <article><span>Menü ürünü</span><strong>@Model.Count</strong><small>Toplam öğün</small></article>
+            <article><span>Aktif ürün</span><strong>@activeCount</strong><small>Siparişe açık</small></article>
+            <article><span>Ort. kalori</span><strong>@averageCalories</strong><small>kcal / ürün</small></article>
         </div>
 
-        <div class="table-responsive bg-white border rounded-3">
+        <div class="table-responsive admin-table-card">
             <table class="table align-middle mb-0">
                 <thead>
                     <tr>
@@ -30,25 +38,26 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in Model)
+                    @if (Model.Count == 0)
                     {
-                        <tr>
-                            <td>@item.DisplayOrder</td>
-                            <td><strong>@item.Name</strong></td>
-                            <td>@item.Category</td>
-                            <td>@item.UnitPrice.ToString("C0")</td>
-                            <td>@item.Calories</td>
-                            <td>P @item.ProteinGrams / K @item.CarbohydrateGrams / Y @item.FatGrams</td>
-                            <td>@(item.Tags ?? "-")</td>
-                            <td>
-                                <span class="badge @(item.IsActive ? "text-bg-success" : "text-bg-secondary")">
-                                    @(item.IsActive ? "Aktif" : "Pasif")
-                                </span>
-                            </td>
-                            <td class="text-end">
-                                <a class="btn btn-sm btn-outline-dark" asp-action="Edit" asp-route-id="@item.Id">Düzenle</a>
-                            </td>
-                        </tr>
+                        <tr><td colspan="9"><div class="admin-empty-row">Henüz Kitchen ürünü eklenmedi.</div></td></tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td><span class="admin-order-no">@item.DisplayOrder.ToString("00")</span></td>
+                                <td><strong>@item.Name</strong></td>
+                                <td>@item.Category</td>
+                                <td><strong>@item.UnitPrice.ToString("C0")</strong></td>
+                                <td>@item.Calories kcal</td>
+                                <td><span class="admin-code">P @item.ProteinGrams / K @item.CarbohydrateGrams / Y @item.FatGrams</span></td>
+                                <td>@(item.Tags ?? "-")</td>
+                                <td><span class="badge @(item.IsActive ? "text-bg-success" : "text-bg-secondary")">@(item.IsActive ? "Aktif" : "Pasif")</span></td>
+                                <td class="text-end"><a class="btn btn-sm btn-outline-dark" asp-action="Edit" asp-route-id="@item.Id">Düzenle</a></td>
+                            </tr>
+                        }
                     }
                 </tbody>
             </table>

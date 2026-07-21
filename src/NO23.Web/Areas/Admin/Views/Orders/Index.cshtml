@@ -1,42 +1,61 @@
 @model IReadOnlyList<OrderListItemViewModel>
 @{
-    ViewData["Title"] = "Orders";
+    ViewData["Title"] = "Siparişler";
+    var itemCount = Model.Sum(item => item.ItemCount);
+    var totalRevenue = Model.Sum(item => item.Total);
 }
 
-<section class="py-5">
+<section class="admin-page">
     <div class="container">
-        <div class="mb-4">
-            <p class="text-uppercase text-muted small mb-1">Admin</p>
-            <h1 class="h3 mb-0">Orders</h1>
+        <header class="admin-page-head">
+            <div>
+                <p class="admin-eyebrow">OPERASYON / SİPARİŞ AKIŞI</p>
+                <h1>Siparişler</h1>
+                <p class="admin-page-description">Shop ve Kitchen siparişlerini, teslimat planını ve ödeme durumunu takip et.</p>
+            </div>
+            <span class="admin-page-tag">Canlı operasyon</span>
+        </header>
+
+        <div class="admin-metrics">
+            <article><span>Toplam sipariş</span><strong>@Model.Count</strong><small>Oluşturulan kayıt</small></article>
+            <article><span>Ürün adedi</span><strong>@itemCount</strong><small>Sipariş kalemi</small></article>
+            <article><span>Sipariş toplamı</span><strong>@totalRevenue.ToString("C0")</strong><small>Ödeme hacmi</small></article>
         </div>
 
-        <div class="table-responsive bg-white border rounded-3">
+        <div class="table-responsive admin-table-card">
             <table class="table align-middle mb-0">
                 <thead>
                     <tr>
-                        <th>Order</th>
-                        <th>Member</th>
-                        <th>Type</th>
-                        <th>Status</th>
-                        <th>Payment</th>
-                        <th>Delivery</th>
-                        <th>Items</th>
-                        <th>Total</th>
+                        <th>Sipariş</th>
+                        <th>Üye</th>
+                        <th>Tür</th>
+                        <th>Durum</th>
+                        <th>Ödeme</th>
+                        <th>Teslimat</th>
+                        <th>Ürün</th>
+                        <th>Toplam</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var order in Model)
+                    @if (Model.Count == 0)
                     {
-                        <tr>
-                            <td><strong>@order.OrderNumber</strong></td>
-                            <td>@order.MemberName</td>
-                            <td>@order.Type</td>
-                            <td>@order.Status</td>
-                            <td>@order.PaymentStatus</td>
-                            <td>@order.DeliveryDate.ToString("dd.MM.yyyy") @order.DeliveryTimeSlot</td>
-                            <td>@order.ItemCount</td>
-                            <td>@order.Total.ToString("C0")</td>
-                        </tr>
+                        <tr><td colspan="8"><div class="admin-empty-row">Henüz sipariş oluşturulmadı.</div></td></tr>
+                    }
+                    else
+                    {
+                        @foreach (var order in Model)
+                        {
+                            <tr>
+                                <td><strong class="admin-code">@order.OrderNumber</strong></td>
+                                <td>@order.MemberName</td>
+                                <td>@order.Type</td>
+                                <td><span class="admin-status">@order.Status</span></td>
+                                <td>@order.PaymentStatus</td>
+                                <td><strong>@order.DeliveryDate.ToString("dd.MM.yyyy")</strong><small class="admin-cell-note">@order.DeliveryTimeSlot</small></td>
+                                <td>@order.ItemCount</td>
+                                <td><strong>@order.Total.ToString("C0")</strong></td>
+                            </tr>
+                        }
                     }
                 </tbody>
             </table>

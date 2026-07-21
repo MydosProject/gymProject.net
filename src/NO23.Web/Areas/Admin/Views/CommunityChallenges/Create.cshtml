@@ -1,14 +1,18 @@
 @model CommunityChallengeFormViewModel
 @{
-    ViewData["Title"] = "New Community Challenge";
+    ViewData["Title"] = "Yeni Challenge";
 }
 
-<section class="py-5">
+<section class="admin-page">
     <div class="container">
-        <div class="mb-4">
-            <p class="text-uppercase text-muted small mb-1">Admin</p>
-            <h1 class="h3 mt-2">New Community Challenge</h1>
-        </div>
+        <header class="admin-page-head admin-form-head">
+            <div>
+                <a asp-action="Index" class="admin-back-link">← Challenge'lara dön</a>
+                <p class="admin-eyebrow">Topluluk / Challenge</p>
+                <h1>Yeni challenge</h1>
+                <p class="admin-page-description">Üyeleri harekete geçirecek hedef, tarih ve ödül detaylarını tanımla.</p>
+            </div>
+        </header>
         <partial name="_CommunityChallengeForm" model="Model" />
     </div>
 </section>

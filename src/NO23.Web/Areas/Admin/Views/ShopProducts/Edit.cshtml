@@ -1,14 +1,18 @@
 @model ShopProductFormViewModel
 @{
-    ViewData["Title"] = "Edit Shop Product";
+    ViewData["Title"] = "Shop Ürününü Düzenle";
 }
 
-<section class="py-5">
+<section class="admin-page">
     <div class="container">
-        <div class="mb-4">
-            <p class="text-uppercase text-muted small mb-1">Admin</p>
-            <h1 class="h3 mt-2">Edit Shop Product</h1>
-        </div>
+        <header class="admin-page-head admin-form-head">
+            <div>
+                <a asp-action="Index" class="admin-back-link">← Ürünlere dön</a>
+                <p class="admin-eyebrow">Operasyon / Shop</p>
+                <h1>Shop ürününü düzenle</h1>
+                <p class="admin-page-description">Ürün detaylarını, stok bilgisini ve görünürlük durumunu güncelle.</p>
+            </div>
+        </header>
 
         <partial name="_ShopProductForm" model="Model" />
     </div>

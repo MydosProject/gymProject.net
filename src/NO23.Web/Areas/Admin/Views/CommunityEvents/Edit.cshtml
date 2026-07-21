@@ -1,14 +1,18 @@
 @model CommunityEventFormViewModel
 @{
-    ViewData["Title"] = "Edit Community Event";
+    ViewData["Title"] = "Etkinliği Düzenle";
 }
 
-<section class="py-5">
+<section class="admin-page">
     <div class="container">
-        <div class="mb-4">
-            <p class="text-uppercase text-muted small mb-1">Admin</p>
-            <h1 class="h3 mt-2">Edit Community Event</h1>
-        </div>
+        <header class="admin-page-head admin-form-head">
+            <div>
+                <a asp-action="Index" class="admin-back-link">← Etkinliklere dön</a>
+                <p class="admin-eyebrow">Topluluk / Etkinlikler</p>
+                <h1>Etkinliği düzenle</h1>
+                <p class="admin-page-description">Yayınlanan etkinliğin içerik ve planlama bilgilerini güncelle.</p>
+            </div>
+        </header>
         <partial name="_CommunityEventForm" model="Model" />
     </div>
 </section>

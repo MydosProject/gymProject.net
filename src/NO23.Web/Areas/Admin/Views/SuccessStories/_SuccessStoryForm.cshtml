@@ -6,63 +6,63 @@
 
     <div class="row g-3">
         <div class="col-md-4">
-            <label asp-for="MemberName" class="form-label"></label>
+            <label asp-for="MemberName" class="form-label">Üye adı</label>
             <input asp-for="MemberName" class="form-control" />
             <span asp-validation-for="MemberName" class="text-danger"></span>
         </div>
         <div class="col-md-4">
-            <label asp-for="Title" class="form-label"></label>
+            <label asp-for="Title" class="form-label">Başlık</label>
             <input asp-for="Title" class="form-control" />
             <span asp-validation-for="Title" class="text-danger"></span>
         </div>
         <div class="col-md-4">
-            <label asp-for="Slug" class="form-label"></label>
+            <label asp-for="Slug" class="form-label">URL kısa adı</label>
             <input asp-for="Slug" class="form-control" />
             <span asp-validation-for="Slug" class="text-danger"></span>
         </div>
         <div class="col-12">
-            <label asp-for="Summary" class="form-label"></label>
+            <label asp-for="Summary" class="form-label">Kısa özet</label>
             <textarea asp-for="Summary" class="form-control" rows="2"></textarea>
             <span asp-validation-for="Summary" class="text-danger"></span>
         </div>
         <div class="col-12">
-            <label asp-for="Story" class="form-label"></label>
+            <label asp-for="Story" class="form-label">Hikâye</label>
             <textarea asp-for="Story" class="form-control" rows="6"></textarea>
             <span asp-validation-for="Story" class="text-danger"></span>
         </div>
         <div class="col-md-4">
-            <label asp-for="AchievementMetric" class="form-label"></label>
+            <label asp-for="AchievementMetric" class="form-label">Başarı sonucu</label>
             <input asp-for="AchievementMetric" class="form-control" />
             <span asp-validation-for="AchievementMetric" class="text-danger"></span>
         </div>
         <div class="col-md-4">
-            <label asp-for="Status" class="form-label"></label>
+            <label asp-for="Status" class="form-label">Durum</label>
             <select asp-for="Status" asp-items="Html.GetEnumSelectList<ContentStatus>()" class="form-select"></select>
         </div>
         <div class="col-md-4">
-            <label asp-for="PublishedAtUtc" class="form-label"></label>
+            <label asp-for="PublishedAtUtc" class="form-label">Yayın tarihi</label>
             <input asp-for="PublishedAtUtc" class="form-control" />
             <span asp-validation-for="PublishedAtUtc" class="text-danger"></span>
         </div>
         <div class="col-md-4">
-            <label asp-for="BeforeImageUrl" class="form-label"></label>
+            <label asp-for="BeforeImageUrl" class="form-label">Önce görseli URL</label>
             <input asp-for="BeforeImageUrl" class="form-control" />
             <span asp-validation-for="BeforeImageUrl" class="text-danger"></span>
         </div>
         <div class="col-md-4">
-            <label asp-for="AfterImageUrl" class="form-label"></label>
+            <label asp-for="AfterImageUrl" class="form-label">Sonra görseli URL</label>
             <input asp-for="AfterImageUrl" class="form-control" />
             <span asp-validation-for="AfterImageUrl" class="text-danger"></span>
         </div>
         <div class="col-md-4">
-            <label asp-for="VideoUrl" class="form-label"></label>
+            <label asp-for="VideoUrl" class="form-label">Video URL</label>
             <input asp-for="VideoUrl" class="form-control" />
             <span asp-validation-for="VideoUrl" class="text-danger"></span>
         </div>
     </div>
 
     <div class="d-flex justify-content-end gap-2 mt-4">
-        <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
-        <button type="submit" class="btn btn-dark">Save</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Vazgeç</a>
+        <button type="submit" class="btn btn-dark">Kaydet</button>
     </div>
 </form>

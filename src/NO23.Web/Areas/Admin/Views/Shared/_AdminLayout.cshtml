@@ -1,0 +1,152 @@
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
+    var pageTitle = ViewData["Title"]?.ToString() ?? "Yönetim Paneli";
+    var userName = User.Identity?.Name ?? "NO23 Yönetici";
+    var userInitial = string.IsNullOrWhiteSpace(userName) ? "N" : userName.Trim()[0].ToString().ToUpperInvariant();
+
+    string ActiveClass(params string[] controllers) =>
+        controllers.Contains(currentController, StringComparer.OrdinalIgnoreCase) ? "is-active" : string.Empty;
+}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#090b09" />
+    <title>@pageTitle | NO23 Admin</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/NO23.Web.styles.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body class="no23-admin-body">
+    <div class="admin-shell">
+        <aside class="admin-sidebar" id="adminSidebar" aria-label="Admin navigasyonu">
+            <div class="admin-sidebar-head">
+                <a class="admin-brand" asp-area="Admin" asp-controller="Members" asp-action="Index">
+                    <span class="admin-brand-mark">NO23</span>
+                    <span class="admin-brand-copy">Control Room</span>
+                </a>
+                <button class="admin-sidebar-close" type="button" data-admin-sidebar-close aria-label="Menüyü kapat">×</button>
+            </div>
+
+            <div class="admin-environment">
+                <span class="admin-live-dot"></span>
+                <span>Yönetim sistemi aktif</span>
+            </div>
+
+            <nav class="admin-nav">
+                <div class="admin-nav-group">
+                    <p class="admin-nav-title">Operasyon</p>
+                    <a class="admin-nav-link @ActiveClass("Orders")" asp-area="Admin" asp-controller="Orders" asp-action="Index">
+                        <span class="admin-nav-index">01</span>
+                        <span>Siparişler</span>
+                    </a>
+                    <a class="admin-nav-link @ActiveClass("ShopProducts")" asp-area="Admin" asp-controller="ShopProducts" asp-action="Index">
+                        <span class="admin-nav-index">02</span>
+                        <span>Shop Ürünleri</span>
+                    </a>
+                    <a class="admin-nav-link @ActiveClass("KitchenMenuItems", "KitchenSubscriptions")" asp-area="Admin" asp-controller="KitchenMenuItems" asp-action="Index">
+                        <span class="admin-nav-index">03</span>
+                        <span>Kitchen</span>
+                    </a>
+                </div>
+
+                <div class="admin-nav-group">
+                    <p class="admin-nav-title">İçerik & Topluluk</p>
+                    <a class="admin-nav-link @ActiveClass("CommunityEvents")" asp-area="Admin" asp-controller="CommunityEvents" asp-action="Index">
+                        <span class="admin-nav-index">04</span>
+                        <span>Etkinlikler</span>
+                    </a>
+                    <a class="admin-nav-link @ActiveClass("CommunityChallenges")" asp-area="Admin" asp-controller="CommunityChallenges" asp-action="Index">
+                        <span class="admin-nav-index">05</span>
+                        <span>Challenge'lar</span>
+                    </a>
+                    <a class="admin-nav-link @ActiveClass("BlogPosts")" asp-area="Admin" asp-controller="BlogPosts" asp-action="Index">
+                        <span class="admin-nav-index">06</span>
+                        <span>NO23 Journal</span>
+                    </a>
+                    <a class="admin-nav-link @ActiveClass("SuccessStories")" asp-area="Admin" asp-controller="SuccessStories" asp-action="Index">
+                        <span class="admin-nav-index">07</span>
+                        <span>Başarı Hikâyeleri</span>
+                    </a>
+                </div>
+
+                <div class="admin-nav-group">
+                    <p class="admin-nav-title">Kulüp</p>
+                    <a class="admin-nav-link @ActiveClass("Members", "MembershipPackages")" asp-area="Admin" asp-controller="Members" asp-action="Index">
+                        <span class="admin-nav-index">08</span>
+                        <span>Üyeler & Paketler</span>
+                    </a>
+                    <a class="admin-nav-link @ActiveClass("Trainers")" asp-area="Admin" asp-controller="Trainers" asp-action="Index">
+                        <span class="admin-nav-index">09</span>
+                        <span>Eğitmenler</span>
+                    </a>
+                    <a class="admin-nav-link @ActiveClass("GroupClasses", "ClassSessions")" asp-area="Admin" asp-controller="GroupClasses" asp-action="Index">
+                        <span class="admin-nav-index">10</span>
+                        <span>Ders Programı</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="admin-sidebar-foot">
+                <a class="admin-site-link" asp-area="" asp-controller="Home" asp-action="Index">
+                    <span>Public siteyi görüntüle</span>
+                    <span aria-hidden="true">↗</span>
+                </a>
+                <form asp-area="Identity"
+                      asp-page="/Account/Logout"
+                      asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })"
+                      method="post">
+                    <button class="admin-logout" type="submit">Güvenli çıkış</button>
+                </form>
+            </div>
+        </aside>
+
+        <div class="admin-sidebar-overlay" data-admin-sidebar-close></div>
+
+        <main class="admin-main">
+            <header class="admin-topbar">
+                <div class="admin-topbar-start">
+                    <button class="admin-menu-button" type="button" data-admin-sidebar-open aria-label="Menüyü aç">
+                        <span></span><span></span>
+                    </button>
+                    <div>
+                        <p class="admin-topbar-kicker">NO23 / ADMIN</p>
+                        <strong class="admin-topbar-title">@pageTitle</strong>
+                    </div>
+                </div>
+
+                <div class="admin-topbar-end">
+                    <span class="admin-date">@DateTime.Now.ToString("dd.MM.yyyy")</span>
+                    <a class="admin-user" asp-area="Identity" asp-page="/Account/Manage/Index" title="Hesap ayarları">
+                        <span class="admin-user-avatar">@userInitial</span>
+                        <span class="admin-user-copy">
+                            <strong>@userName</strong>
+                            <small>Yönetici</small>
+                        </span>
+                    </a>
+                </div>
+            </header>
+
+            <div class="admin-content">
+                @RenderBody()
+            </div>
+        </main>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (() => {
+            const body = document.body;
+            document.querySelector('[data-admin-sidebar-open]')?.addEventListener('click', () => body.classList.add('admin-menu-open'));
+            document.querySelectorAll('[data-admin-sidebar-close]').forEach((element) => {
+                element.addEventListener('click', () => body.classList.remove('admin-menu-open'));
+            });
+        })();
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
