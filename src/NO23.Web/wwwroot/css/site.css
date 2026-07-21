@@ -3607,7 +3607,7 @@ button:focus-visible {
   position: relative;
   min-height: 100vh;
   overflow: hidden;
-  padding: 5.5rem 0 7rem;
+  padding: 4.5rem 0 5.5rem;
   color: #fff;
   background:
     radial-gradient(circle at 92% 4%, rgba(197, 255, 32, 0.13), transparent 31rem),
@@ -3642,11 +3642,11 @@ button:focus-visible {
 
 .shop-hero {
   display: grid;
-  min-height: 650px;
+  min-height: 520px;
   grid-template-columns: minmax(0, 1.25fr) minmax(340px, 0.75fr);
   align-items: center;
-  gap: 4rem;
-  padding-bottom: 5rem;
+  gap: 3rem;
+  padding-bottom: 3.5rem;
 }
 
 .shop-kicker,
@@ -3665,7 +3665,7 @@ button:focus-visible {
 .content-hero h1 {
   max-width: 900px;
   margin: 0;
-  font-size: clamp(3.4rem, 6.6vw, 7rem);
+  font-size: clamp(3.2rem, 5.2vw, 5.6rem);
   font-weight: 950;
   line-height: 0.9;
   letter-spacing: -0.07em;
@@ -3680,10 +3680,10 @@ button:focus-visible {
 .shop-hero-description,
 .content-hero-description {
   max-width: 670px;
-  margin: 1.8rem 0 0;
+  margin: 1.4rem 0 0;
   color: rgba(255, 255, 255, 0.56);
-  font-size: 1.04rem;
-  line-height: 1.75;
+  font-size: 1rem;
+  line-height: 1.65;
 }
 
 .shop-hero-links,
@@ -3691,7 +3691,7 @@ button:focus-visible {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
-  margin-top: 2rem;
+  margin-top: 1.6rem;
 }
 
 .shop-primary-link,
@@ -3753,12 +3753,12 @@ button:focus-visible {
 
 .shop-hero-card {
   display: flex;
-  min-height: 520px;
+  min-height: 420px;
   flex-direction: column;
   justify-content: space-between;
-  padding: 1.7rem;
+  padding: 1.45rem;
   border: 1px solid var(--shop-border);
-  border-radius: 30px;
+  border-radius: 26px;
   background:
     linear-gradient(145deg, rgba(255, 255, 255, 0.055), transparent 55%),
     var(--shop-card);
@@ -3786,7 +3786,7 @@ button:focus-visible {
 
 .shop-hero-card-top strong {
   color: var(--shop-accent);
-  font-size: 2.2rem;
+  font-size: 1.8rem;
   line-height: 1;
 }
 
@@ -3801,7 +3801,7 @@ button:focus-visible {
 
 .shop-hero-card-content h2 {
   margin: 0;
-  font-size: clamp(2.8rem, 4.2vw, 4.6rem);
+  font-size: clamp(2.3rem, 3.4vw, 3.7rem);
   font-weight: 950;
   line-height: 0.92;
   letter-spacing: -0.055em;
@@ -3816,7 +3816,7 @@ button:focus-visible {
 }
 
 .shop-hero-card-footer span {
-  padding: 0.85rem 0.6rem;
+  padding: 0.7rem 0.55rem;
   color: rgba(255, 255, 255, 0.46);
   font-size: 0.6rem;
   font-weight: 750;
@@ -3882,7 +3882,7 @@ button:focus-visible {
 .shop-checkout-section,
 .content-section,
 .blog-featured-section {
-  padding-top: 6rem;
+  padding-top: 4.5rem;
   scroll-margin-top: 100px;
 }
 
@@ -3891,9 +3891,9 @@ button:focus-visible {
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.65fr);
   align-items: end;
-  gap: 3rem;
-  margin-bottom: 2.2rem;
-  padding-bottom: 1.7rem;
+  gap: 2rem;
+  margin-bottom: 1.8rem;
+  padding-bottom: 1.35rem;
   border-bottom: 1px solid var(--shop-border, rgba(255, 255, 255, 0.11));
 }
 
@@ -3901,7 +3901,7 @@ button:focus-visible {
 .content-section-heading h2 {
   max-width: 800px;
   margin: 0;
-  font-size: clamp(2.7rem, 5vw, 5.2rem);
+  font-size: clamp(2.4rem, 3.9vw, 4.1rem);
   font-weight: 950;
   line-height: 0.95;
   letter-spacing: -0.06em;
@@ -3932,7 +3932,7 @@ button:focus-visible {
 
 .shop-product-card {
   display: grid;
-  min-height: 480px;
+  min-height: 400px;
   grid-template-columns: minmax(170px, 0.82fr) minmax(0, 1.18fr);
 }
 
@@ -3984,7 +3984,7 @@ button:focus-visible {
 }
 
 .shop-product-visual > strong {
-  font-size: clamp(5rem, 8vw, 8rem);
+  font-size: clamp(4.2rem, 6.2vw, 6.2rem);
   font-weight: 950;
   line-height: 0.8;
   letter-spacing: -0.1em;
@@ -4005,7 +4005,7 @@ button:focus-visible {
   display: flex;
   min-width: 0;
   flex-direction: column;
-  padding: 1.5rem;
+  padding: 1.3rem;
 }
 
 .shop-product-meta {
@@ -4018,8 +4018,8 @@ button:focus-visible {
 
 .shop-product-content h3 {
   margin: auto 0 0.8rem;
-  padding-top: 2rem;
-  font-size: clamp(1.8rem, 3vw, 3rem);
+  padding-top: 1.5rem;
+  font-size: clamp(1.65rem, 2.25vw, 2.45rem);
   font-weight: 900;
   line-height: 0.98;
   letter-spacing: -0.045em;
@@ -4038,8 +4038,8 @@ button:focus-visible {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  margin-top: 1.4rem;
-  padding-top: 1.2rem;
+  margin-top: 1.2rem;
+  padding-top: 1rem;
   border-top: 1px solid var(--shop-border);
 }
 
@@ -4100,9 +4100,9 @@ button:focus-visible {
 
 .shop-kitchen-card {
   display: flex;
-  min-height: 470px;
+  min-height: 390px;
   flex-direction: column;
-  padding: 1.5rem;
+  padding: 1.3rem;
   background:
     radial-gradient(circle at 100% 0, rgba(197, 255, 32, 0.09), transparent 16rem),
     var(--shop-card);
@@ -4118,13 +4118,13 @@ button:focus-visible {
 
 .shop-kitchen-card-top strong {
   color: rgba(255, 255, 255, 0.14);
-  font-size: 2.4rem;
+  font-size: 2rem;
   line-height: 1;
 }
 
 .shop-kitchen-card-content {
   margin: auto 0;
-  padding: 2rem 0;
+  padding: 1.35rem 0;
 }
 
 .shop-kitchen-calorie {
@@ -4138,7 +4138,7 @@ button:focus-visible {
 
 .shop-kitchen-card-content h3 {
   margin: 0;
-  font-size: clamp(2rem, 3.7vw, 3.7rem);
+  font-size: clamp(1.8rem, 2.9vw, 2.9rem);
   font-weight: 950;
   line-height: 0.95;
   letter-spacing: -0.055em;
@@ -4153,7 +4153,7 @@ button:focus-visible {
 .shop-kitchen-macros {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  margin-top: 1.6rem;
+  margin-top: 1.2rem;
   border: 1px solid var(--shop-border);
   border-radius: 14px;
   overflow: hidden;
@@ -4191,7 +4191,7 @@ button:focus-visible {
 
 .shop-cart-panel,
 .shop-delivery-panel {
-  padding: 1.7rem;
+  padding: 1.5rem;
 }
 
 .shop-delivery-panel {
@@ -4245,7 +4245,7 @@ button:focus-visible {
 
 .shop-cart-empty {
   display: grid;
-  min-height: 430px;
+  min-height: 340px;
   place-content: center;
   text-align: center;
 }
@@ -4508,7 +4508,7 @@ button:focus-visible {
 .shop-empty-state,
 .content-empty-state {
   display: flex;
-  min-height: 190px;
+  min-height: 160px;
   align-items: center;
   gap: 2rem;
   padding: 2rem;
@@ -4549,7 +4549,7 @@ button:focus-visible {
   position: relative;
   min-height: 100vh;
   overflow: hidden;
-  padding: 5.5rem 0 7rem;
+  padding: 4.5rem 0 5.5rem;
   color: #fff;
   background: #070907;
 }
@@ -4571,11 +4571,11 @@ button:focus-visible {
 
 .content-hero {
   display: grid;
-  min-height: 630px;
+  min-height: 510px;
   grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr);
   align-items: center;
-  gap: 4rem;
-  padding-bottom: 4rem;
+  gap: 3rem;
+  padding-bottom: 3rem;
 }
 
 .content-kicker,
@@ -4591,12 +4591,12 @@ button:focus-visible {
 
 .community-manifesto {
   display: flex;
-  min-height: 500px;
+  min-height: 410px;
   flex-direction: column;
   justify-content: space-between;
-  padding: 1.6rem;
+  padding: 1.45rem;
   border: 1px solid var(--content-border);
-  border-radius: 28px;
+  border-radius: 26px;
   background:
     radial-gradient(circle at 100% 0, rgba(197, 255, 32, 0.1), transparent 18rem),
     var(--content-card);
@@ -4635,7 +4635,7 @@ button:focus-visible {
 
 .community-manifesto h2 {
   margin: 0 0 auto;
-  font-size: clamp(3rem, 4.5vw, 4.9rem);
+  font-size: clamp(2.45rem, 3.5vw, 3.6rem);
   font-weight: 950;
   line-height: 0.9;
   letter-spacing: -0.06em;
@@ -4650,7 +4650,7 @@ button:focus-visible {
 }
 
 .community-manifesto-stats span {
-  padding: 0.9rem;
+  padding: 0.75rem;
   color: rgba(255, 255, 255, 0.45);
   font-size: 0.65rem;
   text-align: center;
@@ -4675,8 +4675,8 @@ button:focus-visible {
 
 .community-event-card {
   display: grid;
-  min-height: 430px;
-  grid-template-columns: 180px minmax(0, 1fr);
+  min-height: 350px;
+  grid-template-columns: 155px minmax(0, 1fr);
   overflow: hidden;
   border: 1px solid var(--content-border);
   border-radius: 26px;
@@ -4688,7 +4688,7 @@ button:focus-visible {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 1.2rem;
+  padding: 1rem;
   overflow: hidden;
   color: #070907;
   background: var(--content-accent);
@@ -4716,7 +4716,7 @@ button:focus-visible {
 }
 
 .community-event-visual > strong {
-  font-size: 6.5rem;
+  font-size: 5.2rem;
   font-weight: 950;
   line-height: 0.85;
   letter-spacing: -0.1em;
@@ -4724,7 +4724,7 @@ button:focus-visible {
 
 .community-event-visual > small {
   position: absolute;
-  bottom: 1.2rem;
+  bottom: 1rem;
   font-size: 0.62rem;
   font-weight: 850;
 }
@@ -4733,7 +4733,7 @@ button:focus-visible {
   display: flex;
   min-width: 0;
   flex-direction: column;
-  padding: 1.4rem;
+  padding: 1.25rem;
 }
 
 .community-event-meta,
@@ -4752,8 +4752,8 @@ button:focus-visible {
 
 .community-event-content h3 {
   margin: auto 0 0.75rem;
-  padding-top: 2rem;
-  font-size: clamp(1.8rem, 3vw, 3rem);
+  padding-top: 1.5rem;
+  font-size: clamp(1.65rem, 2.25vw, 2.35rem);
   font-weight: 950;
   line-height: 0.98;
   letter-spacing: -0.05em;
@@ -4768,8 +4768,8 @@ button:focus-visible {
 .community-event-details {
   display: grid;
   gap: 0.55rem;
-  margin-top: 1.3rem;
-  padding-top: 1rem;
+  margin-top: 1.05rem;
+  padding-top: 0.85rem;
   border-top: 1px solid var(--content-border);
 }
 
@@ -4796,7 +4796,7 @@ button:focus-visible {
 
 .community-challenge-card {
   display: grid;
-  grid-template-columns: 150px minmax(0, 1fr) minmax(260px, 0.8fr);
+  grid-template-columns: 130px minmax(0, 1fr) minmax(240px, 0.8fr);
   align-items: stretch;
   border: 1px solid var(--content-border);
   border-radius: 24px;
@@ -4806,10 +4806,10 @@ button:focus-visible {
 
 .community-challenge-number {
   display: flex;
-  min-height: 230px;
+  min-height: 190px;
   flex-direction: column;
   justify-content: space-between;
-  padding: 1.3rem;
+  padding: 1.15rem;
   color: #070907;
   background: var(--content-accent);
 }
@@ -4822,7 +4822,7 @@ button:focus-visible {
 }
 
 .community-challenge-number strong {
-  font-size: 4.5rem;
+  font-size: 3.8rem;
   font-weight: 950;
   line-height: 0.8;
   letter-spacing: -0.1em;
@@ -4830,12 +4830,12 @@ button:focus-visible {
 
 .community-challenge-content,
 .community-challenge-goal {
-  padding: 1.5rem;
+  padding: 1.25rem;
 }
 
 .community-challenge-content h3 {
-  margin: 2.2rem 0 0.55rem;
-  font-size: clamp(1.7rem, 3vw, 2.8rem);
+  margin: 1.5rem 0 0.55rem;
+  font-size: clamp(1.6rem, 2.3vw, 2.25rem);
   font-weight: 950;
   line-height: 1;
   letter-spacing: -0.045em;
@@ -4882,10 +4882,10 @@ button:focus-visible {
 
 .blog-hero-index {
   display: flex;
-  min-height: 430px;
+  min-height: 340px;
   flex-direction: column;
   justify-content: space-between;
-  padding: 1.5rem;
+  padding: 1.35rem;
   border: 1px solid var(--content-border);
   border-radius: 50% 50% 28px 28px;
   text-align: center;
@@ -4902,7 +4902,7 @@ button:focus-visible {
 
 .blog-hero-index > strong {
   color: var(--content-accent);
-  font-size: clamp(6rem, 10vw, 10rem);
+  font-size: clamp(5rem, 8vw, 7.5rem);
   font-weight: 950;
   line-height: 0.8;
   letter-spacing: -0.1em;
@@ -4922,7 +4922,7 @@ button:focus-visible {
 
 .blog-featured-card {
   display: grid;
-  min-height: 520px;
+  min-height: 410px;
   grid-template-columns: minmax(320px, 0.88fr) minmax(0, 1.12fr);
   overflow: hidden;
   border: 1px solid var(--content-border);
@@ -4935,7 +4935,7 @@ button:focus-visible {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 2rem;
+  padding: 1.5rem;
   overflow: hidden;
   color: #070907;
   background: var(--content-accent);
@@ -4975,7 +4975,7 @@ button:focus-visible {
 }
 
 .blog-featured-visual strong {
-  font-size: clamp(3.8rem, 7vw, 7rem);
+  font-size: clamp(3.2rem, 5.3vw, 5.3rem);
   font-weight: 950;
   line-height: 0.82;
   letter-spacing: -0.08em;
@@ -4984,7 +4984,7 @@ button:focus-visible {
 
 .blog-featured-visual small {
   position: absolute;
-  bottom: 2rem;
+  bottom: 1.5rem;
   font-size: 0.65rem;
   font-weight: 850;
 }
@@ -4993,7 +4993,7 @@ button:focus-visible {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: clamp(1.7rem, 4vw, 4rem);
+  padding: clamp(1.6rem, 3vw, 3rem);
 }
 
 .blog-post-meta,
@@ -5011,8 +5011,8 @@ button:focus-visible {
 }
 
 .blog-featured-content h2 {
-  margin: 2.5rem 0 1rem;
-  font-size: clamp(2.7rem, 5vw, 5.4rem);
+  margin: 1.6rem 0 0.85rem;
+  font-size: clamp(2.4rem, 3.8vw, 3.9rem);
   font-weight: 950;
   line-height: 0.92;
   letter-spacing: -0.06em;
@@ -5029,7 +5029,7 @@ button:focus-visible {
   display: flex;
   flex-wrap: wrap;
   gap: 0.45rem;
-  margin-top: 1.7rem;
+  margin-top: 1.3rem;
 }
 
 .blog-tag-list span {
@@ -5050,9 +5050,9 @@ button:focus-visible {
 
 .blog-post-card {
   display: flex;
-  min-height: 390px;
+  min-height: 310px;
   flex-direction: column;
-  padding: 1.4rem;
+  padding: 1.25rem;
   border: 1px solid var(--content-border);
   border-radius: 24px;
   background:
@@ -5083,7 +5083,7 @@ button:focus-visible {
 
 .blog-post-card-content {
   margin: auto 0;
-  padding: 2rem 0;
+  padding: 1.5rem 0;
 }
 
 .blog-post-card-content > p:first-child {
@@ -5094,7 +5094,7 @@ button:focus-visible {
 
 .blog-post-card-content h3 {
   margin: 0;
-  font-size: clamp(1.8rem, 3vw, 3rem);
+  font-size: clamp(1.65rem, 2.25vw, 2.25rem);
   font-weight: 950;
   line-height: 0.98;
   letter-spacing: -0.05em;
@@ -5120,10 +5120,10 @@ button:focus-visible {
 
 .stories-hero-quote {
   display: flex;
-  min-height: 430px;
+  min-height: 350px;
   flex-direction: column;
   justify-content: space-between;
-  padding: 1.7rem;
+  padding: 1.45rem;
   border: 1px solid var(--content-border);
   border-radius: 28px;
   background:
@@ -5142,8 +5142,8 @@ button:focus-visible {
 
 .stories-hero-quote blockquote {
   margin: auto 0;
-  padding: 2rem 0;
-  font-size: clamp(2rem, 3.6vw, 3.8rem);
+  padding: 1.5rem 0;
+  font-size: clamp(1.9rem, 2.8vw, 3rem);
   font-weight: 900;
   line-height: 1;
   letter-spacing: -0.05em;
@@ -5156,7 +5156,7 @@ button:focus-visible {
 
 .story-card {
   display: grid;
-  min-height: 500px;
+  min-height: 400px;
   grid-template-columns: minmax(300px, 0.82fr) minmax(0, 1.18fr);
   overflow: hidden;
   border: 1px solid var(--content-border);
@@ -5179,7 +5179,7 @@ button:focus-visible {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 1.7rem;
+  padding: 1.45rem;
   overflow: hidden;
   color: #070907;
   background: var(--content-accent);
@@ -5213,7 +5213,7 @@ button:focus-visible {
 }
 
 .story-card-visual > strong {
-  font-size: clamp(8rem, 14vw, 14rem);
+  font-size: clamp(7rem, 10.5vw, 10.5rem);
   font-weight: 950;
   line-height: 0.7;
   letter-spacing: -0.11em;
@@ -5257,12 +5257,12 @@ button:focus-visible {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: clamp(1.7rem, 4vw, 4rem);
+  padding: clamp(1.6rem, 3vw, 3rem);
 }
 
 .story-card-content h3 {
-  margin: 2.2rem 0 1rem;
-  font-size: clamp(2.7rem, 5vw, 5.2rem);
+  margin: 1.5rem 0 0.85rem;
+  font-size: clamp(2.35rem, 3.8vw, 3.8rem);
   font-weight: 950;
   line-height: 0.92;
   letter-spacing: -0.06em;
@@ -5278,7 +5278,7 @@ button:focus-visible {
 .story-metric {
   display: grid;
   gap: 0.35rem;
-  margin-top: 2rem;
+  margin-top: 1.5rem;
   padding: 1.2rem;
   border: 1px solid rgba(197, 255, 32, 0.24);
   border-radius: 15px;
@@ -5353,7 +5353,7 @@ button:focus-visible {
 
   .shop-hero-card,
   .community-manifesto {
-    min-height: 440px;
+    min-height: 380px;
   }
 
   .shop-section-heading,
@@ -5390,7 +5390,7 @@ button:focus-visible {
   }
 
   .blog-featured-visual {
-    min-height: 390px;
+    min-height: 320px;
   }
 
   .blog-featured-visual strong {
@@ -5398,7 +5398,7 @@ button:focus-visible {
   }
 
   .story-card-visual {
-    min-height: 390px;
+    min-height: 320px;
   }
 
   .story-card:nth-child(even) .story-card-visual,
@@ -5411,7 +5411,7 @@ button:focus-visible {
 @media (max-width: 767.98px) {
   .shop-page,
   .content-page {
-    padding: 3.5rem 0 5rem;
+    padding: 2.75rem 0 4rem;
   }
 
   .shop-page-grid,
@@ -5426,7 +5426,7 @@ button:focus-visible {
 
   .shop-hero h1,
   .content-hero h1 {
-    font-size: clamp(3.15rem, 15vw, 5.4rem);
+    font-size: clamp(2.7rem, 12vw, 4.1rem);
   }
 
   .shop-hero-links,
@@ -5446,7 +5446,7 @@ button:focus-visible {
   .community-manifesto,
   .stories-hero-quote,
   .blog-hero-index {
-    min-height: 400px;
+    min-height: 340px;
     border-radius: 24px;
   }
 
@@ -5455,12 +5455,12 @@ button:focus-visible {
   .shop-checkout-section,
   .content-section,
   .blog-featured-section {
-    padding-top: 5rem;
+    padding-top: 3.5rem;
   }
 
   .shop-section-heading h2,
   .content-section-heading h2 {
-    font-size: clamp(2.65rem, 12vw, 4.4rem);
+    font-size: clamp(2.25rem, 10vw, 3.4rem);
   }
 
   .shop-product-card,
@@ -5471,7 +5471,7 @@ button:focus-visible {
 
   .shop-product-visual,
   .community-event-visual {
-    min-height: 260px;
+    min-height: 220px;
   }
 
   .shop-product-content h3,
@@ -5495,7 +5495,7 @@ button:focus-visible {
   }
 
   .community-challenge-number {
-    min-height: 260px;
+    min-height: 220px;
     padding: 1rem;
   }
 
@@ -5509,7 +5509,7 @@ button:focus-visible {
 
   .story-card-content h3,
   .blog-featured-content h2 {
-    font-size: clamp(2.5rem, 12vw, 4.5rem);
+    font-size: clamp(2.2rem, 10vw, 3.5rem);
   }
 }
 
@@ -5599,7 +5599,7 @@ button:focus-visible {
 
   .blog-featured-visual,
   .story-card-visual {
-    min-height: 320px;
+    min-height: 260px;
   }
 
   .story-image-grid {
