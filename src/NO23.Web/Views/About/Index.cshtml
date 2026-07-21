@@ -1,0 +1,193 @@
+@{
+    ViewData["Title"] = "Hakkımızda";
+}
+
+<div class="about-page">
+    <section class="about-hero" aria-labelledby="about-title">
+        <div class="about-grid" aria-hidden="true"></div>
+        <div class="about-orbit" aria-hidden="true"></div>
+
+        <div class="container position-relative">
+            <div class="about-hero-layout">
+                <div class="about-hero-copy">
+                    <p class="about-kicker">NO23 / Hikâyemiz</p>
+
+                    <h1 id="about-title">
+                        Bir spor salonundan
+                        <span>çok daha fazlası.</span>
+                    </h1>
+
+                    <p class="about-lead">
+                        NO23; antrenmanı, beslenmeyi ve topluluk enerjisini
+                        aynı yaşam ritminde buluşturan yeni nesil bir spor
+                        kulübüdür.
+                    </p>
+
+                    <div class="about-hero-actions">
+                        <a class="btn no23-primary-button"
+                           asp-controller="Home"
+                           asp-action="Index"
+                           asp-fragment="memberships">
+                            Üyelikleri İncele
+                        </a>
+
+                        <a class="btn no23-secondary-button"
+                           asp-controller="Home"
+                           asp-action="Index"
+                           asp-fragment="services">
+                            Hizmetleri Keşfet
+                        </a>
+                    </div>
+                </div>
+
+                <aside class="about-manifesto" aria-label="NO23 yaklaşımı">
+                    <div class="about-manifesto-top">
+                        <span>NO23 / Manifesto</span>
+                        <strong>23</strong>
+                    </div>
+
+                    <p>
+                        Daha iyi antrenman.<br />
+                        Daha doğru beslenme.<br />
+                        Daha güçlü bir yaşam.
+                    </p>
+
+                    <div class="about-manifesto-steps">
+                        <span>01 · Train</span>
+                        <span>02 · Eat</span>
+                        <span>03 · Live</span>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </section>
+
+    <section class="about-story-section" aria-labelledby="story-title">
+        <div class="container">
+            <div class="about-section-heading about-section-heading-dark">
+                <div>
+                    <p class="about-kicker">NO23'ün çıkış noktası</p>
+                    <h2 id="story-title">Hareketi günlük hayatın parçası yap.</h2>
+                </div>
+
+                <p>
+                    İyi yaşamın yalnızca antrenman saatinden ibaret olmadığına
+                    inanıyoruz. Kulüpte başlayan gelişimi günün tamamına
+                    taşıyan bütünsel bir deneyim tasarlıyoruz.
+                </p>
+            </div>
+
+            <div class="about-story-grid">
+                <article class="about-story-card about-story-card-dark">
+                    <span class="about-card-index">01</span>
+                    <p class="about-card-label">Hikâyemiz</p>
+                    <h3>Aynı hedefin farklı parçalarını bir araya getirdik.</h3>
+                    <p>
+                        Profesyonel antrenman, ulaşılabilir beslenme desteği,
+                        gelişim takibi ve güçlü bir topluluk kültürü tek üyelik
+                        deneyiminde buluşuyor.
+                    </p>
+                </article>
+
+                <div class="about-principle-list">
+                    <article>
+                        <span>01</span>
+                        <div>
+                            <h3>Bilimsel yaklaşım</h3>
+                            <p>Programı tahminlerle değil, hedef ve ölçümlerle şekillendiririz.</p>
+                        </div>
+                    </article>
+
+                    <article>
+                        <span>02</span>
+                        <div>
+                            <h3>Sürdürülebilir ritim</h3>
+                            <p>Kısa süreli çözümler yerine devam edebileceğin alışkanlıklar kurarız.</p>
+                        </div>
+                    </article>
+
+                    <article>
+                        <span>03</span>
+                        <div>
+                            <h3>Tek ekosistem</h3>
+                            <p>Antrenman, Kitchen, Shop ve Community aynı deneyimin parçalarıdır.</p>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="about-purpose-section" aria-label="Misyon ve vizyon">
+        <div class="container">
+            <div class="about-purpose-grid">
+                <article class="about-purpose-card about-purpose-card-accent">
+                    <span>01 · Misyon</span>
+                    <h2>İyi yaşamı anlaşılır ve sürdürülebilir kılmak.</h2>
+                    <p>
+                        Her üyenin seviyesine, hedefine ve yaşam tarzına uyum
+                        sağlayan profesyonel bir gelişim sistemi sunmak.
+                    </p>
+                </article>
+
+                <article class="about-purpose-card">
+                    <span>02 · Vizyon</span>
+                    <h2>Günün her anında kullanılan bir yaşam platformu olmak.</h2>
+                    <p>
+                        Spor kulübü deneyimini beslenme, topluluk ve dijital
+                        takip özellikleriyle tek bir güçlü ekosisteme dönüştürmek.
+                    </p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section class="about-reasons-section" aria-labelledby="reasons-title">
+        <div class="container">
+            <div class="about-section-heading about-section-heading-dark">
+                <div>
+                    <p class="about-kicker">Neden NO23?</p>
+                    <h2 id="reasons-title">Sonuçtan önce doğru sistemi kur.</h2>
+                </div>
+
+                <p>
+                    Her detay, üyelerin daha bilinçli ilerlemesi ve oluşturduğu
+                    ritmi uzun vadede koruyabilmesi için tasarlanır.
+                </p>
+            </div>
+
+            <div class="about-reasons-grid">
+                <article><span>01</span><h3>Profesyonel eğitmen kadrosu</h3><p>Hedefine göre yönlendiren uzman desteği.</p></article>
+                <article><span>02</span><h3>Bilimsel antrenman sistemi</h3><p>Planlı, ölçülebilir ve güncellenebilir programlar.</p></article>
+                <article><span>03</span><h3>Ölçme ve değerlendirme</h3><p>Gelişimini görünür kılan düzenli takip.</p></article>
+                <article><span>04</span><h3>Beslenme desteği</h3><p>Hedeflerinle uyumlu Kitchen deneyimi.</p></article>
+                <article><span>05</span><h3>Topluluk kültürü</h3><p>Etkinlik, challenge ve ortak motivasyon.</p></article>
+                <article><span>06</span><h3>Sürekli gelişim</h3><p>Değişen ihtiyaçlarına uyum sağlayan ekosistem.</p></article>
+            </div>
+        </div>
+    </section>
+
+    <section class="about-ecosystem-section" aria-labelledby="ecosystem-title">
+        <div class="container">
+            <div class="about-ecosystem-header">
+                <div>
+                    <p class="about-kicker">NO23 Ekosistemi</p>
+                    <h2 id="ecosystem-title">Tek hedef. Dört güçlü deneyim.</h2>
+                </div>
+
+                <a asp-controller="Home"
+                   asp-action="Index"
+                   asp-fragment="memberships">
+                    NO23'e Katıl <span aria-hidden="true">↗</span>
+                </a>
+            </div>
+
+            <div class="about-ecosystem-grid">
+                <article><span>01</span><strong>Sports Club</strong><small>Planlı antrenman ve gelişim takibi</small></article>
+                <article><span>02</span><strong>Kitchen</strong><small>Hedef odaklı beslenme çözümleri</small></article>
+                <article><span>03</span><strong>Community</strong><small>Birlikte hareket eden güçlü topluluk</small></article>
+                <article><span>04</span><strong>Shop</strong><small>Ritmini destekleyen seçili ürünler</small></article>
+            </div>
+        </div>
+    </section>
+</div>
