@@ -325,9 +325,9 @@ button:focus-visible {
   isolation: isolate;
   display: flex;
   align-items: center;
-  min-height: calc(100vh - 82px);
+  min-height: 720px;
   overflow: hidden;
-  padding: 7rem 0 6rem;
+  padding: 4.5rem 0;
   background:
     radial-gradient(circle at 80% 20%, rgba(200, 255, 50, 0.14), transparent 30%),
     linear-gradient(135deg, #080808 0%, #111111 55%, #080808 100%);
@@ -374,7 +374,7 @@ button:focus-visible {
 .hero-title {
   max-width: 920px;
   margin: 0;
-  font-size: clamp(4.2rem, 7vw, 7.5rem);
+  font-size: clamp(3.4rem, 5.3vw, 5.7rem);
   font-weight: 900;
   letter-spacing: -0.075em;
   line-height: 0.87;
@@ -391,7 +391,7 @@ button:focus-visible {
 
 .hero-description {
   max-width: 680px;
-  margin: 2.25rem 0 0;
+  margin: 1.4rem 0 0;
   color: rgba(255, 255, 255, 0.67);
   font-size: clamp(1rem, 1.3vw, 1.15rem);
 }
@@ -400,7 +400,7 @@ button:focus-visible {
   display: flex;
   flex-wrap: wrap;
   gap: 0.9rem;
-  margin-top: 2.25rem;
+  margin-top: 1.6rem;
 }
 
 .no23-primary-button,
@@ -445,7 +445,7 @@ button:focus-visible {
   display: flex;
   flex-wrap: wrap;
   gap: 1.5rem;
-  margin-top: 2.5rem;
+  margin-top: 1.8rem;
   color: rgba(255, 255, 255, 0.52);
   font-size: 0.7rem;
   font-weight: 700;
@@ -472,7 +472,7 @@ button:focus-visible {
 .hero-experience-card {
   position: relative;
   overflow: hidden;
-  padding: 2.25rem;
+  padding: 1.6rem;
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 26px;
   background: rgba(255, 255, 255, 0.055);
@@ -486,7 +486,7 @@ button:focus-visible {
   top: -3.2rem;
   right: -0.7rem;
   color: rgba(255, 255, 255, 0.045);
-  font-size: 12rem;
+  font-size: 9rem;
   font-weight: 900;
   letter-spacing: -0.1em;
   line-height: 1;
@@ -494,7 +494,7 @@ button:focus-visible {
 
 .experience-label {
   position: relative;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   color: var(--no23-accent);
   font-size: 0.7rem;
   font-weight: 800;
@@ -506,7 +506,7 @@ button:focus-visible {
   position: relative;
   max-width: 310px;
   margin: 0;
-  font-size: clamp(1.8rem, 2.8vw, 2.55rem);
+  font-size: clamp(1.65rem, 2.2vw, 2.1rem);
   font-weight: 800;
   letter-spacing: -0.045em;
   line-height: 1.05;
@@ -516,7 +516,7 @@ button:focus-visible {
   position: relative;
   display: grid;
   gap: 0;
-  margin: 2.5rem 0 0;
+  margin: 1.6rem 0 0;
   padding: 0;
   list-style: none;
 }
@@ -525,7 +525,7 @@ button:focus-visible {
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 1rem 0;
+  padding: 0.75rem 0;
   border-top: 1px solid rgba(255, 255, 255, 0.12);
   color: rgba(255, 255, 255, 0.74);
   font-size: 0.88rem;
@@ -542,7 +542,7 @@ button:focus-visible {
 /* Hızlı erişim */
 
 .quick-access {
-  padding: 6.5rem 0;
+  padding: 4.5rem 0;
   background-color: var(--no23-cream);
 }
 
@@ -550,8 +550,8 @@ button:focus-visible {
   display: flex;
   align-items: end;
   justify-content: space-between;
-  gap: 3rem;
-  margin-bottom: 3rem;
+  gap: 2rem;
+  margin-bottom: 2rem;
 }
 
 .quick-access-heading .section-kicker {
@@ -562,7 +562,7 @@ button:focus-visible {
 .quick-access-heading h2 {
   max-width: 680px;
   margin: 0;
-  font-size: clamp(2.4rem, 4vw, 4.25rem);
+  font-size: clamp(2.2rem, 3.3vw, 3.5rem);
   font-weight: 900;
   letter-spacing: -0.06em;
   line-height: 0.98;
@@ -585,8 +585,8 @@ button:focus-visible {
   position: relative;
   display: flex;
   flex-direction: column;
-  min-height: 205px;
-  padding: 1.7rem;
+  min-height: 170px;
+  padding: 1.35rem;
   border-right: 1px solid #d7d4cc;
   border-bottom: 1px solid #d7d4cc;
   background-color: transparent;
@@ -645,11 +645,11 @@ button:focus-visible {
 @media (max-width: 991.98px) {
   .no23-hero {
     min-height: auto;
-    padding: 6rem 0;
+    padding: 4.5rem 0;
   }
 
   .hero-title {
-    font-size: clamp(4rem, 11vw, 6.5rem);
+    font-size: clamp(3.2rem, 8vw, 5rem);
   }
 
   .hero-experience-card {
@@ -663,7 +663,7 @@ button:focus-visible {
 
 @media (max-width: 767.98px) {
   .quick-access {
-    padding: 4.5rem 0;
+    padding: 3.5rem 0;
   }
 
   .quick-access-heading {
@@ -678,11 +678,11 @@ button:focus-visible {
 
 @media (max-width: 575.98px) {
   .no23-hero {
-    padding: 4.5rem 0;
+    padding: 3.5rem 0;
   }
 
   .hero-title {
-    font-size: clamp(3.2rem, 16vw, 4.7rem);
+    font-size: clamp(2.8rem, 13vw, 4rem);
   }
 
   .hero-actions {
@@ -719,7 +719,7 @@ button:focus-visible {
 /* Hizmetler */
 
 .services-section {
-  padding: 7rem 0;
+  padding: 3.75rem 0;
   overflow: hidden;
   background:
     radial-gradient(circle at 10% 10%, rgba(200, 255, 50, 0.07), transparent 24%),
@@ -731,8 +731,8 @@ button:focus-visible {
   display: flex;
   align-items: end;
   justify-content: space-between;
-  gap: 3rem;
-  margin-bottom: 3.5rem;
+  gap: 2rem;
+  margin-bottom: 2.25rem;
 }
 
 .services-heading .section-kicker {
@@ -741,7 +741,7 @@ button:focus-visible {
 
 .services-heading h2 {
   margin: 0;
-  font-size: clamp(2.8rem, 5vw, 5.5rem);
+  font-size: clamp(2.3rem, 3.3vw, 3.4rem);
   font-weight: 900;
   letter-spacing: -0.065em;
   line-height: 0.92;
@@ -766,9 +766,9 @@ button:focus-visible {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 460px;
+  min-height: 320px;
   overflow: hidden;
-  padding: 2rem;
+  padding: 1.3rem;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--no23-radius);
   background:
@@ -835,7 +835,7 @@ button:focus-visible {
 
 .service-card h3 {
   margin: 0;
-  font-size: clamp(2rem, 3.6vw, 3.75rem);
+  font-size: clamp(1.75rem, 2.3vw, 2.3rem);
   font-weight: 900;
   letter-spacing: -0.055em;
   line-height: 0.95;
@@ -843,7 +843,7 @@ button:focus-visible {
 
 .service-card-content > p {
   max-width: 540px;
-  margin: 1.25rem 0 1.6rem;
+  margin: 0.9rem 0 1.15rem;
   color: rgba(255, 255, 255, 0.57);
 }
 
@@ -928,7 +928,7 @@ button:focus-visible {
 
 @media (max-width: 991.98px) {
   .services-section {
-    padding: 5.5rem 0;
+    padding: 4rem 0;
   }
 
   .services-heading {
@@ -940,7 +940,7 @@ button:focus-visible {
   }
 
   .service-card {
-    min-height: 420px;
+    min-height: 320px;
   }
 }
 
@@ -950,13 +950,13 @@ button:focus-visible {
   }
 
   .service-card {
-    min-height: 400px;
+    min-height: 300px;
   }
 }
 
 @media (max-width: 575.98px) {
   .services-section {
-    padding: 4.5rem 0;
+    padding: 3.5rem 0;
   }
 
   .services-heading {
@@ -964,14 +964,14 @@ button:focus-visible {
   }
 
   .service-card {
-    min-height: 380px;
-    padding: 1.6rem;
+    min-height: 290px;
+    padding: 1.35rem;
   }
 }
 /* Üyelik paketleri */
 
 .memberships-section {
-  padding: 7rem 0;
+  padding: 3.75rem 0;
   background:
     radial-gradient(circle at 90% 10%, rgba(200, 255, 50, 0.12), transparent 23%),
     var(--no23-cream);
@@ -981,8 +981,8 @@ button:focus-visible {
   display: flex;
   align-items: end;
   justify-content: space-between;
-  gap: 3rem;
-  margin-bottom: 3.5rem;
+  gap: 2rem;
+  margin-bottom: 2.25rem;
 }
 
 .memberships-heading .section-kicker {
@@ -993,7 +993,7 @@ button:focus-visible {
 .memberships-heading h2 {
   max-width: 850px;
   margin: 0;
-  font-size: clamp(2.8rem, 5vw, 5.4rem);
+  font-size: clamp(2.3rem, 3.3vw, 3.4rem);
   font-weight: 900;
   letter-spacing: -0.065em;
   line-height: 0.92;
@@ -1017,8 +1017,8 @@ button:focus-visible {
   position: relative;
   display: flex;
   flex-direction: column;
-  min-height: 590px;
-  padding: 1.7rem;
+  min-height: 420px;
+  padding: 1.25rem;
   border: 1px solid #d8d5cd;
   border-radius: var(--no23-radius);
   background-color: rgba(255, 255, 255, 0.62);
@@ -1039,7 +1039,7 @@ button:focus-visible {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  margin-bottom: 4.5rem;
+  margin-bottom: 1.7rem;
 }
 
 .membership-order {
@@ -1062,15 +1062,15 @@ button:focus-visible {
 
 .membership-card h3 {
   margin: 0;
-  font-size: clamp(2.7rem, 3.7vw, 4rem);
+  font-size: clamp(2.1rem, 2.4vw, 2.6rem);
   font-weight: 900;
   letter-spacing: -0.065em;
   line-height: 0.9;
 }
 
 .membership-audience {
-  min-height: 48px;
-  margin: 0.9rem 0 0;
+  min-height: 40px;
+  margin: 0.55rem 0 0;
   color: #6e6b65;
   font-size: 0.88rem;
 }
@@ -1078,7 +1078,7 @@ button:focus-visible {
 .membership-features {
   display: grid;
   gap: 0;
-  margin: 2rem 0;
+  margin: 1rem 0;
   padding: 0;
   border-top: 1px solid #ddd9d1;
   list-style: none;
@@ -1086,7 +1086,7 @@ button:focus-visible {
 
 .membership-features li {
   position: relative;
-  padding: 0.85rem 0 0.85rem 1.15rem;
+  padding: 0.58rem 0 0.58rem 1rem;
   border-bottom: 1px solid #ddd9d1;
   color: #46443f;
   font-size: 0.82rem;
@@ -1095,7 +1095,7 @@ button:focus-visible {
 
 .membership-features li::before {
   position: absolute;
-  top: 1.16rem;
+  top: 0.86rem;
   left: 0;
   width: 6px;
   height: 6px;
@@ -1108,7 +1108,7 @@ button:focus-visible {
   display: block;
   width: 100%;
   margin-top: auto;
-  padding: 0.82rem 1rem;
+  padding: 0.75rem 0.9rem;
   border: 1px solid var(--no23-black);
   border-radius: 999px;
   color: var(--no23-black);
@@ -1213,7 +1213,7 @@ button:focus-visible {
   justify-content: space-between;
   gap: 2rem;
   margin-top: 1.25rem;
-  padding: 1.6rem 1.8rem;
+  padding: 1.3rem 1.5rem;
   border-radius: var(--no23-radius);
   background-color: var(--no23-black);
   color: var(--no23-white);
@@ -1255,13 +1255,13 @@ button:focus-visible {
   }
 
   .membership-card {
-    min-height: 550px;
+    min-height: 410px;
   }
 }
 
 @media (max-width: 991.98px) {
   .memberships-section {
-    padding: 5.5rem 0;
+    padding: 4rem 0;
   }
 
   .memberships-heading {
@@ -1279,7 +1279,7 @@ button:focus-visible {
   }
 
   .membership-card {
-    min-height: 520px;
+    min-height: 400px;
   }
 
   .membership-note {
@@ -1290,7 +1290,7 @@ button:focus-visible {
 
 @media (max-width: 575.98px) {
   .memberships-section {
-    padding: 4.5rem 0;
+    padding: 3.5rem 0;
   }
 
   .memberships-heading {
@@ -1298,8 +1298,8 @@ button:focus-visible {
   }
 
   .membership-card {
-    min-height: 500px;
-    padding: 1.5rem;
+    min-height: 380px;
+    padding: 1.3rem;
   }
 }
 
@@ -2434,7 +2434,7 @@ button:focus-visible {
   --kitchen-border: rgba(255, 255, 255, 0.11);
   position: relative;
   min-height: 100vh;
-  padding: 5.5rem 0 7rem;
+  padding: 3.5rem 0 4.5rem;
   overflow: hidden;
   color: #fff;
   background:
@@ -2469,11 +2469,11 @@ button:focus-visible {
 
 .kitchen-hero {
   display: grid;
-  min-height: 680px;
+  min-height: 440px;
   grid-template-columns: minmax(0, 1.35fr) minmax(340px, 0.65fr);
   align-items: center;
-  gap: 4rem;
-  padding-bottom: 5rem;
+  gap: 2.5rem;
+  padding-bottom: 2.5rem;
 }
 
 .kitchen-kicker,
@@ -2489,7 +2489,7 @@ button:focus-visible {
 .kitchen-hero h1 {
   max-width: 950px;
   margin: 0;
-  font-size: clamp(3.8rem, 7vw, 7.5rem);
+  font-size: clamp(3rem, 4.5vw, 4.7rem);
   font-weight: 950;
   line-height: 0.9;
   letter-spacing: -0.07em;
@@ -2502,23 +2502,23 @@ button:focus-visible {
 
 .kitchen-hero-description {
   max-width: 680px;
-  margin: 2rem 0 0;
+  margin: 1.4rem 0 0;
   color: rgba(255, 255, 255, 0.58);
-  font-size: 1.08rem;
-  line-height: 1.75;
+  font-size: 1rem;
+  line-height: 1.65;
 }
 
 .kitchen-hero-actions {
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin-top: 2.4rem;
+  margin-top: 1.6rem;
 }
 
 .kitchen-primary-link,
 .kitchen-secondary-link {
   display: inline-flex;
-  min-height: 56px;
+  min-height: 50px;
   align-items: center;
   justify-content: center;
   gap: 2.5rem;
@@ -2562,12 +2562,12 @@ button:focus-visible {
 
 .kitchen-hero-card {
   display: flex;
-  min-height: 520px;
+  min-height: 350px;
   flex-direction: column;
   justify-content: space-between;
-  padding: 2rem;
+  padding: 1.45rem;
   border: 1px solid rgba(197, 255, 32, 0.2);
-  border-radius: 30px;
+  border-radius: 26px;
   background:
     radial-gradient(circle at 100% 0, rgba(197, 255, 32, 0.14), transparent 18rem),
     rgba(22, 27, 17, 0.9);
@@ -2592,7 +2592,7 @@ button:focus-visible {
 
 .kitchen-hero-card-top strong {
   color: rgba(255, 255, 255, 0.09);
-  font-size: 6rem;
+  font-size: 3.2rem;
   font-weight: 950;
   line-height: 0.75;
 }
@@ -2608,7 +2608,7 @@ button:focus-visible {
 
 .kitchen-hero-card-content h2 {
   margin: 0;
-  font-size: clamp(2.4rem, 3vw, 3.8rem);
+  font-size: clamp(1.95rem, 2.3vw, 2.6rem);
   font-weight: 900;
   line-height: 0.98;
   letter-spacing: -0.055em;
@@ -2624,7 +2624,7 @@ button:focus-visible {
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 1rem 0;
+  padding: 0.75rem 0;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.68);
   font-size: 0.82rem;
@@ -2695,21 +2695,21 @@ button:focus-visible {
 }
 
 .kitchen-menu-section {
-  padding-top: 7rem;
+  padding-top: 3.5rem;
 }
 
 .kitchen-section-heading {
   display: grid;
   grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.7fr);
   align-items: end;
-  gap: 4rem;
-  margin-bottom: 2.5rem;
+  gap: 2rem;
+  margin-bottom: 1.8rem;
 }
 
 .kitchen-section-heading h2 {
   max-width: 850px;
   margin: 0;
-  font-size: clamp(2.8rem, 5.5vw, 6rem);
+  font-size: clamp(2.3rem, 3.3vw, 3.4rem);
   font-weight: 950;
   line-height: 0.95;
   letter-spacing: -0.065em;
@@ -2734,7 +2734,7 @@ button:focus-visible {
 .kitchen-calculator-panel,
 .kitchen-result-panel {
   min-width: 0;
-  padding: 2rem;
+  padding: 1.5rem;
 }
 
 .kitchen-calculator-panel {
@@ -2753,8 +2753,8 @@ button:focus-visible {
   display: flex;
   align-items: flex-start;
   gap: 1rem;
-  margin-bottom: 2rem;
-  padding-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.15rem;
   border-bottom: 1px solid;
 }
 
@@ -2841,7 +2841,7 @@ button:focus-visible {
 .kitchen-form-field input,
 .kitchen-form-field select {
   width: 100%;
-  min-height: 58px;
+  min-height: 52px;
   padding: 0.85rem 1rem;
   border: 1px solid rgba(10, 12, 9, 0.15);
   border-radius: 14px;
@@ -2870,7 +2870,7 @@ button:focus-visible {
 .kitchen-calculate-button {
   display: flex;
   width: 100%;
-  min-height: 62px;
+  min-height: 56px;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
@@ -2896,18 +2896,18 @@ button:focus-visible {
 
 .kitchen-result-placeholder {
   display: grid;
-  min-height: 510px;
+  min-height: 320px;
   place-content: center;
   justify-items: center;
-  padding: 2rem;
+  padding: 1.5rem;
   text-align: center;
 }
 
 .kitchen-result-rings {
   display: grid;
-  width: 190px;
-  height: 190px;
-  margin-bottom: 2rem;
+  width: 155px;
+  height: 155px;
+  margin-bottom: 1.5rem;
   place-items: center;
   border: 1px solid rgba(197, 255, 32, 0.28);
   border-radius: 50%;
@@ -2918,7 +2918,7 @@ button:focus-visible {
 
 .kitchen-result-rings span {
   color: var(--kitchen-accent);
-  font-size: 3.2rem;
+  font-size: 2.7rem;
   font-weight: 950;
 }
 
@@ -2962,7 +2962,7 @@ button:focus-visible {
 
 .kitchen-calorie-result {
   display: flex;
-  min-height: 190px;
+  min-height: 160px;
   align-items: flex-end;
   justify-content: space-between;
   gap: 1rem;
@@ -2984,7 +2984,7 @@ button:focus-visible {
 
 .kitchen-calorie-result strong {
   color: var(--kitchen-accent);
-  font-size: clamp(4rem, 7vw, 7rem);
+  font-size: clamp(3.4rem, 5.4vw, 5.4rem);
   font-weight: 950;
   line-height: 0.75;
   letter-spacing: -0.07em;
@@ -3073,7 +3073,7 @@ button:focus-visible {
 
 .kitchen-plan-card {
   display: flex;
-  min-height: 190px;
+  min-height: 170px;
   flex-direction: column;
   padding: 1rem;
   border: 1px solid var(--kitchen-border);
@@ -3199,7 +3199,7 @@ button:focus-visible {
 .kitchen-menu-visual {
   position: relative;
   display: flex;
-  min-height: 220px;
+  min-height: 180px;
   flex-direction: column;
   justify-content: space-between;
   padding: 1.25rem;
@@ -3226,7 +3226,7 @@ button:focus-visible {
   right: -0.5rem;
   bottom: -2rem;
   color: rgba(7, 9, 7, 0.08);
-  font-size: 11rem;
+  font-size: 8rem;
   font-weight: 950;
   line-height: 1;
   letter-spacing: -0.09em;
@@ -3238,7 +3238,7 @@ button:focus-visible {
 }
 
 .kitchen-menu-visual > div span {
-  font-size: 3.6rem;
+  font-size: 3rem;
   font-weight: 950;
   line-height: 0.9;
   letter-spacing: -0.06em;
@@ -3252,7 +3252,7 @@ button:focus-visible {
 
 .kitchen-menu-card-content {
   display: flex;
-  min-height: 350px;
+  min-height: 250px;
   flex-direction: column;
   padding: 1.25rem;
 }
@@ -3410,7 +3410,7 @@ button:focus-visible {
   }
 
   .kitchen-hero-card {
-    min-height: 440px;
+    min-height: 330px;
   }
 
   .kitchen-section-heading {
@@ -3423,13 +3423,13 @@ button:focus-visible {
   }
 
   .kitchen-result-placeholder {
-    min-height: 460px;
+    min-height: 320px;
   }
 }
 
 @media (max-width: 767.98px) {
   .kitchen-page {
-    padding: 3.5rem 0 5rem;
+    padding: 2.75rem 0 4rem;
   }
 
   .kitchen-page-grid {
@@ -3437,11 +3437,11 @@ button:focus-visible {
   }
 
   .kitchen-hero {
-    padding-bottom: 3rem;
+    padding-bottom: 2rem;
   }
 
   .kitchen-hero h1 {
-    font-size: clamp(3.2rem, 15vw, 5.4rem);
+    font-size: clamp(2.6rem, 11vw, 3.5rem);
   }
 
   .kitchen-hero-actions {
@@ -3455,17 +3455,17 @@ button:focus-visible {
   }
 
   .kitchen-hero-card {
-    min-height: 410px;
-    padding: 1.5rem;
+    min-height: 300px;
+    padding: 1.35rem;
     border-radius: 24px;
   }
 
   .kitchen-menu-section {
-    padding-top: 5rem;
+    padding-top: 3.5rem;
   }
 
   .kitchen-section-heading h2 {
-    font-size: clamp(2.7rem, 12vw, 4.5rem);
+    font-size: clamp(2.15rem, 9vw, 3rem);
   }
 
   .kitchen-calculator-layout {
@@ -3483,7 +3483,7 @@ button:focus-visible {
   }
 
   .kitchen-menu-card-content {
-    min-height: 320px;
+    min-height: 260px;
   }
 }
 
@@ -3497,7 +3497,7 @@ button:focus-visible {
   }
 
   .kitchen-result-placeholder {
-    min-height: 400px;
+    min-height: 330px;
     padding: 1rem;
   }
 
@@ -3534,7 +3534,7 @@ button:focus-visible {
   }
 
   .kitchen-menu-visual {
-    min-height: 190px;
+    min-height: 170px;
   }
 
   .kitchen-menu-macros {
@@ -3607,7 +3607,7 @@ button:focus-visible {
   position: relative;
   min-height: 100vh;
   overflow: hidden;
-  padding: 4.5rem 0 5.5rem;
+  padding: 3.5rem 0 4.5rem;
   color: #fff;
   background:
     radial-gradient(circle at 92% 4%, rgba(197, 255, 32, 0.13), transparent 31rem),
@@ -3642,11 +3642,11 @@ button:focus-visible {
 
 .shop-hero {
   display: grid;
-  min-height: 520px;
+  min-height: 420px;
   grid-template-columns: minmax(0, 1.25fr) minmax(340px, 0.75fr);
   align-items: center;
-  gap: 3rem;
-  padding-bottom: 3.5rem;
+  gap: 2.5rem;
+  padding-bottom: 2.5rem;
 }
 
 .shop-kicker,
@@ -3665,7 +3665,7 @@ button:focus-visible {
 .content-hero h1 {
   max-width: 900px;
   margin: 0;
-  font-size: clamp(3.2rem, 5.2vw, 5.6rem);
+  font-size: clamp(3rem, 4.5vw, 4.7rem);
   font-weight: 950;
   line-height: 0.9;
   letter-spacing: -0.07em;
@@ -3753,7 +3753,7 @@ button:focus-visible {
 
 .shop-hero-card {
   display: flex;
-  min-height: 420px;
+  min-height: 340px;
   flex-direction: column;
   justify-content: space-between;
   padding: 1.45rem;
@@ -3801,7 +3801,7 @@ button:focus-visible {
 
 .shop-hero-card-content h2 {
   margin: 0;
-  font-size: clamp(2.3rem, 3.4vw, 3.7rem);
+  font-size: clamp(2.05rem, 2.8vw, 3rem);
   font-weight: 950;
   line-height: 0.92;
   letter-spacing: -0.055em;
@@ -3882,7 +3882,7 @@ button:focus-visible {
 .shop-checkout-section,
 .content-section,
 .blog-featured-section {
-  padding-top: 4.5rem;
+  padding-top: 3.5rem;
   scroll-margin-top: 100px;
 }
 
@@ -3901,7 +3901,7 @@ button:focus-visible {
 .content-section-heading h2 {
   max-width: 800px;
   margin: 0;
-  font-size: clamp(2.4rem, 3.9vw, 4.1rem);
+  font-size: clamp(2.3rem, 3.3vw, 3.4rem);
   font-weight: 950;
   line-height: 0.95;
   letter-spacing: -0.06em;
@@ -3932,7 +3932,7 @@ button:focus-visible {
 
 .shop-product-card {
   display: grid;
-  min-height: 400px;
+  min-height: 340px;
   grid-template-columns: minmax(170px, 0.82fr) minmax(0, 1.18fr);
 }
 
@@ -3984,7 +3984,7 @@ button:focus-visible {
 }
 
 .shop-product-visual > strong {
-  font-size: clamp(4.2rem, 6.2vw, 6.2rem);
+  font-size: clamp(3.8rem, 5.2vw, 5.2rem);
   font-weight: 950;
   line-height: 0.8;
   letter-spacing: -0.1em;
@@ -4019,7 +4019,7 @@ button:focus-visible {
 .shop-product-content h3 {
   margin: auto 0 0.8rem;
   padding-top: 1.5rem;
-  font-size: clamp(1.65rem, 2.25vw, 2.45rem);
+  font-size: clamp(1.55rem, 2vw, 2.1rem);
   font-weight: 900;
   line-height: 0.98;
   letter-spacing: -0.045em;
@@ -4100,7 +4100,7 @@ button:focus-visible {
 
 .shop-kitchen-card {
   display: flex;
-  min-height: 390px;
+  min-height: 330px;
   flex-direction: column;
   padding: 1.3rem;
   background:
@@ -4138,7 +4138,7 @@ button:focus-visible {
 
 .shop-kitchen-card-content h3 {
   margin: 0;
-  font-size: clamp(1.8rem, 2.9vw, 2.9rem);
+  font-size: clamp(1.7rem, 2.4vw, 2.45rem);
   font-weight: 950;
   line-height: 0.95;
   letter-spacing: -0.055em;
@@ -4245,7 +4245,7 @@ button:focus-visible {
 
 .shop-cart-empty {
   display: grid;
-  min-height: 340px;
+  min-height: 280px;
   place-content: center;
   text-align: center;
 }
@@ -4549,7 +4549,7 @@ button:focus-visible {
   position: relative;
   min-height: 100vh;
   overflow: hidden;
-  padding: 4.5rem 0 5.5rem;
+  padding: 3.5rem 0 4.5rem;
   color: #fff;
   background: #070907;
 }
@@ -4571,11 +4571,11 @@ button:focus-visible {
 
 .content-hero {
   display: grid;
-  min-height: 510px;
+  min-height: 420px;
   grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr);
   align-items: center;
-  gap: 3rem;
-  padding-bottom: 3rem;
+  gap: 2.5rem;
+  padding-bottom: 2.5rem;
 }
 
 .content-kicker,
@@ -4591,7 +4591,7 @@ button:focus-visible {
 
 .community-manifesto {
   display: flex;
-  min-height: 410px;
+  min-height: 340px;
   flex-direction: column;
   justify-content: space-between;
   padding: 1.45rem;
@@ -4635,7 +4635,7 @@ button:focus-visible {
 
 .community-manifesto h2 {
   margin: 0 0 auto;
-  font-size: clamp(2.45rem, 3.5vw, 3.6rem);
+  font-size: clamp(2.2rem, 3vw, 3rem);
   font-weight: 950;
   line-height: 0.9;
   letter-spacing: -0.06em;
@@ -4675,8 +4675,8 @@ button:focus-visible {
 
 .community-event-card {
   display: grid;
-  min-height: 350px;
-  grid-template-columns: 155px minmax(0, 1fr);
+  min-height: 300px;
+  grid-template-columns: 140px minmax(0, 1fr);
   overflow: hidden;
   border: 1px solid var(--content-border);
   border-radius: 26px;
@@ -4716,7 +4716,7 @@ button:focus-visible {
 }
 
 .community-event-visual > strong {
-  font-size: 5.2rem;
+  font-size: 4.5rem;
   font-weight: 950;
   line-height: 0.85;
   letter-spacing: -0.1em;
@@ -4753,7 +4753,7 @@ button:focus-visible {
 .community-event-content h3 {
   margin: auto 0 0.75rem;
   padding-top: 1.5rem;
-  font-size: clamp(1.65rem, 2.25vw, 2.35rem);
+  font-size: clamp(1.55rem, 2vw, 2.1rem);
   font-weight: 950;
   line-height: 0.98;
   letter-spacing: -0.05em;
@@ -4806,7 +4806,7 @@ button:focus-visible {
 
 .community-challenge-number {
   display: flex;
-  min-height: 190px;
+  min-height: 170px;
   flex-direction: column;
   justify-content: space-between;
   padding: 1.15rem;
@@ -4835,7 +4835,7 @@ button:focus-visible {
 
 .community-challenge-content h3 {
   margin: 1.5rem 0 0.55rem;
-  font-size: clamp(1.6rem, 2.3vw, 2.25rem);
+  font-size: clamp(1.5rem, 2vw, 2rem);
   font-weight: 950;
   line-height: 1;
   letter-spacing: -0.045em;
@@ -5353,7 +5353,7 @@ button:focus-visible {
 
   .shop-hero-card,
   .community-manifesto {
-    min-height: 380px;
+    min-height: 320px;
   }
 
   .shop-section-heading,
@@ -5426,7 +5426,7 @@ button:focus-visible {
 
   .shop-hero h1,
   .content-hero h1 {
-    font-size: clamp(2.7rem, 12vw, 4.1rem);
+    font-size: clamp(2.6rem, 11vw, 3.5rem);
   }
 
   .shop-hero-links,
@@ -5446,7 +5446,7 @@ button:focus-visible {
   .community-manifesto,
   .stories-hero-quote,
   .blog-hero-index {
-    min-height: 340px;
+    min-height: 300px;
     border-radius: 24px;
   }
 
@@ -5460,7 +5460,7 @@ button:focus-visible {
 
   .shop-section-heading h2,
   .content-section-heading h2 {
-    font-size: clamp(2.25rem, 10vw, 3.4rem);
+    font-size: clamp(2.15rem, 9vw, 3rem);
   }
 
   .shop-product-card,
@@ -5495,7 +5495,7 @@ button:focus-visible {
   }
 
   .community-challenge-number {
-    min-height: 220px;
+    min-height: 180px;
     padding: 1rem;
   }
 
