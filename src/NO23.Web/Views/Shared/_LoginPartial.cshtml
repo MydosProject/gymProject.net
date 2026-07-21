@@ -7,7 +7,17 @@
 @if (SignInManager.IsSignedIn(User))
 {
     <li class="nav-item">
-        @if (User.IsInRole(ApplicationRoles.Member))
+        @if (User.IsInRole(ApplicationRoles.Admin))
+        {
+            <a class="nav-link no23-account-link"
+               asp-area="Admin"
+               asp-controller="Members"
+               asp-action="Index"
+               title="Admin paneli">
+                Admin Paneli
+            </a>
+        }
+        else if (User.IsInRole(ApplicationRoles.Member))
         {
             <a class="nav-link no23-account-link"
                asp-area="Member"

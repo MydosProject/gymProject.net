@@ -1,4 +1,5 @@
-﻿@model NO23.Web.ViewModels.Home.HomeIndexViewModel
+﻿@using NO23.Web.Data.Seed
+@model NO23.Web.ViewModels.Home.HomeIndexViewModel
 
 @{
     ViewData["Title"] = "Ana Sayfa";
@@ -110,25 +111,48 @@
                 <small>Grup derslerini incele</small>
             </a>
 
-            <a class="quick-access-card"
-               asp-area="Member"
-               asp-controller="Kitchen"
-               asp-action="Index"
-               asp-fragment="menu">
-                <span class="quick-access-number">03</span>
-                <strong>NO23 Kitchen</strong>
-                <small>Sağlıklı menülere ulaş</small>
-            </a>
+            @if (User.IsInRole(ApplicationRoles.Admin))
+            {
+                <a class="quick-access-card"
+                   asp-area="Admin"
+                   asp-controller="KitchenMenuItems"
+                   asp-action="Index">
+                    <span class="quick-access-number">03</span>
+                    <strong>NO23 Kitchen</strong>
+                    <small>Menü ürünlerini yönet</small>
+                </a>
 
-            <a class="quick-access-card"
-               asp-area="Member"
-               asp-controller="Kitchen"
-               asp-action="Index"
-               asp-fragment="calculator">
-                <span class="quick-access-number">04</span>
-                <strong>Kalori Hesapla</strong>
-                <small>Günlük ihtiyacını öğren</small>
-            </a>
+                <a class="quick-access-card"
+                   asp-area="Admin"
+                   asp-controller="Orders"
+                   asp-action="Index">
+                    <span class="quick-access-number">04</span>
+                    <strong>Sipariş Yönetimi</strong>
+                    <small>Teslimat akışını incele</small>
+                </a>
+            }
+            else
+            {
+                <a class="quick-access-card"
+                   asp-area="Member"
+                   asp-controller="Kitchen"
+                   asp-action="Index"
+                   asp-fragment="menu">
+                    <span class="quick-access-number">03</span>
+                    <strong>NO23 Kitchen</strong>
+                    <small>Sağlıklı menülere ulaş</small>
+                </a>
+
+                <a class="quick-access-card"
+                   asp-area="Member"
+                   asp-controller="Kitchen"
+                   asp-action="Index"
+                   asp-fragment="calculator">
+                    <span class="quick-access-number">04</span>
+                    <strong>Kalori Hesapla</strong>
+                    <small>Günlük ihtiyacını öğren</small>
+                </a>
+            }
 
             <a class="quick-access-card"
                href="#order">
