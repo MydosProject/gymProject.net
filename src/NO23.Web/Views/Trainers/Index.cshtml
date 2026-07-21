@@ -1,0 +1,89 @@
+@model IReadOnlyList<NO23.Web.ViewModels.Trainers.TrainerCardViewModel>
+@{
+    ViewData["Title"] = "Eğitmenler";
+}
+
+<div class="trainers-page">
+    <section class="trainers-hero">
+        <div class="container trainers-hero-grid">
+            <div>
+                <p class="trainers-kicker">NO23 / COACHING TEAM</p>
+                <h1>Doğru ekip.<br /><span>Güçlü ilerleme.</span></h1>
+                <p class="trainers-lead">Hedefini anlayan, gelişimini ölçen ve her adımda yanında olan profesyonel eğitmenlerle çalış.</p>
+                <a class="no23-primary-button" asp-controller="Home" asp-action="Index" asp-fragment="services">Antrenmanı keşfet</a>
+            </div>
+            <aside class="trainers-hero-card">
+                <div class="trainers-hero-card-top"><span>NO23 / TEAM</span><strong>23</strong></div>
+                <h2>Planla.<br />Uygula.<br />İlerle.</h2>
+                <div class="trainers-hero-stats">
+                    <span><strong>@Model.Count</strong> aktif eğitmen</span>
+                    <span><strong>@Model.Sum(trainer => trainer.Classes.Count)</strong> uzmanlık dersi</span>
+                </div>
+            </aside>
+        </div>
+    </section>
+
+    <section class="trainers-list-section">
+        <div class="container">
+            <div class="trainers-section-heading">
+                <div><p class="trainers-kicker">01 / EĞİTMEN KADROSU</p><h2>Hedefine uygun uzmanı bul.</h2></div>
+                <p>Her eğitmen farklı bir uzmanlığı aynı NO23 sistemi içinde buluşturur: doğru teknik, ölçülebilir gelişim ve sürdürülebilir performans.</p>
+            </div>
+
+            @if (Model.Count == 0)
+            {
+                <div class="trainers-empty-state"><span>—</span><div><h3>Aktif eğitmen bulunmuyor.</h3><p>Yeni eğitmen kadrosu burada yayınlanacak.</p></div></div>
+            }
+            else
+            {
+                <div class="trainers-grid">
+                    @for (var index = 0; index < Model.Count; index++)
+                    {
+                        var trainer = Model[index];
+                        <article class="trainer-card">
+                            <div class="trainer-card-visual">
+                                <span>NO23 COACH</span>
+                                <strong>@((index + 1).ToString("00"))</strong>
+                                <small>@trainer.Specialty</small>
+                            </div>
+                            <div class="trainer-card-content">
+                                <div class="trainer-card-meta"><span>@trainer.Specialty</span><small>Aktif</small></div>
+                                <h3>@trainer.FullName</h3>
+                                <p>@(string.IsNullOrWhiteSpace(trainer.Bio) ? "Hedefe uygun, güvenli ve sürdürülebilir antrenman deneyimi." : trainer.Bio)</p>
+
+                                @if (!string.IsNullOrWhiteSpace(trainer.Certifications))
+                                {
+                                    <div class="trainer-card-certificates"><span>Sertifikalar</span><strong>@trainer.Certifications</strong></div>
+                                }
+
+                                <div class="trainer-card-footer">
+                                    <div class="trainer-class-tags">
+                                        @if (trainer.Classes.Count > 0)
+                                        {
+                                            @foreach (var className in trainer.Classes.Take(3))
+                                            {
+                                                <span>@className</span>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span>Personal Training</span>
+                                        }
+                                    </div>
+                                    <a asp-area="Identity" asp-page="/Account/Register">Birlikte çalış <span>↗</span></a>
+                                </div>
+                            </div>
+                        </article>
+                    }
+                </div>
+            }
+        </div>
+    </section>
+
+    <section class="trainers-cta">
+        <div class="container trainers-cta-inner">
+            <div><p class="trainers-kicker">RİTMİNİ BAŞLAT</p><h2>İlk adımı birlikte atalım.</h2><p>Hedefini paylaş, sana uygun üyelik ve antrenman modeliyle başlayalım.</p></div>
+            <a class="no23-primary-button" asp-area="Identity" asp-page="/Account/Register">Üyeliğini başlat</a>
+        </div>
+    </section>
+</div>
