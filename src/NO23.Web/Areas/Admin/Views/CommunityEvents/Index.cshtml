@@ -1,47 +1,50 @@
 @model IReadOnlyList<CommunityEventListItemViewModel>
 @{
-    ViewData["Title"] = "Community Events";
+    ViewData["Title"] = "Community Etkinlikleri";
+    var upcomingCount = Model.Count(item => item.StartsAtUtc.Date >= DateTime.UtcNow.Date);
+    var totalCapacity = Model.Sum(item => item.Capacity ?? 0);
 }
 
-<section class="py-5">
+<section class="admin-page">
     <div class="container">
-        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <header class="admin-page-head">
             <div>
-                <p class="text-uppercase text-muted small mb-1">Admin</p>
-                <h1 class="h3 mb-0">Community Events</h1>
+                <p class="admin-eyebrow">COMMUNITY / ETKİNLİK TAKVİMİ</p>
+                <h1>Etkinlik yönetimi</h1>
+                <p class="admin-page-description">Koşu grupları, workshop'lar ve kulüp buluşmalarını planla.</p>
             </div>
-            <a class="btn btn-dark" asp-action="Create">New Event</a>
+            <a class="btn btn-dark" asp-action="Create">+ Yeni etkinlik</a>
+        </header>
+
+        <div class="admin-metrics">
+            <article><span>Toplam etkinlik</span><strong>@Model.Count</strong><small>Kayıtlı program</small></article>
+            <article><span>Yaklaşan</span><strong>@upcomingCount</strong><small>Takvimde bekleyen</small></article>
+            <article><span>Toplam kapasite</span><strong>@totalCapacity</strong><small>Katılımcı alanı</small></article>
         </div>
 
-        <div class="table-responsive bg-white border rounded-3">
+        <div class="table-responsive admin-table-card">
             <table class="table align-middle mb-0">
-                <thead>
-                    <tr>
-                        <th>Order</th>
-                        <th>Event</th>
-                        <th>Type</th>
-                        <th>Status</th>
-                        <th>Date</th>
-                        <th>Location</th>
-                        <th>Capacity</th>
-                        <th class="text-end">Action</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>Sıra</th><th>Etkinlik</th><th>Tür</th><th>Durum</th><th>Tarih</th><th>Konum</th><th>Kapasite</th><th class="text-end">İşlem</th></tr></thead>
                 <tbody>
-                    @foreach (var item in Model)
+                    @if (Model.Count == 0)
                     {
-                        <tr>
-                            <td>@item.DisplayOrder</td>
-                            <td><strong>@item.Title</strong></td>
-                            <td>@item.Type</td>
-                            <td>@item.Status</td>
-                            <td>@item.StartsAtUtc.ToString("dd.MM.yyyy HH:mm")</td>
-                            <td>@item.Location</td>
-                            <td>@(item.Capacity?.ToString() ?? "-")</td>
-                            <td class="text-end">
-                                <a class="btn btn-sm btn-outline-dark" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
-                            </td>
-                        </tr>
+                        <tr><td colspan="8"><div class="admin-empty-row">Henüz Community etkinliği eklenmedi.</div></td></tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td><span class="admin-order-no">@item.DisplayOrder.ToString("00")</span></td>
+                                <td><strong>@item.Title</strong></td>
+                                <td>@item.Type</td>
+                                <td><span class="admin-status">@item.Status</span></td>
+                                <td>@item.StartsAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
+                                <td>@item.Location</td>
+                                <td>@(item.Capacity?.ToString() ?? "-")</td>
+                                <td class="text-end"><a class="btn btn-sm btn-outline-dark" asp-action="Edit" asp-route-id="@item.Id">Düzenle</a></td>
+                            </tr>
+                        }
                     }
                 </tbody>
             </table>

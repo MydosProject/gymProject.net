@@ -6,73 +6,73 @@
 
     <div class="row g-3">
         <div class="col-md-6">
-            <label asp-for="Title" class="form-label"></label>
+            <label asp-for="Title" class="form-label">Başlık</label>
             <input asp-for="Title" class="form-control" />
             <span asp-validation-for="Title" class="text-danger"></span>
         </div>
         <div class="col-md-6">
-            <label asp-for="Slug" class="form-label"></label>
+            <label asp-for="Slug" class="form-label">URL kısa adı</label>
             <input asp-for="Slug" class="form-control" />
             <span asp-validation-for="Slug" class="text-danger"></span>
         </div>
         <div class="col-12">
-            <label asp-for="Summary" class="form-label"></label>
+            <label asp-for="Summary" class="form-label">Kısa özet</label>
             <textarea asp-for="Summary" class="form-control" rows="2"></textarea>
             <span asp-validation-for="Summary" class="text-danger"></span>
         </div>
         <div class="col-12">
-            <label asp-for="Description" class="form-label"></label>
+            <label asp-for="Description" class="form-label">Açıklama</label>
             <textarea asp-for="Description" class="form-control" rows="4"></textarea>
             <span asp-validation-for="Description" class="text-danger"></span>
         </div>
         <div class="col-md-3">
-            <label asp-for="Type" class="form-label"></label>
+            <label asp-for="Type" class="form-label">Etkinlik türü</label>
             <select asp-for="Type" asp-items="Html.GetEnumSelectList<CommunityEventType>()" class="form-select"></select>
         </div>
         <div class="col-md-3">
-            <label asp-for="Status" class="form-label"></label>
+            <label asp-for="Status" class="form-label">Durum</label>
             <select asp-for="Status" asp-items="Html.GetEnumSelectList<CommunityEventStatus>()" class="form-select"></select>
         </div>
         <div class="col-md-3">
-            <label asp-for="StartsAtUtc" class="form-label"></label>
+            <label asp-for="StartsAtUtc" class="form-label">Başlangıç</label>
             <input asp-for="StartsAtUtc" class="form-control" />
             <span asp-validation-for="StartsAtUtc" class="text-danger"></span>
         </div>
         <div class="col-md-3">
-            <label asp-for="EndsAtUtc" class="form-label"></label>
+            <label asp-for="EndsAtUtc" class="form-label">Bitiş</label>
             <input asp-for="EndsAtUtc" class="form-control" />
             <span asp-validation-for="EndsAtUtc" class="text-danger"></span>
         </div>
         <div class="col-md-6">
-            <label asp-for="Location" class="form-label"></label>
+            <label asp-for="Location" class="form-label">Konum</label>
             <input asp-for="Location" class="form-control" />
             <span asp-validation-for="Location" class="text-danger"></span>
         </div>
         <div class="col-md-3">
-            <label asp-for="Capacity" class="form-label"></label>
+            <label asp-for="Capacity" class="form-label">Kapasite</label>
             <input asp-for="Capacity" class="form-control" />
             <span asp-validation-for="Capacity" class="text-danger"></span>
         </div>
         <div class="col-md-3">
-            <label asp-for="DisplayOrder" class="form-label"></label>
+            <label asp-for="DisplayOrder" class="form-label">Sıralama</label>
             <input asp-for="DisplayOrder" class="form-control" />
             <span asp-validation-for="DisplayOrder" class="text-danger"></span>
         </div>
         <div class="col-12">
-            <label asp-for="ImageUrl" class="form-label"></label>
+            <label asp-for="ImageUrl" class="form-label">Görsel URL</label>
             <input asp-for="ImageUrl" class="form-control" />
             <span asp-validation-for="ImageUrl" class="text-danger"></span>
         </div>
         <div class="col-12">
             <label class="form-check">
                 <input asp-for="IsMembersOnly" class="form-check-input" />
-                @Html.DisplayNameFor(model => model.IsMembersOnly)
+                Yalnızca üyelere özel
             </label>
         </div>
     </div>
 
     <div class="d-flex justify-content-end gap-2 mt-4">
-        <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
-        <button type="submit" class="btn btn-dark">Save</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Vazgeç</a>
+        <button type="submit" class="btn btn-dark">Kaydet</button>
     </div>
 </form>

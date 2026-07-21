@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using NO23.Web.Data.Seed;
 using NO23.Web.Domain.Entities;
 
 namespace NO23.Web.Areas.Identity.Pages.Account;
@@ -45,6 +46,14 @@ public class LoginModel(
 
         if (result.Succeeded)
         {
+            var signedInUser = await signInManager.UserManager.FindByEmailAsync(Input.Email);
+
+            if (signedInUser is not null &&
+                await signInManager.UserManager.IsInRoleAsync(signedInUser, ApplicationRoles.Admin))
+            {
+                return LocalRedirect("~/Admin/Members");
+            }
+
             return LocalRedirect(ReturnUrl ?? Url.Content("~/"));
         }
 

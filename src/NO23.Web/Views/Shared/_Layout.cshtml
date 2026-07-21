@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@using NO23.Web.Data.Seed
+<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="utf-8" />
@@ -83,21 +84,45 @@
                         </li>
 
                         <li class="nav-item">
-                            <a class="nav-link"
-                               asp-area="Member"
-                               asp-controller="Kitchen"
-                               asp-action="Index">
-                                Kitchen
-                            </a>
+                            @if (User.IsInRole(ApplicationRoles.Admin))
+                            {
+                                <a class="nav-link"
+                                   asp-area="Admin"
+                                   asp-controller="KitchenMenuItems"
+                                   asp-action="Index">
+                                    Kitchen
+                                </a>
+                            }
+                            else
+                            {
+                                <a class="nav-link"
+                                   asp-area="Member"
+                                   asp-controller="Kitchen"
+                                   asp-action="Index">
+                                    Kitchen
+                                </a>
+                            }
                         </li>
 
                         <li class="nav-item">
-                            <a class="nav-link"
-                               asp-area="Member"
-                               asp-controller="Shop"
-                               asp-action="Index">
-                                Shop
-                            </a>
+                            @if (User.IsInRole(ApplicationRoles.Admin))
+                            {
+                                <a class="nav-link"
+                                   asp-area="Admin"
+                                   asp-controller="ShopProducts"
+                                   asp-action="Index">
+                                    Shop
+                                </a>
+                            }
+                            else
+                            {
+                                <a class="nav-link"
+                                   asp-area="Member"
+                                   asp-controller="Shop"
+                                   asp-action="Index">
+                                    Shop
+                                </a>
+                            }
                         </li>
 
                         <li class="nav-item dropdown">
@@ -191,19 +216,41 @@
                         </li>
 
                         <li>
-                            <a asp-area="Member"
-                               asp-controller="Kitchen"
-                               asp-action="Index">
-                                NO23 Kitchen
-                            </a>
+                            @if (User.IsInRole(ApplicationRoles.Admin))
+                            {
+                                <a asp-area="Admin"
+                                   asp-controller="KitchenMenuItems"
+                                   asp-action="Index">
+                                    NO23 Kitchen
+                                </a>
+                            }
+                            else
+                            {
+                                <a asp-area="Member"
+                                   asp-controller="Kitchen"
+                                   asp-action="Index">
+                                    NO23 Kitchen
+                                </a>
+                            }
                         </li>
 
                         <li>
-                            <a asp-area="Member"
-                               asp-controller="Shop"
-                               asp-action="Index">
-                                NO23 Shop
-                            </a>
+                            @if (User.IsInRole(ApplicationRoles.Admin))
+                            {
+                                <a asp-area="Admin"
+                                   asp-controller="ShopProducts"
+                                   asp-action="Index">
+                                    NO23 Shop
+                                </a>
+                            }
+                            else
+                            {
+                                <a asp-area="Member"
+                                   asp-controller="Shop"
+                                   asp-action="Index">
+                                    NO23 Shop
+                                </a>
+                            }
                         </li>
                     </ul>
                 </div>

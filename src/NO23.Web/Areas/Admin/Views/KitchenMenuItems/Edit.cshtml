@@ -3,12 +3,16 @@
     ViewData["Title"] = "Kitchen Ürünü Düzenle";
 }
 
-<section class="py-5">
+<section class="admin-page">
     <div class="container">
-        <div class="mb-4">
-            <a asp-action="Index" class="text-muted text-decoration-none">← Menüye dön</a>
-            <h1 class="h3 mt-2">Kitchen Ürünü Düzenle</h1>
-        </div>
+        <header class="admin-page-head admin-form-head">
+            <div>
+                <a asp-action="Index" class="admin-back-link">← Menüye dön</a>
+                <p class="admin-eyebrow">Operasyon / Kitchen</p>
+                <h1>Kitchen ürününü düzenle</h1>
+                <p class="admin-page-description">Ürün içeriğini, besin değerlerini, fiyatını ve durumunu güncelle.</p>
+            </div>
+        </header>
 
         <partial name="_KitchenMenuItemForm" model="Model" />
     </div>
