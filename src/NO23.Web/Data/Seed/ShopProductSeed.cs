@@ -10,44 +10,44 @@ public static class ShopProductSeed
         {
             Name = "NO23 Oversize Hoodie",
             Sku = "NO23-HOODIE-001",
-            Description = "Premium pamuk karisimli oversize antrenman ve gunluk kullanim hoodie.",
-            Category = "Apparel",
+            Description = "Premium pamuk karışımlı oversize antrenman ve günlük kullanım hoodie.",
+            Category = "Giyim",
             UnitPrice = 1850,
             StockQuantity = 24,
-            Tags = "hoodie, lifestyle, apparel",
+            Tags = "hoodie, lifestyle, giyim",
             DisplayOrder = 10
         },
         new()
         {
             Name = "NO23 Training T-Shirt",
             Sku = "NO23-TSHIRT-001",
-            Description = "Nefes alan kumasli, antrenman odakli NO23 t-shirt.",
-            Category = "Apparel",
+            Description = "Nefes alan kumaşlı, antrenman odaklı NO23 t-shirt.",
+            Category = "Giyim",
             UnitPrice = 750,
             StockQuantity = 40,
-            Tags = "t-shirt, training, apparel",
+            Tags = "t-shirt, antrenman, giyim",
             DisplayOrder = 20
         },
         new()
         {
             Name = "NO23 Shaker",
             Sku = "NO23-SHAKER-001",
-            Description = "Protein ve supplement karisimlari icin sizdirmaz shaker.",
-            Category = "Accessories",
+            Description = "Protein ve supplement karışımları için sızdırmaz shaker.",
+            Category = "Aksesuar",
             UnitPrice = 320,
             StockQuantity = 60,
-            Tags = "shaker, accessory",
+            Tags = "shaker, aksesuar",
             DisplayOrder = 30
         },
         new()
         {
-            Name = "Resistance Band Set",
+            Name = "Direnç Bandı Seti",
             Sku = "NO23-BAND-001",
-            Description = "Isinma, mobilite ve kuvvet destek egzersizleri icin direnc bandi seti.",
-            Category = "Equipment",
+            Description = "Isınma, mobilite ve kuvvet destek egzersizleri için direnç bandı seti.",
+            Category = "Ekipman",
             UnitPrice = 540,
             StockQuantity = 35,
-            Tags = "equipment, mobility, strength",
+            Tags = "ekipman, mobilite, kuvvet",
             DisplayOrder = 40
         }
     ];

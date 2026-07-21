@@ -9,10 +9,10 @@ public static class CommunityContentSeed
     [
         new()
         {
-            Title = "NO23 Run Club Morning Session",
+            Title = "NO23 Run Club Sabah Seansı",
             Slug = "no23-run-club-morning-session",
-            Summary = "Tempo kontrollu sabah kosusu ve mobilite calismasi.",
-            Description = "NO23 community uyeleri icin haftalik sabah kosusu, isinma ve cooldown rutini.",
+            Summary = "Tempo kontrollü sabah koşusu ve mobilite çalışması.",
+            Description = "NO23 community üyeleri için haftalık sabah koşusu, ısınma ve cooldown rutini.",
             Type = CommunityEventType.RunningGroup,
             Status = CommunityEventStatus.Scheduled,
             StartsAtUtc = DateTime.UtcNow.Date.AddDays(7).AddHours(5),
@@ -24,10 +24,10 @@ public static class CommunityContentSeed
         },
         new()
         {
-            Title = "Performance Nutrition Workshop",
+            Title = "Performans Beslenmesi Workshop",
             Slug = "performance-nutrition-workshop",
-            Summary = "Antrenman gunlerinde makro planlama ve pratik ogun secimi.",
-            Description = "NO23 Kitchen ekibiyle performans beslenmesi, kalori hedefleri ve pratik menuler uzerine workshop.",
+            Summary = "Antrenman günlerinde makro planlama ve pratik öğün seçimi.",
+            Description = "NO23 Kitchen ekibiyle performans beslenmesi, kalori hedefleri ve pratik menüler üzerine workshop.",
             Type = CommunityEventType.Workshop,
             Status = CommunityEventStatus.Scheduled,
             StartsAtUtc = DateTime.UtcNow.Date.AddDays(14).AddHours(16),
@@ -43,12 +43,12 @@ public static class CommunityContentSeed
     [
         new()
         {
-            Title = "21 Day Consistency Challenge",
+            Title = "21 Günlük İstikrar Challenge",
             Slug = "21-day-consistency-challenge",
-            Summary = "21 gun boyunca antrenman, su ve beslenme takibi.",
-            Description = "Uyeler her gun temel hedeflerini tamamlar, haftalik kontrolle ilerleme takip edilir.",
-            Goal = "21 gun icinde en az 12 antrenman ve gunluk su hedefini tamamlamak.",
-            Reward = "NO23 Shop hediye cekleri ve community panosunda rozet.",
+            Summary = "21 gün boyunca antrenman, su ve beslenme takibi.",
+            Description = "Üyeler her gün temel hedeflerini tamamlar, haftalık kontrolle ilerleme takip edilir.",
+            Goal = "21 gün içinde en az 12 antrenman ve günlük su hedefini tamamlamak.",
+            Reward = "NO23 Shop hediye çekleri ve community panosunda rozet.",
             StartsOn = DateOnly.FromDateTime(DateTime.Today.AddDays(3)),
             EndsOn = DateOnly.FromDateTime(DateTime.Today.AddDays(24)),
             Status = CommunityChallengeStatus.Upcoming,
@@ -56,12 +56,12 @@ public static class CommunityContentSeed
         },
         new()
         {
-            Title = "Core Strength Month",
+            Title = "Core Güç Ayı",
             Slug = "core-strength-month",
-            Summary = "Core stabilizasyonu ve teknik gelisim odakli aylik challenge.",
-            Description = "Mat pilates, fonksiyonel core ve mobility calismalarini birlestiren aylik takip.",
-            Goal = "Ay boyunca 16 core odakli mini gorevi tamamlamak.",
-            Reward = "Ozel community dersi daveti.",
+            Summary = "Core stabilizasyonu ve teknik gelişim odaklı aylık challenge.",
+            Description = "Mat pilates, fonksiyonel core ve mobility çalışmalarını birleştiren aylık takip.",
+            Goal = "Ay boyunca 16 core odaklı mini görevi tamamlamak.",
+            Reward = "Özel community dersi daveti.",
             StartsOn = DateOnly.FromDateTime(DateTime.Today.AddDays(10)),
             EndsOn = DateOnly.FromDateTime(DateTime.Today.AddDays(40)),
             Status = CommunityChallengeStatus.Upcoming,
@@ -73,23 +73,23 @@ public static class CommunityContentSeed
     [
         new()
         {
-            Title = "Yeni Baslayanlar Icin Haftalik Antrenman Ritmi",
+            Title = "Yeni Başlayanlar İçin Haftalık Antrenman Ritmi",
             Slug = "yeni-baslayanlar-icin-haftalik-antrenman-ritmi",
-            Summary = "START ve PLUS uyeleri icin surdurulebilir haftalik antrenman planlama.",
-            Content = "Yeni baslayanlar icin en iyi plan, surdurulebilir olan plandir. Haftada iki veya uc kaliteli seans, uyku ve beslenme ile desteklendiginde guclu bir temel olusturur.",
-            Category = "Training",
-            Tags = "training, beginner, planning",
+            Summary = "START ve PLUS üyeleri için sürdürülebilir haftalık antrenman planlama.",
+            Content = "Yeni başlayanlar için en iyi plan, sürdürülebilir olan plandır. Haftada iki veya üç kaliteli seans, uyku ve beslenme ile desteklendiğinde güçlü bir temel oluşturur.",
+            Category = "Antrenman",
+            Tags = "antrenman, başlangıç, planlama",
             Status = ContentStatus.Published,
             PublishedAtUtc = DateTime.UtcNow.AddDays(-2)
         },
         new()
         {
-            Title = "Protein Hedefini Gun Icine Yaymak",
+            Title = "Protein Hedefini Gün İçine Yaymak",
             Slug = "protein-hedefini-gun-icine-yaymak",
-            Summary = "Gunluk protein hedefini daha pratik ogunlerle tamamlamak icin basit yaklasim.",
-            Content = "Protein hedefini tek ogune yikmak yerine kahvalti, ana ogun ve ara ogunlere bolmek uyumu kolaylastirir. NO23 Kitchen menuleri bu takibi sade hale getirmek icin tasarlanir.",
-            Category = "Nutrition",
-            Tags = "nutrition, protein, kitchen",
+            Summary = "Günlük protein hedefini daha pratik öğünlerle tamamlamak için basit yaklaşım.",
+            Content = "Protein hedefini tek öğüne yıkmak yerine kahvaltı, ana öğün ve ara öğünlere bölmek uyumu kolaylaştırır. NO23 Kitchen menüleri bu takibi sade hale getirmek için tasarlanır.",
+            Category = "Beslenme",
+            Tags = "beslenme, protein, kitchen",
             Status = ContentStatus.Published,
             PublishedAtUtc = DateTime.UtcNow.AddDays(-1)
         }
@@ -99,23 +99,23 @@ public static class CommunityContentSeed
     [
         new()
         {
-            MemberName = "Ayse K.",
-            Title = "12 Haftada Daha Guclu Bir Rutin",
+            MemberName = "Ayşe K.",
+            Title = "12 Haftada Daha Güçlü Bir Rutin",
             Slug = "12-haftada-daha-guclu-bir-rutin",
-            Summary = "Duzenli grup dersleri ve Kitchen destegiyle surdurulebilir degisim.",
-            Story = "Ayse, haftada uc grup dersi ve dengeli beslenme planiyla 12 haftada hem kuvvet hem enerji seviyesinde belirgin ilerleme kaydetti.",
-            AchievementMetric = "12 hafta, 36 ders, 6 kg yag kaybi",
+            Summary = "Düzenli grup dersleri ve Kitchen desteğiyle sürdürülebilir değişim.",
+            Story = "Ayşe, haftada üç grup dersi ve dengeli beslenme planıyla 12 haftada hem kuvvet hem enerji seviyesinde belirgin ilerleme kaydetti.",
+            AchievementMetric = "12 hafta, 36 ders, 6 kg yağ kaybı",
             Status = ContentStatus.Published,
             PublishedAtUtc = DateTime.UtcNow.AddDays(-5)
         },
         new()
         {
             MemberName = "Mert T.",
-            Title = "Performans Odakli Donusum",
+            Title = "Performans Odaklı Dönüşüm",
             Slug = "performans-odakli-donusum",
-            Summary = "Atletik performans programi ile hiz ve kuvvet kazanimi.",
-            Story = "Mert, bransa ozel kuvvet ve patlayici guc programiyla saha performansini daha takip edilebilir hale getirdi.",
-            AchievementMetric = "8 hafta, sprint suresinde yuzde 7 iyilesme",
+            Summary = "Atletik performans programı ile hız ve kuvvet kazanımı.",
+            Story = "Mert, branşa özel kuvvet ve patlayıcı güç programıyla saha performansını daha takip edilebilir hale getirdi.",
+            AchievementMetric = "8 hafta, sprint süresinde yüzde 7 iyileşme",
             Status = ContentStatus.Published,
             PublishedAtUtc = DateTime.UtcNow.AddDays(-8)
         }
