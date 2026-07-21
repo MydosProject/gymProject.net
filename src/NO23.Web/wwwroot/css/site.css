@@ -13,6 +13,1309 @@
   --no23-transition: 180ms ease;
 }
 
+body {
+/* =========================================================
+   COMPACT EXPERIENCE PASS
+   Kitchen menu, Shop, Community, Journal, Stories,
+   Member dashboard and registration
+   ========================================================= */
+
+/* Kitchen menu */
+.kitchen-menu-section {
+  padding-top: 2.35rem;
+}
+
+.kitchen-section-heading {
+  gap: 1.35rem;
+  margin-bottom: 1.2rem;
+  padding-bottom: 1rem;
+}
+
+.kitchen-section-heading h2 {
+  font-size: clamp(2rem, 2.8vw, 2.75rem);
+}
+
+.kitchen-section-heading > p {
+  max-width: 520px;
+  font-size: 0.84rem;
+  line-height: 1.55;
+}
+
+.kitchen-menu-filters {
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.4rem;
+}
+
+.kitchen-filter-button {
+  min-height: 38px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.6rem;
+}
+
+.kitchen-menu-grid {
+  gap: 0.75rem;
+}
+
+.kitchen-menu-card {
+  border-radius: 19px;
+}
+
+.kitchen-menu-visual {
+  min-height: 122px;
+  padding: 0.85rem;
+}
+
+.kitchen-menu-visual::after {
+  font-size: 5.1rem;
+}
+
+.kitchen-menu-visual > div span {
+  font-size: clamp(1.8rem, 2.7vw, 2.35rem);
+}
+
+.kitchen-menu-visual > div small {
+  font-size: 0.62rem;
+}
+
+.kitchen-menu-card-content {
+  min-height: 188px;
+  padding: 0.85rem;
+}
+
+.kitchen-menu-card-heading h3 {
+  font-size: clamp(1.05rem, 1.45vw, 1.25rem);
+}
+
+.kitchen-menu-card-heading p,
+.kitchen-menu-ingredients,
+.kitchen-menu-allergens {
+  font-size: 0.7rem;
+}
+
+.kitchen-menu-ingredients {
+  margin: 0.55rem 0;
+  line-height: 1.5;
+}
+
+.kitchen-menu-macros {
+  margin-top: 0.65rem;
+}
+
+.kitchen-menu-macros span {
+  padding: 0.52rem;
+}
+
+.kitchen-menu-macros small {
+  font-size: 0.48rem;
+}
+
+.kitchen-menu-macros strong {
+  font-size: 0.75rem;
+}
+
+.kitchen-menu-tags {
+  gap: 0.3rem;
+  margin-top: 0.65rem;
+}
+
+.kitchen-menu-tags span {
+  padding: 0.32rem 0.48rem;
+  font-size: 0.5rem;
+}
+
+/* Shop catalogue, Kitchen order cards and checkout */
+.shop-catalog-section,
+.shop-kitchen-section,
+.shop-checkout-section {
+  padding-top: 2.35rem;
+}
+
+.shop-section-heading {
+  gap: 1.35rem;
+  margin-bottom: 1.2rem;
+  padding-bottom: 1rem;
+}
+
+.shop-section-heading h2 {
+  font-size: clamp(2rem, 2.8vw, 2.75rem);
+}
+
+.shop-section-heading > p {
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+
+.shop-product-grid,
+.shop-kitchen-grid {
+  gap: 0.75rem;
+}
+
+.shop-product-card,
+.shop-kitchen-card {
+  border-radius: 20px;
+}
+
+.shop-product-card {
+  min-height: 250px;
+  grid-template-columns: minmax(125px, 0.7fr) minmax(0, 1.3fr);
+}
+
+.shop-product-visual {
+  padding: 0.85rem;
+}
+
+.shop-product-visual::after {
+  right: -2.5rem;
+  bottom: -3.5rem;
+  width: 10rem;
+  height: 10rem;
+}
+
+.shop-product-mark {
+  font-size: 0.6rem;
+}
+
+.shop-product-visual > strong {
+  font-size: clamp(3rem, 4vw, 4rem);
+}
+
+.shop-product-category {
+  padding: 0.32rem 0.48rem;
+  font-size: 0.5rem;
+}
+
+.shop-product-content {
+  padding: 0.9rem;
+}
+
+.shop-product-meta {
+  font-size: 0.54rem;
+}
+
+.shop-product-content h3 {
+  margin-bottom: 0.55rem;
+  padding-top: 0.8rem;
+  font-size: clamp(1.2rem, 1.55vw, 1.55rem);
+}
+
+.shop-product-content > p {
+  font-size: 0.72rem;
+  line-height: 1.5;
+}
+
+.shop-product-purchase,
+.shop-kitchen-card-footer {
+  gap: 0.55rem;
+  margin-top: 0.75rem;
+  padding-top: 0.7rem;
+}
+
+.shop-product-purchase > strong,
+.shop-kitchen-card-footer > strong {
+  font-size: 1rem;
+}
+
+.shop-add-form input {
+  width: 42px;
+  height: 34px;
+}
+
+.shop-add-form button {
+  min-height: 34px;
+  gap: 0.6rem;
+  padding: 0.48rem 0.65rem;
+  font-size: 0.55rem;
+}
+
+.shop-kitchen-card {
+  min-height: 245px;
+  padding: 0.9rem;
+}
+
+.shop-kitchen-card-top span {
+  font-size: 0.57rem;
+}
+
+.shop-kitchen-card-top strong {
+  font-size: 1.55rem;
+}
+
+.shop-kitchen-card-content {
+  padding: 0.8rem 0;
+}
+
+.shop-kitchen-calorie {
+  margin-bottom: 0.35rem;
+  font-size: 0.58rem;
+}
+
+.shop-kitchen-card-content h3 {
+  font-size: clamp(1.3rem, 1.8vw, 1.75rem);
+}
+
+.shop-kitchen-ingredients {
+  margin-top: 0.55rem;
+  font-size: 0.72rem;
+}
+
+.shop-kitchen-macros {
+  margin-top: 0.7rem;
+  border-radius: 11px;
+}
+
+.shop-kitchen-macros span {
+  padding: 0.5rem;
+}
+
+.shop-kitchen-macros small {
+  font-size: 0.47rem;
+}
+
+.shop-kitchen-macros strong {
+  font-size: 0.75rem;
+}
+
+.shop-checkout-layout {
+  border-radius: 21px;
+}
+
+.shop-cart-panel,
+.shop-delivery-panel {
+  padding: 1rem;
+}
+
+.shop-panel-heading {
+  padding-bottom: 0.85rem;
+}
+
+.shop-panel-heading h3 {
+  font-size: 1.22rem;
+}
+
+.shop-panel-heading > strong {
+  font-size: 1.1rem;
+}
+
+.shop-delivery-panel .shop-panel-heading > strong {
+  font-size: 2rem;
+}
+
+.shop-cart-empty {
+  min-height: 175px;
+}
+
+.shop-cart-empty > span {
+  font-size: 3rem;
+}
+
+.shop-cart-empty h4 {
+  margin-top: 0.65rem;
+  font-size: 1.05rem;
+}
+
+.shop-cart-empty p {
+  font-size: 0.78rem;
+}
+
+.shop-cart-empty a {
+  margin-top: 0.75rem;
+}
+
+.shop-cart-item {
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  gap: 0.7rem;
+  padding: 0.75rem 0;
+}
+
+.shop-cart-item-number {
+  width: 38px;
+  height: 38px;
+}
+
+.shop-cart-summary {
+  margin-top: 0.9rem;
+  padding: 0.9rem;
+}
+
+.shop-form-grid {
+  gap: 0.6rem;
+  margin-top: 0.85rem;
+}
+
+.shop-form-field {
+  gap: 0.3rem;
+}
+
+.shop-form-field label {
+  font-size: 0.56rem;
+}
+
+.shop-form-field input,
+.shop-form-field select,
+.shop-form-field textarea {
+  min-height: 42px;
+  padding: 0.58rem 0.7rem;
+  border-radius: 9px;
+  font-size: 0.78rem;
+}
+
+.shop-form-field textarea {
+  min-height: 64px;
+}
+
+.shop-checkout-button {
+  min-height: 46px;
+  margin-top: 0.85rem;
+}
+
+/* Community events and challenges */
+.community-page .content-section {
+  padding-top: 2.35rem;
+}
+
+.community-page .content-section-heading {
+  gap: 1.35rem;
+  margin-bottom: 1.2rem;
+  padding-bottom: 1rem;
+}
+
+.community-page .content-section-heading h2 {
+  font-size: clamp(2rem, 2.8vw, 2.75rem);
+}
+
+.community-page .content-section-heading > p {
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+
+.community-event-grid {
+  gap: 0.75rem;
+}
+
+.community-event-card {
+  min-height: 220px;
+  grid-template-columns: 105px minmax(0, 1fr);
+  border-radius: 20px;
+}
+
+.community-event-visual {
+  min-height: 100%;
+  padding: 0.75rem;
+}
+
+.community-event-visual strong {
+  font-size: clamp(2.5rem, 3.5vw, 3.45rem);
+}
+
+.community-event-content {
+  padding: 0.85rem;
+}
+
+.community-event-content h3 {
+  font-size: clamp(1.15rem, 1.55vw, 1.5rem);
+}
+
+.community-event-content > p {
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+.community-event-details {
+  margin-top: 0.7rem;
+  padding-top: 0.6rem;
+}
+
+.community-event-details span {
+  padding: 0.18rem 0;
+  font-size: 0.64rem;
+}
+
+.community-challenge-list {
+  gap: 0.65rem;
+}
+
+.community-challenge-card {
+  grid-template-columns: 105px minmax(0, 1.45fr) minmax(180px, 0.75fr);
+  border-radius: 20px;
+}
+
+.community-challenge-number {
+  min-height: 125px;
+  padding: 0.75rem;
+}
+
+.community-challenge-number strong {
+  font-size: clamp(2.8rem, 4vw, 4rem);
+}
+
+.community-challenge-content,
+.community-challenge-goal {
+  padding: 0.85rem;
+}
+
+.community-challenge-content h3 {
+  margin-top: 1rem;
+  font-size: clamp(1.2rem, 1.65vw, 1.6rem);
+}
+
+.community-challenge-content > p,
+.community-challenge-goal p,
+.community-challenge-goal small {
+  font-size: 0.7rem;
+  line-height: 1.45;
+}
+
+/* Journal: compact the complete page */
+.blog-page.content-page {
+  padding: 2.6rem 0 3.75rem;
+}
+
+.blog-page .content-hero {
+  min-height: 305px;
+  padding-bottom: 1.5rem;
+}
+
+.blog-page .content-hero-copy h1 {
+  max-width: 720px;
+  font-size: clamp(2.8rem, 4.5vw, 4.25rem);
+}
+
+.blog-page .content-hero-copy > p:last-child {
+  margin-top: 1.1rem;
+  font-size: 0.86rem;
+}
+
+.blog-hero-index {
+  min-height: 235px;
+  padding: 1rem;
+}
+
+.blog-hero-index strong {
+  font-size: clamp(4rem, 6vw, 6rem);
+}
+
+.blog-featured-section,
+.blog-page .content-section {
+  padding-top: 2.35rem;
+}
+
+.blog-featured-card {
+  min-height: 290px;
+  grid-template-columns: minmax(210px, 0.68fr) minmax(0, 1.32fr);
+  border-radius: 20px;
+}
+
+.blog-featured-visual {
+  min-height: 290px;
+  padding: 1rem;
+}
+
+.blog-featured-visual > strong {
+  font-size: clamp(4rem, 6vw, 6rem);
+}
+
+.blog-featured-content {
+  padding: 1.25rem;
+}
+
+.blog-featured-content h2 {
+  font-size: clamp(2rem, 3vw, 2.8rem);
+}
+
+.blog-featured-content > p {
+  font-size: 0.78rem;
+}
+
+.blog-tag-list {
+  gap: 0.35rem;
+  margin-top: 0.8rem;
+}
+
+.blog-tag-list span {
+  padding: 0.32rem 0.5rem;
+  font-size: 0.5rem;
+}
+
+.blog-page .content-section-heading {
+  gap: 1.35rem;
+  margin-bottom: 1.2rem;
+  padding-bottom: 1rem;
+}
+
+.blog-page .content-section-heading h2 {
+  font-size: clamp(2rem, 2.8vw, 2.75rem);
+}
+
+.blog-post-grid {
+  gap: 0.75rem;
+}
+
+.blog-post-card {
+  min-height: 220px;
+  border-radius: 19px;
+}
+
+.blog-post-card-top,
+.blog-post-card-content {
+  padding: 0.85rem;
+}
+
+.blog-post-card-content h3 {
+  font-size: clamp(1.2rem, 1.6vw, 1.55rem);
+}
+
+.blog-post-card-content > p:last-child {
+  font-size: 0.72rem;
+}
+
+/* Success stories from the member transformations section */
+.stories-page .content-section {
+  padding-top: 2.35rem;
+}
+
+.stories-page .content-section-heading {
+  gap: 1.35rem;
+  margin-bottom: 1.2rem;
+  padding-bottom: 1rem;
+}
+
+.stories-page .content-section-heading h2 {
+  font-size: clamp(2rem, 2.8vw, 2.75rem);
+}
+
+.stories-page .content-section-heading > p {
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+
+.stories-list {
+  gap: 0.75rem;
+}
+
+.story-card {
+  min-height: 285px;
+  grid-template-columns: minmax(210px, 0.72fr) minmax(0, 1.28fr);
+  border-radius: 20px;
+}
+
+.story-card-visual {
+  min-height: 285px;
+  padding: 1rem;
+}
+
+.story-card-visual > strong {
+  font-size: clamp(5rem, 7vw, 7rem);
+}
+
+.story-card-content {
+  padding: 1.25rem;
+}
+
+.story-card-content h3 {
+  font-size: clamp(2rem, 3vw, 2.8rem);
+}
+
+.story-card-content > p {
+  margin-top: 0.65rem;
+  font-size: 0.78rem;
+}
+
+.story-metric {
+  margin-top: 1rem;
+  padding: 0.8rem;
+}
+
+/* Member account: compact the complete dashboard */
+.member-dashboard-page {
+  padding: 3.25rem 0 4.25rem;
+}
+
+.member-dashboard-hero {
+  gap: 1.75rem;
+  margin-bottom: 2rem;
+}
+
+.member-dashboard-hero h1 {
+  max-width: 760px;
+  font-size: clamp(2.8rem, 4.6vw, 4.55rem);
+}
+
+.member-dashboard-description {
+  margin-top: 1rem;
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.member-dashboard-badge {
+  flex-basis: 112px;
+  height: 112px;
+}
+
+.member-dashboard-badge strong {
+  font-size: 2.2rem;
+}
+
+.member-dashboard-stats {
+  gap: 0.75rem;
+  margin-bottom: 2.75rem;
+}
+
+.member-stat-card {
+  min-height: 165px;
+  padding: 1rem;
+  border-radius: 20px;
+}
+
+.member-stat-label {
+  padding: 0.35rem 0.55rem;
+  font-size: 0.56rem;
+}
+
+.member-stat-card p {
+  margin-bottom: 0.35rem;
+  font-size: 0.78rem;
+}
+
+.member-stat-card h2 {
+  font-size: clamp(1.8rem, 2.5vw, 2.65rem);
+}
+
+.member-dashboard-section + .member-dashboard-section {
+  margin-top: 3rem;
+}
+
+.member-section-heading {
+  gap: 1rem;
+  margin-bottom: 1.2rem;
+  padding-bottom: 0.9rem;
+}
+
+.member-section-heading h2 {
+  font-size: clamp(2rem, 3vw, 2.9rem);
+}
+
+.member-section-count {
+  font-size: clamp(2.6rem, 4.5vw, 4.2rem);
+}
+
+.member-empty-state {
+  min-height: 125px;
+  gap: 1.2rem;
+  padding: 1.15rem;
+  border-radius: 19px;
+}
+
+.member-empty-number {
+  font-size: 2.2rem;
+}
+
+.member-empty-state h3 {
+  font-size: 1.05rem;
+}
+
+.member-empty-state p {
+  font-size: 0.78rem;
+}
+
+.member-reservation-card {
+  grid-template-columns: 70px minmax(0, 1fr) auto;
+  gap: 1rem;
+  padding: 0.85rem;
+  border-radius: 18px;
+}
+
+.member-reservation-date {
+  min-height: 64px;
+}
+
+.member-reservation-date strong {
+  font-size: 1.55rem;
+}
+
+.member-reservation-info h3 {
+  font-size: 1.1rem;
+}
+
+.member-session-grid {
+  gap: 0.75rem;
+}
+
+.member-session-card {
+  min-height: 295px;
+  padding: 1rem;
+  border-radius: 20px;
+}
+
+.member-session-date strong {
+  font-size: 1.7rem;
+}
+
+.member-session-content {
+  padding: 1.25rem 0;
+}
+
+.member-session-content h3 {
+  font-size: clamp(1.55rem, 2.2vw, 2.2rem);
+}
+
+.member-session-details {
+  margin-top: 1rem;
+  border-radius: 12px;
+}
+
+.member-session-details span {
+  padding: 0.6rem;
+  font-size: 0.7rem;
+}
+
+.member-session-footer {
+  padding-top: 0.85rem;
+}
+
+.member-reserve-button {
+  min-width: 165px;
+  padding: 0.7rem 0.85rem;
+}
+
+/* Registration: compact the complete page and form */
+.no23-register-page {
+  padding: 2.5rem 0;
+}
+
+.no23-register-shell {
+  max-width: 1080px;
+  border-radius: 22px;
+}
+
+.register-intro-panel {
+  min-height: 585px;
+  padding: 1.65rem;
+}
+
+.register-intro-panel::after {
+  bottom: -5rem;
+  font-size: 16rem;
+}
+
+.register-intro-content h1 {
+  font-size: clamp(2.8rem, 4vw, 3.8rem);
+}
+
+.register-intro-description {
+  margin-top: 1rem;
+  font-size: 0.82rem;
+}
+
+.register-benefits {
+  margin-top: 1.4rem;
+}
+
+.register-benefits li {
+  grid-template-columns: 28px 1fr;
+  gap: 0.6rem;
+  padding: 0.65rem 0;
+}
+
+.register-benefits strong {
+  font-size: 0.78rem;
+}
+
+.register-benefits small {
+  font-size: 0.67rem;
+}
+
+.register-form-panel {
+  padding: 1.75rem;
+}
+
+.register-form-heading h2 {
+  font-size: clamp(1.8rem, 2.4vw, 2.4rem);
+}
+
+.register-form-description {
+  margin: 0.75rem 0 1.25rem;
+  font-size: 0.78rem;
+}
+
+.no23-register-form .row {
+  --bs-gutter-x: 0.8rem;
+  --bs-gutter-y: 0.7rem;
+}
+
+.no23-form-field {
+  gap: 0.32rem;
+}
+
+.no23-form-field label {
+  font-size: 0.59rem;
+}
+
+.no23-form-control,
+.no23-form-select {
+  min-height: 45px;
+  padding: 0.62rem 0.75rem;
+  border-radius: 10px;
+  font-size: 0.8rem;
+}
+
+.no23-package-field {
+  padding: 0.7rem;
+  border-radius: 12px;
+}
+
+.no23-form-field > span {
+  min-height: 0.7rem;
+  font-size: 0.62rem;
+}
+
+.no23-register-submit {
+  margin-top: 0.9rem;
+  padding: 0.75rem 0.9rem;
+}
+
+@media (min-width: 1400px) {
+  .kitchen-menu-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .shop-product-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .shop-kitchen-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .shop-product-card {
+    grid-template-columns: minmax(115px, 0.68fr) minmax(0, 1.32fr);
+  }
+}
+
+@media (max-width: 991.98px) {
+  .kitchen-menu-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .shop-product-grid,
+  .shop-kitchen-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .community-challenge-card {
+    grid-template-columns: 95px minmax(0, 1fr);
+  }
+
+  .community-challenge-goal {
+    grid-column: 1 / -1;
+  }
+
+  .blog-page .content-hero {
+    min-height: auto;
+  }
+
+  .member-dashboard-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .register-intro-panel {
+    min-height: auto;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .kitchen-section-heading,
+  .shop-section-heading,
+  .community-page .content-section-heading,
+  .blog-page .content-section-heading,
+  .stories-page .content-section-heading {
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 0.7rem;
+  }
+
+  .kitchen-menu-grid,
+  .shop-product-grid,
+  .shop-kitchen-grid,
+  .community-event-grid,
+  .member-dashboard-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .shop-product-card {
+    min-height: 235px;
+  }
+
+  .shop-checkout-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .shop-delivery-panel {
+    border-top: 1px solid var(--shop-border);
+    border-left: 0;
+  }
+
+  .community-event-card {
+    grid-template-columns: 90px minmax(0, 1fr);
+  }
+
+  .community-challenge-card {
+    grid-template-columns: 82px minmax(0, 1fr);
+  }
+
+  .blog-featured-card,
+  .story-card,
+  .story-card:nth-child(even) {
+    grid-template-columns: 1fr;
+  }
+
+  .blog-featured-visual,
+  .story-card-visual,
+  .story-card:nth-child(even) .story-card-visual {
+    min-height: 180px;
+    order: initial;
+  }
+
+  .member-dashboard-page {
+    padding: 2.5rem 0 3.5rem;
+  }
+
+  .member-dashboard-hero h1 {
+    font-size: clamp(2.55rem, 13vw, 3.55rem);
+  }
+
+  .member-stat-card {
+    min-height: 135px;
+  }
+
+  .member-dashboard-section + .member-dashboard-section {
+    margin-top: 2.25rem;
+  }
+
+  .member-empty-state {
+    gap: 0.75rem;
+  }
+
+  .no23-register-page {
+    padding: 1.5rem 0;
+  }
+
+  .register-intro-panel,
+  .register-form-panel {
+    padding: 1.2rem;
+  }
+
+  .register-intro-content h1 {
+    font-size: clamp(2.5rem, 12vw, 3.1rem);
+  }
+
+  .register-benefits {
+    margin-top: 1rem;
+  }
+}
+
+/* Final size refinements requested after visual review */
+.shop-checkout-layout {
+  width: min(100%, 1320px);
+  grid-template-columns: minmax(300px, 0.68fr) minmax(0, 1.32fr);
+  margin-inline: auto;
+  border-radius: 18px;
+}
+
+.shop-cart-panel,
+.shop-delivery-panel {
+  padding: 0.8rem;
+}
+
+.shop-panel-heading {
+  padding-bottom: 0.65rem;
+}
+
+.shop-panel-heading span {
+  font-size: 0.52rem;
+}
+
+.shop-panel-heading h3 {
+  margin-top: 0.15rem;
+  font-size: 1.05rem;
+}
+
+.shop-delivery-panel .shop-panel-heading > strong {
+  font-size: 1.65rem;
+}
+
+.shop-cart-empty {
+  min-height: 130px;
+}
+
+.shop-cart-empty > span {
+  font-size: 2.5rem;
+}
+
+.shop-cart-empty h4 {
+  margin-top: 0.45rem;
+  font-size: 0.92rem;
+}
+
+.shop-cart-empty p {
+  max-width: 260px;
+  font-size: 0.68rem;
+}
+
+.shop-cart-empty a {
+  margin-top: 0.55rem;
+  font-size: 0.57rem;
+}
+
+.shop-delivery-form {
+  margin-top: 0.55rem;
+}
+
+.shop-form-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.42rem 0.5rem;
+  margin-top: 0;
+}
+
+.shop-form-field-wide {
+  grid-column: auto;
+}
+
+.shop-form-field:nth-child(1),
+.shop-form-field:nth-child(2),
+.shop-form-field:nth-child(3),
+.shop-form-field:nth-child(6) {
+  grid-column: span 2;
+}
+
+.shop-form-field:nth-child(9) {
+  grid-column: 1 / -1;
+}
+
+.shop-form-field label {
+  margin-bottom: 0.18rem;
+  font-size: 0.5rem;
+}
+
+.shop-form-field input,
+.shop-form-field select,
+.shop-form-field textarea {
+  min-height: 36px;
+  padding: 0.42rem 0.55rem;
+  border-radius: 8px;
+  font-size: 0.7rem;
+}
+
+.shop-form-field textarea {
+  min-height: 46px;
+  max-height: 58px;
+}
+
+.shop-form-field > span {
+  min-height: 0;
+  margin-top: 0.08rem;
+  font-size: 0.52rem;
+}
+
+.shop-form-field > span:empty {
+  display: none;
+}
+
+.shop-checkout-button {
+  min-height: 39px;
+  margin-top: 0.55rem;
+  padding: 0.55rem 0.7rem;
+  font-size: 0.57rem;
+}
+
+.shop-checkout-note {
+  margin-top: 0.4rem;
+  font-size: 0.56rem;
+  line-height: 1.35;
+}
+
+.blog-featured-section > .content-section-kicker {
+  margin-bottom: 0.75rem;
+}
+
+.blog-featured-card {
+  width: min(100%, 1240px);
+  min-height: 235px;
+  grid-template-columns: 280px minmax(0, 1fr);
+  margin-inline: auto;
+  border-radius: 18px;
+}
+
+.blog-featured-visual {
+  min-height: 235px;
+  padding: 0.8rem;
+}
+
+.blog-featured-visual::after {
+  right: -3rem;
+  bottom: -4rem;
+  width: 13rem;
+  height: 13rem;
+  box-shadow: 0 0 0 2.5rem rgba(7, 9, 7, 0.04);
+}
+
+.blog-featured-visual span {
+  font-size: 0.6rem;
+}
+
+.blog-featured-visual > strong {
+  font-size: clamp(2.2rem, 2.8vw, 2.75rem);
+}
+
+.blog-featured-visual small {
+  bottom: 0.8rem;
+  font-size: 0.52rem;
+}
+
+.blog-featured-content {
+  padding: 1rem 1.2rem;
+}
+
+.blog-post-meta,
+.story-card-meta {
+  font-size: 0.52rem;
+}
+
+.blog-featured-content h2 {
+  margin: 0.75rem 0 0.45rem;
+  font-size: clamp(1.65rem, 2.3vw, 2.15rem);
+  line-height: 0.96;
+}
+
+.blog-featured-content > p {
+  font-size: 0.7rem;
+  line-height: 1.45;
+}
+
+.blog-featured-content .blog-tag-list {
+  margin-top: 0.55rem;
+}
+
+.stories-list {
+  gap: 0.6rem;
+}
+
+.story-card {
+  width: min(100%, 1240px);
+  min-height: 225px;
+  grid-template-columns: 280px minmax(0, 1fr);
+  margin-inline: auto;
+  border-radius: 18px;
+}
+
+.story-card-visual {
+  min-height: 225px;
+  padding: 0.8rem;
+}
+
+.story-card-visual::after {
+  right: -3rem;
+  bottom: -4rem;
+  width: 13rem;
+  height: 13rem;
+  box-shadow: 0 0 0 2.5rem rgba(7, 9, 7, 0.04);
+}
+
+.story-card-visual > span,
+.story-card-visual > small {
+  font-size: 0.54rem;
+}
+
+.story-card-visual > strong {
+  font-size: clamp(4rem, 5vw, 5rem);
+}
+
+.story-card-content {
+  padding: 0.9rem 1.1rem;
+}
+
+.story-card-content h3 {
+  margin: 0.7rem 0 0.42rem;
+  font-size: clamp(1.6rem, 2.25vw, 2.15rem);
+  line-height: 0.96;
+}
+
+.story-card-content > p {
+  margin-top: 0;
+  font-size: 0.7rem;
+  line-height: 1.45;
+}
+
+.story-metric {
+  gap: 0.2rem;
+  margin-top: 0.65rem;
+  padding: 0.6rem 0.7rem;
+  border-radius: 11px;
+}
+
+.story-metric span {
+  font-size: 0.5rem;
+}
+
+.story-metric strong {
+  font-size: 0.8rem;
+}
+
+@media (max-width: 1199.98px) {
+  .shop-checkout-layout {
+    grid-template-columns: minmax(260px, 0.75fr) minmax(0, 1.25fr);
+  }
+
+  .shop-form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .shop-form-field:nth-child(1),
+  .shop-form-field:nth-child(2),
+  .shop-form-field:nth-child(3),
+  .shop-form-field:nth-child(6),
+  .shop-form-field:nth-child(9) {
+    grid-column: 1 / -1;
+  }
+
+  .blog-featured-card,
+  .story-card {
+    width: 100%;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .shop-checkout-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .shop-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .shop-form-field:nth-child(n) {
+    grid-column: auto;
+  }
+
+  .blog-featured-card,
+  .story-card,
+  .story-card:nth-child(even) {
+    grid-template-columns: 1fr;
+  }
+
+  .blog-featured-visual,
+  .story-card-visual,
+  .story-card:nth-child(even) .story-card-visual {
+    min-height: 125px;
+  }
+
+  .blog-featured-visual > strong {
+    font-size: 2.1rem;
+    writing-mode: horizontal-tb;
+  }
+}
+}
+
 html {
   position: relative;
   min-height: 100%;
@@ -325,9 +1628,9 @@ button:focus-visible {
   isolation: isolate;
   display: flex;
   align-items: center;
-  min-height: calc(100vh - 82px);
+  min-height: 720px;
   overflow: hidden;
-  padding: 7rem 0 6rem;
+  padding: 4.5rem 0;
   background:
     radial-gradient(circle at 80% 20%, rgba(200, 255, 50, 0.14), transparent 30%),
     linear-gradient(135deg, #080808 0%, #111111 55%, #080808 100%);
@@ -374,7 +1677,7 @@ button:focus-visible {
 .hero-title {
   max-width: 920px;
   margin: 0;
-  font-size: clamp(4.2rem, 7vw, 7.5rem);
+  font-size: clamp(3.4rem, 5.3vw, 5.7rem);
   font-weight: 900;
   letter-spacing: -0.075em;
   line-height: 0.87;
@@ -391,7 +1694,7 @@ button:focus-visible {
 
 .hero-description {
   max-width: 680px;
-  margin: 2.25rem 0 0;
+  margin: 1.4rem 0 0;
   color: rgba(255, 255, 255, 0.67);
   font-size: clamp(1rem, 1.3vw, 1.15rem);
 }
@@ -400,7 +1703,7 @@ button:focus-visible {
   display: flex;
   flex-wrap: wrap;
   gap: 0.9rem;
-  margin-top: 2.25rem;
+  margin-top: 1.6rem;
 }
 
 .no23-primary-button,
@@ -445,7 +1748,7 @@ button:focus-visible {
   display: flex;
   flex-wrap: wrap;
   gap: 1.5rem;
-  margin-top: 2.5rem;
+  margin-top: 1.8rem;
   color: rgba(255, 255, 255, 0.52);
   font-size: 0.7rem;
   font-weight: 700;
@@ -472,7 +1775,7 @@ button:focus-visible {
 .hero-experience-card {
   position: relative;
   overflow: hidden;
-  padding: 2.25rem;
+  padding: 1.6rem;
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 26px;
   background: rgba(255, 255, 255, 0.055);
@@ -486,7 +1789,7 @@ button:focus-visible {
   top: -3.2rem;
   right: -0.7rem;
   color: rgba(255, 255, 255, 0.045);
-  font-size: 12rem;
+  font-size: 9rem;
   font-weight: 900;
   letter-spacing: -0.1em;
   line-height: 1;
@@ -494,7 +1797,7 @@ button:focus-visible {
 
 .experience-label {
   position: relative;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   color: var(--no23-accent);
   font-size: 0.7rem;
   font-weight: 800;
@@ -506,7 +1809,7 @@ button:focus-visible {
   position: relative;
   max-width: 310px;
   margin: 0;
-  font-size: clamp(1.8rem, 2.8vw, 2.55rem);
+  font-size: clamp(1.65rem, 2.2vw, 2.1rem);
   font-weight: 800;
   letter-spacing: -0.045em;
   line-height: 1.05;
@@ -516,7 +1819,7 @@ button:focus-visible {
   position: relative;
   display: grid;
   gap: 0;
-  margin: 2.5rem 0 0;
+  margin: 1.6rem 0 0;
   padding: 0;
   list-style: none;
 }
@@ -525,7 +1828,7 @@ button:focus-visible {
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 1rem 0;
+  padding: 0.75rem 0;
   border-top: 1px solid rgba(255, 255, 255, 0.12);
   color: rgba(255, 255, 255, 0.74);
   font-size: 0.88rem;
@@ -542,7 +1845,7 @@ button:focus-visible {
 /* Hızlı erişim */
 
 .quick-access {
-  padding: 6.5rem 0;
+  padding: 4.5rem 0;
   background-color: var(--no23-cream);
 }
 
@@ -550,8 +1853,8 @@ button:focus-visible {
   display: flex;
   align-items: end;
   justify-content: space-between;
-  gap: 3rem;
-  margin-bottom: 3rem;
+  gap: 2rem;
+  margin-bottom: 2rem;
 }
 
 .quick-access-heading .section-kicker {
@@ -562,7 +1865,7 @@ button:focus-visible {
 .quick-access-heading h2 {
   max-width: 680px;
   margin: 0;
-  font-size: clamp(2.4rem, 4vw, 4.25rem);
+  font-size: clamp(2.2rem, 3.3vw, 3.5rem);
   font-weight: 900;
   letter-spacing: -0.06em;
   line-height: 0.98;
@@ -585,8 +1888,8 @@ button:focus-visible {
   position: relative;
   display: flex;
   flex-direction: column;
-  min-height: 205px;
-  padding: 1.7rem;
+  min-height: 170px;
+  padding: 1.35rem;
   border-right: 1px solid #d7d4cc;
   border-bottom: 1px solid #d7d4cc;
   background-color: transparent;
@@ -645,11 +1948,11 @@ button:focus-visible {
 @media (max-width: 991.98px) {
   .no23-hero {
     min-height: auto;
-    padding: 6rem 0;
+    padding: 4.5rem 0;
   }
 
   .hero-title {
-    font-size: clamp(4rem, 11vw, 6.5rem);
+    font-size: clamp(3.2rem, 8vw, 5rem);
   }
 
   .hero-experience-card {
@@ -663,7 +1966,7 @@ button:focus-visible {
 
 @media (max-width: 767.98px) {
   .quick-access {
-    padding: 4.5rem 0;
+    padding: 3.5rem 0;
   }
 
   .quick-access-heading {
@@ -678,11 +1981,11 @@ button:focus-visible {
 
 @media (max-width: 575.98px) {
   .no23-hero {
-    padding: 4.5rem 0;
+    padding: 3.5rem 0;
   }
 
   .hero-title {
-    font-size: clamp(3.2rem, 16vw, 4.7rem);
+    font-size: clamp(2.8rem, 13vw, 4rem);
   }
 
   .hero-actions {
@@ -719,7 +2022,7 @@ button:focus-visible {
 /* Hizmetler */
 
 .services-section {
-  padding: 7rem 0;
+  padding: 3.75rem 0;
   overflow: hidden;
   background:
     radial-gradient(circle at 10% 10%, rgba(200, 255, 50, 0.07), transparent 24%),
@@ -731,8 +2034,8 @@ button:focus-visible {
   display: flex;
   align-items: end;
   justify-content: space-between;
-  gap: 3rem;
-  margin-bottom: 3.5rem;
+  gap: 2rem;
+  margin-bottom: 2.25rem;
 }
 
 .services-heading .section-kicker {
@@ -741,7 +2044,7 @@ button:focus-visible {
 
 .services-heading h2 {
   margin: 0;
-  font-size: clamp(2.8rem, 5vw, 5.5rem);
+  font-size: clamp(2.3rem, 3.3vw, 3.4rem);
   font-weight: 900;
   letter-spacing: -0.065em;
   line-height: 0.92;
@@ -766,9 +2069,9 @@ button:focus-visible {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 460px;
+  min-height: 320px;
   overflow: hidden;
-  padding: 2rem;
+  padding: 1.3rem;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--no23-radius);
   background:
@@ -835,7 +2138,7 @@ button:focus-visible {
 
 .service-card h3 {
   margin: 0;
-  font-size: clamp(2rem, 3.6vw, 3.75rem);
+  font-size: clamp(1.75rem, 2.3vw, 2.3rem);
   font-weight: 900;
   letter-spacing: -0.055em;
   line-height: 0.95;
@@ -843,7 +2146,7 @@ button:focus-visible {
 
 .service-card-content > p {
   max-width: 540px;
-  margin: 1.25rem 0 1.6rem;
+  margin: 0.9rem 0 1.15rem;
   color: rgba(255, 255, 255, 0.57);
 }
 
@@ -928,7 +2231,7 @@ button:focus-visible {
 
 @media (max-width: 991.98px) {
   .services-section {
-    padding: 5.5rem 0;
+    padding: 4rem 0;
   }
 
   .services-heading {
@@ -940,7 +2243,7 @@ button:focus-visible {
   }
 
   .service-card {
-    min-height: 420px;
+    min-height: 320px;
   }
 }
 
@@ -950,13 +2253,13 @@ button:focus-visible {
   }
 
   .service-card {
-    min-height: 400px;
+    min-height: 300px;
   }
 }
 
 @media (max-width: 575.98px) {
   .services-section {
-    padding: 4.5rem 0;
+    padding: 3.5rem 0;
   }
 
   .services-heading {
@@ -964,14 +2267,14 @@ button:focus-visible {
   }
 
   .service-card {
-    min-height: 380px;
-    padding: 1.6rem;
+    min-height: 290px;
+    padding: 1.35rem;
   }
 }
 /* Üyelik paketleri */
 
 .memberships-section {
-  padding: 7rem 0;
+  padding: 3.75rem 0;
   background:
     radial-gradient(circle at 90% 10%, rgba(200, 255, 50, 0.12), transparent 23%),
     var(--no23-cream);
@@ -981,8 +2284,8 @@ button:focus-visible {
   display: flex;
   align-items: end;
   justify-content: space-between;
-  gap: 3rem;
-  margin-bottom: 3.5rem;
+  gap: 2rem;
+  margin-bottom: 2.25rem;
 }
 
 .memberships-heading .section-kicker {
@@ -993,7 +2296,7 @@ button:focus-visible {
 .memberships-heading h2 {
   max-width: 850px;
   margin: 0;
-  font-size: clamp(2.8rem, 5vw, 5.4rem);
+  font-size: clamp(2.3rem, 3.3vw, 3.4rem);
   font-weight: 900;
   letter-spacing: -0.065em;
   line-height: 0.92;
@@ -1017,8 +2320,8 @@ button:focus-visible {
   position: relative;
   display: flex;
   flex-direction: column;
-  min-height: 590px;
-  padding: 1.7rem;
+  min-height: 420px;
+  padding: 1.25rem;
   border: 1px solid #d8d5cd;
   border-radius: var(--no23-radius);
   background-color: rgba(255, 255, 255, 0.62);
@@ -1039,7 +2342,7 @@ button:focus-visible {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  margin-bottom: 4.5rem;
+  margin-bottom: 1.7rem;
 }
 
 .membership-order {
@@ -1062,15 +2365,15 @@ button:focus-visible {
 
 .membership-card h3 {
   margin: 0;
-  font-size: clamp(2.7rem, 3.7vw, 4rem);
+  font-size: clamp(2.1rem, 2.4vw, 2.6rem);
   font-weight: 900;
   letter-spacing: -0.065em;
   line-height: 0.9;
 }
 
 .membership-audience {
-  min-height: 48px;
-  margin: 0.9rem 0 0;
+  min-height: 40px;
+  margin: 0.55rem 0 0;
   color: #6e6b65;
   font-size: 0.88rem;
 }
@@ -1078,7 +2381,7 @@ button:focus-visible {
 .membership-features {
   display: grid;
   gap: 0;
-  margin: 2rem 0;
+  margin: 1rem 0;
   padding: 0;
   border-top: 1px solid #ddd9d1;
   list-style: none;
@@ -1086,7 +2389,7 @@ button:focus-visible {
 
 .membership-features li {
   position: relative;
-  padding: 0.85rem 0 0.85rem 1.15rem;
+  padding: 0.58rem 0 0.58rem 1rem;
   border-bottom: 1px solid #ddd9d1;
   color: #46443f;
   font-size: 0.82rem;
@@ -1095,7 +2398,7 @@ button:focus-visible {
 
 .membership-features li::before {
   position: absolute;
-  top: 1.16rem;
+  top: 0.86rem;
   left: 0;
   width: 6px;
   height: 6px;
@@ -1108,7 +2411,7 @@ button:focus-visible {
   display: block;
   width: 100%;
   margin-top: auto;
-  padding: 0.82rem 1rem;
+  padding: 0.75rem 0.9rem;
   border: 1px solid var(--no23-black);
   border-radius: 999px;
   color: var(--no23-black);
@@ -1213,7 +2516,7 @@ button:focus-visible {
   justify-content: space-between;
   gap: 2rem;
   margin-top: 1.25rem;
-  padding: 1.6rem 1.8rem;
+  padding: 1.3rem 1.5rem;
   border-radius: var(--no23-radius);
   background-color: var(--no23-black);
   color: var(--no23-white);
@@ -1255,13 +2558,13 @@ button:focus-visible {
   }
 
   .membership-card {
-    min-height: 550px;
+    min-height: 410px;
   }
 }
 
 @media (max-width: 991.98px) {
   .memberships-section {
-    padding: 5.5rem 0;
+    padding: 4rem 0;
   }
 
   .memberships-heading {
@@ -1279,7 +2582,7 @@ button:focus-visible {
   }
 
   .membership-card {
-    min-height: 520px;
+    min-height: 400px;
   }
 
   .membership-note {
@@ -1290,7 +2593,7 @@ button:focus-visible {
 
 @media (max-width: 575.98px) {
   .memberships-section {
-    padding: 4.5rem 0;
+    padding: 3.5rem 0;
   }
 
   .memberships-heading {
@@ -1298,8 +2601,8 @@ button:focus-visible {
   }
 
   .membership-card {
-    min-height: 500px;
-    padding: 1.5rem;
+    min-height: 380px;
+    padding: 1.3rem;
   }
 }
 
@@ -2434,7 +3737,7 @@ button:focus-visible {
   --kitchen-border: rgba(255, 255, 255, 0.11);
   position: relative;
   min-height: 100vh;
-  padding: 5.5rem 0 7rem;
+  padding: 3.5rem 0 4.5rem;
   overflow: hidden;
   color: #fff;
   background:
@@ -2469,11 +3772,11 @@ button:focus-visible {
 
 .kitchen-hero {
   display: grid;
-  min-height: 680px;
+  min-height: 440px;
   grid-template-columns: minmax(0, 1.35fr) minmax(340px, 0.65fr);
   align-items: center;
-  gap: 4rem;
-  padding-bottom: 5rem;
+  gap: 2.5rem;
+  padding-bottom: 2.5rem;
 }
 
 .kitchen-kicker,
@@ -2489,7 +3792,7 @@ button:focus-visible {
 .kitchen-hero h1 {
   max-width: 950px;
   margin: 0;
-  font-size: clamp(3.8rem, 7vw, 7.5rem);
+  font-size: clamp(3rem, 4.5vw, 4.7rem);
   font-weight: 950;
   line-height: 0.9;
   letter-spacing: -0.07em;
@@ -2502,23 +3805,23 @@ button:focus-visible {
 
 .kitchen-hero-description {
   max-width: 680px;
-  margin: 2rem 0 0;
+  margin: 1.4rem 0 0;
   color: rgba(255, 255, 255, 0.58);
-  font-size: 1.08rem;
-  line-height: 1.75;
+  font-size: 1rem;
+  line-height: 1.65;
 }
 
 .kitchen-hero-actions {
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin-top: 2.4rem;
+  margin-top: 1.6rem;
 }
 
 .kitchen-primary-link,
 .kitchen-secondary-link {
   display: inline-flex;
-  min-height: 56px;
+  min-height: 50px;
   align-items: center;
   justify-content: center;
   gap: 2.5rem;
@@ -2562,12 +3865,12 @@ button:focus-visible {
 
 .kitchen-hero-card {
   display: flex;
-  min-height: 520px;
+  min-height: 350px;
   flex-direction: column;
   justify-content: space-between;
-  padding: 2rem;
+  padding: 1.45rem;
   border: 1px solid rgba(197, 255, 32, 0.2);
-  border-radius: 30px;
+  border-radius: 26px;
   background:
     radial-gradient(circle at 100% 0, rgba(197, 255, 32, 0.14), transparent 18rem),
     rgba(22, 27, 17, 0.9);
@@ -2592,7 +3895,7 @@ button:focus-visible {
 
 .kitchen-hero-card-top strong {
   color: rgba(255, 255, 255, 0.09);
-  font-size: 6rem;
+  font-size: 3.2rem;
   font-weight: 950;
   line-height: 0.75;
 }
@@ -2608,7 +3911,7 @@ button:focus-visible {
 
 .kitchen-hero-card-content h2 {
   margin: 0;
-  font-size: clamp(2.4rem, 3vw, 3.8rem);
+  font-size: clamp(1.95rem, 2.3vw, 2.6rem);
   font-weight: 900;
   line-height: 0.98;
   letter-spacing: -0.055em;
@@ -2624,7 +3927,7 @@ button:focus-visible {
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 1rem 0;
+  padding: 0.75rem 0;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.68);
   font-size: 0.82rem;
@@ -2695,21 +3998,21 @@ button:focus-visible {
 }
 
 .kitchen-menu-section {
-  padding-top: 7rem;
+  padding-top: 3.5rem;
 }
 
 .kitchen-section-heading {
   display: grid;
   grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.7fr);
   align-items: end;
-  gap: 4rem;
-  margin-bottom: 2.5rem;
+  gap: 2rem;
+  margin-bottom: 1.8rem;
 }
 
 .kitchen-section-heading h2 {
   max-width: 850px;
   margin: 0;
-  font-size: clamp(2.8rem, 5.5vw, 6rem);
+  font-size: clamp(2.3rem, 3.3vw, 3.4rem);
   font-weight: 950;
   line-height: 0.95;
   letter-spacing: -0.065em;
@@ -2734,7 +4037,7 @@ button:focus-visible {
 .kitchen-calculator-panel,
 .kitchen-result-panel {
   min-width: 0;
-  padding: 2rem;
+  padding: 1.5rem;
 }
 
 .kitchen-calculator-panel {
@@ -2753,8 +4056,8 @@ button:focus-visible {
   display: flex;
   align-items: flex-start;
   gap: 1rem;
-  margin-bottom: 2rem;
-  padding-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.15rem;
   border-bottom: 1px solid;
 }
 
@@ -2841,7 +4144,7 @@ button:focus-visible {
 .kitchen-form-field input,
 .kitchen-form-field select {
   width: 100%;
-  min-height: 58px;
+  min-height: 52px;
   padding: 0.85rem 1rem;
   border: 1px solid rgba(10, 12, 9, 0.15);
   border-radius: 14px;
@@ -2870,7 +4173,7 @@ button:focus-visible {
 .kitchen-calculate-button {
   display: flex;
   width: 100%;
-  min-height: 62px;
+  min-height: 56px;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
@@ -2896,18 +4199,18 @@ button:focus-visible {
 
 .kitchen-result-placeholder {
   display: grid;
-  min-height: 510px;
+  min-height: 320px;
   place-content: center;
   justify-items: center;
-  padding: 2rem;
+  padding: 1.5rem;
   text-align: center;
 }
 
 .kitchen-result-rings {
   display: grid;
-  width: 190px;
-  height: 190px;
-  margin-bottom: 2rem;
+  width: 155px;
+  height: 155px;
+  margin-bottom: 1.5rem;
   place-items: center;
   border: 1px solid rgba(197, 255, 32, 0.28);
   border-radius: 50%;
@@ -2918,7 +4221,7 @@ button:focus-visible {
 
 .kitchen-result-rings span {
   color: var(--kitchen-accent);
-  font-size: 3.2rem;
+  font-size: 2.7rem;
   font-weight: 950;
 }
 
@@ -2962,7 +4265,7 @@ button:focus-visible {
 
 .kitchen-calorie-result {
   display: flex;
-  min-height: 190px;
+  min-height: 160px;
   align-items: flex-end;
   justify-content: space-between;
   gap: 1rem;
@@ -2984,7 +4287,7 @@ button:focus-visible {
 
 .kitchen-calorie-result strong {
   color: var(--kitchen-accent);
-  font-size: clamp(4rem, 7vw, 7rem);
+  font-size: clamp(3.4rem, 5.4vw, 5.4rem);
   font-weight: 950;
   line-height: 0.75;
   letter-spacing: -0.07em;
@@ -3073,7 +4376,7 @@ button:focus-visible {
 
 .kitchen-plan-card {
   display: flex;
-  min-height: 190px;
+  min-height: 170px;
   flex-direction: column;
   padding: 1rem;
   border: 1px solid var(--kitchen-border);
@@ -3199,7 +4502,7 @@ button:focus-visible {
 .kitchen-menu-visual {
   position: relative;
   display: flex;
-  min-height: 220px;
+  min-height: 180px;
   flex-direction: column;
   justify-content: space-between;
   padding: 1.25rem;
@@ -3226,7 +4529,7 @@ button:focus-visible {
   right: -0.5rem;
   bottom: -2rem;
   color: rgba(7, 9, 7, 0.08);
-  font-size: 11rem;
+  font-size: 8rem;
   font-weight: 950;
   line-height: 1;
   letter-spacing: -0.09em;
@@ -3238,7 +4541,7 @@ button:focus-visible {
 }
 
 .kitchen-menu-visual > div span {
-  font-size: 3.6rem;
+  font-size: 3rem;
   font-weight: 950;
   line-height: 0.9;
   letter-spacing: -0.06em;
@@ -3252,7 +4555,7 @@ button:focus-visible {
 
 .kitchen-menu-card-content {
   display: flex;
-  min-height: 350px;
+  min-height: 250px;
   flex-direction: column;
   padding: 1.25rem;
 }
@@ -3410,7 +4713,7 @@ button:focus-visible {
   }
 
   .kitchen-hero-card {
-    min-height: 440px;
+    min-height: 330px;
   }
 
   .kitchen-section-heading {
@@ -3423,13 +4726,13 @@ button:focus-visible {
   }
 
   .kitchen-result-placeholder {
-    min-height: 460px;
+    min-height: 320px;
   }
 }
 
 @media (max-width: 767.98px) {
   .kitchen-page {
-    padding: 3.5rem 0 5rem;
+    padding: 2.75rem 0 4rem;
   }
 
   .kitchen-page-grid {
@@ -3437,11 +4740,11 @@ button:focus-visible {
   }
 
   .kitchen-hero {
-    padding-bottom: 3rem;
+    padding-bottom: 2rem;
   }
 
   .kitchen-hero h1 {
-    font-size: clamp(3.2rem, 15vw, 5.4rem);
+    font-size: clamp(2.6rem, 11vw, 3.5rem);
   }
 
   .kitchen-hero-actions {
@@ -3455,17 +4758,17 @@ button:focus-visible {
   }
 
   .kitchen-hero-card {
-    min-height: 410px;
-    padding: 1.5rem;
+    min-height: 300px;
+    padding: 1.35rem;
     border-radius: 24px;
   }
 
   .kitchen-menu-section {
-    padding-top: 5rem;
+    padding-top: 3.5rem;
   }
 
   .kitchen-section-heading h2 {
-    font-size: clamp(2.7rem, 12vw, 4.5rem);
+    font-size: clamp(2.15rem, 9vw, 3rem);
   }
 
   .kitchen-calculator-layout {
@@ -3483,7 +4786,7 @@ button:focus-visible {
   }
 
   .kitchen-menu-card-content {
-    min-height: 320px;
+    min-height: 260px;
   }
 }
 
@@ -3497,7 +4800,7 @@ button:focus-visible {
   }
 
   .kitchen-result-placeholder {
-    min-height: 400px;
+    min-height: 330px;
     padding: 1rem;
   }
 
@@ -3534,7 +4837,7 @@ button:focus-visible {
   }
 
   .kitchen-menu-visual {
-    min-height: 190px;
+    min-height: 170px;
   }
 
   .kitchen-menu-macros {
@@ -3607,7 +4910,7 @@ button:focus-visible {
   position: relative;
   min-height: 100vh;
   overflow: hidden;
-  padding: 5.5rem 0 7rem;
+  padding: 3.5rem 0 4.5rem;
   color: #fff;
   background:
     radial-gradient(circle at 92% 4%, rgba(197, 255, 32, 0.13), transparent 31rem),
@@ -3642,11 +4945,11 @@ button:focus-visible {
 
 .shop-hero {
   display: grid;
-  min-height: 650px;
+  min-height: 420px;
   grid-template-columns: minmax(0, 1.25fr) minmax(340px, 0.75fr);
   align-items: center;
-  gap: 4rem;
-  padding-bottom: 5rem;
+  gap: 2.5rem;
+  padding-bottom: 2.5rem;
 }
 
 .shop-kicker,
@@ -3665,7 +4968,7 @@ button:focus-visible {
 .content-hero h1 {
   max-width: 900px;
   margin: 0;
-  font-size: clamp(3.4rem, 6.6vw, 7rem);
+  font-size: clamp(3rem, 4.5vw, 4.7rem);
   font-weight: 950;
   line-height: 0.9;
   letter-spacing: -0.07em;
@@ -3680,10 +4983,10 @@ button:focus-visible {
 .shop-hero-description,
 .content-hero-description {
   max-width: 670px;
-  margin: 1.8rem 0 0;
+  margin: 1.4rem 0 0;
   color: rgba(255, 255, 255, 0.56);
-  font-size: 1.04rem;
-  line-height: 1.75;
+  font-size: 1rem;
+  line-height: 1.65;
 }
 
 .shop-hero-links,
@@ -3691,7 +4994,7 @@ button:focus-visible {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
-  margin-top: 2rem;
+  margin-top: 1.6rem;
 }
 
 .shop-primary-link,
@@ -3753,12 +5056,12 @@ button:focus-visible {
 
 .shop-hero-card {
   display: flex;
-  min-height: 520px;
+  min-height: 340px;
   flex-direction: column;
   justify-content: space-between;
-  padding: 1.7rem;
+  padding: 1.45rem;
   border: 1px solid var(--shop-border);
-  border-radius: 30px;
+  border-radius: 26px;
   background:
     linear-gradient(145deg, rgba(255, 255, 255, 0.055), transparent 55%),
     var(--shop-card);
@@ -3786,7 +5089,7 @@ button:focus-visible {
 
 .shop-hero-card-top strong {
   color: var(--shop-accent);
-  font-size: 2.2rem;
+  font-size: 1.8rem;
   line-height: 1;
 }
 
@@ -3801,7 +5104,7 @@ button:focus-visible {
 
 .shop-hero-card-content h2 {
   margin: 0;
-  font-size: clamp(2.8rem, 4.2vw, 4.6rem);
+  font-size: clamp(2.05rem, 2.8vw, 3rem);
   font-weight: 950;
   line-height: 0.92;
   letter-spacing: -0.055em;
@@ -3816,7 +5119,7 @@ button:focus-visible {
 }
 
 .shop-hero-card-footer span {
-  padding: 0.85rem 0.6rem;
+  padding: 0.7rem 0.55rem;
   color: rgba(255, 255, 255, 0.46);
   font-size: 0.6rem;
   font-weight: 750;
@@ -3882,7 +5185,7 @@ button:focus-visible {
 .shop-checkout-section,
 .content-section,
 .blog-featured-section {
-  padding-top: 6rem;
+  padding-top: 3.5rem;
   scroll-margin-top: 100px;
 }
 
@@ -3891,9 +5194,9 @@ button:focus-visible {
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.65fr);
   align-items: end;
-  gap: 3rem;
-  margin-bottom: 2.2rem;
-  padding-bottom: 1.7rem;
+  gap: 2rem;
+  margin-bottom: 1.8rem;
+  padding-bottom: 1.35rem;
   border-bottom: 1px solid var(--shop-border, rgba(255, 255, 255, 0.11));
 }
 
@@ -3901,7 +5204,7 @@ button:focus-visible {
 .content-section-heading h2 {
   max-width: 800px;
   margin: 0;
-  font-size: clamp(2.7rem, 5vw, 5.2rem);
+  font-size: clamp(2.3rem, 3.3vw, 3.4rem);
   font-weight: 950;
   line-height: 0.95;
   letter-spacing: -0.06em;
@@ -3932,7 +5235,7 @@ button:focus-visible {
 
 .shop-product-card {
   display: grid;
-  min-height: 480px;
+  min-height: 340px;
   grid-template-columns: minmax(170px, 0.82fr) minmax(0, 1.18fr);
 }
 
@@ -3984,7 +5287,7 @@ button:focus-visible {
 }
 
 .shop-product-visual > strong {
-  font-size: clamp(5rem, 8vw, 8rem);
+  font-size: clamp(3.8rem, 5.2vw, 5.2rem);
   font-weight: 950;
   line-height: 0.8;
   letter-spacing: -0.1em;
@@ -4005,7 +5308,7 @@ button:focus-visible {
   display: flex;
   min-width: 0;
   flex-direction: column;
-  padding: 1.5rem;
+  padding: 1.3rem;
 }
 
 .shop-product-meta {
@@ -4018,8 +5321,8 @@ button:focus-visible {
 
 .shop-product-content h3 {
   margin: auto 0 0.8rem;
-  padding-top: 2rem;
-  font-size: clamp(1.8rem, 3vw, 3rem);
+  padding-top: 1.5rem;
+  font-size: clamp(1.55rem, 2vw, 2.1rem);
   font-weight: 900;
   line-height: 0.98;
   letter-spacing: -0.045em;
@@ -4038,8 +5341,8 @@ button:focus-visible {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  margin-top: 1.4rem;
-  padding-top: 1.2rem;
+  margin-top: 1.2rem;
+  padding-top: 1rem;
   border-top: 1px solid var(--shop-border);
 }
 
@@ -4100,9 +5403,9 @@ button:focus-visible {
 
 .shop-kitchen-card {
   display: flex;
-  min-height: 470px;
+  min-height: 330px;
   flex-direction: column;
-  padding: 1.5rem;
+  padding: 1.3rem;
   background:
     radial-gradient(circle at 100% 0, rgba(197, 255, 32, 0.09), transparent 16rem),
     var(--shop-card);
@@ -4118,13 +5421,13 @@ button:focus-visible {
 
 .shop-kitchen-card-top strong {
   color: rgba(255, 255, 255, 0.14);
-  font-size: 2.4rem;
+  font-size: 2rem;
   line-height: 1;
 }
 
 .shop-kitchen-card-content {
   margin: auto 0;
-  padding: 2rem 0;
+  padding: 1.35rem 0;
 }
 
 .shop-kitchen-calorie {
@@ -4138,7 +5441,7 @@ button:focus-visible {
 
 .shop-kitchen-card-content h3 {
   margin: 0;
-  font-size: clamp(2rem, 3.7vw, 3.7rem);
+  font-size: clamp(1.7rem, 2.4vw, 2.45rem);
   font-weight: 950;
   line-height: 0.95;
   letter-spacing: -0.055em;
@@ -4153,7 +5456,7 @@ button:focus-visible {
 .shop-kitchen-macros {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  margin-top: 1.6rem;
+  margin-top: 1.2rem;
   border: 1px solid var(--shop-border);
   border-radius: 14px;
   overflow: hidden;
@@ -4191,7 +5494,7 @@ button:focus-visible {
 
 .shop-cart-panel,
 .shop-delivery-panel {
-  padding: 1.7rem;
+  padding: 1.5rem;
 }
 
 .shop-delivery-panel {
@@ -4245,7 +5548,7 @@ button:focus-visible {
 
 .shop-cart-empty {
   display: grid;
-  min-height: 430px;
+  min-height: 280px;
   place-content: center;
   text-align: center;
 }
@@ -4508,7 +5811,7 @@ button:focus-visible {
 .shop-empty-state,
 .content-empty-state {
   display: flex;
-  min-height: 190px;
+  min-height: 160px;
   align-items: center;
   gap: 2rem;
   padding: 2rem;
@@ -4549,7 +5852,7 @@ button:focus-visible {
   position: relative;
   min-height: 100vh;
   overflow: hidden;
-  padding: 5.5rem 0 7rem;
+  padding: 3.5rem 0 4.5rem;
   color: #fff;
   background: #070907;
 }
@@ -4571,11 +5874,11 @@ button:focus-visible {
 
 .content-hero {
   display: grid;
-  min-height: 630px;
+  min-height: 420px;
   grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr);
   align-items: center;
-  gap: 4rem;
-  padding-bottom: 4rem;
+  gap: 2.5rem;
+  padding-bottom: 2.5rem;
 }
 
 .content-kicker,
@@ -4591,12 +5894,12 @@ button:focus-visible {
 
 .community-manifesto {
   display: flex;
-  min-height: 500px;
+  min-height: 340px;
   flex-direction: column;
   justify-content: space-between;
-  padding: 1.6rem;
+  padding: 1.45rem;
   border: 1px solid var(--content-border);
-  border-radius: 28px;
+  border-radius: 26px;
   background:
     radial-gradient(circle at 100% 0, rgba(197, 255, 32, 0.1), transparent 18rem),
     var(--content-card);
@@ -4635,7 +5938,7 @@ button:focus-visible {
 
 .community-manifesto h2 {
   margin: 0 0 auto;
-  font-size: clamp(3rem, 4.5vw, 4.9rem);
+  font-size: clamp(2.2rem, 3vw, 3rem);
   font-weight: 950;
   line-height: 0.9;
   letter-spacing: -0.06em;
@@ -4650,7 +5953,7 @@ button:focus-visible {
 }
 
 .community-manifesto-stats span {
-  padding: 0.9rem;
+  padding: 0.75rem;
   color: rgba(255, 255, 255, 0.45);
   font-size: 0.65rem;
   text-align: center;
@@ -4675,8 +5978,8 @@ button:focus-visible {
 
 .community-event-card {
   display: grid;
-  min-height: 430px;
-  grid-template-columns: 180px minmax(0, 1fr);
+  min-height: 300px;
+  grid-template-columns: 140px minmax(0, 1fr);
   overflow: hidden;
   border: 1px solid var(--content-border);
   border-radius: 26px;
@@ -4688,7 +5991,7 @@ button:focus-visible {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 1.2rem;
+  padding: 1rem;
   overflow: hidden;
   color: #070907;
   background: var(--content-accent);
@@ -4716,7 +6019,7 @@ button:focus-visible {
 }
 
 .community-event-visual > strong {
-  font-size: 6.5rem;
+  font-size: 4.5rem;
   font-weight: 950;
   line-height: 0.85;
   letter-spacing: -0.1em;
@@ -4724,7 +6027,7 @@ button:focus-visible {
 
 .community-event-visual > small {
   position: absolute;
-  bottom: 1.2rem;
+  bottom: 1rem;
   font-size: 0.62rem;
   font-weight: 850;
 }
@@ -4733,7 +6036,7 @@ button:focus-visible {
   display: flex;
   min-width: 0;
   flex-direction: column;
-  padding: 1.4rem;
+  padding: 1.25rem;
 }
 
 .community-event-meta,
@@ -4752,8 +6055,8 @@ button:focus-visible {
 
 .community-event-content h3 {
   margin: auto 0 0.75rem;
-  padding-top: 2rem;
-  font-size: clamp(1.8rem, 3vw, 3rem);
+  padding-top: 1.5rem;
+  font-size: clamp(1.55rem, 2vw, 2.1rem);
   font-weight: 950;
   line-height: 0.98;
   letter-spacing: -0.05em;
@@ -4768,8 +6071,8 @@ button:focus-visible {
 .community-event-details {
   display: grid;
   gap: 0.55rem;
-  margin-top: 1.3rem;
-  padding-top: 1rem;
+  margin-top: 1.05rem;
+  padding-top: 0.85rem;
   border-top: 1px solid var(--content-border);
 }
 
@@ -4796,7 +6099,7 @@ button:focus-visible {
 
 .community-challenge-card {
   display: grid;
-  grid-template-columns: 150px minmax(0, 1fr) minmax(260px, 0.8fr);
+  grid-template-columns: 130px minmax(0, 1fr) minmax(240px, 0.8fr);
   align-items: stretch;
   border: 1px solid var(--content-border);
   border-radius: 24px;
@@ -4806,10 +6109,10 @@ button:focus-visible {
 
 .community-challenge-number {
   display: flex;
-  min-height: 230px;
+  min-height: 170px;
   flex-direction: column;
   justify-content: space-between;
-  padding: 1.3rem;
+  padding: 1.15rem;
   color: #070907;
   background: var(--content-accent);
 }
@@ -4822,7 +6125,7 @@ button:focus-visible {
 }
 
 .community-challenge-number strong {
-  font-size: 4.5rem;
+  font-size: 3.8rem;
   font-weight: 950;
   line-height: 0.8;
   letter-spacing: -0.1em;
@@ -4830,12 +6133,12 @@ button:focus-visible {
 
 .community-challenge-content,
 .community-challenge-goal {
-  padding: 1.5rem;
+  padding: 1.25rem;
 }
 
 .community-challenge-content h3 {
-  margin: 2.2rem 0 0.55rem;
-  font-size: clamp(1.7rem, 3vw, 2.8rem);
+  margin: 1.5rem 0 0.55rem;
+  font-size: clamp(1.5rem, 2vw, 2rem);
   font-weight: 950;
   line-height: 1;
   letter-spacing: -0.045em;
@@ -4882,10 +6185,10 @@ button:focus-visible {
 
 .blog-hero-index {
   display: flex;
-  min-height: 430px;
+  min-height: 340px;
   flex-direction: column;
   justify-content: space-between;
-  padding: 1.5rem;
+  padding: 1.35rem;
   border: 1px solid var(--content-border);
   border-radius: 50% 50% 28px 28px;
   text-align: center;
@@ -4902,7 +6205,7 @@ button:focus-visible {
 
 .blog-hero-index > strong {
   color: var(--content-accent);
-  font-size: clamp(6rem, 10vw, 10rem);
+  font-size: clamp(5rem, 8vw, 7.5rem);
   font-weight: 950;
   line-height: 0.8;
   letter-spacing: -0.1em;
@@ -4922,7 +6225,7 @@ button:focus-visible {
 
 .blog-featured-card {
   display: grid;
-  min-height: 520px;
+  min-height: 410px;
   grid-template-columns: minmax(320px, 0.88fr) minmax(0, 1.12fr);
   overflow: hidden;
   border: 1px solid var(--content-border);
@@ -4935,7 +6238,7 @@ button:focus-visible {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 2rem;
+  padding: 1.5rem;
   overflow: hidden;
   color: #070907;
   background: var(--content-accent);
@@ -4975,7 +6278,7 @@ button:focus-visible {
 }
 
 .blog-featured-visual strong {
-  font-size: clamp(3.8rem, 7vw, 7rem);
+  font-size: clamp(3.2rem, 5.3vw, 5.3rem);
   font-weight: 950;
   line-height: 0.82;
   letter-spacing: -0.08em;
@@ -4984,7 +6287,7 @@ button:focus-visible {
 
 .blog-featured-visual small {
   position: absolute;
-  bottom: 2rem;
+  bottom: 1.5rem;
   font-size: 0.65rem;
   font-weight: 850;
 }
@@ -4993,7 +6296,7 @@ button:focus-visible {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: clamp(1.7rem, 4vw, 4rem);
+  padding: clamp(1.6rem, 3vw, 3rem);
 }
 
 .blog-post-meta,
@@ -5011,8 +6314,8 @@ button:focus-visible {
 }
 
 .blog-featured-content h2 {
-  margin: 2.5rem 0 1rem;
-  font-size: clamp(2.7rem, 5vw, 5.4rem);
+  margin: 1.6rem 0 0.85rem;
+  font-size: clamp(2.4rem, 3.8vw, 3.9rem);
   font-weight: 950;
   line-height: 0.92;
   letter-spacing: -0.06em;
@@ -5029,7 +6332,7 @@ button:focus-visible {
   display: flex;
   flex-wrap: wrap;
   gap: 0.45rem;
-  margin-top: 1.7rem;
+  margin-top: 1.3rem;
 }
 
 .blog-tag-list span {
@@ -5050,9 +6353,9 @@ button:focus-visible {
 
 .blog-post-card {
   display: flex;
-  min-height: 390px;
+  min-height: 310px;
   flex-direction: column;
-  padding: 1.4rem;
+  padding: 1.25rem;
   border: 1px solid var(--content-border);
   border-radius: 24px;
   background:
@@ -5083,7 +6386,7 @@ button:focus-visible {
 
 .blog-post-card-content {
   margin: auto 0;
-  padding: 2rem 0;
+  padding: 1.5rem 0;
 }
 
 .blog-post-card-content > p:first-child {
@@ -5094,7 +6397,7 @@ button:focus-visible {
 
 .blog-post-card-content h3 {
   margin: 0;
-  font-size: clamp(1.8rem, 3vw, 3rem);
+  font-size: clamp(1.65rem, 2.25vw, 2.25rem);
   font-weight: 950;
   line-height: 0.98;
   letter-spacing: -0.05em;
@@ -5120,10 +6423,10 @@ button:focus-visible {
 
 .stories-hero-quote {
   display: flex;
-  min-height: 430px;
+  min-height: 350px;
   flex-direction: column;
   justify-content: space-between;
-  padding: 1.7rem;
+  padding: 1.45rem;
   border: 1px solid var(--content-border);
   border-radius: 28px;
   background:
@@ -5142,8 +6445,8 @@ button:focus-visible {
 
 .stories-hero-quote blockquote {
   margin: auto 0;
-  padding: 2rem 0;
-  font-size: clamp(2rem, 3.6vw, 3.8rem);
+  padding: 1.5rem 0;
+  font-size: clamp(1.9rem, 2.8vw, 3rem);
   font-weight: 900;
   line-height: 1;
   letter-spacing: -0.05em;
@@ -5156,7 +6459,7 @@ button:focus-visible {
 
 .story-card {
   display: grid;
-  min-height: 500px;
+  min-height: 400px;
   grid-template-columns: minmax(300px, 0.82fr) minmax(0, 1.18fr);
   overflow: hidden;
   border: 1px solid var(--content-border);
@@ -5179,7 +6482,7 @@ button:focus-visible {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 1.7rem;
+  padding: 1.45rem;
   overflow: hidden;
   color: #070907;
   background: var(--content-accent);
@@ -5213,7 +6516,7 @@ button:focus-visible {
 }
 
 .story-card-visual > strong {
-  font-size: clamp(8rem, 14vw, 14rem);
+  font-size: clamp(7rem, 10.5vw, 10.5rem);
   font-weight: 950;
   line-height: 0.7;
   letter-spacing: -0.11em;
@@ -5257,12 +6560,12 @@ button:focus-visible {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: clamp(1.7rem, 4vw, 4rem);
+  padding: clamp(1.6rem, 3vw, 3rem);
 }
 
 .story-card-content h3 {
-  margin: 2.2rem 0 1rem;
-  font-size: clamp(2.7rem, 5vw, 5.2rem);
+  margin: 1.5rem 0 0.85rem;
+  font-size: clamp(2.35rem, 3.8vw, 3.8rem);
   font-weight: 950;
   line-height: 0.92;
   letter-spacing: -0.06em;
@@ -5278,7 +6581,7 @@ button:focus-visible {
 .story-metric {
   display: grid;
   gap: 0.35rem;
-  margin-top: 2rem;
+  margin-top: 1.5rem;
   padding: 1.2rem;
   border: 1px solid rgba(197, 255, 32, 0.24);
   border-radius: 15px;
@@ -5353,7 +6656,7 @@ button:focus-visible {
 
   .shop-hero-card,
   .community-manifesto {
-    min-height: 440px;
+    min-height: 320px;
   }
 
   .shop-section-heading,
@@ -5390,7 +6693,7 @@ button:focus-visible {
   }
 
   .blog-featured-visual {
-    min-height: 390px;
+    min-height: 320px;
   }
 
   .blog-featured-visual strong {
@@ -5398,7 +6701,7 @@ button:focus-visible {
   }
 
   .story-card-visual {
-    min-height: 390px;
+    min-height: 320px;
   }
 
   .story-card:nth-child(even) .story-card-visual,
@@ -5411,7 +6714,7 @@ button:focus-visible {
 @media (max-width: 767.98px) {
   .shop-page,
   .content-page {
-    padding: 3.5rem 0 5rem;
+    padding: 2.75rem 0 4rem;
   }
 
   .shop-page-grid,
@@ -5426,7 +6729,7 @@ button:focus-visible {
 
   .shop-hero h1,
   .content-hero h1 {
-    font-size: clamp(3.15rem, 15vw, 5.4rem);
+    font-size: clamp(2.6rem, 11vw, 3.5rem);
   }
 
   .shop-hero-links,
@@ -5446,7 +6749,7 @@ button:focus-visible {
   .community-manifesto,
   .stories-hero-quote,
   .blog-hero-index {
-    min-height: 400px;
+    min-height: 300px;
     border-radius: 24px;
   }
 
@@ -5455,12 +6758,12 @@ button:focus-visible {
   .shop-checkout-section,
   .content-section,
   .blog-featured-section {
-    padding-top: 5rem;
+    padding-top: 3.5rem;
   }
 
   .shop-section-heading h2,
   .content-section-heading h2 {
-    font-size: clamp(2.65rem, 12vw, 4.4rem);
+    font-size: clamp(2.15rem, 9vw, 3rem);
   }
 
   .shop-product-card,
@@ -5471,7 +6774,7 @@ button:focus-visible {
 
   .shop-product-visual,
   .community-event-visual {
-    min-height: 260px;
+    min-height: 220px;
   }
 
   .shop-product-content h3,
@@ -5495,7 +6798,7 @@ button:focus-visible {
   }
 
   .community-challenge-number {
-    min-height: 260px;
+    min-height: 180px;
     padding: 1rem;
   }
 
@@ -5509,7 +6812,7 @@ button:focus-visible {
 
   .story-card-content h3,
   .blog-featured-content h2 {
-    font-size: clamp(2.5rem, 12vw, 4.5rem);
+    font-size: clamp(2.2rem, 10vw, 3.5rem);
   }
 }
 
@@ -5599,7 +6902,7 @@ button:focus-visible {
 
   .blog-featured-visual,
   .story-card-visual {
-    min-height: 320px;
+    min-height: 260px;
   }
 
   .story-image-grid {
