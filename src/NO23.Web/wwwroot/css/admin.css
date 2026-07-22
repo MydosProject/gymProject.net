@@ -172,6 +172,99 @@ body.no23-admin-body {
     color: var(--admin-ink);
 }
 
+.admin-nav-link.has-submenu {
+    grid-template-columns: 28px 1fr auto;
+}
+
+.admin-nav-link.has-submenu[aria-expanded="true"]:not(.is-active) {
+    color: #fff;
+    background: rgba(255, 255, 255, .045);
+}
+
+.admin-nav-chevron {
+    width: 7px;
+    height: 7px;
+    margin: 0 2px 4px 8px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(45deg);
+    transition: transform .18s ease, margin .18s ease;
+}
+
+.admin-nav-link[aria-expanded="true"] .admin-nav-chevron {
+    margin-top: 5px;
+    margin-bottom: 0;
+    transform: rotate(225deg);
+}
+
+.admin-nav-submenu {
+    display: grid;
+    max-height: 0;
+    gap: 3px;
+    margin: 0 0 0 40px;
+    padding-left: 12px;
+    overflow: hidden;
+    border-left: 1px solid transparent;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-4px);
+    transition:
+        max-height .22s ease,
+        margin .22s ease,
+        border-color .22s ease,
+        opacity .16s ease,
+        transform .22s ease;
+}
+
+.admin-nav-submenu.is-open {
+    max-height: 78px;
+    margin-top: 5px;
+    margin-bottom: 9px;
+    border-left-color: rgba(255, 255, 255, .11);
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+.admin-nav-sublink {
+    position: relative;
+    display: flex;
+    min-height: 31px;
+    align-items: center;
+    padding: 0 10px;
+    color: rgba(255, 255, 255, .43);
+    border-radius: 8px;
+    font-size: .65rem;
+    font-weight: 750;
+    letter-spacing: .025em;
+    text-decoration: none;
+    transition: .18s ease;
+}
+
+.admin-nav-sublink::before {
+    position: absolute;
+    top: 50%;
+    left: -16px;
+    width: 7px;
+    height: 1px;
+    background: rgba(255, 255, 255, .18);
+    content: "";
+}
+
+.admin-nav-sublink:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, .045);
+}
+
+.admin-nav-sublink.is-active {
+    color: var(--admin-lime);
+    background: rgba(185, 255, 25, .08);
+}
+
+.admin-nav-sublink.is-active::before {
+    background: var(--admin-lime);
+}
+
 .admin-sidebar-foot {
     padding: 18px 20px 22px;
     border-top: 1px solid rgba(255, 255, 255, .08);

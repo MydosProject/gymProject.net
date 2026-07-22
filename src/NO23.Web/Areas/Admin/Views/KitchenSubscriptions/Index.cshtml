@@ -1,19 +1,79 @@
 @model IReadOnlyList<KitchenSubscriptionListItemViewModel>
 @{
     ViewData["Title"] = "Kitchen Abonelikleri";
+    var activeCount = Model.Count(subscription =>
+        subscription.Status.Equals("Active", StringComparison.OrdinalIgnoreCase));
+    var memberCount = Model
+        .Select(subscription => subscription.MemberEmail)
+        .Where(email => !string.IsNullOrWhiteSpace(email))
+        .Distinct(StringComparer.OrdinalIgnoreCase)
+        .Count();
+
+    static string GetPlanName(string plan) => plan switch
+    {
+        "FiveDays" => "5 Günlük",
+        "TenDays" => "10 Günlük",
+        "TwentyDays" => "20 Günlük",
+        "Monthly" => "Aylık",
+        _ => plan
+    };
+
+    static string GetGoalName(string goal) => goal switch
+    {
+        "FatLoss" => "Yağ Yakımı",
+        "MuscleGain" => "Kas Kazanımı",
+        "WeightMaintenance" => "Kilo Koruma",
+        "PerformanceNutrition" => "Performans Beslenmesi",
+        "HealthyLifestyle" => "Sağlıklı Yaşam",
+        _ => goal
+    };
+
+    static string GetStatusName(string status) => status switch
+    {
+        "Active" => "Aktif",
+        "Paused" => "Duraklatıldı",
+        "Cancelled" => "İptal Edildi",
+        "Completed" => "Tamamlandı",
+        _ => status
+    };
 }
 
-<section class="py-5">
+<section class="admin-page">
     <div class="container">
-        <div class="mb-4">
-            <p class="text-uppercase text-muted small mb-1">Admin</p>
-            <h1 class="h3 mb-0">Kitchen Abonelikleri</h1>
+        <header class="admin-page-head">
+            <div>
+                <p class="admin-eyebrow">NO23 KITCHEN / ABONELİKLER</p>
+                <h1>Kitchen abonelikleri</h1>
+                <p class="admin-page-description">
+                    Üyelerin beslenme hedeflerini, plan dönemlerini ve günlük makro ihtiyaçlarını takip et.
+                </p>
+            </div>
+            <span class="admin-page-tag">Beslenme operasyonu</span>
+        </header>
+
+        <div class="admin-metrics">
+            <article>
+                <span>Toplam abonelik</span>
+                <strong>@Model.Count</strong>
+                <small>Oluşturulan plan</small>
+            </article>
+            <article>
+                <span>Aktif plan</span>
+                <strong>@activeCount</strong>
+                <small>Devam eden abonelik</small>
+            </article>
+            <article>
+                <span>Abone üye</span>
+                <strong>@memberCount</strong>
+                <small>Tekil üye sayısı</small>
+            </article>
         </div>
 
-        <div class="table-responsive bg-white border rounded-3">
+        <div class="table-responsive admin-table-card">
             <table class="table align-middle mb-0">
                 <thead>
                     <tr>
+                        <th>Abonelik</th>
                         <th>Üye</th>
                         <th>Plan</th>
                         <th>Hedef</th>
@@ -23,19 +83,47 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var subscription in Model)
+                    @if (Model.Count == 0)
                     {
                         <tr>
-                            <td>
-                                <div>@(string.IsNullOrWhiteSpace(subscription.MemberName) ? "İsimsiz üye" : subscription.MemberName)</div>
-                                <small class="text-muted">@subscription.MemberEmail</small>
+                            <td colspan="7">
+                                <div class="admin-empty-row">Henüz Kitchen aboneliği oluşturulmadı.</div>
                             </td>
-                            <td>@subscription.Plan</td>
-                            <td>@subscription.Goal</td>
-                            <td>@subscription.DailyCalories kcal · P @subscription.ProteinGrams / K @subscription.CarbohydrateGrams / Y @subscription.FatGrams</td>
-                            <td>@subscription.StartsOn.ToString("dd.MM.yyyy") - @subscription.EndsOn.ToString("dd.MM.yyyy")</td>
-                            <td>@subscription.Status</td>
                         </tr>
+                    }
+                    else
+                    {
+                        @foreach (var subscription in Model)
+                        {
+                            var isActive = subscription.Status.Equals(
+                                "Active",
+                                StringComparison.OrdinalIgnoreCase);
+
+                            <tr>
+                                <td><strong class="admin-code">K-@subscription.Id.ToString("D4")</strong></td>
+                                <td>
+                                    <strong>@(string.IsNullOrWhiteSpace(subscription.MemberName) ? "İsimsiz üye" : subscription.MemberName)</strong>
+                                    <small class="admin-cell-note">@subscription.MemberEmail</small>
+                                </td>
+                                <td><span class="admin-status">@GetPlanName(subscription.Plan)</span></td>
+                                <td>@GetGoalName(subscription.Goal)</td>
+                                <td>
+                                    <strong>@subscription.DailyCalories kcal</strong>
+                                    <small class="admin-cell-note admin-code">
+                                        P @subscription.ProteinGrams / K @subscription.CarbohydrateGrams / Y @subscription.FatGrams
+                                    </small>
+                                </td>
+                                <td>
+                                    <strong>@subscription.StartsOn.ToString("dd.MM.yyyy")</strong>
+                                    <small class="admin-cell-note">@subscription.EndsOn.ToString("dd.MM.yyyy") tarihine kadar</small>
+                                </td>
+                                <td>
+                                    <span class="badge @(isActive ? "text-bg-success" : "text-bg-secondary")">
+                                        @GetStatusName(subscription.Status)
+                                    </span>
+                                </td>
+                            </tr>
+                        }
                     }
                 </tbody>
             </table>

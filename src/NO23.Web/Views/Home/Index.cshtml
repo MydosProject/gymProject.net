@@ -154,19 +154,48 @@
                 </a>
             }
 
-            <a class="quick-access-card"
-               href="#order">
-                <span class="quick-access-number">05</span>
-                <strong>Online Sipariş</strong>
-                <small>Öğünlerini kolayca seç</small>
-            </a>
+            @if (User.IsInRole(ApplicationRoles.Admin))
+            {
+                <a class="quick-access-card"
+                   asp-area="Admin"
+                   asp-controller="ShopProducts"
+                   asp-action="Index">
+                    <span class="quick-access-number">05</span>
+                    <strong>Shop Ürünleri</strong>
+                    <small>Kataloğu ve stokları yönet</small>
+                </a>
 
-            <a class="quick-access-card"
-               href="#appointment">
-                <span class="quick-access-number">06</span>
-                <strong>Randevu Al</strong>
-                <small>Antrenmanını planla</small>
-            </a>
+                <a class="quick-access-card"
+                   asp-area="Admin"
+                   asp-controller="ClassSessions"
+                   asp-action="Index">
+                    <span class="quick-access-number">06</span>
+                    <strong>Ders Planlama</strong>
+                    <small>Programı ve seansları yönet</small>
+                </a>
+            }
+            else
+            {
+                <a class="quick-access-card"
+                   asp-area="Member"
+                   asp-controller="Shop"
+                   asp-action="Index"
+                   asp-fragment="shop-products">
+                    <span class="quick-access-number">05</span>
+                    <strong>Online Sipariş</strong>
+                    <small>Öğünlerini kolayca seç</small>
+                </a>
+
+                <a class="quick-access-card"
+                   asp-area="Member"
+                   asp-controller="Home"
+                   asp-action="Index"
+                   asp-fragment="available-classes">
+                    <span class="quick-access-number">06</span>
+                    <strong>Randevu Al</strong>
+                    <small>Antrenmanını planla</small>
+                </a>
+            }
         </div>
     </div>
 </section>
@@ -395,6 +424,202 @@
             <a href="#contact">
                 Bizimle İletişime Geç
             </a>
+        </div>
+    </div>
+</section>
+
+<section class="no23-faq-section"
+         id="faq"
+         aria-labelledby="faq-title">
+    <div class="container">
+        <div class="no23-faq-heading">
+            <div>
+                <p class="section-kicker">Merak Ettiklerin</p>
+                <h2 id="faq-title">
+                    Başlamadan önce<br />bilmen gerekenler.
+                </h2>
+            </div>
+
+            <p>
+                Üyelikten rezervasyona, Kitchen planından online siparişe
+                kadar NO23 deneyiminin temel adımlarını burada bulabilirsin.
+            </p>
+        </div>
+
+        <div class="no23-faq-grid">
+            <details class="no23-faq-item" open>
+                <summary>
+                    <span class="no23-faq-number">01</span>
+                    <strong>NO23 üyeliğimi nasıl başlatabilirim?</strong>
+                    <span class="no23-faq-toggle" aria-hidden="true"></span>
+                </summary>
+                <div class="no23-faq-answer">
+                    <p>
+                        Ana sayfadaki üyelik paketlerinden sana uygun olanı seçip
+                        başvuru formunu tamamlayabilirsin. Hesabın ve üye profilin
+                        seçtiğin paketle birlikte oluşturulur.
+                    </p>
+                </div>
+            </details>
+
+            <details class="no23-faq-item">
+                <summary>
+                    <span class="no23-faq-number">02</span>
+                    <strong>Hangi üyelik paketini seçmeliyim?</strong>
+                    <span class="no23-faq-toggle" aria-hidden="true"></span>
+                </summary>
+                <div class="no23-faq-answer">
+                    <p>
+                        START, PLUS, PRO ve ELITE paketlerini haftalık ders hakkı
+                        ve sundukları ayrıcalıklara göre karşılaştırabilirsin.
+                        Hedefin ve antrenman sıklığın doğru paketi belirlemene
+                        yardımcı olur.
+                    </p>
+                </div>
+            </details>
+
+            <details class="no23-faq-item">
+                <summary>
+                    <span class="no23-faq-number">03</span>
+                    <strong>Grup dersine nasıl rezervasyon yapabilirim?</strong>
+                    <span class="no23-faq-toggle" aria-hidden="true"></span>
+                </summary>
+                <div class="no23-faq-answer">
+                    <p>
+                        Üye girişi yaptıktan sonra hesabındaki “Uygun Dersler”
+                        alanından yaklaşan seansları inceleyebilirsin. Kontenjan
+                        ve kalan ders hakkın uygunsa rezervasyonunu oluşturabilirsin.
+                    </p>
+                </div>
+            </details>
+
+            <details class="no23-faq-item">
+                <summary>
+                    <span class="no23-faq-number">04</span>
+                    <strong>Ders rezervasyonumu iptal edebilir miyim?</strong>
+                    <span class="no23-faq-toggle" aria-hidden="true"></span>
+                </summary>
+                <div class="no23-faq-answer">
+                    <p>
+                        Yaklaşan rezervasyonunu ders başlangıcından en geç iki
+                        saat öncesine kadar üye panelinden iptal edebilirsin.
+                        Sınırlı paketlerde kullanılan ders hakkı hesabına geri eklenir.
+                    </p>
+                </div>
+            </details>
+
+            <details class="no23-faq-item">
+                <summary>
+                    <span class="no23-faq-number">05</span>
+                    <strong>Kitchen planım nasıl belirleniyor?</strong>
+                    <span class="no23-faq-toggle" aria-hidden="true"></span>
+                </summary>
+                <div class="no23-faq-answer">
+                    <p>
+                        Boy, kilo, yaş, aktivite seviyesi ve hedef bilgilerini
+                        girerek günlük kalori ve makro ihtiyacını hesaplayabilirsin.
+                        Sonuca göre 5, 10, 20 günlük veya aylık planlardan birini
+                        seçebilirsin.
+                    </p>
+                </div>
+            </details>
+
+            <details class="no23-faq-item">
+                <summary>
+                    <span class="no23-faq-number">06</span>
+                    <strong>Shop ve Kitchen ürünlerini nasıl sipariş ederim?</strong>
+                    <span class="no23-faq-toggle" aria-hidden="true"></span>
+                </summary>
+                <div class="no23-faq-answer">
+                    <p>
+                        Üye Shop alanında ürün ve Kitchen öğünlerini aynı sepete
+                        ekleyebilirsin. Teslimat adresini, gününü ve saat aralığını
+                        seçtikten sonra sipariş kaydını oluşturabilirsin.
+                    </p>
+                </div>
+            </details>
+        </div>
+    </div>
+</section>
+
+@* Geçici iletişim bilgileri; gerçek işletme bilgileri geldiğinde güncellenecek. *@
+<section class="no23-contact-section"
+         id="contact"
+         aria-labelledby="contact-title">
+    <div class="container">
+        <div class="no23-contact-heading">
+            <div>
+                <p class="section-kicker">İletişim</p>
+                <h2 id="contact-title">
+                    Hedefini konuşalım.<br />Ritmini birlikte planlayalım.
+                </h2>
+            </div>
+
+            <p>
+                Üyelik, ders programı ve NO23 deneyimiyle ilgili soruların için
+                ekibimize ulaş veya kulübü ziyaret et.
+            </p>
+        </div>
+
+        <div class="no23-contact-layout">
+            <article class="no23-contact-featured">
+                <div class="no23-contact-card-top">
+                    <span>01 / HIZLI İLETİŞİM</span>
+                    <strong>NO23</strong>
+                </div>
+
+                <div>
+                    <p>Başlangıç için tek bir mesaj yeterli.</p>
+                    <h3>Ekibimiz hedeflerine uygun ilk adımı planlasın.</h3>
+                </div>
+
+                <div class="no23-contact-actions">
+                    <a href="tel:+902120002323">
+                        <span>Bizi Ara</span>
+                        <strong>+90 (212) 000 23 23</strong>
+                    </a>
+
+                    <a href="https://wa.me/905000002323"
+                       target="_blank"
+                       rel="noopener noreferrer">
+                        <span>WhatsApp</span>
+                        <strong>Mesaj Gönder ↗</strong>
+                    </a>
+                </div>
+            </article>
+
+            <div class="no23-contact-details">
+                <article class="no23-contact-detail-card no23-contact-address">
+                    <span>02 / KULÜP</span>
+                    <div>
+                        <h3>Maslak, Sarıyer</h3>
+                        <p>Büyükdere Caddesi No:23<br />İstanbul</p>
+                    </div>
+                </article>
+
+                <article class="no23-contact-detail-card">
+                    <span>03 / ÇALIŞMA SAATLERİ</span>
+                    <dl>
+                        <div>
+                            <dt>Pazartesi – Cuma</dt>
+                            <dd>06.00 – 23.00</dd>
+                        </div>
+                        <div>
+                            <dt>Cumartesi – Pazar</dt>
+                            <dd>08.00 – 21.00</dd>
+                        </div>
+                    </dl>
+                </article>
+
+                <a class="no23-contact-social"
+                   href="https://www.instagram.com/no23sportsclub/"
+                   target="_blank"
+                   rel="noopener noreferrer">
+                    <span>04 / INSTAGRAM</span>
+                    <strong>@@no23sportsclub</strong>
+                    <small>Topluluğa katıl ↗</small>
+                </a>
+            </div>
         </div>
     </div>
 </section>

@@ -3,6 +3,9 @@
     var pageTitle = ViewData["Title"]?.ToString() ?? "Yönetim Paneli";
     var userName = User.Identity?.Name ?? "NO23 Yönetici";
     var userInitial = string.IsNullOrWhiteSpace(userName) ? "N" : userName.Trim()[0].ToString().ToUpperInvariant();
+    var isKitchenSection =
+        currentController.Equals("KitchenMenuItems", StringComparison.OrdinalIgnoreCase) ||
+        currentController.Equals("KitchenSubscriptions", StringComparison.OrdinalIgnoreCase);
 
     string ActiveClass(params string[] controllers) =>
         controllers.Contains(currentController, StringComparer.OrdinalIgnoreCase) ? "is-active" : string.Empty;
@@ -47,10 +50,33 @@
                         <span class="admin-nav-index">02</span>
                         <span>Shop Ürünleri</span>
                     </a>
-                    <a class="admin-nav-link @ActiveClass("KitchenMenuItems", "KitchenSubscriptions")" asp-area="Admin" asp-controller="KitchenMenuItems" asp-action="Index">
+                    <a class="admin-nav-link has-submenu @ActiveClass("KitchenMenuItems", "KitchenSubscriptions")"
+                       asp-area="Admin"
+                       asp-controller="KitchenMenuItems"
+                       asp-action="Index"
+                       aria-controls="adminKitchenSubmenu"
+                       aria-expanded="@(isKitchenSection ? "true" : "false")"
+                       data-admin-submenu-toggle>
                         <span class="admin-nav-index">03</span>
                         <span>Kitchen</span>
+                        <span class="admin-nav-chevron" aria-hidden="true"></span>
                     </a>
+                    <div class="admin-nav-submenu @(isKitchenSection ? "is-open" : string.Empty)"
+                         id="adminKitchenSubmenu"
+                         aria-label="Kitchen alt menüsü">
+                        <a class="admin-nav-sublink @ActiveClass("KitchenMenuItems")"
+                           asp-area="Admin"
+                           asp-controller="KitchenMenuItems"
+                           asp-action="Index">
+                            Menü Ürünleri
+                        </a>
+                        <a class="admin-nav-sublink @ActiveClass("KitchenSubscriptions")"
+                           asp-area="Admin"
+                           asp-controller="KitchenSubscriptions"
+                           asp-action="Index">
+                            Abonelikler
+                        </a>
+                    </div>
                 </div>
 
                 <div class="admin-nav-group">
@@ -144,6 +170,23 @@
             document.querySelector('[data-admin-sidebar-open]')?.addEventListener('click', () => body.classList.add('admin-menu-open'));
             document.querySelectorAll('[data-admin-sidebar-close]').forEach((element) => {
                 element.addEventListener('click', () => body.classList.remove('admin-menu-open'));
+            });
+
+            document.querySelectorAll('[data-admin-submenu-toggle]').forEach((toggle) => {
+                toggle.addEventListener('click', (event) => {
+                    const submenuId = toggle.getAttribute('aria-controls');
+                    const submenu = submenuId ? document.getElementById(submenuId) : null;
+
+                    if (!submenu) {
+                        return;
+                    }
+
+                    event.preventDefault();
+
+                    const shouldOpen = toggle.getAttribute('aria-expanded') !== 'true';
+                    toggle.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+                    submenu.classList.toggle('is-open', shouldOpen);
+                });
             });
         })();
     </script>
