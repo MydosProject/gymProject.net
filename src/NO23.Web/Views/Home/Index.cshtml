@@ -10,8 +10,8 @@
     <div class="hero-glow" aria-hidden="true"></div>
 
     <div class="container position-relative">
-        <div class="row align-items-center gy-5">
-            <div class="col-xl-8 col-lg-7">
+        <div class="hero-layout">
+            <div class="hero-copy">
                 <p class="hero-kicker">
                     Performance · Nutrition · Community
                 </p>
@@ -47,8 +47,19 @@
                 </div>
             </div>
 
-            <div class="col-xl-4 col-lg-5">
-                <aside class="hero-experience-card">
+            <figure class="hero-media">
+                <img src="~/images/no23-home-hero.webp"
+                     alt="Karanlık bir performans stüdyosunda battle rope ile çalışan sporcu"
+                     width="1983"
+                     height="793"
+                     fetchpriority="high" />
+
+                <div class="hero-media-status" aria-hidden="true">
+                    <span>NO23 / PERFORMANCE</span>
+                    <strong>01</strong>
+                </div>
+
+                <figcaption class="hero-experience-card">
                     <span class="experience-number">23</span>
                     <p class="experience-label">NO23 Ecosystem</p>
 
@@ -72,8 +83,8 @@
                             NO23 Community
                         </li>
                     </ul>
-                </aside>
-            </div>
+                </figcaption>
+            </figure>
         </div>
     </div>
 </section>
@@ -542,7 +553,7 @@
     </div>
 </section>
 
-@* Geçici iletişim bilgileri; gerçek işletme bilgileri geldiğinde güncellenecek. *@
+@* İletişim kanalları ve çalışma saatleri gerçek işletme bilgileri geldiğinde güncellenecek. *@
 <section class="no23-contact-section"
          id="contact"
          aria-labelledby="contact-title">
@@ -574,51 +585,43 @@
                 </div>
 
                 <div class="no23-contact-actions">
-                    <a href="tel:+902120002323">
-                        <span>Bizi Ara</span>
-                        <strong>+90 (212) 000 23 23</strong>
+                    <a href="#memberships">
+                        <span>Üyelik</span>
+                        <strong>Paketleri İncele ↗</strong>
                     </a>
 
-                    <a href="https://wa.me/905000002323"
-                       target="_blank"
-                       rel="noopener noreferrer">
-                        <span>WhatsApp</span>
-                        <strong>Mesaj Gönder ↗</strong>
+                    <a href="#faq">
+                        <span>Merak Ettiklerin</span>
+                        <strong>Sık Sorulanları Gör ↓</strong>
                     </a>
                 </div>
             </article>
 
             <div class="no23-contact-details">
                 <article class="no23-contact-detail-card no23-contact-address">
-                    <span>02 / KULÜP</span>
-                    <div>
-                        <h3>Maslak, Sarıyer</h3>
-                        <p>Büyükdere Caddesi No:23<br />İstanbul</p>
+                    <div class="no23-contact-location-grid" aria-hidden="true">
+                        <span class="no23-contact-location-pin">23</span>
+                    </div>
+                    <span>02 / KULÜP KONUMU</span>
+                    <div class="no23-contact-location-copy">
+                        <h3>NO23 yakında burada.</h3>
+                        <p>Şube adresi ve yol tarifi kesinleştiğinde bu alanda paylaşılacak.</p>
                     </div>
                 </article>
 
                 <article class="no23-contact-detail-card">
                     <span>03 / ÇALIŞMA SAATLERİ</span>
-                    <dl>
-                        <div>
-                            <dt>Pazartesi – Cuma</dt>
-                            <dd>06.00 – 23.00</dd>
-                        </div>
-                        <div>
-                            <dt>Cumartesi – Pazar</dt>
-                            <dd>08.00 – 21.00</dd>
-                        </div>
-                    </dl>
+                    <div>
+                        <h3>Program hazırlanıyor.</h3>
+                        <p>Güncel çalışma saatleri işletme bilgileriyle birlikte yayınlanacak.</p>
+                    </div>
                 </article>
 
-                <a class="no23-contact-social"
-                   href="https://www.instagram.com/no23sportsclub/"
-                   target="_blank"
-                   rel="noopener noreferrer">
+                <article class="no23-contact-social">
                     <span>04 / INSTAGRAM</span>
-                    <strong>@@no23sportsclub</strong>
-                    <small>Topluluğa katıl ↗</small>
-                </a>
+                    <strong>Topluluk hesabı hazırlanıyor.</strong>
+                    <small>Resmî hesap yakında paylaşılacak.</small>
+                </article>
             </div>
         </div>
     </div>

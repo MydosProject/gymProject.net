@@ -2714,12 +2714,12 @@ button:focus-visible {
   isolation: isolate;
   display: flex;
   align-items: center;
-  min-height: 720px;
+  min-height: 760px;
   overflow: hidden;
   padding: 4.5rem 0;
   background:
-    radial-gradient(circle at 80% 20%, rgba(200, 255, 50, 0.14), transparent 30%),
-    linear-gradient(135deg, #080808 0%, #111111 55%, #080808 100%);
+    radial-gradient(circle at 54% 18%, rgba(200, 255, 50, 0.1), transparent 28%),
+    linear-gradient(135deg, #050705 0%, #0d100d 55%, #070807 100%);
   color: var(--no23-white);
 }
 
@@ -2748,6 +2748,70 @@ button:focus-visible {
   box-shadow:
     0 0 0 90px rgba(200, 255, 50, 0.025),
     0 0 0 180px rgba(200, 255, 50, 0.018);
+}
+
+.hero-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(430px, 0.95fr);
+  align-items: center;
+  gap: 3.5rem;
+}
+
+.hero-copy {
+  position: relative;
+  z-index: 1;
+}
+
+.hero-media {
+  position: relative;
+  min-height: 590px;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 28px;
+  background: #111;
+  box-shadow: 0 35px 95px rgba(0, 0, 0, 0.42);
+}
+
+.hero-media::after {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(4, 6, 4, 0.08) 35%, rgba(4, 6, 4, 0.84) 100%),
+    linear-gradient(90deg, rgba(4, 6, 4, 0.18), transparent 42%);
+  content: "";
+  pointer-events: none;
+}
+
+.hero-media > img {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 79% center;
+}
+
+.hero-media-status {
+  position: absolute;
+  z-index: 2;
+  top: 1.4rem;
+  right: 1.4rem;
+  left: 1.4rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.65rem;
+  font-weight: 850;
+  letter-spacing: 0.17em;
+}
+
+.hero-media-status strong {
+  color: var(--no23-accent);
+  font-size: 2rem;
+  line-height: 0.85;
+  letter-spacing: -0.08em;
 }
 
 .hero-kicker,
@@ -2859,20 +2923,24 @@ button:focus-visible {
 /* Hero sağ kart */
 
 .hero-experience-card {
-  position: relative;
+  position: absolute;
+  z-index: 2;
+  right: 1rem;
+  bottom: 1rem;
+  left: 1rem;
   overflow: hidden;
-  padding: 1.6rem;
+  padding: 1.35rem;
   border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 26px;
-  background: rgba(255, 255, 255, 0.055);
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  border-radius: 20px;
+  background: rgba(8, 10, 8, 0.78);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
 }
 
 .experience-number {
   position: absolute;
-  top: -3.2rem;
+  top: -3.5rem;
   right: -0.7rem;
   color: rgba(255, 255, 255, 0.045);
   font-size: 9rem;
@@ -2893,9 +2961,9 @@ button:focus-visible {
 
 .hero-experience-card h2 {
   position: relative;
-  max-width: 310px;
+  max-width: 370px;
   margin: 0;
-  font-size: clamp(1.65rem, 2.2vw, 2.1rem);
+  font-size: clamp(1.35rem, 1.75vw, 1.75rem);
   font-weight: 800;
   letter-spacing: -0.045em;
   line-height: 1.05;
@@ -2904,20 +2972,22 @@ button:focus-visible {
 .experience-list {
   position: relative;
   display: grid;
-  gap: 0;
-  margin: 1.6rem 0 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 1.25rem 0 0;
   padding: 0;
   list-style: none;
 }
 
 .experience-list li {
   display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.75rem 0;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.75rem 0 0;
   border-top: 1px solid rgba(255, 255, 255, 0.12);
   color: rgba(255, 255, 255, 0.74);
-  font-size: 0.88rem;
+  font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -3041,8 +3111,17 @@ button:focus-visible {
     font-size: clamp(3.2rem, 8vw, 5rem);
   }
 
+  .hero-layout {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
+  .hero-media {
+    min-height: 540px;
+  }
+
   .hero-experience-card {
-    max-width: 640px;
+    max-width: none;
   }
 
   .quick-access-grid {
@@ -3089,7 +3168,22 @@ button:focus-visible {
   }
 
   .hero-experience-card {
-    padding: 1.7rem;
+    padding: 1.2rem;
+  }
+
+  .hero-media {
+    min-height: 520px;
+    border-radius: 22px;
+  }
+
+  .experience-list {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .experience-list li {
+    flex-direction: row;
+    gap: 0.65rem;
   }
 
   .experience-number {
@@ -8298,7 +8392,7 @@ button:focus-visible {
 
 .no23-contact-detail-card,
 .no23-contact-social {
-  min-height: 225px;
+  min-height: 210px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -8328,6 +8422,86 @@ button:focus-visible {
   color: rgba(255, 255, 255, 0.52);
   font-size: 0.86rem;
   line-height: 1.65;
+}
+
+.no23-contact-address {
+  position: relative;
+  grid-column: 1 / -1;
+  min-height: 244px;
+  overflow: hidden;
+  background: #151815;
+}
+
+.no23-contact-location-grid {
+  position: absolute;
+  inset: 0;
+  opacity: 0.62;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+    radial-gradient(circle at 77% 46%, rgba(200, 255, 50, 0.18), transparent 22%);
+  background-size: 48px 48px, 48px 48px, auto;
+  pointer-events: none;
+}
+
+.no23-contact-location-grid::before,
+.no23-contact-location-grid::after {
+  position: absolute;
+  border: 1px solid rgba(200, 255, 50, 0.23);
+  border-radius: 999px;
+  content: "";
+}
+
+.no23-contact-location-grid::before {
+  top: 23%;
+  right: 9%;
+  width: 150px;
+  height: 150px;
+}
+
+.no23-contact-location-grid::after {
+  top: calc(23% + 32px);
+  right: calc(9% + 32px);
+  width: 86px;
+  height: 86px;
+}
+
+.no23-contact-location-pin {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  right: calc(9% + 75px);
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border-radius: 50% 50% 50% 10%;
+  background: var(--no23-accent);
+  color: var(--no23-black);
+  font-size: 0.72rem;
+  font-weight: 950;
+  transform: translate(50%, -65%) rotate(-45deg);
+}
+
+.no23-contact-location-pin::after {
+  display: block;
+  font-size: 0.72rem;
+  transform: rotate(45deg);
+  content: "23";
+}
+
+.no23-contact-location-pin {
+  font-size: 0;
+}
+
+.no23-contact-address > span,
+.no23-contact-location-copy {
+  position: relative;
+  z-index: 1;
+}
+
+.no23-contact-location-copy {
+  max-width: 330px;
 }
 
 .no23-contact-detail-card dl {
@@ -8360,23 +8534,17 @@ button:focus-visible {
 }
 
 .no23-contact-social {
-  grid-column: 1 / -1;
-  min-height: 225px;
+  min-height: 210px;
   background: #151815;
-}
-
-.no23-contact-social:hover,
-.no23-contact-social:focus-visible {
-  border-color: var(--no23-accent);
-  transform: translateY(-3px);
 }
 
 .no23-contact-social strong {
   margin-top: auto;
   color: #fff;
-  font-size: clamp(1.9rem, 2.6vw, 2.8rem);
+  font-size: clamp(1.35rem, 1.75vw, 1.8rem);
   font-weight: 900;
   letter-spacing: -0.055em;
+  line-height: 1.02;
 }
 
 .no23-contact-social small {
