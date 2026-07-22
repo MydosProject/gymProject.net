@@ -1,0 +1,111 @@
+@model NO23.Web.ViewModels.Classes.ClassesIndexViewModel
+@{
+    ViewData["Title"] = "Grup Dersleri";
+}
+
+<div class="classes-page">
+    <section class="classes-hero">
+        <div class="container">
+            <p>NO23 / GRUP DERSLERİ</p>
+            <h1>Grup Dersleri ve Ders Programı</h1>
+            <p>
+                Bootcamp, Metcon, Pilates ve fonksiyonel antrenman seanslarını incele;
+                rezervasyon için üye panelindeki uygun dersler alanına geç.
+            </p>
+            <a class="no23-primary-button" href="@Model.ReservationTargetUrl">Rezervasyon Yap</a>
+        </div>
+    </section>
+
+    <section class="classes-list-section">
+        <div class="container">
+            <div class="classes-section-heading">
+                <p>01 / DERSLER</p>
+                <h2>Aktif Grup Dersleri</h2>
+            </div>
+
+            @if (Model.GroupClasses.Count == 0)
+            {
+                <p>Aktif grup dersi bulunmuyor.</p>
+            }
+            else
+            {
+                <div class="classes-grid">
+                    @foreach (var groupClass in Model.GroupClasses)
+                    {
+                        <article class="class-card">
+                            <div>
+                                <p>@groupClass.TrainerName</p>
+                                <h3>@groupClass.Name</h3>
+                                <p>@(string.IsNullOrWhiteSpace(groupClass.Description) ? "NO23 sistemiyle planlanan grup dersi." : groupClass.Description)</p>
+                            </div>
+
+                            <dl>
+                                <div>
+                                    <dt>Süre</dt>
+                                    <dd>@groupClass.DurationMinutes dk</dd>
+                                </div>
+                                <div>
+                                    <dt>Zorluk</dt>
+                                    <dd>@groupClass.DifficultyLevel</dd>
+                                </div>
+                                <div>
+                                    <dt>Ortalama Kalori</dt>
+                                    <dd>@groupClass.AverageCaloriesBurned kcal</dd>
+                                </div>
+                            </dl>
+
+                            @if (groupClass.UpcomingSessions.Count > 0)
+                            {
+                                <div class="class-card-sessions">
+                                    <h4>Yaklaşan Seanslar</h4>
+                                    @foreach (var session in groupClass.UpcomingSessions.Take(3))
+                                    {
+                                        <div class="class-session-row">
+                                            <span>@session.StartsAtLocal.ToString("dd.MM.yyyy HH:mm")</span>
+                                            <span>@session.RemainingCapacity / @session.Capacity kontenjan</span>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </article>
+                    }
+                </div>
+            }
+        </div>
+    </section>
+
+    <section class="classes-schedule-section">
+        <div class="container">
+            <div class="classes-section-heading">
+                <p>02 / PROGRAM</p>
+                <h2>Yaklaşan Seanslar</h2>
+            </div>
+
+            @if (Model.UpcomingSessions.Count == 0)
+            {
+                <p>Yaklaşan planlı seans bulunmuyor.</p>
+            }
+            else
+            {
+                <div class="classes-schedule-list">
+                    @foreach (var session in Model.UpcomingSessions)
+                    {
+                        <article class="classes-schedule-item">
+                            <div>
+                                <p>@session.StartsAtLocal.ToString("dd.MM.yyyy HH:mm")</p>
+                                <h3>@session.ClassName</h3>
+                                <p>@session.TrainerName</p>
+                            </div>
+                            <div>
+                                <span>Kapasite: @session.Capacity</span>
+                                <span>Rezervasyon: @session.ReservedCount</span>
+                                <span>Kalan: @session.RemainingCapacity</span>
+                            </div>
+                            <a href="@Model.ReservationTargetUrl">Rezervasyon Yap</a>
+                        </article>
+                    }
+                </div>
+            }
+        </div>
+    </section>
+</div>
