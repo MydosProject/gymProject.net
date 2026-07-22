@@ -3,12 +3,16 @@
     ViewData["Title"] = "Paket Düzenle";
 }
 
-<section class="py-5">
+<section class="admin-page">
     <div class="container">
-        <div class="mb-4">
-            <a asp-action="Index" class="text-muted text-decoration-none">← Paketlere dön</a>
-            <h1 class="h3 mt-2">Paket Düzenle</h1>
-        </div>
+        <header class="admin-page-head admin-form-head">
+            <div>
+                <a asp-action="Index" class="admin-back-link">← Paketlere dön</a>
+                <p class="admin-eyebrow">Kulüp / Üyelik Yönetimi</p>
+                <h1>Üyelik paketini düzenle</h1>
+                <p class="admin-page-description">Paketin ders hakkını, hedef kitlesini, avantajlarını ve public görünürlüğünü güncelle.</p>
+            </div>
+        </header>
 
         <partial name="_PackageForm" model="Model" />
     </div>

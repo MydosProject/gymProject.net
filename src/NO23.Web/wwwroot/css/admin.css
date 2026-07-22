@@ -536,10 +536,37 @@ body.no23-admin-body {
     min-width: 980px;
 }
 
+.admin-package-table .table {
+    min-width: 980px;
+}
+
 .admin-class-name {
     display: block;
     min-width: 120px;
     color: var(--admin-copy);
+}
+
+.admin-package-code {
+    display: inline-flex;
+    min-width: 58px;
+    justify-content: center;
+    padding: 7px 9px;
+    color: #4e6810;
+    background: var(--admin-lime-soft);
+    border: 1px solid #d3eb9b;
+    border-radius: 8px;
+    font-family: "SFMono-Regular", Consolas, monospace;
+    font-size: .62rem;
+    font-weight: 900;
+    letter-spacing: .08em;
+}
+
+.admin-package-audience {
+    display: block;
+    max-width: 300px;
+    color: #6e746a;
+    font-size: .7rem;
+    line-height: 1.45;
 }
 
 .admin-capacity {
@@ -821,6 +848,42 @@ body.no23-admin-body {
 .admin-field-hint {
     display: block;
     margin-top: 6px;
+}
+
+.admin-feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 9px;
+}
+
+.admin-feature-option {
+    display: flex;
+    min-height: 50px;
+    align-items: center;
+    gap: 6px;
+    margin: 0 !important;
+    padding: 10px 12px;
+    color: #60665c;
+    background: #f8faf4;
+    border: 1px solid #e2e6da;
+    border-radius: 10px;
+    transition: border-color .16s ease, background-color .16s ease;
+}
+
+.admin-feature-option:has(.form-check-input:checked) {
+    color: #49620d;
+    background: var(--admin-lime-soft);
+    border-color: #c8e77f;
+}
+
+.admin-feature-option span {
+    font-size: .61rem;
+    font-weight: 850;
+    letter-spacing: .04em;
+}
+
+.admin-package-active-toggle {
+    margin-top: 16px !important;
 }
 
 .admin-content form .row {

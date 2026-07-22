@@ -1,31 +1,38 @@
 @model IReadOnlyList<MembershipPackageListItemViewModel>
 @{
     ViewData["Title"] = "Üyelik Paketleri";
+    var activeCount = Model.Count(package => package.IsActive);
+    var totalMemberCount = Model.Sum(package => package.MemberCount);
 }
 
-<section class="py-5">
+<section class="admin-page">
     <div class="container">
-        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <header class="admin-page-head">
             <div>
-                <p class="text-uppercase text-muted small mb-1">Admin</p>
-                <h1 class="h3 mb-0">Üyelik Paketleri</h1>
+                <p class="admin-eyebrow">NO23 CLUB / ÜYELİK YÖNETİMİ</p>
+                <h1>Üyelik paketleri</h1>
+                <p class="admin-page-description">Paket yapılarını, haftalık ders haklarını, avantajları ve public görünürlüğü yönet.</p>
             </div>
+            <div class="admin-page-actions">
+                <a class="btn btn-outline-dark" asp-area="Admin" asp-controller="Members" asp-action="Index">Üyeleri görüntüle</a>
+                <a class="btn btn-dark" asp-area="Admin" asp-controller="MembershipPackages" asp-action="Create">+ Yeni paket</a>
+            </div>
+        </header>
 
-            <a class="btn btn-dark"
-               asp-area="Admin"
-               asp-controller="MembershipPackages"
-               asp-action="Create">
-                Yeni Paket
-            </a>
+        <div class="admin-metrics">
+            <article><span>Üyelik paketi</span><strong>@Model.Count</strong><small>Toplam paket</small></article>
+            <article><span>Aktif paket</span><strong>@activeCount</strong><small>Kayıt ekranında görünür</small></article>
+            <article><span>Bağlı üye</span><strong>@totalMemberCount</strong><small>Tüm paketlerde</small></article>
         </div>
 
-        <div class="table-responsive bg-white border rounded-3">
+        <div class="table-responsive admin-table-card admin-package-table">
             <table class="table align-middle mb-0">
                 <thead>
                     <tr>
                         <th>Sıra</th>
                         <th>Kod</th>
                         <th>Paket</th>
+                        <th>Hedef Kitle</th>
                         <th>Haftalık Ders</th>
                         <th>Üye</th>
                         <th>Durum</th>
@@ -33,32 +40,39 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var package in Model)
+                    @if (Model.Count == 0)
                     {
-                        <tr>
-                            <td>@package.DisplayOrder</td>
-                            <td><strong>@package.Code</strong></td>
-                            <td>
-                                <div>@package.Name</div>
-                                <small class="text-muted">@package.Audience</small>
-                            </td>
-                            <td>@(package.WeeklyClassLimit?.ToString() ?? "Sınırsız")</td>
-                            <td>@package.MemberCount</td>
-                            <td>
-                                <span class="badge @(package.IsActive ? "text-bg-success" : "text-bg-secondary")">
-                                    @(package.IsActive ? "Aktif" : "Pasif")
-                                </span>
-                            </td>
-                            <td class="text-end">
-                                <a class="btn btn-sm btn-outline-dark"
-                                   asp-area="Admin"
-                                   asp-controller="MembershipPackages"
-                                   asp-action="Edit"
-                                   asp-route-id="@package.Id">
-                                    Düzenle
-                                </a>
-                            </td>
-                        </tr>
+                        <tr><td colspan="8"><div class="admin-empty-row">Henüz üyelik paketi eklenmedi.</div></td></tr>
+                    }
+                    else
+                    {
+                        @foreach (var package in Model)
+                        {
+                            <tr>
+                                <td><span class="admin-order-no">@package.DisplayOrder.ToString("00")</span></td>
+                                <td><span class="admin-package-code">@package.Code</span></td>
+                                <td><strong class="admin-class-name">@package.Name</strong></td>
+                                <td><span class="admin-package-audience">@package.Audience</span></td>
+                                <td>
+                                    <strong>@(package.WeeklyClassLimit?.ToString() ?? "Sınırsız")</strong>
+                                    <span class="admin-cell-note">ders / hafta</span>
+                                </td>
+                                <td>
+                                    <strong>@package.MemberCount</strong>
+                                    <span class="admin-cell-note">aktif profil</span>
+                                </td>
+                                <td><span class="badge @(package.IsActive ? "text-bg-success" : "text-bg-secondary")">@(package.IsActive ? "Aktif" : "Pasif")</span></td>
+                                <td class="text-end">
+                                    <a class="btn btn-sm btn-outline-dark"
+                                       asp-area="Admin"
+                                       asp-controller="MembershipPackages"
+                                       asp-action="Edit"
+                                       asp-route-id="@package.Id">
+                                        Düzenle
+                                    </a>
+                                </td>
+                            </tr>
+                        }
                     }
                 </tbody>
             </table>

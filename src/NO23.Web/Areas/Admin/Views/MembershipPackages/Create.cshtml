@@ -3,12 +3,16 @@
     ViewData["Title"] = "Yeni Paket";
 }
 
-<section class="py-5">
+<section class="admin-page">
     <div class="container">
-        <div class="mb-4">
-            <a asp-action="Index" class="text-muted text-decoration-none">← Paketlere dön</a>
-            <h1 class="h3 mt-2">Yeni Üyelik Paketi</h1>
-        </div>
+        <header class="admin-page-head admin-form-head">
+            <div>
+                <a asp-action="Index" class="admin-back-link">← Paketlere dön</a>
+                <p class="admin-eyebrow">Kulüp / Üyelik Yönetimi</p>
+                <h1>Yeni üyelik paketi</h1>
+                <p class="admin-page-description">Yeni paket seviyesinin ders hakkını, hedef kitlesini ve NO23 ayrıcalıklarını oluştur.</p>
+            </div>
+        </header>
 
         <partial name="_PackageForm" model="Model" />
     </div>
