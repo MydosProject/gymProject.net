@@ -430,6 +430,13 @@ body.no23-admin-body {
     line-height: 1.55;
 }
 
+.admin-page-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 9px;
+}
+
 .admin-page-tag {
     padding: 8px 11px;
     color: #5d741d;
@@ -519,6 +526,35 @@ body.no23-admin-body {
 .admin-table-card {
     max-width: 1480px;
     margin: 0 auto;
+}
+
+.admin-class-table .table {
+    min-width: 1120px;
+}
+
+.admin-session-table .table {
+    min-width: 980px;
+}
+
+.admin-class-name {
+    display: block;
+    min-width: 120px;
+    color: var(--admin-copy);
+}
+
+.admin-capacity {
+    display: inline-flex;
+    padding: 6px 9px;
+    color: #587514;
+    background: var(--admin-lime-soft);
+    border-radius: 8px;
+    font-size: .61rem;
+    font-weight: 900;
+}
+
+.admin-capacity.is-full {
+    color: #a34432;
+    background: #fff0ec;
 }
 
 .admin-order-no {
@@ -703,6 +739,88 @@ body.no23-admin-body {
     border: 1px solid var(--admin-line) !important;
     border-radius: var(--admin-radius) !important;
     box-shadow: 0 12px 36px rgba(25, 30, 22, .045);
+}
+
+.admin-content .admin-session-form {
+    max-width: 980px;
+}
+
+.admin-form-section + .admin-form-section {
+    margin-top: 26px;
+    padding-top: 26px;
+    border-top: 1px solid #e7eae1;
+}
+
+.admin-form-section > header {
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr);
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.admin-form-section > header > span {
+    display: grid;
+    width: 30px;
+    height: 30px;
+    place-items: center;
+    color: #5f7f14;
+    background: #eff7dc;
+    border-radius: 8px;
+    font-size: .6rem;
+    font-weight: 900;
+}
+
+.admin-form-section h2 {
+    margin: 0;
+    color: var(--admin-copy);
+    font-size: 1rem;
+    font-weight: 900;
+    letter-spacing: -.025em;
+}
+
+.admin-form-section header p {
+    max-width: 680px;
+    margin: 4px 0 0;
+    color: var(--admin-muted);
+    font-size: .69rem;
+    line-height: 1.5;
+}
+
+.admin-form-toggle {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 56px;
+    margin: 0 !important;
+    padding: 11px 13px;
+    background: #f8faf4;
+    border: 1px solid #e2e6da;
+    border-radius: 10px;
+}
+
+.admin-form-toggle > span {
+    display: grid;
+    gap: 2px;
+}
+
+.admin-form-toggle strong {
+    color: var(--admin-copy);
+    font-size: .64rem;
+}
+
+.admin-form-toggle small,
+.admin-field-hint {
+    color: var(--admin-muted);
+    font-size: .62rem;
+    font-weight: 600;
+    letter-spacing: 0;
+    line-height: 1.45;
+    text-transform: none;
+}
+
+.admin-field-hint {
+    display: block;
+    margin-top: 6px;
 }
 
 .admin-content form .row {

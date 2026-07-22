@@ -1,28 +1,40 @@
 @model IReadOnlyList<GroupClassListItemViewModel>
 @{
     ViewData["Title"] = "Grup Dersleri";
+    var activeCount = Model.Count(groupClass => groupClass.IsActive);
+    var totalSessionCount = Model.Sum(groupClass => groupClass.SessionCount);
 }
 
-<section class="py-5">
+<section class="admin-page">
     <div class="container">
-        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <header class="admin-page-head">
             <div>
-                <p class="text-uppercase text-muted small mb-1">Admin</p>
-                <h1 class="h3 mb-0">Grup Dersleri</h1>
+                <p class="admin-eyebrow">NO23 CLUB / DERS YÖNETİMİ</p>
+                <h1>Grup dersleri</h1>
+                <p class="admin-page-description">Ders içeriklerini, eğitmenleri, performans hedeflerini ve program görünürlüğünü yönet.</p>
             </div>
+            <div class="admin-page-actions">
+                <a class="btn btn-outline-dark" asp-area="Admin" asp-controller="ClassSessions" asp-action="Index">Ders programı</a>
+                <a class="btn btn-dark" asp-action="Create">+ Yeni ders</a>
+            </div>
+        </header>
 
-            <a class="btn btn-dark" asp-action="Create">Yeni Ders</a>
+        <div class="admin-metrics">
+            <article><span>Grup dersi</span><strong>@Model.Count</strong><small>Toplam ders</small></article>
+            <article><span>Aktif ders</span><strong>@activeCount</strong><small>Public sitede görünür</small></article>
+            <article><span>Planlanan seans</span><strong>@totalSessionCount</strong><small>Tüm program</small></article>
         </div>
 
-        <div class="table-responsive bg-white border rounded-3">
+        <div class="table-responsive admin-table-card admin-class-table">
             <table class="table align-middle mb-0">
                 <thead>
                     <tr>
+                        <th>Sıra</th>
                         <th>Ders</th>
                         <th>Eğitmen</th>
                         <th>Süre</th>
                         <th>Zorluk</th>
-                        <th>Kalori</th>
+                        <th>Enerji</th>
                         <th>Kapasite</th>
                         <th>Program</th>
                         <th>Durum</th>
@@ -30,25 +42,31 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var groupClass in Model)
+                    @if (Model.Count == 0)
                     {
-                        <tr>
-                            <td><strong>@groupClass.Name</strong></td>
-                            <td>@groupClass.TrainerName</td>
-                            <td>@groupClass.DurationMinutes dk</td>
-                            <td>@groupClass.DifficultyLevel</td>
-                            <td>@groupClass.AverageCaloriesBurned</td>
-                            <td>@groupClass.Capacity</td>
-                            <td>@groupClass.SessionCount</td>
-                            <td>
-                                <span class="badge @(groupClass.IsActive ? "text-bg-success" : "text-bg-secondary")">
-                                    @(groupClass.IsActive ? "Aktif" : "Pasif")
-                                </span>
-                            </td>
-                            <td class="text-end">
-                                <a class="btn btn-sm btn-outline-dark" asp-action="Edit" asp-route-id="@groupClass.Id">Düzenle</a>
-                            </td>
-                        </tr>
+                        <tr><td colspan="10"><div class="admin-empty-row">Henüz grup dersi eklenmedi.</div></td></tr>
+                    }
+                    else
+                    {
+                        @for (var index = 0; index < Model.Count; index++)
+                        {
+                            var groupClass = Model[index];
+                            <tr>
+                                <td><span class="admin-order-no">@((index + 1).ToString("00"))</span></td>
+                                <td><strong class="admin-class-name">@groupClass.Name</strong></td>
+                                <td>@groupClass.TrainerName</td>
+                                <td><span class="admin-code">@groupClass.DurationMinutes dk</span></td>
+                                <td>@groupClass.DifficultyLevel</td>
+                                <td>@groupClass.AverageCaloriesBurned kcal</td>
+                                <td>@groupClass.Capacity kişi</td>
+                                <td>
+                                    <strong>@groupClass.SessionCount</strong>
+                                    <span class="admin-cell-note">seans</span>
+                                </td>
+                                <td><span class="badge @(groupClass.IsActive ? "text-bg-success" : "text-bg-secondary")">@(groupClass.IsActive ? "Aktif" : "Pasif")</span></td>
+                                <td class="text-end"><a class="btn btn-sm btn-outline-dark" asp-action="Edit" asp-route-id="@groupClass.Id">Düzenle</a></td>
+                            </tr>
+                        }
                     }
                 </tbody>
             </table>

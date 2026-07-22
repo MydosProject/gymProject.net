@@ -1,31 +1,55 @@
 @model ClassSessionFormViewModel
 
-<form method="post" class="bg-white border rounded-3 p-4 text-dark">
+<form method="post" class="bg-white border rounded-3 p-4 text-dark admin-form-card admin-session-form">
     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
     <input type="hidden" asp-for="Id" />
 
-    <div class="row g-3">
-        <div class="col-md-6">
-            <label asp-for="GroupClassId" class="form-label"></label>
-            <select asp-for="GroupClassId" asp-items="Model.GroupClassOptions" class="form-select"></select>
-            <span asp-validation-for="GroupClassId" class="text-danger"></span>
+    <section class="admin-form-section">
+        <header>
+            <span>01</span>
+            <div>
+                <h2>Seans planı</h2>
+                <p>Programa eklenecek grup dersini ve başlangıç zamanını belirle.</p>
+            </div>
+        </header>
+
+        <div class="row g-3">
+            <div class="col-md-7">
+                <label asp-for="GroupClassId" class="form-label"></label>
+                <select asp-for="GroupClassId" asp-items="Model.GroupClassOptions" class="form-select"></select>
+                <span asp-validation-for="GroupClassId" class="text-danger"></span>
+            </div>
+            <div class="col-md-5">
+                <label asp-for="StartsAtLocal" class="form-label"></label>
+                <input asp-for="StartsAtLocal" type="datetime-local" class="form-control" />
+                <span asp-validation-for="StartsAtLocal" class="text-danger"></span>
+            </div>
         </div>
-        <div class="col-md-3">
-            <label asp-for="StartsAtLocal" class="form-label"></label>
-            <input asp-for="StartsAtLocal" type="datetime-local" class="form-control" />
-            <span asp-validation-for="StartsAtLocal" class="text-danger"></span>
+    </section>
+
+    <section class="admin-form-section">
+        <header>
+            <span>02</span>
+            <div>
+                <h2>Kontenjan ve durum</h2>
+                <p>Bu seansa özel kapasiteyi ve rezervasyon görünürlüğünü yöneten durumu seç.</p>
+            </div>
+        </header>
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label asp-for="CapacityOverride" class="form-label"></label>
+                <input asp-for="CapacityOverride" class="form-control" />
+                <span asp-validation-for="CapacityOverride" class="text-danger"></span>
+                <small class="admin-field-hint">Boş bırakılırsa grup dersinin varsayılan kapasitesi kullanılır.</small>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="Status" class="form-label"></label>
+                <select asp-for="Status" asp-items="Html.GetEnumSelectList<ClassSessionStatus>()" class="form-select"></select>
+                <small class="admin-field-hint">Yalnızca planlanan gelecek seanslar public programda gösterilir.</small>
+            </div>
         </div>
-        <div class="col-md-3">
-            <label asp-for="CapacityOverride" class="form-label"></label>
-            <input asp-for="CapacityOverride" class="form-control" />
-            <span asp-validation-for="CapacityOverride" class="text-danger"></span>
-            <small class="text-muted">Boşsa ders kapasitesi kullanılır.</small>
-        </div>
-        <div class="col-md-4">
-            <label asp-for="Status" class="form-label"></label>
-            <select asp-for="Status" asp-items="Html.GetEnumSelectList<ClassSessionStatus>()" class="form-select"></select>
-        </div>
-    </div>
+    </section>
 
     <div class="d-flex justify-content-end gap-2 mt-4">
         <a asp-action="Index" class="btn btn-outline-secondary">Vazgeç</a>

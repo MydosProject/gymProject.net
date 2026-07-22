@@ -3,12 +3,16 @@
     ViewData["Title"] = "Yeni Grup Dersi";
 }
 
-<section class="py-5">
+<section class="admin-page">
     <div class="container">
-        <div class="mb-4">
-            <a asp-action="Index" class="text-muted text-decoration-none">← Derslere dön</a>
-            <h1 class="h3 mt-2">Yeni Grup Dersi</h1>
-        </div>
+        <header class="admin-page-head admin-form-head">
+            <div>
+                <a asp-action="Index" class="admin-back-link">← Derslere dön</a>
+                <p class="admin-eyebrow">Kulüp / Ders Yönetimi</p>
+                <h1>Yeni grup dersi</h1>
+                <p class="admin-page-description">Public programda yer alacak yeni dersin eğitmen, performans ve kapasite bilgilerini oluştur.</p>
+            </div>
+        </header>
 
         <partial name="_GroupClassForm" model="Model" />
     </div>
