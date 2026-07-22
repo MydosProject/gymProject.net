@@ -6,6 +6,8 @@ public class KitchenDashboardViewModel
 
     public CalorieRecommendationViewModel? Recommendation { get; init; }
 
+    public ActiveKitchenSubscriptionViewModel? ActiveSubscription { get; init; }
+
     public IReadOnlyList<KitchenMenuItemCardViewModel> MenuItems { get; init; } = [];
 
     public IReadOnlyList<KitchenSubscriptionPlanViewModel> SubscriptionPlans { get; init; } = [];
