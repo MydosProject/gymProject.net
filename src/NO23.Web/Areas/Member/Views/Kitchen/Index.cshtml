@@ -42,6 +42,31 @@
             _ => "23"
         };
     }
+
+    string GetSubscriptionPlanName(string plan)
+    {
+        return plan switch
+        {
+            nameof(KitchenSubscriptionPlan.FiveDays) => "5 Günlük Plan",
+            nameof(KitchenSubscriptionPlan.TenDays) => "10 Günlük Plan",
+            nameof(KitchenSubscriptionPlan.TwentyDays) => "20 Günlük Plan",
+            nameof(KitchenSubscriptionPlan.Monthly) => "Aylık Plan",
+            _ => plan
+        };
+    }
+
+    string GetSubscriptionGoalName(string goal)
+    {
+        return goal switch
+        {
+            nameof(NutritionGoal.FatLoss) => "Yağ Yakımı",
+            nameof(NutritionGoal.MuscleGain) => "Kas Kazanımı",
+            nameof(NutritionGoal.WeightMaintenance) => "Kilo Koruma",
+            nameof(NutritionGoal.PerformanceNutrition) => "Performans Beslenmesi",
+            nameof(NutritionGoal.HealthyLifestyle) => "Sağlıklı Yaşam",
+            _ => goal
+        };
+    }
 }
 
 <section class="kitchen-page">
@@ -140,6 +165,11 @@
 
         @if (Model.ActiveSubscription is not null)
         {
+            var subscription = Model.ActiveSubscription;
+            var totalDays = Math.Max(1, subscription.EndsOn.DayNumber - subscription.StartsOn.DayNumber + 1);
+            var completedDays = Math.Clamp(totalDays - subscription.RemainingDays, 0, totalDays);
+            var progressPercentage = (int)Math.Round(completedDays * 100d / totalDays);
+
             <section class="kitchen-active-subscription"
                      aria-labelledby="active-subscription-title">
                 <div class="kitchen-section-heading">
@@ -154,44 +184,75 @@
                     </p>
                 </div>
 
-                <div class="kitchen-active-subscription-card">
-                    <div>
-                        <span>@Model.ActiveSubscription.Status</span>
-                        <h3>@Model.ActiveSubscription.Plan</h3>
-                        <p>@Model.ActiveSubscription.Goal</p>
+                <article class="kitchen-subscription-card"
+                         style="--subscription-progress: @(progressPercentage)%">
+                    <div class="kitchen-subscription-main">
+                        <div class="kitchen-subscription-topline">
+                            <span class="kitchen-subscription-status">
+                                <i aria-hidden="true"></i>
+                                Aktif
+                            </span>
+                            <strong>NO23 / NUTRITION</strong>
+                        </div>
+
+                        <div class="kitchen-subscription-title">
+                            <p>@GetSubscriptionGoalName(subscription.Goal)</p>
+                            <h3>@GetSubscriptionPlanName(subscription.Plan)</h3>
+                        </div>
+
+                        <div class="kitchen-subscription-progress">
+                            <div>
+                                <span>Plan ilerlemesi</span>
+                                <strong>%@progressPercentage</strong>
+                            </div>
+                            <div class="kitchen-subscription-progress-track" aria-hidden="true">
+                                <span></span>
+                            </div>
+                            <small>
+                                @subscription.StartsOn.ToString("dd.MM.yyyy")
+                                —
+                                @subscription.EndsOn.ToString("dd.MM.yyyy")
+                            </small>
+                        </div>
                     </div>
 
-                    <dl>
+                    <div class="kitchen-subscription-days">
+                        <span>Kalan</span>
+                        <strong>@subscription.RemainingDays</strong>
+                        <small>gün</small>
+                    </div>
+
+                    <dl class="kitchen-subscription-macros">
                         <div>
                             <dt>Günlük Kalori</dt>
-                            <dd>@Model.ActiveSubscription.DailyCalories kcal</dd>
+                            <dd>@subscription.DailyCalories <small>kcal</small></dd>
                         </div>
                         <div>
                             <dt>Protein</dt>
-                            <dd>@Model.ActiveSubscription.ProteinGrams g</dd>
+                            <dd>@subscription.ProteinGrams <small>g</small></dd>
                         </div>
                         <div>
                             <dt>Karbonhidrat</dt>
-                            <dd>@Model.ActiveSubscription.CarbohydrateGrams g</dd>
+                            <dd>@subscription.CarbohydrateGrams <small>g</small></dd>
                         </div>
                         <div>
                             <dt>Yağ</dt>
-                            <dd>@Model.ActiveSubscription.FatGrams g</dd>
-                        </div>
-                        <div>
-                            <dt>Başlangıç</dt>
-                            <dd>@Model.ActiveSubscription.StartsOn.ToString("dd.MM.yyyy")</dd>
-                        </div>
-                        <div>
-                            <dt>Bitiş</dt>
-                            <dd>@Model.ActiveSubscription.EndsOn.ToString("dd.MM.yyyy")</dd>
-                        </div>
-                        <div>
-                            <dt>Kalan Gün</dt>
-                            <dd>@Model.ActiveSubscription.RemainingDays</dd>
+                            <dd>@subscription.FatGrams <small>g</small></dd>
                         </div>
                     </dl>
-                </div>
+
+                    <footer class="kitchen-subscription-footer">
+                        <p>
+                            Planına bağlı siparişlerini ve teslimat durumlarını
+                            Siparişlerim alanından takip edebilirsin.
+                        </p>
+                        <a asp-area="Member"
+                           asp-controller="Orders"
+                           asp-action="Index">
+                            Siparişlerime Git <span aria-hidden="true">↗</span>
+                        </a>
+                    </footer>
+                </article>
             </section>
         }
 

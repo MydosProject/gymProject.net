@@ -1,7 +1,12 @@
 @model MemberOrdersIndexViewModel
 
 @{
-    ViewData["Title"] = "Sipariş Geçmişi";
+    ViewData["Title"] = "Siparişlerim";
+
+    var activeOrderCount = Model.Orders.Count(order =>
+        order.Status != "Delivered" && order.Status != "Cancelled");
+
+    var totalItemCount = Model.Orders.Sum(order => order.ItemCount);
 
     string GetOrderTypeName(string type)
     {
@@ -27,15 +32,38 @@
         };
     }
 
+    string GetOrderStatusClass(string status)
+    {
+        return status switch
+        {
+            "Delivered" => "is-delivered",
+            "Cancelled" => "is-cancelled",
+            "OutForDelivery" => "is-delivery",
+            "Preparing" => "is-preparing",
+            _ => "is-pending"
+        };
+    }
+
     string GetPaymentStatusName(string status)
     {
         return status switch
         {
-            "Pending" => "Beklemede",
+            "Pending" => "Ödeme Bekliyor",
             "Paid" => "Ödendi",
-            "Failed" => "Başarısız",
+            "Failed" => "Ödeme Başarısız",
             "Refunded" => "İade Edildi",
             _ => status
+        };
+    }
+
+    string GetPaymentStatusClass(string status)
+    {
+        return status switch
+        {
+            "Paid" => "is-paid",
+            "Failed" => "is-failed",
+            "Refunded" => "is-refunded",
+            _ => "is-payment-pending"
         };
     }
 
@@ -51,86 +79,160 @@
 }
 
 <section class="member-orders-page">
-    <div class="container">
-        <header class="member-orders-header">
-            <p>NO23 / ÜYE PANELİ</p>
-            <h1>Sipariş Geçmişi</h1>
-            <p>Shop ve Kitchen siparişlerini, teslimat planını ve ürün kalemlerini takip et.</p>
+    <div class="member-orders-grid" aria-hidden="true"></div>
+    <div class="member-orders-glow" aria-hidden="true"></div>
+
+    <div class="container position-relative">
+        <header class="member-orders-hero">
+            <div>
+                <p class="member-orders-kicker">NO23 / ÜYE PANELİ / SİPARİŞLER</p>
+                <h1>Her sipariş.<br /><span>Tek akışta.</span></h1>
+                <p class="member-orders-description">
+                    Shop ve Kitchen siparişlerini, teslimat planını ve ürün
+                    kalemlerini tek ekrandan takip et.
+                </p>
+            </div>
+
+            <aside class="member-orders-hero-panel">
+                <div>
+                    <span>TOPLAM SİPARİŞ</span>
+                    <strong>@Model.Orders.Count.ToString("00")</strong>
+                </div>
+                <dl>
+                    <div>
+                        <dt>Aktif süreç</dt>
+                        <dd>@activeOrderCount.ToString("00")</dd>
+                    </div>
+                    <div>
+                        <dt>Toplam ürün</dt>
+                        <dd>@totalItemCount.ToString("00")</dd>
+                    </div>
+                </dl>
+            </aside>
         </header>
 
-        @if (Model.Orders.Count == 0)
-        {
-            <div class="member-orders-empty">
-                <span>00</span>
+        <nav class="member-panel-shortcuts member-panel-shortcuts-orders"
+             aria-label="Üye paneli bölümleri">
+            <a asp-area="Member" asp-controller="Home" asp-action="Index">
+                <span>01</span><strong>Panelim</strong><small>Üyelik ve dersler</small>
+            </a>
+            <a asp-area="Member" asp-controller="Kitchen" asp-action="Index">
+                <span>02</span><strong>Kitchen Planım</strong><small>Abonelik ve hedefler</small>
+            </a>
+            <a asp-area="Member" asp-controller="Shop" asp-action="Index">
+                <span>03</span><strong>Shop</strong><small>Ürünler ve sepet</small>
+            </a>
+            <a class="is-active"
+               asp-area="Member"
+               asp-controller="Orders"
+               asp-action="Index">
+                <span>04</span><strong>Siparişlerim</strong><small>Teslimat ve geçmiş</small>
+            </a>
+        </nav>
+
+        <section class="member-orders-content" aria-labelledby="member-orders-title">
+            <div class="member-orders-section-heading">
                 <div>
-                    <h2>Henüz siparişin bulunmuyor.</h2>
-                    <p>NO23 Shop veya Kitchen menüsünden seçim yaparak ilk siparişini oluşturabilirsin.</p>
-                    <a asp-area="Member" asp-controller="Shop" asp-action="Index">Shop'a Git</a>
+                    <p>01 / SİPARİŞ GEÇMİŞİ</p>
+                    <h2 id="member-orders-title">Sipariş hareketlerin.</h2>
                 </div>
+                <span>@Model.Orders.Count.ToString("00")</span>
             </div>
-        }
-        else
-        {
-            <div class="member-orders-list">
-                @foreach (var order in Model.Orders)
-                {
-                    <article class="member-order-card">
-                        <div class="member-order-card-header">
-                            <div>
-                                <p>@GetOrderTypeName(order.Type)</p>
-                                <h2>@order.OrderNumber</h2>
-                            </div>
 
-                            <div>
-                                <span>@GetOrderStatusName(order.Status)</span>
-                                <span>@GetPaymentStatusName(order.PaymentStatus)</span>
-                            </div>
-                        </div>
+            @if (Model.Orders.Count == 0)
+            {
+                <div class="member-orders-empty">
+                    <span>00</span>
+                    <div>
+                        <p>NO23 / EMPTY STATE</p>
+                        <h2>Henüz siparişin bulunmuyor.</h2>
+                        <p>
+                            NO23 Shop veya Kitchen menüsünden seçim yaparak
+                            ilk siparişini oluşturabilirsin.
+                        </p>
+                    </div>
+                    <a asp-area="Member" asp-controller="Shop" asp-action="Index">
+                        Shop'a Git <span aria-hidden="true">↗</span>
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="member-orders-list">
+                    @for (var index = 0; index < Model.Orders.Count; index++)
+                    {
+                        var order = Model.Orders[index];
 
-                        <dl class="member-order-summary">
-                            <div>
-                                <dt>Oluşturulma</dt>
-                                <dd>@order.CreatedAtLocal.ToString("dd.MM.yyyy HH:mm")</dd>
-                            </div>
-                            <div>
-                                <dt>Teslimat</dt>
-                                <dd>@order.DeliveryDate.ToString("dd.MM.yyyy") / @order.DeliveryTimeSlot</dd>
-                            </div>
-                            <div>
-                                <dt>Ürün Adedi</dt>
-                                <dd>@order.ItemCount</dd>
-                            </div>
-                            <div>
-                                <dt>Toplam</dt>
-                                <dd>@order.Total.ToString("N0") ₺</dd>
-                            </div>
-                        </dl>
+                        <article class="member-order-card">
+                            <header class="member-order-card-header">
+                                <span class="member-order-index">@((index + 1).ToString("00"))</span>
 
-                        @if (order.Items.Count > 0)
-                        {
-                            <div class="member-order-items">
-                                <h3>Ürün Kalemleri</h3>
+                                <div class="member-order-identity">
+                                    <p>@GetOrderTypeName(order.Type)</p>
+                                    <h3>@order.OrderNumber</h3>
+                                    <small>@order.CreatedAtLocal.ToString("dd.MM.yyyy · HH:mm")</small>
+                                </div>
 
-                                @foreach (var item in order.Items)
-                                {
-                                    <div class="member-order-item">
-                                        <div>
-                                            <span>@GetItemTypeName(item.ItemType)</span>
-                                            <strong>@item.ProductName</strong>
-                                        </div>
+                                <div class="member-order-statuses">
+                                    <span class="@GetOrderStatusClass(order.Status)">
+                                        @GetOrderStatusName(order.Status)
+                                    </span>
+                                    <span class="@GetPaymentStatusClass(order.PaymentStatus)">
+                                        @GetPaymentStatusName(order.PaymentStatus)
+                                    </span>
+                                </div>
+                            </header>
 
-                                        <div>
-                                            <span>@item.Quantity adet</span>
-                                            <span>@item.UnitPrice.ToString("N0") ₺</span>
-                                            <strong>@item.LineTotal.ToString("N0") ₺</strong>
-                                        </div>
+                            <dl class="member-order-summary">
+                                <div>
+                                    <dt>Teslimat günü</dt>
+                                    <dd>@order.DeliveryDate.ToString("dd.MM.yyyy")</dd>
+                                </div>
+                                <div>
+                                    <dt>Saat aralığı</dt>
+                                    <dd>@order.DeliveryTimeSlot</dd>
+                                </div>
+                                <div>
+                                    <dt>Ürün adedi</dt>
+                                    <dd>@order.ItemCount</dd>
+                                </div>
+                                <div class="member-order-total">
+                                    <dt>Toplam</dt>
+                                    <dd>@order.Total.ToString("N0") ₺</dd>
+                                </div>
+                            </dl>
+
+                            @if (order.Items.Count > 0)
+                            {
+                                <details class="member-order-items">
+                                    <summary>
+                                        <span>Ürün kalemleri</span>
+                                        <strong>@order.Items.Count.ToString("00")</strong>
+                                        <i aria-hidden="true"></i>
+                                    </summary>
+
+                                    <div class="member-order-items-list">
+                                        @foreach (var item in order.Items)
+                                        {
+                                            <div class="member-order-item">
+                                                <div>
+                                                    <span>@GetItemTypeName(item.ItemType)</span>
+                                                    <strong>@item.ProductName</strong>
+                                                </div>
+
+                                                <div>
+                                                    <span>@item.Quantity adet × @item.UnitPrice.ToString("N0") ₺</span>
+                                                    <strong>@item.LineTotal.ToString("N0") ₺</strong>
+                                                </div>
+                                            </div>
+                                        }
                                     </div>
-                                }
-                            </div>
-                        }
-                    </article>
-                }
-            </div>
-        }
+                                </details>
+                            }
+                        </article>
+                    }
+                </div>
+            }
+        </section>
     </div>
 </section>
