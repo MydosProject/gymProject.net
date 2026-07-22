@@ -1,118 +1,113 @@
 @model MembershipPackageFormViewModel
 
-<form method="post" class="bg-white border rounded-3 p-4 text-dark">
+<form method="post" class="bg-white border rounded-3 p-4 text-dark admin-form-card admin-package-form">
     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
     <input type="hidden" asp-for="Id" />
 
-    <div class="row g-3">
-        <div class="col-md-4">
-            <label asp-for="Code" class="form-label"></label>
-            <select asp-for="Code" asp-items="Html.GetEnumSelectList<MembershipPackageCode>()" class="form-select"></select>
-            <span asp-validation-for="Code" class="text-danger"></span>
-        </div>
+    <section class="admin-form-section">
+        <header>
+            <span>01</span>
+            <div>
+                <h2>Paket kimliği</h2>
+                <p>Paketin kodunu, adını, hedef kitlesini ve kayıt ekranındaki sıralamasını belirle.</p>
+            </div>
+        </header>
 
-        <div class="col-md-4">
-            <label asp-for="Name" class="form-label"></label>
-            <input asp-for="Name" class="form-control" />
-            <span asp-validation-for="Name" class="text-danger"></span>
-        </div>
-
-        <div class="col-md-4">
-            <label asp-for="DisplayOrder" class="form-label"></label>
-            <input asp-for="DisplayOrder" class="form-control" />
-            <span asp-validation-for="DisplayOrder" class="text-danger"></span>
-        </div>
-
-        <div class="col-md-8">
-            <label asp-for="Audience" class="form-label"></label>
-            <input asp-for="Audience" class="form-control" />
-            <span asp-validation-for="Audience" class="text-danger"></span>
-        </div>
-
-        <div class="col-md-4">
-            <label asp-for="WeeklyClassLimit" class="form-label"></label>
-            <input asp-for="WeeklyClassLimit" class="form-control" />
-            <span asp-validation-for="WeeklyClassLimit" class="text-danger"></span>
-            <small class="text-muted">ELITE gibi sınırsız paketler için boş bırak.</small>
-        </div>
-
-        <div class="col-12">
-            <label asp-for="Description" class="form-label"></label>
-            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
-            <span asp-validation-for="Description" class="text-danger"></span>
-        </div>
-
-        <div class="col-12">
-            <div class="row g-2">
-                <div class="col-sm-6 col-lg-4">
-                    <label class="form-check">
-                        <input asp-for="IncludesMeasurement" class="form-check-input" />
-                        @Html.DisplayNameFor(model => model.IncludesMeasurement)
-                    </label>
-                </div>
-                <div class="col-sm-6 col-lg-4">
-                    <label class="form-check">
-                        <input asp-for="IncludesBodyAnalysis" class="form-check-input" />
-                        @Html.DisplayNameFor(model => model.IncludesBodyAnalysis)
-                    </label>
-                </div>
-                <div class="col-sm-6 col-lg-4">
-                    <label class="form-check">
-                        <input asp-for="IncludesNutritionSupport" class="form-check-input" />
-                        @Html.DisplayNameFor(model => model.IncludesNutritionSupport)
-                    </label>
-                </div>
-                <div class="col-sm-6 col-lg-4">
-                    <label class="form-check">
-                        <input asp-for="IncludesDetailedTracking" class="form-check-input" />
-                        @Html.DisplayNameFor(model => model.IncludesDetailedTracking)
-                    </label>
-                </div>
-                <div class="col-sm-6 col-lg-4">
-                    <label class="form-check">
-                        <input asp-for="IncludesMonthlyAnalysis" class="form-check-input" />
-                        @Html.DisplayNameFor(model => model.IncludesMonthlyAnalysis)
-                    </label>
-                </div>
-                <div class="col-sm-6 col-lg-4">
-                    <label class="form-check">
-                        <input asp-for="IncludesPriorityReservation" class="form-check-input" />
-                        @Html.DisplayNameFor(model => model.IncludesPriorityReservation)
-                    </label>
-                </div>
-                <div class="col-sm-6 col-lg-4">
-                    <label class="form-check">
-                        <input asp-for="IncludesPersonalTrainingSupport" class="form-check-input" />
-                        @Html.DisplayNameFor(model => model.IncludesPersonalTrainingSupport)
-                    </label>
-                </div>
-                <div class="col-sm-6 col-lg-4">
-                    <label class="form-check">
-                        <input asp-for="IncludesKitchenBenefits" class="form-check-input" />
-                        @Html.DisplayNameFor(model => model.IncludesKitchenBenefits)
-                    </label>
-                </div>
-                <div class="col-sm-6 col-lg-4">
-                    <label class="form-check">
-                        <input asp-for="IncludesPrivateEvents" class="form-check-input" />
-                        @Html.DisplayNameFor(model => model.IncludesPrivateEvents)
-                    </label>
-                </div>
-                <div class="col-sm-6 col-lg-4">
-                    <label class="form-check">
-                        <input asp-for="IncludesCommunityMembership" class="form-check-input" />
-                        @Html.DisplayNameFor(model => model.IncludesCommunityMembership)
-                    </label>
-                </div>
-                <div class="col-sm-6 col-lg-4">
-                    <label class="form-check">
-                        <input asp-for="IsActive" class="form-check-input" />
-                        @Html.DisplayNameFor(model => model.IsActive)
-                    </label>
-                </div>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label asp-for="Code" class="form-label"></label>
+                <select asp-for="Code" asp-items="Html.GetEnumSelectList<MembershipPackageCode>()" class="form-select"></select>
+                <span asp-validation-for="Code" class="text-danger"></span>
+            </div>
+            <div class="col-md-5">
+                <label asp-for="Name" class="form-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="col-md-3">
+                <label asp-for="DisplayOrder" class="form-label"></label>
+                <input asp-for="DisplayOrder" class="form-control" />
+                <span asp-validation-for="DisplayOrder" class="text-danger"></span>
+            </div>
+            <div class="col-md-8">
+                <label asp-for="Audience" class="form-label"></label>
+                <input asp-for="Audience" class="form-control" />
+                <span asp-validation-for="Audience" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="WeeklyClassLimit" class="form-label"></label>
+                <input asp-for="WeeklyClassLimit" class="form-control" />
+                <span asp-validation-for="WeeklyClassLimit" class="text-danger"></span>
+                <small class="admin-field-hint">Sınırsız paketler için boş bırak.</small>
+            </div>
+            <div class="col-12">
+                <label asp-for="Description" class="form-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
             </div>
         </div>
-    </div>
+    </section>
+
+    <section class="admin-form-section">
+        <header>
+            <span>02</span>
+            <div>
+                <h2>Paket ayrıcalıkları</h2>
+                <p>Bu üyelik seviyesine dahil olan ölçüm, takip, rezervasyon ve NO23 ekosistem avantajlarını seç.</p>
+            </div>
+        </header>
+
+        <div class="admin-feature-grid">
+            <label class="form-check admin-feature-option">
+                <input asp-for="IncludesMeasurement" class="form-check-input" />
+                <span>@Html.DisplayNameFor(model => model.IncludesMeasurement)</span>
+            </label>
+            <label class="form-check admin-feature-option">
+                <input asp-for="IncludesBodyAnalysis" class="form-check-input" />
+                <span>@Html.DisplayNameFor(model => model.IncludesBodyAnalysis)</span>
+            </label>
+            <label class="form-check admin-feature-option">
+                <input asp-for="IncludesNutritionSupport" class="form-check-input" />
+                <span>@Html.DisplayNameFor(model => model.IncludesNutritionSupport)</span>
+            </label>
+            <label class="form-check admin-feature-option">
+                <input asp-for="IncludesDetailedTracking" class="form-check-input" />
+                <span>@Html.DisplayNameFor(model => model.IncludesDetailedTracking)</span>
+            </label>
+            <label class="form-check admin-feature-option">
+                <input asp-for="IncludesMonthlyAnalysis" class="form-check-input" />
+                <span>@Html.DisplayNameFor(model => model.IncludesMonthlyAnalysis)</span>
+            </label>
+            <label class="form-check admin-feature-option">
+                <input asp-for="IncludesPriorityReservation" class="form-check-input" />
+                <span>@Html.DisplayNameFor(model => model.IncludesPriorityReservation)</span>
+            </label>
+            <label class="form-check admin-feature-option">
+                <input asp-for="IncludesPersonalTrainingSupport" class="form-check-input" />
+                <span>@Html.DisplayNameFor(model => model.IncludesPersonalTrainingSupport)</span>
+            </label>
+            <label class="form-check admin-feature-option">
+                <input asp-for="IncludesKitchenBenefits" class="form-check-input" />
+                <span>@Html.DisplayNameFor(model => model.IncludesKitchenBenefits)</span>
+            </label>
+            <label class="form-check admin-feature-option">
+                <input asp-for="IncludesPrivateEvents" class="form-check-input" />
+                <span>@Html.DisplayNameFor(model => model.IncludesPrivateEvents)</span>
+            </label>
+            <label class="form-check admin-feature-option">
+                <input asp-for="IncludesCommunityMembership" class="form-check-input" />
+                <span>@Html.DisplayNameFor(model => model.IncludesCommunityMembership)</span>
+            </label>
+        </div>
+
+        <label class="form-check admin-form-toggle admin-package-active-toggle">
+            <input asp-for="IsActive" class="form-check-input" />
+            <span>
+                <strong>@Html.DisplayNameFor(model => model.IsActive)</strong>
+                <small>Aktif paketler public üyelik alanında ve kayıt akışında kullanılabilir.</small>
+            </span>
+        </label>
+    </section>
 
     <div class="d-flex justify-content-end gap-2 mt-4">
         <a asp-action="Index" class="btn btn-outline-secondary">Vazgeç</a>

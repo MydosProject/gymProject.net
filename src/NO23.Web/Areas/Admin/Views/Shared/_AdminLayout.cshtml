@@ -9,6 +9,9 @@
     var isClassSection =
         currentController.Equals("GroupClasses", StringComparison.OrdinalIgnoreCase) ||
         currentController.Equals("ClassSessions", StringComparison.OrdinalIgnoreCase);
+    var isMembershipSection =
+        currentController.Equals("Members", StringComparison.OrdinalIgnoreCase) ||
+        currentController.Equals("MembershipPackages", StringComparison.OrdinalIgnoreCase);
 
     string ActiveClass(params string[] controllers) =>
         controllers.Contains(currentController, StringComparer.OrdinalIgnoreCase) ? "is-active" : string.Empty;
@@ -104,10 +107,33 @@
 
                 <div class="admin-nav-group">
                     <p class="admin-nav-title">Kulüp</p>
-                    <a class="admin-nav-link @ActiveClass("Members", "MembershipPackages")" asp-area="Admin" asp-controller="Members" asp-action="Index">
+                    <a class="admin-nav-link has-submenu @ActiveClass("Members", "MembershipPackages")"
+                       asp-area="Admin"
+                       asp-controller="Members"
+                       asp-action="Index"
+                       aria-controls="adminMembershipSubmenu"
+                       aria-expanded="@(isMembershipSection ? "true" : "false")"
+                       data-admin-submenu-toggle>
                         <span class="admin-nav-index">08</span>
                         <span>Üyeler & Paketler</span>
+                        <span class="admin-nav-chevron" aria-hidden="true"></span>
                     </a>
+                    <div class="admin-nav-submenu @(isMembershipSection ? "is-open" : string.Empty)"
+                         id="adminMembershipSubmenu"
+                         aria-label="Üyeler ve Paketler alt menüsü">
+                        <a class="admin-nav-sublink @ActiveClass("Members")"
+                           asp-area="Admin"
+                           asp-controller="Members"
+                           asp-action="Index">
+                            Üyeler
+                        </a>
+                        <a class="admin-nav-sublink @ActiveClass("MembershipPackages")"
+                           asp-area="Admin"
+                           asp-controller="MembershipPackages"
+                           asp-action="Index">
+                            Üyelik Paketleri
+                        </a>
+                    </div>
                     <a class="admin-nav-link @ActiveClass("Trainers")" asp-area="Admin" asp-controller="Trainers" asp-action="Index">
                         <span class="admin-nav-index">09</span>
                         <span>Eğitmenler</span>
