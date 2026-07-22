@@ -1,6 +1,132 @@
-﻿@{
-    ViewData["Title"] = "Privacy Policy";
+@{
+    ViewData["Title"] = "Gizlilik Politikası";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<div class="privacy-page">
+    <section class="privacy-hero">
+        <div class="container privacy-hero-grid">
+            <div>
+                <p class="privacy-kicker">NO23 / GİZLİLİK</p>
+                <h1>Verilerin güvende.<br /><span>Kontrolün sende.</span></h1>
+                <p class="privacy-lead">
+                    NO23 deneyimini sunarken hangi bilgileri kullandığımızı, neden kullandığımızı
+                    ve kişisel verilerini nasıl koruduğumuzu açık bir dille anlatıyoruz.
+                </p>
+            </div>
+
+            <aside class="privacy-summary-card">
+                <div class="privacy-summary-top">
+                    <span>POLİTİKA / 01</span>
+                    <strong>23</strong>
+                </div>
+                <h2>Şeffaf.<br />Sınırlı.<br />Güvenli.</h2>
+                <p>Son güncelleme: Temmuz 2026</p>
+            </aside>
+        </div>
+    </section>
+
+    <section class="privacy-content-section">
+        <div class="container privacy-content-grid">
+            <aside class="privacy-navigation" aria-label="Gizlilik politikası bölümleri">
+                <p class="privacy-kicker">İÇERİK</p>
+                <a href="#collected-data"><span>01</span> Toplanan bilgiler</a>
+                <a href="#data-usage"><span>02</span> Kullanım amaçları</a>
+                <a href="#data-sharing"><span>03</span> Paylaşım ve güvenlik</a>
+                <a href="#cookies"><span>04</span> Çerezler</a>
+                <a href="#your-rights"><span>05</span> Hakların</a>
+            </aside>
+
+            <div class="privacy-policy-copy">
+                <header>
+                    <p class="privacy-kicker">NO23 SPORTS CLUB</p>
+                    <h2>Gizlilik yaklaşımımız.</h2>
+                    <p>
+                        Bu politika; web sitesi, üyelik sistemi, ders rezervasyonu, NO23 Kitchen ve
+                        Shop işlemleri sırasında kullanılan kişisel bilgilere ilişkin genel yaklaşımımızı açıklar.
+                    </p>
+                </header>
+
+                <article id="collected-data" class="privacy-policy-block">
+                    <span>01</span>
+                    <div>
+                        <h3>Toplanan bilgiler</h3>
+                        <p>
+                            Üyelik ve hesap işlemleri sırasında ad, soyad, e-posta, telefon ve profil bilgileri;
+                            ders rezervasyonlarında program tercihleri; Kitchen hesaplamalarında boy, kilo, yaş,
+                            aktivite düzeyi ve hedef bilgileri kullanılabilir.
+                        </p>
+                        <p>
+                            Shop ve Kitchen siparişlerinde teslimat adresi, teslim günü, saat aralığı ve sipariş
+                            notları işlenebilir. Yalnızca ilgili hizmetin çalışması için gereken bilgiler talep edilir.
+                        </p>
+                    </div>
+                </article>
+
+                <article id="data-usage" class="privacy-policy-block">
+                    <span>02</span>
+                    <div>
+                        <h3>Bilgileri neden kullanıyoruz?</h3>
+                        <ul>
+                            <li>Üyelik hesabını ve paket haklarını yönetmek</li>
+                            <li>Ders rezervasyonu ve iptal işlemlerini gerçekleştirmek</li>
+                            <li>Kalori ve makro önerilerini hesaplamak</li>
+                            <li>Kitchen aboneliği, sepet, sipariş ve teslimat süreçlerini yürütmek</li>
+                            <li>Hizmet güvenliğini sağlamak ve destek taleplerini yanıtlamak</li>
+                        </ul>
+                    </div>
+                </article>
+
+                <article id="data-sharing" class="privacy-policy-block">
+                    <span>03</span>
+                    <div>
+                        <h3>Paylaşım ve güvenlik</h3>
+                        <p>
+                            Kişisel bilgiler hizmetin sunulması, yasal yükümlülükler veya güvenlik gereklilikleri
+                            dışında üçüncü taraflarla paylaşılmaz. Yetkisiz erişimi, kaybı ve kötüye kullanımı
+                            azaltmak için erişim kontrolleri ve uygulama güvenliği önlemleri kullanılır.
+                        </p>
+                    </div>
+                </article>
+
+                <article id="cookies" class="privacy-policy-block">
+                    <span>04</span>
+                    <div>
+                        <h3>Çerezler ve oturum bilgileri</h3>
+                        <p>
+                            Oturum açma, güvenli form işlemleri ve temel site işlevleri için zorunlu teknik
+                            çerezler kullanılabilir. Bu bilgiler hesabın açık kalması ve güvenli isteklerin
+                            doğrulanması gibi temel işlevleri destekler.
+                        </p>
+                    </div>
+                </article>
+
+                <article id="your-rights" class="privacy-policy-block">
+                    <span>05</span>
+                    <div>
+                        <h3>Bilgilerin üzerindeki hakların</h3>
+                        <p>
+                            Kayıtlı bilgilerinin düzeltilmesini, kullanım amaçları hakkında bilgi verilmesini
+                            veya yürürlükteki kurallar çerçevesinde silinmesini talep edebilirsin. Taleplerin için
+                            iletişim alanındaki kanallardan NO23 ekibine ulaşabilirsin.
+                        </p>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section class="privacy-cta">
+        <div class="container privacy-cta-inner">
+            <div>
+                <p class="privacy-kicker">SORUN MU VAR?</p>
+                <h2>Bizimle doğrudan iletişime geç.</h2>
+            </div>
+            <a class="no23-primary-button"
+               asp-controller="Home"
+               asp-action="Index"
+               asp-fragment="contact">
+                İletişim kanalları
+            </a>
+        </div>
+    </section>
+</div>
