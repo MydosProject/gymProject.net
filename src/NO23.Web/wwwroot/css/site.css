@@ -13,6 +13,404 @@
   --no23-transition: 180ms ease;
 }
 
+/* Privacy and system pages */
+.privacy-page,
+.error-page {
+  background: var(--no23-black);
+  color: var(--no23-white);
+}
+
+.privacy-page .container,
+.error-page .container {
+  max-width: 1320px;
+}
+
+.privacy-kicker,
+.error-kicker {
+  margin: 0 0 1rem;
+  color: var(--no23-accent);
+  font-size: 0.7rem;
+  font-weight: 850;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.privacy-hero {
+  padding: 5rem 0;
+  overflow: hidden;
+  border-bottom: 1px solid var(--no23-border);
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    radial-gradient(circle at 82% 32%, rgba(200, 255, 50, 0.15), transparent 30%),
+    linear-gradient(115deg, #030504, #0b100a);
+  background-size: 72px 72px, 72px 72px, auto, auto;
+}
+
+.privacy-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(330px, 0.8fr);
+  align-items: center;
+  gap: 4.5rem;
+}
+
+.privacy-hero h1 {
+  max-width: 790px;
+  margin: 0;
+  color: var(--no23-white);
+  font-size: clamp(3.8rem, 6vw, 6.4rem);
+  font-weight: 900;
+  line-height: 0.88;
+  letter-spacing: -0.075em;
+}
+
+.privacy-hero h1 span {
+  color: var(--no23-accent);
+}
+
+.privacy-lead {
+  max-width: 670px;
+  margin: 1.6rem 0 0;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.privacy-summary-card {
+  min-height: 340px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.8rem;
+  border: 1px solid var(--no23-border);
+  border-radius: 24px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(200, 255, 50, 0.035));
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.25);
+}
+
+.privacy-summary-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.68rem;
+  font-weight: 850;
+  letter-spacing: 0.18em;
+}
+
+.privacy-summary-top strong {
+  color: var(--no23-accent);
+  font-size: 2.5rem;
+  line-height: 0.85;
+  letter-spacing: -0.08em;
+}
+
+.privacy-summary-card h2 {
+  margin: auto 0 1.5rem;
+  color: var(--no23-white);
+  font-size: clamp(2rem, 3.3vw, 3.2rem);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+}
+
+.privacy-summary-card > p {
+  margin: 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--no23-border);
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.74rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.privacy-content-section {
+  padding: 4.5rem 0 5.5rem;
+  background: var(--no23-cream);
+  color: var(--no23-text);
+}
+
+.privacy-content-grid {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  align-items: start;
+  gap: 5rem;
+}
+
+.privacy-navigation {
+  position: sticky;
+  top: 7rem;
+  display: grid;
+}
+
+.privacy-navigation .privacy-kicker,
+.privacy-policy-copy .privacy-kicker {
+  color: #78a100;
+}
+
+.privacy-navigation a {
+  display: flex;
+  gap: 0.8rem;
+  padding: 0.95rem 0;
+  border-top: 1px solid rgba(23, 23, 23, 0.12);
+  color: rgba(23, 23, 23, 0.62);
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-decoration: none;
+  transition: color var(--no23-transition), padding-left var(--no23-transition);
+}
+
+.privacy-navigation a:last-child {
+  border-bottom: 1px solid rgba(23, 23, 23, 0.12);
+}
+
+.privacy-navigation a span {
+  color: #78a100;
+  font-variant-numeric: tabular-nums;
+}
+
+.privacy-navigation a:hover,
+.privacy-navigation a:focus-visible {
+  padding-left: 0.35rem;
+  color: var(--no23-text);
+}
+
+.privacy-policy-copy {
+  max-width: 900px;
+}
+
+.privacy-policy-copy > header {
+  padding-bottom: 2.5rem;
+}
+
+.privacy-policy-copy > header h2 {
+  margin: 0;
+  color: var(--no23-text);
+  font-size: clamp(2.5rem, 4.2vw, 4.4rem);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.065em;
+}
+
+.privacy-policy-copy > header > p:last-child {
+  max-width: 720px;
+  margin: 1.25rem 0 0;
+  color: rgba(23, 23, 23, 0.62);
+  line-height: 1.75;
+}
+
+.privacy-policy-block {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr);
+  gap: 1.5rem;
+  padding: 2.2rem 0;
+  border-top: 1px solid rgba(23, 23, 23, 0.12);
+  scroll-margin-top: 7rem;
+}
+
+.privacy-policy-block > span {
+  color: #78a100;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.privacy-policy-block h3 {
+  margin: -0.3rem 0 0.75rem;
+  color: var(--no23-text);
+  font-size: 1.45rem;
+  font-weight: 900;
+  letter-spacing: -0.035em;
+}
+
+.privacy-policy-block p,
+.privacy-policy-block li {
+  color: rgba(23, 23, 23, 0.64);
+  line-height: 1.75;
+}
+
+.privacy-policy-block p {
+  margin: 0;
+}
+
+.privacy-policy-block p + p {
+  margin-top: 0.9rem;
+}
+
+.privacy-policy-block ul {
+  margin: 0;
+  padding-left: 1.15rem;
+}
+
+.privacy-policy-block li + li {
+  margin-top: 0.45rem;
+}
+
+.privacy-cta {
+  padding: 3.8rem 0;
+  background: var(--no23-accent);
+  color: var(--no23-black);
+}
+
+.privacy-cta-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.privacy-cta .privacy-kicker {
+  color: rgba(9, 9, 9, 0.58);
+}
+
+.privacy-cta h2 {
+  margin: 0;
+  color: var(--no23-black);
+  font-size: clamp(2rem, 3.6vw, 3.5rem);
+  font-weight: 900;
+  letter-spacing: -0.055em;
+}
+
+.privacy-cta .no23-primary-button {
+  border-color: var(--no23-black);
+  background: var(--no23-black);
+  color: var(--no23-white);
+}
+
+.privacy-cta .no23-primary-button:hover,
+.privacy-cta .no23-primary-button:focus-visible {
+  border-color: var(--no23-white);
+  background: var(--no23-white);
+  color: var(--no23-black);
+}
+
+.error-stage {
+  min-height: calc(100vh - 180px);
+  display: flex;
+  align-items: center;
+  padding: 5rem 0;
+  overflow: hidden;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    radial-gradient(circle at 76% 42%, rgba(200, 255, 50, 0.13), transparent 34%),
+    linear-gradient(115deg, #020403, #0a0f08);
+  background-size: 72px 72px, 72px 72px, auto, auto;
+}
+
+.error-stage-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.7fr) minmax(0, 1.3fr);
+  align-items: center;
+  gap: 5rem;
+}
+
+.error-code {
+  min-height: 410px;
+  display: flex;
+  flex-direction: column;
+  padding: 1.8rem;
+  overflow: hidden;
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 110% 110%, rgba(9, 9, 9, 0.12) 0 36%, transparent 36.5%),
+    var(--no23-accent);
+  color: var(--no23-black);
+  box-shadow: 0 34px 90px rgba(0, 0, 0, 0.34);
+}
+
+.error-code span,
+.error-code small {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+}
+
+.error-code strong {
+  margin: auto 0;
+  font-size: clamp(8rem, 15vw, 13rem);
+  font-weight: 950;
+  line-height: 0.72;
+  letter-spacing: -0.12em;
+}
+
+.error-copy h1 {
+  max-width: 760px;
+  margin: 0;
+  color: var(--no23-white);
+  font-size: clamp(3.4rem, 5.7vw, 6rem);
+  font-weight: 900;
+  line-height: 0.9;
+  letter-spacing: -0.075em;
+}
+
+.error-copy h1 span {
+  color: var(--no23-accent);
+}
+
+.error-copy > p:not(.error-kicker) {
+  max-width: 660px;
+  margin: 1.5rem 0 0;
+  color: rgba(255, 255, 255, 0.58);
+  line-height: 1.75;
+}
+
+.error-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+  margin-top: 2rem;
+}
+
+.error-secondary-link {
+  color: var(--no23-white);
+  font-size: 0.76rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.error-secondary-link span {
+  margin-left: 0.35rem;
+  color: var(--no23-accent);
+}
+
+.error-secondary-link:hover,
+.error-secondary-link:focus-visible {
+  color: var(--no23-accent);
+}
+
+.error-request-id {
+  max-width: 660px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.45rem 1rem;
+  margin-top: 2rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--no23-border);
+}
+
+.error-request-id span {
+  color: rgba(255, 255, 255, 0.48);
+  font-size: 0.68rem;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.error-request-id code {
+  overflow-wrap: anywhere;
+  color: var(--no23-accent);
+  font-size: 0.78rem;
+}
+
+.error-request-id small {
+  grid-column: 1 / -1;
+  color: rgba(255, 255, 255, 0.38);
+  font-size: 0.7rem;
+}
+
 /* Public classes */
 .classes-page {
   --classes-dark: #050806;
