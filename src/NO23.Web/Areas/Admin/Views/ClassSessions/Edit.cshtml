@@ -3,12 +3,16 @@
     ViewData["Title"] = "Program Düzenle";
 }
 
-<section class="py-5">
+<section class="admin-page">
     <div class="container">
-        <div class="mb-4">
-            <a asp-action="Index" class="text-muted text-decoration-none">← Programa dön</a>
-            <h1 class="h3 mt-2">Program Düzenle</h1>
-        </div>
+        <header class="admin-page-head admin-form-head">
+            <div>
+                <a asp-action="Index" class="admin-back-link">← Programa dön</a>
+                <p class="admin-eyebrow">Kulüp / Ders Yönetimi</p>
+                <h1>Seansı düzenle</h1>
+                <p class="admin-page-description">Ders, başlangıç zamanı, kontenjan veya seans durumunu güncelle.</p>
+            </div>
+        </header>
 
         <partial name="_ClassSessionForm" model="Model" />
     </div>

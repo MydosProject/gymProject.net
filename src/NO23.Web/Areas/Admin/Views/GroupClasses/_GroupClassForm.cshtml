@@ -1,51 +1,77 @@
 @model GroupClassFormViewModel
 
-<form method="post" class="bg-white border rounded-3 p-4 text-dark">
+<form method="post" class="bg-white border rounded-3 p-4 text-dark admin-form-card">
     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
     <input type="hidden" asp-for="Id" />
 
-    <div class="row g-3">
-        <div class="col-md-6">
-            <label asp-for="TrainerId" class="form-label"></label>
-            <select asp-for="TrainerId" asp-items="Model.TrainerOptions" class="form-select"></select>
-            <span asp-validation-for="TrainerId" class="text-danger"></span>
+    <section class="admin-form-section">
+        <header>
+            <span>01</span>
+            <div>
+                <h2>Ders kimliği</h2>
+                <p>Ders adını, sorumlu eğitmeni ve katılımcıya gösterilecek açıklamayı belirle.</p>
+            </div>
+        </header>
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label asp-for="TrainerId" class="form-label"></label>
+                <select asp-for="TrainerId" asp-items="Model.TrainerOptions" class="form-select"></select>
+                <span asp-validation-for="TrainerId" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="Name" class="form-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="col-12">
+                <label asp-for="Description" class="form-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
         </div>
-        <div class="col-md-6">
-            <label asp-for="Name" class="form-label"></label>
-            <input asp-for="Name" class="form-control" />
-            <span asp-validation-for="Name" class="text-danger"></span>
+    </section>
+
+    <section class="admin-form-section">
+        <header>
+            <span>02</span>
+            <div>
+                <h2>Performans ayarları</h2>
+                <p>Süre, seviye, enerji hedefi ve varsayılan ders kapasitesini tanımla.</p>
+            </div>
+        </header>
+
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label asp-for="DurationMinutes" class="form-label"></label>
+                <input asp-for="DurationMinutes" class="form-control" />
+                <span asp-validation-for="DurationMinutes" class="text-danger"></span>
+            </div>
+            <div class="col-md-3">
+                <label asp-for="DifficultyLevel" class="form-label"></label>
+                <select asp-for="DifficultyLevel" asp-items="Html.GetEnumSelectList<ClassDifficultyLevel>()" class="form-select"></select>
+            </div>
+            <div class="col-md-3">
+                <label asp-for="AverageCaloriesBurned" class="form-label"></label>
+                <input asp-for="AverageCaloriesBurned" class="form-control" />
+                <span asp-validation-for="AverageCaloriesBurned" class="text-danger"></span>
+            </div>
+            <div class="col-md-3">
+                <label asp-for="Capacity" class="form-label"></label>
+                <input asp-for="Capacity" class="form-control" />
+                <span asp-validation-for="Capacity" class="text-danger"></span>
+            </div>
+            <div class="col-12">
+                <label class="form-check admin-form-toggle">
+                    <input asp-for="IsActive" class="form-check-input" />
+                    <span>
+                        <strong>@Html.DisplayNameFor(model => model.IsActive)</strong>
+                        <small>Aktif dersler public Ders Programı sayfasında gösterilir.</small>
+                    </span>
+                </label>
+            </div>
         </div>
-        <div class="col-md-3">
-            <label asp-for="DurationMinutes" class="form-label"></label>
-            <input asp-for="DurationMinutes" class="form-control" />
-            <span asp-validation-for="DurationMinutes" class="text-danger"></span>
-        </div>
-        <div class="col-md-3">
-            <label asp-for="DifficultyLevel" class="form-label"></label>
-            <select asp-for="DifficultyLevel" asp-items="Html.GetEnumSelectList<ClassDifficultyLevel>()" class="form-select"></select>
-        </div>
-        <div class="col-md-3">
-            <label asp-for="AverageCaloriesBurned" class="form-label"></label>
-            <input asp-for="AverageCaloriesBurned" class="form-control" />
-            <span asp-validation-for="AverageCaloriesBurned" class="text-danger"></span>
-        </div>
-        <div class="col-md-3">
-            <label asp-for="Capacity" class="form-label"></label>
-            <input asp-for="Capacity" class="form-control" />
-            <span asp-validation-for="Capacity" class="text-danger"></span>
-        </div>
-        <div class="col-12">
-            <label asp-for="Description" class="form-label"></label>
-            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
-            <span asp-validation-for="Description" class="text-danger"></span>
-        </div>
-        <div class="col-12">
-            <label class="form-check">
-                <input asp-for="IsActive" class="form-check-input" />
-                @Html.DisplayNameFor(model => model.IsActive)
-            </label>
-        </div>
-    </div>
+    </section>
 
     <div class="d-flex justify-content-end gap-2 mt-4">
         <a asp-action="Index" class="btn btn-outline-secondary">Vazgeç</a>
