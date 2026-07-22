@@ -1,0 +1,136 @@
+@model MemberOrdersIndexViewModel
+
+@{
+    ViewData["Title"] = "Sipariş Geçmişi";
+
+    string GetOrderTypeName(string type)
+    {
+        return type switch
+        {
+            "OneTime" => "Tek Seferlik Sipariş",
+            "KitchenSubscription" => "Kitchen Abonelik Siparişi",
+            _ => type
+        };
+    }
+
+    string GetOrderStatusName(string status)
+    {
+        return status switch
+        {
+            "Pending" => "Beklemede",
+            "Confirmed" => "Onaylandı",
+            "Preparing" => "Hazırlanıyor",
+            "OutForDelivery" => "Dağıtımda",
+            "Delivered" => "Teslim Edildi",
+            "Cancelled" => "İptal Edildi",
+            _ => status
+        };
+    }
+
+    string GetPaymentStatusName(string status)
+    {
+        return status switch
+        {
+            "Pending" => "Beklemede",
+            "Paid" => "Ödendi",
+            "Failed" => "Başarısız",
+            "Refunded" => "İade Edildi",
+            _ => status
+        };
+    }
+
+    string GetItemTypeName(string itemType)
+    {
+        return itemType switch
+        {
+            "ShopProduct" => "NO23 Shop",
+            "KitchenMenuItem" => "NO23 Kitchen",
+            _ => itemType
+        };
+    }
+}
+
+<section class="member-orders-page">
+    <div class="container">
+        <header class="member-orders-header">
+            <p>NO23 / ÜYE PANELİ</p>
+            <h1>Sipariş Geçmişi</h1>
+            <p>Shop ve Kitchen siparişlerini, teslimat planını ve ürün kalemlerini takip et.</p>
+        </header>
+
+        @if (Model.Orders.Count == 0)
+        {
+            <div class="member-orders-empty">
+                <span>00</span>
+                <div>
+                    <h2>Henüz siparişin bulunmuyor.</h2>
+                    <p>NO23 Shop veya Kitchen menüsünden seçim yaparak ilk siparişini oluşturabilirsin.</p>
+                    <a asp-area="Member" asp-controller="Shop" asp-action="Index">Shop'a Git</a>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="member-orders-list">
+                @foreach (var order in Model.Orders)
+                {
+                    <article class="member-order-card">
+                        <div class="member-order-card-header">
+                            <div>
+                                <p>@GetOrderTypeName(order.Type)</p>
+                                <h2>@order.OrderNumber</h2>
+                            </div>
+
+                            <div>
+                                <span>@GetOrderStatusName(order.Status)</span>
+                                <span>@GetPaymentStatusName(order.PaymentStatus)</span>
+                            </div>
+                        </div>
+
+                        <dl class="member-order-summary">
+                            <div>
+                                <dt>Oluşturulma</dt>
+                                <dd>@order.CreatedAtLocal.ToString("dd.MM.yyyy HH:mm")</dd>
+                            </div>
+                            <div>
+                                <dt>Teslimat</dt>
+                                <dd>@order.DeliveryDate.ToString("dd.MM.yyyy") / @order.DeliveryTimeSlot</dd>
+                            </div>
+                            <div>
+                                <dt>Ürün Adedi</dt>
+                                <dd>@order.ItemCount</dd>
+                            </div>
+                            <div>
+                                <dt>Toplam</dt>
+                                <dd>@order.Total.ToString("N0") ₺</dd>
+                            </div>
+                        </dl>
+
+                        @if (order.Items.Count > 0)
+                        {
+                            <div class="member-order-items">
+                                <h3>Ürün Kalemleri</h3>
+
+                                @foreach (var item in order.Items)
+                                {
+                                    <div class="member-order-item">
+                                        <div>
+                                            <span>@GetItemTypeName(item.ItemType)</span>
+                                            <strong>@item.ProductName</strong>
+                                        </div>
+
+                                        <div>
+                                            <span>@item.Quantity adet</span>
+                                            <span>@item.UnitPrice.ToString("N0") ₺</span>
+                                            <strong>@item.LineTotal.ToString("N0") ₺</strong>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </article>
+                }
+            </div>
+        }
+    </div>
+</section>

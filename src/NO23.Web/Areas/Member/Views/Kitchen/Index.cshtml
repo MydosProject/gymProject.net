@@ -138,6 +138,63 @@
             </div>
         }
 
+        @if (Model.ActiveSubscription is not null)
+        {
+            <section class="kitchen-active-subscription"
+                     aria-labelledby="active-subscription-title">
+                <div class="kitchen-section-heading">
+                    <div>
+                        <p class="kitchen-section-kicker">Aktif abonelik</p>
+                        <h2 id="active-subscription-title">Kitchen planın devam ediyor.</h2>
+                    </div>
+
+                    <p>
+                        Günlük hedef ve makrolarına göre hazırlanan aktif Kitchen
+                        aboneliğinin özetini buradan takip edebilirsin.
+                    </p>
+                </div>
+
+                <div class="kitchen-active-subscription-card">
+                    <div>
+                        <span>@Model.ActiveSubscription.Status</span>
+                        <h3>@Model.ActiveSubscription.Plan</h3>
+                        <p>@Model.ActiveSubscription.Goal</p>
+                    </div>
+
+                    <dl>
+                        <div>
+                            <dt>Günlük Kalori</dt>
+                            <dd>@Model.ActiveSubscription.DailyCalories kcal</dd>
+                        </div>
+                        <div>
+                            <dt>Protein</dt>
+                            <dd>@Model.ActiveSubscription.ProteinGrams g</dd>
+                        </div>
+                        <div>
+                            <dt>Karbonhidrat</dt>
+                            <dd>@Model.ActiveSubscription.CarbohydrateGrams g</dd>
+                        </div>
+                        <div>
+                            <dt>Yağ</dt>
+                            <dd>@Model.ActiveSubscription.FatGrams g</dd>
+                        </div>
+                        <div>
+                            <dt>Başlangıç</dt>
+                            <dd>@Model.ActiveSubscription.StartsOn.ToString("dd.MM.yyyy")</dd>
+                        </div>
+                        <div>
+                            <dt>Bitiş</dt>
+                            <dd>@Model.ActiveSubscription.EndsOn.ToString("dd.MM.yyyy")</dd>
+                        </div>
+                        <div>
+                            <dt>Kalan Gün</dt>
+                            <dd>@Model.ActiveSubscription.RemainingDays</dd>
+                        </div>
+                    </dl>
+                </div>
+            </section>
+        }
+
         <section class="kitchen-calculator-section"
                  id="calculator">
 

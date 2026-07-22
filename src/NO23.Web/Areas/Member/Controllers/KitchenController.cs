@@ -89,6 +89,19 @@ public class KitchenController(
             Goal = input.Goal
         });
 
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var hasActiveSubscription = await dbContext.KitchenSubscriptions
+            .AnyAsync(subscription =>
+                subscription.MemberProfileId == profile.Id &&
+                subscription.Status == KitchenSubscriptionStatus.Active &&
+                subscription.EndsOn >= today);
+
+        if (hasActiveSubscription)
+        {
+            TempData["ErrorMessage"] = "Aktif Kitchen aboneliğin devam ediyor. Yeni abonelik oluşturmadan önce mevcut aboneliğini tamamlamalısın.";
+            return RedirectToAction(nameof(Index));
+        }
+
         var startsOn = DateOnly.FromDateTime(DateTime.Today.AddDays(1));
         var days = GetPlanDays(plan);
 
@@ -115,6 +128,9 @@ public class KitchenController(
         CalorieCalculatorInputViewModel input,
         CalorieRecommendationViewModel? recommendation)
     {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var today = DateOnly.FromDateTime(DateTime.Today);
+
         var menuItems = await dbContext.KitchenMenuItems
             .AsNoTracking()
             .Where(item => item.IsActive)
@@ -136,10 +152,57 @@ public class KitchenController(
             })
             .ToListAsync();
 
+        ActiveKitchenSubscriptionViewModel? activeSubscription = null;
+
+        if (!string.IsNullOrWhiteSpace(userId))
+        {
+            var subscription = await dbContext.KitchenSubscriptions
+                .AsNoTracking()
+                .Where(item =>
+                    item.MemberProfile.ApplicationUserId == userId &&
+                    item.Status == KitchenSubscriptionStatus.Active &&
+                    item.EndsOn >= today)
+                .OrderByDescending(item => item.CreatedAtUtc)
+                .ThenByDescending(item => item.Id)
+                .Select(item => new
+                {
+                    item.Id,
+                    item.Plan,
+                    item.Status,
+                    item.Goal,
+                    item.DailyCalories,
+                    item.ProteinGrams,
+                    item.CarbohydrateGrams,
+                    item.FatGrams,
+                    item.StartsOn,
+                    item.EndsOn
+                })
+                .FirstOrDefaultAsync();
+
+            if (subscription is not null)
+            {
+                activeSubscription = new ActiveKitchenSubscriptionViewModel
+                {
+                    Id = subscription.Id,
+                    Plan = subscription.Plan.ToString(),
+                    Status = subscription.Status.ToString(),
+                    Goal = subscription.Goal.ToString(),
+                    DailyCalories = subscription.DailyCalories,
+                    ProteinGrams = subscription.ProteinGrams,
+                    CarbohydrateGrams = subscription.CarbohydrateGrams,
+                    FatGrams = subscription.FatGrams,
+                    StartsOn = subscription.StartsOn,
+                    EndsOn = subscription.EndsOn,
+                    RemainingDays = Math.Max(0, subscription.EndsOn.DayNumber - today.DayNumber + 1)
+                };
+            }
+        }
+
         return new KitchenDashboardViewModel
         {
             CalculatorInput = input,
             Recommendation = recommendation,
+            ActiveSubscription = activeSubscription,
             MenuItems = menuItems,
             SubscriptionPlans =
             [
