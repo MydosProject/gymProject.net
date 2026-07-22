@@ -1,72 +1,154 @@
 @model NO23.Web.ViewModels.Classes.ClassesIndexViewModel
 @{
-    ViewData["Title"] = "Grup Dersleri";
+    ViewData["Title"] = "Ders Programı";
+    var nextSession = Model.UpcomingSessions.FirstOrDefault();
 }
 
 <div class="classes-page">
     <section class="classes-hero">
-        <div class="container">
-            <p>NO23 / GRUP DERSLERİ</p>
-            <h1>Grup Dersleri ve Ders Programı</h1>
-            <p>
-                Bootcamp, Metcon, Pilates ve fonksiyonel antrenman seanslarını incele;
-                rezervasyon için üye panelindeki uygun dersler alanına geç.
-            </p>
-            <a class="no23-primary-button" href="@Model.ReservationTargetUrl">Rezervasyon Yap</a>
+        <div class="container classes-hero-grid">
+            <div class="classes-hero-copy">
+                <p class="classes-kicker">NO23 / LIVE SCHEDULE</p>
+                <h1>Takvime bak.<br /><span>Ritmini seç.</span></h1>
+                <p class="classes-lead">
+                    Güç, kondisyon ve mobiliteyi aynı sistemde buluşturan grup derslerini incele;
+                    sana uygun seansı seçip rezervasyonunu üye panelinden tamamla.
+                </p>
+
+                <div class="classes-hero-actions">
+                    <a class="no23-primary-button" href="@Model.ReservationTargetUrl">Rezervasyon Yap</a>
+                    <a class="classes-text-link" href="#class-schedule">Programı incele <span>↓</span></a>
+                </div>
+            </div>
+
+            <aside class="classes-hero-panel">
+                <div class="classes-hero-panel-top">
+                    <span>NO23 / PROGRAM</span>
+                    <strong>23</strong>
+                </div>
+
+                <div class="classes-hero-stats">
+                    <div>
+                        <strong>@Model.GroupClasses.Count</strong>
+                        <span>Aktif ders</span>
+                    </div>
+                    <div>
+                        <strong>@Model.UpcomingSessions.Count</strong>
+                        <span>Yaklaşan seans</span>
+                    </div>
+                </div>
+
+                @if (nextSession is not null)
+                {
+                    <div class="classes-next-session">
+                        <span>Sıradaki seans</span>
+                        <div>
+                            <strong>@nextSession.ClassName</strong>
+                            <small>@nextSession.StartsAtLocal.ToString("dd.MM.yyyy / HH:mm")</small>
+                        </div>
+                        <p>@nextSession.TrainerName · @nextSession.RemainingCapacity yer kaldı</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="classes-next-session classes-next-session-empty">
+                        <span>Sıradaki seans</span>
+                        <strong>Yeni program hazırlanıyor.</strong>
+                        <p>Yaklaşan grup dersleri burada yayınlanacak.</p>
+                    </div>
+                }
+            </aside>
         </div>
     </section>
 
     <section class="classes-list-section">
         <div class="container">
             <div class="classes-section-heading">
-                <p>01 / DERSLER</p>
-                <h2>Aktif Grup Dersleri</h2>
+                <div>
+                    <p class="classes-kicker">01 / ANTRENMANLAR</p>
+                    <h2>Hedefine uygun dersi bul.</h2>
+                </div>
+                <p>
+                    Her ders farklı bir performans ihtiyacına odaklanır. Süreyi, zorluk seviyesini,
+                    enerji hedefini ve yaklaşan seansları tek bakışta karşılaştır.
+                </p>
             </div>
 
             @if (Model.GroupClasses.Count == 0)
             {
-                <p>Aktif grup dersi bulunmuyor.</p>
+                <div class="classes-empty-state">
+                    <span>—</span>
+                    <div>
+                        <h3>Aktif grup dersi bulunmuyor.</h3>
+                        <p>Yeni antrenman programı burada yayınlanacak.</p>
+                    </div>
+                </div>
             }
             else
             {
                 <div class="classes-grid">
-                    @foreach (var groupClass in Model.GroupClasses)
+                    @for (var index = 0; index < Model.GroupClasses.Count; index++)
                     {
+                        var groupClass = Model.GroupClasses[index];
+
                         <article class="class-card">
-                            <div>
-                                <p>@groupClass.TrainerName</p>
-                                <h3>@groupClass.Name</h3>
-                                <p>@(string.IsNullOrWhiteSpace(groupClass.Description) ? "NO23 sistemiyle planlanan grup dersi." : groupClass.Description)</p>
+                            <div class="class-card-visual">
+                                <span>NO23 CLASS</span>
+                                <strong>@((index + 1).ToString("00"))</strong>
+                                <small>@groupClass.DifficultyLevel</small>
                             </div>
 
-                            <dl>
-                                <div>
-                                    <dt>Süre</dt>
-                                    <dd>@groupClass.DurationMinutes dk</dd>
+                            <div class="class-card-content">
+                                <div class="class-card-meta">
+                                    <span>@groupClass.TrainerName</span>
+                                    <small>Aktif</small>
                                 </div>
-                                <div>
-                                    <dt>Zorluk</dt>
-                                    <dd>@groupClass.DifficultyLevel</dd>
-                                </div>
-                                <div>
-                                    <dt>Ortalama Kalori</dt>
-                                    <dd>@groupClass.AverageCaloriesBurned kcal</dd>
-                                </div>
-                            </dl>
 
-                            @if (groupClass.UpcomingSessions.Count > 0)
-                            {
+                                <h3>@groupClass.Name</h3>
+                                <p>
+                                    @(string.IsNullOrWhiteSpace(groupClass.Description)
+                                        ? "NO23 sistemiyle planlanan, ölçülebilir ve sürdürülebilir grup antrenmanı."
+                                        : groupClass.Description)
+                                </p>
+
+                                <dl class="class-card-metrics">
+                                    <div>
+                                        <dt>Süre</dt>
+                                        <dd>@groupClass.DurationMinutes dk</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Seviye</dt>
+                                        <dd>@groupClass.DifficultyLevel</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Enerji</dt>
+                                        <dd>@groupClass.AverageCaloriesBurned kcal</dd>
+                                    </div>
+                                </dl>
+
                                 <div class="class-card-sessions">
-                                    <h4>Yaklaşan Seanslar</h4>
-                                    @foreach (var session in groupClass.UpcomingSessions.Take(3))
+                                    <div class="class-card-sessions-title">
+                                        <span>Yaklaşan seanslar</span>
+                                        <small>@groupClass.UpcomingSessions.Count program</small>
+                                    </div>
+
+                                    @if (groupClass.UpcomingSessions.Count == 0)
                                     {
-                                        <div class="class-session-row">
-                                            <span>@session.StartsAtLocal.ToString("dd.MM.yyyy HH:mm")</span>
-                                            <span>@session.RemainingCapacity / @session.Capacity kontenjan</span>
-                                        </div>
+                                        <p class="class-card-no-session">Bu ders için planlı seans bulunmuyor.</p>
+                                    }
+                                    else
+                                    {
+                                        @foreach (var session in groupClass.UpcomingSessions.Take(3))
+                                        {
+                                            <div class="class-session-row">
+                                                <span>@session.StartsAtLocal.ToString("dd.MM.yyyy")</span>
+                                                <strong>@session.StartsAtLocal.ToString("HH:mm")</strong>
+                                                <small>@session.RemainingCapacity / @session.Capacity yer</small>
+                                            </div>
+                                        }
                                     }
                                 </div>
-                            }
+                            </div>
                         </article>
                     }
                 </div>
@@ -74,34 +156,62 @@
         </div>
     </section>
 
-    <section class="classes-schedule-section">
+    <section class="classes-schedule-section" id="class-schedule">
         <div class="container">
-            <div class="classes-section-heading">
-                <p>02 / PROGRAM</p>
-                <h2>Yaklaşan Seanslar</h2>
+            <div class="classes-section-heading classes-schedule-heading">
+                <div>
+                    <p class="classes-kicker">02 / DERS PROGRAMI</p>
+                    <h2>Yaklaşan seanslar.</h2>
+                </div>
+                <p>
+                    Kontenjan durumunu kontrol et, programına uyan saati belirle ve yerini ayırtmak
+                    için güvenli üye alanına geç.
+                </p>
             </div>
 
             @if (Model.UpcomingSessions.Count == 0)
             {
-                <p>Yaklaşan planlı seans bulunmuyor.</p>
+                <div class="classes-empty-state classes-empty-state-dark">
+                    <span>—</span>
+                    <div>
+                        <h3>Yaklaşan planlı seans bulunmuyor.</h3>
+                        <p>Program güncellendiğinde yeni seanslar burada görünecek.</p>
+                    </div>
+                </div>
             }
             else
             {
                 <div class="classes-schedule-list">
-                    @foreach (var session in Model.UpcomingSessions)
+                    @for (var index = 0; index < Model.UpcomingSessions.Count; index++)
                     {
+                        var session = Model.UpcomingSessions[index];
+                        var isFull = session.RemainingCapacity == 0;
+
                         <article class="classes-schedule-item">
-                            <div>
-                                <p>@session.StartsAtLocal.ToString("dd.MM.yyyy HH:mm")</p>
+                            <div class="classes-schedule-number">@((index + 1).ToString("00"))</div>
+
+                            <time datetime="@session.StartsAtLocal.ToString("yyyy-MM-ddTHH:mm")" class="classes-schedule-date">
+                                <strong>@session.StartsAtLocal.ToString("dd.MM")</strong>
+                                <span>@session.StartsAtLocal.ToString("HH:mm")</span>
+                            </time>
+
+                            <div class="classes-schedule-class">
+                                <span>@session.TrainerName</span>
                                 <h3>@session.ClassName</h3>
-                                <p>@session.TrainerName</p>
                             </div>
-                            <div>
-                                <span>Kapasite: @session.Capacity</span>
-                                <span>Rezervasyon: @session.ReservedCount</span>
-                                <span>Kalan: @session.RemainingCapacity</span>
+
+                            <div class="classes-capacity">
+                                <span>Kapasite</span>
+                                <strong>@session.ReservedCount / @session.Capacity</strong>
+                                <small class="@(isFull ? "is-full" : null)">
+                                    @(isFull ? "Kontenjan dolu" : $"{session.RemainingCapacity} yer kaldı")
+                                </small>
                             </div>
-                            <a href="@Model.ReservationTargetUrl">Rezervasyon Yap</a>
+
+                            <a class="classes-reservation-link @(isFull ? "is-full" : null)"
+                               href="@Model.ReservationTargetUrl">
+                                @(isFull ? "Programı Gör" : "Rezervasyon Yap") <span>↗</span>
+                            </a>
                         </article>
                     }
                 </div>
