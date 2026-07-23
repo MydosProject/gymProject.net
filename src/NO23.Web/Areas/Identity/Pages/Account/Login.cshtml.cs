@@ -54,6 +54,18 @@ public class LoginModel(
                 return LocalRedirect("~/Admin/Members");
             }
 
+            if (signedInUser is not null &&
+                await signInManager.UserManager.IsInRoleAsync(signedInUser, ApplicationRoles.Member))
+            {
+                if (!string.IsNullOrWhiteSpace(ReturnUrl) &&
+                    Url.IsLocalUrl(ReturnUrl))
+                {
+                    return LocalRedirect(ReturnUrl);
+                }
+
+                return LocalRedirect("~/Member/Home");
+            }
+
             return LocalRedirect(ReturnUrl ?? Url.Content("~/"));
         }
 
