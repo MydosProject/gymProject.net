@@ -66,6 +66,21 @@ public static class KitchenMenuItemSeed
             Allergens = "Yumurta, badem",
             Tags = "glutensiz, tatlı",
             DisplayOrder = 4
+        },
+        new()
+        {
+            Name = "Veggie Crunch Snack Box",
+            Description = "Nohut, lor, taze sebzeler ve yoğurtlu dip sos ile vejetaryen ara öğün.",
+            Category = MenuItemCategory.Snack,
+            Calories = 290,
+            UnitPrice = 210,
+            ProteinGrams = 21,
+            CarbohydrateGrams = 26,
+            FatGrams = 10,
+            Ingredients = "Haşlanmış nohut, lor peyniri, havuç, salatalık, yoğurtlu dip sos",
+            Allergens = "Süt",
+            Tags = "vejetaryen, düşük kalori",
+            DisplayOrder = 5
         }
     ];
 }
