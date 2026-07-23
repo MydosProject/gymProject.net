@@ -10,5 +10,9 @@ public class KitchenDashboardViewModel
 
     public IReadOnlyList<KitchenMenuItemCardViewModel> MenuItems { get; init; } = [];
 
+    public IReadOnlyList<KitchenFilterOptionViewModel> CategoryFilters { get; init; } = [];
+
+    public IReadOnlyList<KitchenFilterOptionViewModel> TagFilters { get; init; } = [];
+
     public IReadOnlyList<KitchenSubscriptionPlanViewModel> SubscriptionPlans { get; init; } = [];
 }

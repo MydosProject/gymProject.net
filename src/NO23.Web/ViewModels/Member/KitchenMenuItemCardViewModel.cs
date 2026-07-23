@@ -23,4 +23,6 @@ public class KitchenMenuItemCardViewModel
     public string? Allergens { get; init; }
 
     public string? Tags { get; init; }
+
+    public IReadOnlyList<string> TagList { get; init; } = [];
 }

@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Globalization;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,6 +21,16 @@ public class KitchenController(
 {
     private const string CalculatorInputSessionKey = "NO23.Kitchen.CalculatorInput";
     private const string CalculatorResultSessionKey = "NO23.Kitchen.CalculatorResult";
+    private static readonly CultureInfo TurkishCulture = CultureInfo.GetCultureInfo("tr-TR");
+    private static readonly StringComparer TurkishIgnoreCaseComparer =
+        StringComparer.Create(TurkishCulture, ignoreCase: true);
+    private static readonly string[] PreferredTagOrder =
+    [
+        "yüksek protein",
+        "düşük kalori",
+        "glutensiz",
+        "vejetaryen"
+    ];
 
     public async Task<IActionResult> Index()
     {
@@ -37,10 +48,7 @@ public class KitchenController(
     [HttpGet]
     public async Task<IActionResult> Menu()
     {
-        return View(new KitchenDashboardViewModel
-        {
-            MenuItems = await BuildMenuItemsAsync()
-        });
+        return View(await BuildMenuDashboardAsync());
     }
 
     [HttpPost]
@@ -225,28 +233,147 @@ public class KitchenController(
         };
     }
 
-    private async Task<IReadOnlyList<KitchenMenuItemCardViewModel>> BuildMenuItemsAsync()
+    private async Task<KitchenDashboardViewModel> BuildMenuDashboardAsync()
     {
-        return await dbContext.KitchenMenuItems
+        var rawItems = await dbContext.KitchenMenuItems
             .AsNoTracking()
             .Where(item => item.IsActive)
             .OrderBy(item => item.DisplayOrder)
             .ThenBy(item => item.Name)
-            .Select(item => new KitchenMenuItemCardViewModel
+            .Select(item => new
             {
-                Id = item.Id,
-                Name = item.Name,
+                item.Id,
+                item.Name,
                 Category = item.Category.ToString(),
-                Calories = item.Calories,
-                UnitPrice = item.UnitPrice,
-                ProteinGrams = item.ProteinGrams,
-                CarbohydrateGrams = item.CarbohydrateGrams,
-                FatGrams = item.FatGrams,
-                Ingredients = item.Ingredients,
-                Allergens = item.Allergens,
-                Tags = item.Tags
+                item.Calories,
+                item.UnitPrice,
+                item.ProteinGrams,
+                item.CarbohydrateGrams,
+                item.FatGrams,
+                item.Ingredients,
+                item.Allergens,
+                item.Tags
             })
             .ToListAsync();
+
+        var menuItems = rawItems
+            .Select(item =>
+            {
+                var tagList = SplitTags(item.Tags);
+
+                return new KitchenMenuItemCardViewModel
+                {
+                    Id = item.Id,
+                    Name = item.Name,
+                    Category = item.Category,
+                    Calories = item.Calories,
+                    UnitPrice = item.UnitPrice,
+                    ProteinGrams = item.ProteinGrams,
+                    CarbohydrateGrams = item.CarbohydrateGrams,
+                    FatGrams = item.FatGrams,
+                    Ingredients = item.Ingredients,
+                    Allergens = item.Allergens,
+                    Tags = string.Join(", ", tagList),
+                    TagList = tagList
+                };
+            })
+            .ToList();
+
+        return new KitchenDashboardViewModel
+        {
+            MenuItems = menuItems,
+            CategoryFilters = BuildCategoryFilters(menuItems),
+            TagFilters = BuildTagFilters(menuItems)
+        };
+    }
+
+    private static IReadOnlyList<KitchenFilterOptionViewModel> BuildCategoryFilters(
+        IReadOnlyList<KitchenMenuItemCardViewModel> menuItems)
+    {
+        return Enum.GetValues<MenuItemCategory>()
+            .Select(category =>
+            {
+                var value = category.ToString();
+
+                return new KitchenFilterOptionViewModel
+                {
+                    Value = value,
+                    Label = GetCategoryPluralName(category),
+                    ItemCount = menuItems.Count(item => item.Category == value)
+                };
+            })
+            .Where(filter => filter.ItemCount > 0)
+            .ToList();
+    }
+
+    private static IReadOnlyList<KitchenFilterOptionViewModel> BuildTagFilters(
+        IReadOnlyList<KitchenMenuItemCardViewModel> menuItems)
+    {
+        var tagCounts = menuItems
+            .SelectMany(item => item.TagList.Distinct(TurkishIgnoreCaseComparer))
+            .GroupBy(tag => tag, TurkishIgnoreCaseComparer)
+            .ToDictionary(
+                group => group.Key,
+                group => group.Count(),
+                TurkishIgnoreCaseComparer);
+
+        return tagCounts
+            .Select(item => new KitchenFilterOptionViewModel
+            {
+                Value = NormalizeTag(item.Key),
+                Label = ToTitleCase(item.Key),
+                ItemCount = item.Value
+            })
+            .OrderBy(filter =>
+            {
+                var index = Array.IndexOf(PreferredTagOrder, filter.Value);
+                return index < 0 ? PreferredTagOrder.Length : index;
+            })
+            .ThenBy(filter => filter.Label, TurkishIgnoreCaseComparer)
+            .ToList();
+    }
+
+    private static IReadOnlyList<string> SplitTags(string? tags)
+    {
+        if (string.IsNullOrWhiteSpace(tags))
+        {
+            return [];
+        }
+
+        return tags
+            .Split(
+                [',', ';', '|'],
+                StringSplitOptions.RemoveEmptyEntries |
+                StringSplitOptions.TrimEntries)
+            .Select(NormalizeTag)
+            .Where(tag => !string.IsNullOrWhiteSpace(tag))
+            .Distinct(TurkishIgnoreCaseComparer)
+            .ToList();
+    }
+
+    private static string NormalizeTag(string value)
+    {
+        return value
+            .Trim()
+            .ToLower(TurkishCulture);
+    }
+
+    private static string ToTitleCase(string value)
+    {
+        return TurkishCulture.TextInfo.ToTitleCase(value);
+    }
+
+    private static string GetCategoryPluralName(MenuItemCategory category)
+    {
+        return category switch
+        {
+            MenuItemCategory.Breakfast => "Kahvaltılar",
+            MenuItemCategory.MainMeal => "Ana Öğünler",
+            MenuItemCategory.Snack => "Ara Öğünler",
+            MenuItemCategory.Dessert => "Tatlılar",
+            MenuItemCategory.Beverage => "İçecekler",
+            _ => category.ToString()
+        };
     }
 
     private static int GetPlanDays(KitchenSubscriptionPlan plan)

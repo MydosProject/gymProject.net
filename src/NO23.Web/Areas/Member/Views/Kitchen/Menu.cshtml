@@ -99,66 +99,30 @@
                                     aria-pressed="true">
                                 Tümü
                             </button>
-                            <button type="button"
-                                    class="kitchen-filter-button"
-                                    data-kitchen-category-filter="@nameof(MenuItemCategory.Breakfast)"
-                                    aria-pressed="false">
-                                Kahvaltılar
-                            </button>
-                            <button type="button"
-                                    class="kitchen-filter-button"
-                                    data-kitchen-category-filter="@nameof(MenuItemCategory.MainMeal)"
-                                    aria-pressed="false">
-                                Ana Öğünler
-                            </button>
-                            <button type="button"
-                                    class="kitchen-filter-button"
-                                    data-kitchen-category-filter="@nameof(MenuItemCategory.Snack)"
-                                    aria-pressed="false">
-                                Ara Öğünler
-                            </button>
-                            <button type="button"
-                                    class="kitchen-filter-button"
-                                    data-kitchen-category-filter="@nameof(MenuItemCategory.Dessert)"
-                                    aria-pressed="false">
-                                Tatlılar
-                            </button>
-                            <button type="button"
-                                    class="kitchen-filter-button"
-                                    data-kitchen-category-filter="@nameof(MenuItemCategory.Beverage)"
-                                    aria-pressed="false">
-                                İçecekler
-                            </button>
+                            @foreach (var filter in Model.CategoryFilters)
+                            {
+                                <button type="button"
+                                        class="kitchen-filter-button"
+                                        data-kitchen-category-filter="@filter.Value"
+                                        aria-pressed="false">
+                                    @filter.Label
+                                </button>
+                            }
                         </div>
                     </fieldset>
 
                     <fieldset class="kitchen-filter-group">
                         <legend>Beslenme Tercihi</legend>
                         <div class="kitchen-menu-filters" aria-label="Beslenme tercihleri">
-                            <button type="button"
-                                    class="kitchen-filter-button kitchen-tag-filter-button"
-                                    data-kitchen-tag-filter="yüksek protein"
-                                    aria-pressed="false">
-                                Yüksek Protein
-                            </button>
-                            <button type="button"
-                                    class="kitchen-filter-button kitchen-tag-filter-button"
-                                    data-kitchen-tag-filter="düşük kalori"
-                                    aria-pressed="false">
-                                Düşük Kalori
-                            </button>
-                            <button type="button"
-                                    class="kitchen-filter-button kitchen-tag-filter-button"
-                                    data-kitchen-tag-filter="glutensiz"
-                                    aria-pressed="false">
-                                Glutensiz
-                            </button>
-                            <button type="button"
-                                    class="kitchen-filter-button kitchen-tag-filter-button"
-                                    data-kitchen-tag-filter="vejetaryen"
-                                    aria-pressed="false">
-                                Vejetaryen
-                            </button>
+                            @foreach (var filter in Model.TagFilters)
+                            {
+                                <button type="button"
+                                        class="kitchen-filter-button kitchen-tag-filter-button"
+                                        data-kitchen-tag-filter="@filter.Value"
+                                        aria-pressed="false">
+                                    @filter.Label
+                                </button>
+                            }
                         </div>
                     </fieldset>
                 </div>
@@ -179,17 +143,12 @@
                 <div class="kitchen-menu-grid">
                     @foreach (var item in Model.MenuItems)
                     {
-                        var tags = string.IsNullOrWhiteSpace(item.Tags)
-                            ? Array.Empty<string>()
-                            : item.Tags.Split(
-                                new[] { ',', ';' },
-                                StringSplitOptions.RemoveEmptyEntries |
-                                StringSplitOptions.TrimEntries);
+                        var tagText = string.Join("|", item.TagList);
 
                         <div class="kitchen-menu-card-wrapper"
                              data-kitchen-category="@item.Category"
-                             data-kitchen-tags="@item.Tags"
-                             data-kitchen-search="@($"{item.Name} {item.Ingredients} {item.Tags}")">
+                             data-kitchen-tags="@tagText"
+                             data-kitchen-search="@($"{item.Name} {item.Ingredients} {tagText}")">
                             <article class="kitchen-menu-card">
                                 <div class="kitchen-menu-visual">
                                     <span class="kitchen-menu-category">
@@ -234,7 +193,7 @@
 
                                     <div class="kitchen-menu-meta">
                                         <div class="kitchen-menu-tags">
-                                            @foreach (var tag in tags)
+                                            @foreach (var tag in item.TagList)
                                             {
                                                 <span>@tag</span>
                                             }
