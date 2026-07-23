@@ -134,15 +134,28 @@
             }
             else
             {
-                <a class="quick-access-card"
-                   asp-area="Member"
-                   asp-controller="Kitchen"
-                   asp-action="Index"
-                   asp-fragment="menu">
-                    <span class="quick-access-number">03</span>
-                    <strong>NO23 Kitchen</strong>
-                    <small>Sağlıklı menülere ulaş</small>
-                </a>
+                @if (User.IsInRole(ApplicationRoles.Member))
+                {
+                    <a class="quick-access-card"
+                       asp-area="Member"
+                       asp-controller="Kitchen"
+                       asp-action="Index"
+                       asp-fragment="menu">
+                        <span class="quick-access-number">03</span>
+                        <strong>NO23 Kitchen</strong>
+                        <small>Sağlıklı menülere ulaş</small>
+                    </a>
+                }
+                else
+                {
+                    <a class="quick-access-card"
+                       asp-controller="Kitchen"
+                       asp-action="Index">
+                        <span class="quick-access-number">03</span>
+                        <strong>NO23 Kitchen</strong>
+                        <small>Sağlıklı menülere ulaş</small>
+                    </a>
+                }
 
                 <a class="quick-access-card"
                    asp-area="Member"
@@ -177,15 +190,28 @@
             }
             else
             {
-                <a class="quick-access-card"
-                   asp-area="Member"
-                   asp-controller="Shop"
-                   asp-action="Index"
-                   asp-fragment="shop-products">
-                    <span class="quick-access-number">05</span>
-                    <strong>Online Sipariş</strong>
-                    <small>Öğünlerini kolayca seç</small>
-                </a>
+                @if (User.IsInRole(ApplicationRoles.Member))
+                {
+                    <a class="quick-access-card"
+                       asp-area="Member"
+                       asp-controller="Shop"
+                       asp-action="Index"
+                       asp-fragment="shop-products">
+                        <span class="quick-access-number">05</span>
+                        <strong>Online Sipariş</strong>
+                        <small>Öğünlerini kolayca seç</small>
+                    </a>
+                }
+                else
+                {
+                    <a class="quick-access-card"
+                       asp-controller="Shop"
+                       asp-action="Index">
+                        <span class="quick-access-number">05</span>
+                        <strong>Online Sipariş</strong>
+                        <small>Ürünleri üyelik olmadan sipariş et</small>
+                    </a>
+                }
 
                 <a class="quick-access-card"
                    asp-area="Member"

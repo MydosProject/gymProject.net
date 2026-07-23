@@ -27,7 +27,7 @@
                 <thead>
                     <tr>
                         <th>Sipariş</th>
-                        <th>Üye</th>
+                        <th>Müşteri</th>
                         <th>Tür</th>
                         <th>Durum</th>
                         <th>Ödeme</th>
@@ -47,7 +47,13 @@
                         {
                             <tr>
                                 <td><strong class="admin-code">@order.OrderNumber</strong></td>
-                                <td>@order.MemberName</td>
+                                <td>
+                                    <strong>@order.MemberName</strong>
+                                    @if (!string.IsNullOrWhiteSpace(order.GuestEmail))
+                                    {
+                                        <small class="admin-cell-note">@order.GuestEmail</small>
+                                    }
+                                </td>
                                 <td>@order.Type</td>
                                 <td><span class="admin-status">@order.Status</span></td>
                                 <td>@order.PaymentStatus</td>

@@ -8,6 +8,8 @@ public class OrderListItemViewModel
 
     public string MemberName { get; init; } = string.Empty;
 
+    public string? GuestEmail { get; init; }
+
     public string Type { get; init; } = string.Empty;
 
     public string Status { get; init; } = string.Empty;

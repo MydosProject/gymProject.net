@@ -8,9 +8,11 @@ public class Order
 
     public string OrderNumber { get; set; } = string.Empty;
 
-    public int MemberProfileId { get; set; }
+    public int? MemberProfileId { get; set; }
 
-    public MemberProfile MemberProfile { get; set; } = null!;
+    public MemberProfile? MemberProfile { get; set; }
+
+    public string? GuestEmail { get; set; }
 
     public OrderType Type { get; set; } = OrderType.OneTime;
 
