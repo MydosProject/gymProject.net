@@ -29,7 +29,30 @@ builder.Services.AddSession(options =>
 });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    var messages = options.ModelBindingMessageProvider;
+    messages.SetAttemptedValueIsInvalidAccessor((value, field) =>
+        $"{field} için girilen değer geçerli değil.");
+    messages.SetMissingBindRequiredValueAccessor(field =>
+        $"{field} alanı zorunludur.");
+    messages.SetMissingKeyOrValueAccessor(() =>
+        "Eksik bilgi gönderildi.");
+    messages.SetNonPropertyAttemptedValueIsInvalidAccessor(value =>
+        $"Girilen değer geçerli değil: {value}.");
+    messages.SetNonPropertyUnknownValueIsInvalidAccessor(() =>
+        "Girilen değer geçerli değil.");
+    messages.SetNonPropertyValueMustBeANumberAccessor(() =>
+        "Sayısal bir değer girilmelidir.");
+    messages.SetUnknownValueIsInvalidAccessor(field =>
+        $"{field} alanı geçerli değil.");
+    messages.SetValueIsInvalidAccessor(value =>
+        $"{value} geçerli değil.");
+    messages.SetValueMustBeANumberAccessor(field =>
+        $"{field} sayısal bir değer olmalıdır.");
+    messages.SetValueMustNotBeNullAccessor(_ =>
+        "Bu alan zorunludur.");
+});
 builder.Services.AddScoped<ClassReservationService>();
 builder.Services.AddScoped<CalorieCalculatorService>();
 builder.Services.AddScoped<CommerceService>();
