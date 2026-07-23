@@ -23,7 +23,9 @@ public class OrdersController(ApplicationDbContext dbContext) : Controller
 
         var orders = await dbContext.Orders
             .AsNoTracking()
-            .Where(order => order.MemberProfile.ApplicationUserId == userId)
+            .Where(order =>
+                order.MemberProfileId != null &&
+                order.MemberProfile!.ApplicationUserId == userId)
             .OrderByDescending(order => order.CreatedAtUtc)
             .Select(order => new
             {

@@ -27,6 +27,9 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
             .HasConversion<string>()
             .HasMaxLength(40);
 
+        builder.Property(order => order.GuestEmail)
+            .HasMaxLength(256);
+
         builder.Property(order => order.DeliveryFullName)
             .HasMaxLength(160)
             .IsRequired();
@@ -72,6 +75,7 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.HasOne(order => order.MemberProfile)
             .WithMany(member => member.Orders)
             .HasForeignKey(order => order.MemberProfileId)
+            .IsRequired(false)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(order => order.KitchenSubscription)

@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using NO23.Web.Data;
 using NO23.Web.Domain.Entities;
 using NO23.Web.Domain.Enums;
+using NO23.Web.ViewModels.GuestOrders;
 
 namespace NO23.Web.Services;
 
@@ -13,14 +14,14 @@ public class CommerceService(ApplicationDbContext dbContext)
     {
         if (quantity <= 0)
         {
-            return CommerceResult.Fail("Quantity must be greater than zero.");
+            return CommerceResult.Fail("Adet sıfırdan büyük olmalıdır.");
         }
 
         var profile = await GetMemberProfileAsync(userId);
 
         if (profile is null)
         {
-            return CommerceResult.Fail("Member profile was not found.");
+            return CommerceResult.Fail("Üye profili bulunamadı.");
         }
 
         var product = await dbContext.ShopProducts
@@ -28,12 +29,12 @@ public class CommerceService(ApplicationDbContext dbContext)
 
         if (product is null)
         {
-            return CommerceResult.Fail("Product was not found.");
+            return CommerceResult.Fail("Ürün bulunamadı.");
         }
 
         if (product.StockQuantity < quantity)
         {
-            return CommerceResult.Fail("Insufficient product stock.");
+            return CommerceResult.Fail("Ürün stoğu yetersiz.");
         }
 
         var cart = await GetOrCreateCartAsync(profile.Id);
@@ -56,7 +57,7 @@ public class CommerceService(ApplicationDbContext dbContext)
         {
             if (product.StockQuantity < existingItem.Quantity + quantity)
             {
-                return CommerceResult.Fail("Insufficient product stock.");
+                return CommerceResult.Fail("Ürün stoğu yetersiz.");
             }
 
             existingItem.Quantity += quantity;
@@ -75,14 +76,14 @@ public class CommerceService(ApplicationDbContext dbContext)
     {
         if (quantity <= 0)
         {
-            return CommerceResult.Fail("Quantity must be greater than zero.");
+            return CommerceResult.Fail("Adet sıfırdan büyük olmalıdır.");
         }
 
         var profile = await GetMemberProfileAsync(userId);
 
         if (profile is null)
         {
-            return CommerceResult.Fail("Member profile was not found.");
+            return CommerceResult.Fail("Üye profili bulunamadı.");
         }
 
         var menuItem = await dbContext.KitchenMenuItems
@@ -90,7 +91,7 @@ public class CommerceService(ApplicationDbContext dbContext)
 
         if (menuItem is null)
         {
-            return CommerceResult.Fail("Kitchen menu item was not found.");
+            return CommerceResult.Fail("Kitchen menü ürünü bulunamadı.");
         }
 
         var cart = await GetOrCreateCartAsync(profile.Id);
@@ -129,7 +130,7 @@ public class CommerceService(ApplicationDbContext dbContext)
 
         if (profile is null)
         {
-            return CommerceResult.Fail("Member profile was not found.");
+            return CommerceResult.Fail("Üye profili bulunamadı.");
         }
 
         var cartItem = await dbContext.CartItems
@@ -140,7 +141,7 @@ public class CommerceService(ApplicationDbContext dbContext)
 
         if (cartItem is null)
         {
-            return CommerceResult.Fail("Cart item was not found.");
+            return CommerceResult.Fail("Sepet ürünü bulunamadı.");
         }
 
         dbContext.CartItems.Remove(cartItem);
@@ -156,7 +157,7 @@ public class CommerceService(ApplicationDbContext dbContext)
 
         if (profile is null)
         {
-            return CommerceResult.Fail("Member profile was not found.");
+            return CommerceResult.Fail("Üye profili bulunamadı.");
         }
 
         var cart = await dbContext.ShoppingCarts
@@ -168,14 +169,14 @@ public class CommerceService(ApplicationDbContext dbContext)
 
         if (cart is null || cart.Items.Count == 0)
         {
-            return CommerceResult.Fail("Cart is empty.");
+            return CommerceResult.Fail("Sepet boş.");
         }
 
         foreach (var cartItem in cart.Items.Where(item => item.ItemType == CartItemType.ShopProduct))
         {
             if (cartItem.ShopProduct is null || cartItem.ShopProduct.StockQuantity < cartItem.Quantity)
             {
-                return CommerceResult.Fail($"{cartItem.ProductName} does not have enough stock.");
+                return CommerceResult.Fail($"{cartItem.ProductName} için yeterli stok yok.");
             }
         }
 
@@ -204,7 +205,7 @@ public class CommerceService(ApplicationDbContext dbContext)
 
         if (profile is null)
         {
-            return CommerceResult.Fail("Member profile was not found.");
+            return CommerceResult.Fail("Üye profili bulunamadı.");
         }
 
         var subscription = await dbContext.KitchenSubscriptions
@@ -215,10 +216,96 @@ public class CommerceService(ApplicationDbContext dbContext)
 
         if (subscription is null)
         {
-            return CommerceResult.Fail("Active kitchen subscription was not found.");
+            return CommerceResult.Fail("Aktif Kitchen aboneliği bulunamadı.");
         }
 
         var order = BuildOrder(profile.Id, OrderType.KitchenSubscription, deliveryDetails, subscription.Id, []);
+
+        dbContext.Orders.Add(order);
+        await dbContext.SaveChangesAsync();
+
+        return CommerceResult.Ok(order.Id);
+    }
+
+    public async Task<CommerceResult> CreateGuestShopOrderAsync(
+        int productId,
+        int quantity,
+        GuestOrderInputViewModel input)
+    {
+        if (quantity <= 0)
+        {
+            return CommerceResult.Fail("Adet sıfırdan büyük olmalıdır.");
+        }
+
+        var product = await dbContext.ShopProducts
+            .FirstOrDefaultAsync(item => item.Id == productId && item.IsActive);
+
+        if (product is null)
+        {
+            return CommerceResult.Fail("Ürün bulunamadı.");
+        }
+
+        if (product.StockQuantity < quantity)
+        {
+            return CommerceResult.Fail("Ürün stoğu yetersiz.");
+        }
+
+        var orderItem = new OrderItem
+        {
+            ItemType = CartItemType.ShopProduct,
+            ShopProductId = product.Id,
+            ProductName = product.Name,
+            UnitPrice = product.UnitPrice,
+            Quantity = quantity,
+            LineTotal = product.UnitPrice * quantity
+        };
+
+        var order = BuildGuestOrder(
+            input.Email,
+            BuildDeliveryDetails(input),
+            orderItem);
+
+        product.StockQuantity -= quantity;
+        product.UpdatedAtUtc = DateTime.UtcNow;
+
+        dbContext.Orders.Add(order);
+        await dbContext.SaveChangesAsync();
+
+        return CommerceResult.Ok(order.Id);
+    }
+
+    public async Task<CommerceResult> CreateGuestKitchenOrderAsync(
+        int menuItemId,
+        int quantity,
+        GuestOrderInputViewModel input)
+    {
+        if (quantity <= 0)
+        {
+            return CommerceResult.Fail("Adet sıfırdan büyük olmalıdır.");
+        }
+
+        var menuItem = await dbContext.KitchenMenuItems
+            .FirstOrDefaultAsync(item => item.Id == menuItemId && item.IsActive);
+
+        if (menuItem is null)
+        {
+            return CommerceResult.Fail("Kitchen menü ürünü bulunamadı.");
+        }
+
+        var orderItem = new OrderItem
+        {
+            ItemType = CartItemType.KitchenMenuItem,
+            KitchenMenuItemId = menuItem.Id,
+            ProductName = menuItem.Name,
+            UnitPrice = menuItem.UnitPrice,
+            Quantity = quantity,
+            LineTotal = menuItem.UnitPrice * quantity
+        };
+
+        var order = BuildGuestOrder(
+            input.Email,
+            BuildDeliveryDetails(input),
+            orderItem);
 
         dbContext.Orders.Add(order);
         await dbContext.SaveChangesAsync();
@@ -270,13 +357,36 @@ public class CommerceService(ApplicationDbContext dbContext)
             LineTotal = item.LineTotal
         }).ToList();
 
+        return BuildOrder(memberProfileId, null, orderType, deliveryDetails, kitchenSubscriptionId, items);
+    }
+
+    private static Order BuildGuestOrder(
+        string guestEmail,
+        DeliveryDetails deliveryDetails,
+        OrderItem orderItem)
+    {
+        return BuildOrder(null, guestEmail, OrderType.OneTime, deliveryDetails, null, [orderItem]);
+    }
+
+    private static Order BuildOrder(
+        int? memberProfileId,
+        string? guestEmail,
+        OrderType orderType,
+        DeliveryDetails deliveryDetails,
+        int? kitchenSubscriptionId,
+        IEnumerable<OrderItem> orderItems)
+    {
+        var items = orderItems.ToList();
         var subtotal = items.Sum(item => item.LineTotal);
 
         return new Order
         {
             OrderNumber = GenerateOrderNumber(),
             MemberProfileId = memberProfileId,
+            GuestEmail = guestEmail?.Trim(),
             Type = orderType,
+            Status = OrderStatus.Pending,
+            PaymentStatus = PaymentStatus.Pending,
             KitchenSubscriptionId = kitchenSubscriptionId,
             DeliveryFullName = deliveryDetails.FullName.Trim(),
             DeliveryPhoneNumber = deliveryDetails.PhoneNumber.Trim(),
@@ -291,6 +401,22 @@ public class CommerceService(ApplicationDbContext dbContext)
             DeliveryFee = DeliveryFee,
             Total = subtotal + DeliveryFee,
             Items = items
+        };
+    }
+
+    private static DeliveryDetails BuildDeliveryDetails(GuestOrderInputViewModel input)
+    {
+        return new DeliveryDetails
+        {
+            FullName = input.FullName,
+            PhoneNumber = input.PhoneNumber,
+            AddressLine = input.AddressLine,
+            District = input.District,
+            City = input.City,
+            PostalCode = input.PostalCode,
+            DeliveryDate = input.DeliveryDate,
+            DeliveryTimeSlot = input.DeliveryTimeSlot,
+            Notes = input.Notes
         };
     }
 

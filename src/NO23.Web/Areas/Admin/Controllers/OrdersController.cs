@@ -20,8 +20,11 @@ public class OrdersController(ApplicationDbContext dbContext) : Controller
             {
                 Id = order.Id,
                 OrderNumber = order.OrderNumber,
-                MemberName = (order.MemberProfile.ApplicationUser.FirstName ?? string.Empty) + " " +
-                    (order.MemberProfile.ApplicationUser.LastName ?? string.Empty),
+                MemberName = order.MemberProfileId == null
+                    ? "Misafir Siparişi"
+                    : ((order.MemberProfile!.ApplicationUser.FirstName ?? string.Empty) + " " +
+                        (order.MemberProfile.ApplicationUser.LastName ?? string.Empty)).Trim(),
+                GuestEmail = order.GuestEmail,
                 Type = order.Type.ToString(),
                 Status = order.Status.ToString(),
                 PaymentStatus = order.PaymentStatus.ToString(),
