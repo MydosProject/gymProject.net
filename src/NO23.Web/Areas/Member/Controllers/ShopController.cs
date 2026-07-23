@@ -13,7 +13,8 @@ namespace NO23.Web.Areas.Member.Controllers;
 [Authorize(Roles = ApplicationRoles.Member)]
 public class ShopController(
     ApplicationDbContext dbContext,
-    CommerceService commerceService) : Controller
+    CommerceService commerceService,
+    MemberCartQueryService cartQueryService) : Controller
 {
     public async Task<IActionResult> Index()
     {
@@ -32,10 +33,10 @@ public class ShopController(
         }
 
         var result = await commerceService.AddShopProductToCartAsync(userId, productId, quantity);
-        TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] =
-            result.Succeeded ? "Ürün sepetine eklendi." : GetLocalizedErrorMessage(result.ErrorMessage);
-
-        return RedirectToAction(nameof(Index));
+        return await RespondToCartMutationAsync(
+            result,
+            userId,
+            "Ürün sepetine eklendi.");
     }
 
     [HttpPost]
@@ -50,10 +51,10 @@ public class ShopController(
         }
 
         var result = await commerceService.AddKitchenMenuItemToCartAsync(userId, menuItemId, quantity);
-        TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] =
-            result.Succeeded ? "Kitchen öğünü sepetine eklendi." : GetLocalizedErrorMessage(result.ErrorMessage);
-
-        return RedirectToAction(nameof(Index));
+        return await RespondToCartMutationAsync(
+            result,
+            userId,
+            "Kitchen öğünü sepetine eklendi.");
     }
 
     [HttpPost]
@@ -68,10 +69,10 @@ public class ShopController(
         }
 
         var result = await commerceService.RemoveCartItemAsync(userId, cartItemId);
-        TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] =
-            result.Succeeded ? "Ürün sepetinden kaldırıldı." : GetLocalizedErrorMessage(result.ErrorMessage);
-
-        return RedirectToAction(nameof(Index));
+        return await RespondToCartMutationAsync(
+            result,
+            userId,
+            "Ürün sepetinden kaldırıldı.");
     }
 
     [HttpPost]
@@ -80,6 +81,25 @@ public class ShopController(
     {
         if (!ModelState.IsValid)
         {
+            if (IsAjaxRequest())
+            {
+                return BadRequest(new
+                {
+                    succeeded = false,
+                    message = "Teslimat bilgilerini kontrol et.",
+                    errors = ModelState
+                        .Where(item => item.Value?.Errors.Count > 0)
+                        .ToDictionary(
+                            item => item.Key,
+                            item => item.Value!.Errors
+                                .Select(error =>
+                                    string.IsNullOrWhiteSpace(error.ErrorMessage)
+                                        ? "Bu alanı kontrol et."
+                                        : error.ErrorMessage)
+                                .ToArray())
+                });
+            }
+
             return View("Index", await BuildDashboardAsync(input));
         }
 
@@ -103,10 +123,10 @@ public class ShopController(
             Notes = input.Notes
         });
 
-        TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] =
-            result.Succeeded ? "Siparişin başarıyla oluşturuldu." : GetLocalizedErrorMessage(result.ErrorMessage);
-
-        return RedirectToAction(nameof(Index));
+        return await RespondToCartMutationAsync(
+            result,
+            userId,
+            "Siparişin başarıyla oluşturuldu.");
     }
 
     private async Task<ShopDashboardViewModel> BuildDashboardAsync(CheckoutInputViewModel checkoutInput)
@@ -208,5 +228,36 @@ public class ShopController(
             "Active kitchen subscription was not found." => "Aktif Kitchen aboneliği bulunamadı.",
             _ => message
         };
+    }
+
+    private async Task<IActionResult> RespondToCartMutationAsync(
+        CommerceResult result,
+        string userId,
+        string successMessage)
+    {
+        var message = result.Succeeded
+            ? successMessage
+            : GetLocalizedErrorMessage(result.ErrorMessage);
+
+        if (IsAjaxRequest())
+        {
+            return Json(new
+            {
+                succeeded = result.Succeeded,
+                message,
+                itemCount = await cartQueryService.GetItemCountAsync(userId)
+            });
+        }
+
+        TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] = message;
+        return RedirectToAction(nameof(Index));
+    }
+
+    private bool IsAjaxRequest()
+    {
+        return string.Equals(
+            Request.Headers["X-Requested-With"],
+            "XMLHttpRequest",
+            StringComparison.OrdinalIgnoreCase);
     }
 }

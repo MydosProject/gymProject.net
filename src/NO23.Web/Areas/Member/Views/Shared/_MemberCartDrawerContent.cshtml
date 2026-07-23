@@ -1,0 +1,154 @@
+@model MemberCartPanelViewModel
+
+@{
+    string GetCartItemTypeName(string itemType)
+    {
+        return itemType switch
+        {
+            "ShopProduct" => "NO23 Shop",
+            "KitchenMenuItem" => "NO23 Kitchen",
+            _ => itemType
+        };
+    }
+}
+
+<div class="member-cart-drawer-summary">
+    <div>
+        <span>Sepetim</span>
+        <strong>@Model.TotalItemCount ürün</strong>
+    </div>
+    <strong>@Model.CartSubtotal.ToString("N0") ₺</strong>
+</div>
+
+@if (Model.CartItems.Count == 0)
+{
+    <div class="member-cart-drawer-empty">
+        <span aria-hidden="true">23</span>
+        <h3>Sepetin şu an boş.</h3>
+        <p>NO23 Shop ürünlerinden seçimini yaparak sepetini oluşturabilirsin.</p>
+    </div>
+}
+else
+{
+    <div class="member-cart-drawer-items">
+        @for (var index = 0; index < Model.CartItems.Count; index++)
+        {
+            var item = Model.CartItems[index];
+
+            <article class="member-cart-drawer-item">
+                <span>@((index + 1).ToString("00"))</span>
+                <div>
+                    <small>@GetCartItemTypeName(item.ItemType)</small>
+                    <h3>@item.ProductName</h3>
+                    <p>@item.Quantity adet · @item.UnitPrice.ToString("N0") ₺</p>
+                </div>
+                <div>
+                    <strong>@item.LineTotal.ToString("N0") ₺</strong>
+                    <form asp-area="Member"
+                          asp-controller="Shop"
+                          asp-action="RemoveCartItem"
+                          asp-antiforgery="true"
+                          method="post"
+                          data-member-cart-mutation>
+                        <input type="hidden"
+                               name="cartItemId"
+                               value="@item.Id" />
+                        <button type="submit">Kaldır</button>
+                    </form>
+                </div>
+            </article>
+        }
+    </div>
+
+    <div class="member-cart-drawer-total">
+        <span>Toplam</span>
+        <strong>@Model.CartSubtotal.ToString("N0") ₺</strong>
+    </div>
+
+    <section class="member-cart-delivery" aria-labelledby="member-cart-delivery-title">
+        <div class="member-cart-delivery-heading">
+            <span>Teslimat bilgileri</span>
+            <h3 id="member-cart-delivery-title">Siparişini tamamla.</h3>
+        </div>
+
+        <form asp-area="Member"
+              asp-controller="Shop"
+              asp-action="Checkout"
+              asp-antiforgery="true"
+              method="post"
+              class="shop-delivery-form"
+              data-member-cart-checkout>
+            <div asp-validation-summary="ModelOnly"
+                 class="shop-validation-summary"
+                 role="alert"></div>
+
+            <div class="shop-form-grid">
+                <div class="shop-form-field shop-form-field-wide">
+                    <label asp-for="CheckoutInput.FullName">Ad Soyad</label>
+                    <input asp-for="CheckoutInput.FullName" autocomplete="name" />
+                    <span asp-validation-for="CheckoutInput.FullName"></span>
+                </div>
+                <div class="shop-form-field shop-form-field-wide">
+                    <label asp-for="CheckoutInput.PhoneNumber">Telefon</label>
+                    <input asp-for="CheckoutInput.PhoneNumber" autocomplete="tel" />
+                    <span asp-validation-for="CheckoutInput.PhoneNumber"></span>
+                </div>
+                <div class="shop-form-field shop-form-field-wide">
+                    <label asp-for="CheckoutInput.AddressLine">Adres</label>
+                    <textarea asp-for="CheckoutInput.AddressLine"
+                              rows="3"
+                              autocomplete="street-address"></textarea>
+                    <span asp-validation-for="CheckoutInput.AddressLine"></span>
+                </div>
+                <div class="shop-form-field">
+                    <label asp-for="CheckoutInput.District">İlçe</label>
+                    <input asp-for="CheckoutInput.District" autocomplete="address-level2" />
+                    <span asp-validation-for="CheckoutInput.District"></span>
+                </div>
+                <div class="shop-form-field">
+                    <label asp-for="CheckoutInput.City">Şehir</label>
+                    <input asp-for="CheckoutInput.City" autocomplete="address-level1" />
+                    <span asp-validation-for="CheckoutInput.City"></span>
+                </div>
+                <div class="shop-form-field shop-form-field-wide">
+                    <label asp-for="CheckoutInput.PostalCode">
+                        Posta Kodu <small>İsteğe bağlı</small>
+                    </label>
+                    <input asp-for="CheckoutInput.PostalCode" autocomplete="postal-code" />
+                    <span asp-validation-for="CheckoutInput.PostalCode"></span>
+                </div>
+                <div class="shop-form-field">
+                    <label asp-for="CheckoutInput.DeliveryDate">Teslimat Tarihi</label>
+                    <input asp-for="CheckoutInput.DeliveryDate" type="date" />
+                    <span asp-validation-for="CheckoutInput.DeliveryDate"></span>
+                </div>
+                <div class="shop-form-field">
+                    <label asp-for="CheckoutInput.DeliveryTimeSlot">Teslimat Saati</label>
+                    <select asp-for="CheckoutInput.DeliveryTimeSlot">
+                        <option value="10:00-13:00">10:00 – 13:00</option>
+                        <option value="13:00-16:00">13:00 – 16:00</option>
+                        <option value="16:00-19:00">16:00 – 19:00</option>
+                    </select>
+                    <span asp-validation-for="CheckoutInput.DeliveryTimeSlot"></span>
+                </div>
+                <div class="shop-form-field shop-form-field-wide">
+                    <label asp-for="CheckoutInput.Notes">
+                        Sipariş Notu <small>İsteğe bağlı</small>
+                    </label>
+                    <textarea asp-for="CheckoutInput.Notes" rows="2"></textarea>
+                    <span asp-validation-for="CheckoutInput.Notes"></span>
+                </div>
+            </div>
+
+            <button type="submit" class="shop-checkout-button">
+                <span>Siparişi Oluştur</span>
+                <strong>@Model.CartSubtotal.ToString("N0") ₺</strong>
+            </button>
+
+            <p class="shop-checkout-note">
+                Bu proje kapsamında gerçek ödeme alınmaz. Siparişin yönetim
+                paneline iletilir ve teslimat bilgilerinle kaydedilir.
+            </p>
+        </form>
+    </section>
+}

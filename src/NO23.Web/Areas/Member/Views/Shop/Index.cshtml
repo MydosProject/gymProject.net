@@ -3,8 +3,6 @@
 @{
     ViewData["Title"] = "NO23 Shop";
 
-    var totalItemCount = Model.CartItems.Sum(item => item.Quantity);
-
     string GetProductCategoryName(string category)
     {
         return category switch
@@ -29,15 +27,6 @@
         };
     }
 
-    string GetCartItemTypeName(string itemType)
-    {
-        return itemType switch
-        {
-            "ShopProduct" => "NO23 Shop",
-            "KitchenMenuItem" => "NO23 Kitchen",
-            _ => itemType
-        };
-    }
 }
 
 <section class="shop-page">
@@ -59,17 +48,6 @@
                     Kitchen öğünlerinden günlük aksesuarlara kadar seçimini tamamla.
                 </p>
 
-                <nav class="shop-hero-links" aria-label="Shop bölümleri">
-                    <a href="#shop-products" class="shop-primary-link">
-                        Koleksiyonu Keşfet
-                        <span aria-hidden="true">↓</span>
-                    </a>
-
-                    <a href="#shop-cart" class="shop-secondary-link">
-                        Sepetim
-                        <span class="shop-cart-count">@totalItemCount</span>
-                    </a>
-                </nav>
             </div>
 
             <aside class="shop-hero-card">
@@ -178,7 +156,10 @@
                                 <div class="shop-product-purchase">
                                     <strong>@product.UnitPrice.ToString("N0") ₺</strong>
 
-                                    <form asp-action="AddShopProduct" method="post" class="shop-add-form">
+                                    <form asp-action="AddShopProduct"
+                                          asp-antiforgery="true"
+                                          method="post"
+                                          class="shop-add-form">
                                         <input type="hidden" name="productId" value="@product.Id" />
                                         <label>
                                             <span class="visually-hidden">Adet</span>
@@ -255,7 +236,10 @@
                             <div class="shop-kitchen-card-footer">
                                 <strong>@item.UnitPrice.ToString("N0") ₺</strong>
 
-                                <form asp-action="AddKitchenMenuItem" method="post" class="shop-add-form">
+                                <form asp-action="AddKitchenMenuItem"
+                                      asp-antiforgery="true"
+                                      method="post"
+                                      class="shop-add-form">
                                     <input type="hidden" name="menuItemId" value="@item.Id" />
                                     <label>
                                         <span class="visually-hidden">Adet</span>
@@ -278,172 +262,6 @@
             }
         </section>
 
-        <section class="shop-checkout-section" id="shop-cart">
-            <div class="shop-section-heading">
-                <div>
-                    <p class="shop-section-kicker">03 · Siparişi tamamla</p>
-                    <h2>Sepetin ve teslimatın.</h2>
-                </div>
-
-                <p>
-                    Ürünlerini kontrol et, teslimat bilgilerini tamamla ve
-                    siparişini oluştur.
-                </p>
-            </div>
-
-            <div class="shop-checkout-layout">
-                <section class="shop-cart-panel" aria-labelledby="cart-title">
-                    <div class="shop-panel-heading">
-                        <div>
-                            <span>Sepetim</span>
-                            <h3 id="cart-title">@totalItemCount ürün</h3>
-                        </div>
-                        <strong>@Model.CartSubtotal.ToString("N0") ₺</strong>
-                    </div>
-
-                    @if (Model.CartItems.Count == 0)
-                    {
-                        <div class="shop-cart-empty">
-                            <span aria-hidden="true">23</span>
-                            <h4>Sepetin şu an boş.</h4>
-                            <p>Koleksiyondan veya Kitchen menüsünden seçimini yap.</p>
-                            <a href="#shop-products">Ürünlere Dön</a>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="shop-cart-list">
-                            @for (var index = 0; index < Model.CartItems.Count; index++)
-                            {
-                                var cartItem = Model.CartItems[index];
-
-                                <article class="shop-cart-item">
-                                    <span class="shop-cart-item-number">@((index + 1).ToString("00"))</span>
-
-                                    <div class="shop-cart-item-info">
-                                        <small>@GetCartItemTypeName(cartItem.ItemType)</small>
-                                        <h4>@cartItem.ProductName</h4>
-                                        <p>@cartItem.Quantity adet · @cartItem.UnitPrice.ToString("N0") ₺</p>
-                                    </div>
-
-                                    <div class="shop-cart-item-action">
-                                        <strong>@cartItem.LineTotal.ToString("N0") ₺</strong>
-
-                                        <form asp-action="RemoveCartItem" method="post">
-                                            <input type="hidden" name="cartItemId" value="@cartItem.Id" />
-                                            <button type="submit">Kaldır</button>
-                                        </form>
-                                    </div>
-                                </article>
-                            }
-                        </div>
-
-                        <div class="shop-cart-summary">
-                            <div>
-                                <span>Ara toplam</span>
-                                <strong>@Model.CartSubtotal.ToString("N0") ₺</strong>
-                            </div>
-                            <div>
-                                <span>Teslimat</span>
-                                <strong>Ücretsiz</strong>
-                            </div>
-                            <div class="shop-cart-total">
-                                <span>Toplam</span>
-                                <strong>@Model.CartSubtotal.ToString("N0") ₺</strong>
-                            </div>
-                        </div>
-                    }
-                </section>
-
-                <section class="shop-delivery-panel" aria-labelledby="delivery-title">
-                    <div class="shop-panel-heading">
-                        <div>
-                            <span>Teslimat bilgileri</span>
-                            <h3 id="delivery-title">Siparişini planla.</h3>
-                        </div>
-                        <strong>03</strong>
-                    </div>
-
-                    <form asp-action="Checkout" method="post" class="shop-delivery-form">
-                        <div asp-validation-summary="ModelOnly"
-                             class="shop-validation-summary"
-                             role="alert"></div>
-
-                        <div class="shop-form-grid">
-                            <div class="shop-form-field shop-form-field-wide">
-                                <label asp-for="CheckoutInput.FullName">Ad Soyad</label>
-                                <input asp-for="CheckoutInput.FullName" autocomplete="name" />
-                                <span asp-validation-for="CheckoutInput.FullName"></span>
-                            </div>
-
-                            <div class="shop-form-field shop-form-field-wide">
-                                <label asp-for="CheckoutInput.PhoneNumber">Telefon</label>
-                                <input asp-for="CheckoutInput.PhoneNumber" autocomplete="tel" />
-                                <span asp-validation-for="CheckoutInput.PhoneNumber"></span>
-                            </div>
-
-                            <div class="shop-form-field shop-form-field-wide">
-                                <label asp-for="CheckoutInput.AddressLine">Adres</label>
-                                <textarea asp-for="CheckoutInput.AddressLine" rows="3" autocomplete="street-address"></textarea>
-                                <span asp-validation-for="CheckoutInput.AddressLine"></span>
-                            </div>
-
-                            <div class="shop-form-field">
-                                <label asp-for="CheckoutInput.District">İlçe</label>
-                                <input asp-for="CheckoutInput.District" autocomplete="address-level2" />
-                                <span asp-validation-for="CheckoutInput.District"></span>
-                            </div>
-
-                            <div class="shop-form-field">
-                                <label asp-for="CheckoutInput.City">Şehir</label>
-                                <input asp-for="CheckoutInput.City" autocomplete="address-level1" />
-                                <span asp-validation-for="CheckoutInput.City"></span>
-                            </div>
-
-                            <div class="shop-form-field shop-form-field-wide">
-                                <label asp-for="CheckoutInput.PostalCode">Posta Kodu <small>İsteğe bağlı</small></label>
-                                <input asp-for="CheckoutInput.PostalCode" autocomplete="postal-code" />
-                                <span asp-validation-for="CheckoutInput.PostalCode"></span>
-                            </div>
-
-                            <div class="shop-form-field">
-                                <label asp-for="CheckoutInput.DeliveryDate">Teslimat Tarihi</label>
-                                <input asp-for="CheckoutInput.DeliveryDate" type="date" />
-                                <span asp-validation-for="CheckoutInput.DeliveryDate"></span>
-                            </div>
-
-                            <div class="shop-form-field">
-                                <label asp-for="CheckoutInput.DeliveryTimeSlot">Teslimat Saati</label>
-                                <select asp-for="CheckoutInput.DeliveryTimeSlot">
-                                    <option value="10:00-13:00">10:00 – 13:00</option>
-                                    <option value="13:00-16:00">13:00 – 16:00</option>
-                                    <option value="16:00-19:00">16:00 – 19:00</option>
-                                </select>
-                                <span asp-validation-for="CheckoutInput.DeliveryTimeSlot"></span>
-                            </div>
-
-                            <div class="shop-form-field shop-form-field-wide">
-                                <label asp-for="CheckoutInput.Notes">Sipariş Notu <small>İsteğe bağlı</small></label>
-                                <textarea asp-for="CheckoutInput.Notes" rows="2"></textarea>
-                                <span asp-validation-for="CheckoutInput.Notes"></span>
-                            </div>
-                        </div>
-
-                        <button type="submit"
-                                class="shop-checkout-button"
-                                @(Model.CartItems.Count == 0 ? "disabled" : null)>
-                            <span>Siparişi Oluştur</span>
-                            <strong>@Model.CartSubtotal.ToString("N0") ₺</strong>
-                        </button>
-
-                        <p class="shop-checkout-note">
-                            Bu proje kapsamında gerçek ödeme alınmaz. Siparişin yönetim
-                            paneline iletilir ve teslimat bilgilerinle kaydedilir.
-                        </p>
-                    </form>
-                </section>
-            </div>
-        </section>
     </div>
 </section>
 

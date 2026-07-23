@@ -1,0 +1,7 @@
+@model int
+
+<span class="member-cart-count-badge"
+      data-member-cart-count
+      hidden="@(Model == 0 ? "hidden" : null)">
+    @Model
+</span>

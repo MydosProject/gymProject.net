@@ -1,0 +1,188 @@
+@using NO23.Web.Domain.Enums
+@model KitchenDashboardViewModel
+
+@{
+    string GetGoalName(NutritionGoal goal)
+    {
+        return goal switch
+        {
+            NutritionGoal.FatLoss => "Yağ Yakımı",
+            NutritionGoal.MuscleGain => "Kas Kazanımı",
+            NutritionGoal.WeightMaintenance => "Kilo Koruma",
+            NutritionGoal.PerformanceNutrition => "Performans Beslenmesi",
+            NutritionGoal.HealthyLifestyle => "Sağlıklı Yaşam",
+            _ => "Kişisel Hedef"
+        };
+    }
+}
+
+<section class="kitchen-calculator-section" id="calculator">
+    <div class="kitchen-section-heading">
+        <div>
+            <p class="kitchen-section-kicker">Kişisel hesaplama</p>
+            <h2>Hedefini hesapla, planını seç.</h2>
+        </div>
+        <p>
+            Bilgilerini gir; günlük kalori ve makro hedefini öğrendikten
+            sonra aynı akışta Kitchen planını başlat.
+        </p>
+    </div>
+
+    <div class="kitchen-calculator-layout">
+        <div class="kitchen-calculator-panel">
+            <div class="kitchen-panel-heading">
+                <span>01</span>
+                <div>
+                    <p>Kalori hesaplama</p>
+                    <h3>Bilgilerini tamamla.</h3>
+                </div>
+            </div>
+
+            <form asp-area="Member"
+                  asp-controller="Kitchen"
+                  asp-action="Calculate"
+                  asp-antiforgery="true"
+                  method="post"
+                  class="kitchen-calculator-form">
+                <div asp-validation-summary="ModelOnly"
+                     class="kitchen-validation-summary"
+                     role="alert"></div>
+
+                <div class="kitchen-form-grid">
+                    <div class="kitchen-form-field">
+                        <label asp-for="CalculatorInput.HeightCm">Boy <small>cm</small></label>
+                        <input asp-for="CalculatorInput.HeightCm"
+                               type="number"
+                               min="120"
+                               max="230"
+                               inputmode="numeric"
+                               placeholder="170" />
+                        <span asp-validation-for="CalculatorInput.HeightCm"></span>
+                    </div>
+
+                    <div class="kitchen-form-field">
+                        <label asp-for="CalculatorInput.WeightKg">Kilo <small>kg</small></label>
+                        <input asp-for="CalculatorInput.WeightKg"
+                               type="number"
+                               min="35"
+                               max="250"
+                               step="0.1"
+                               inputmode="decimal"
+                               placeholder="70" />
+                        <span asp-validation-for="CalculatorInput.WeightKg"></span>
+                    </div>
+
+                    <div class="kitchen-form-field">
+                        <label asp-for="CalculatorInput.Age">Yaş</label>
+                        <input asp-for="CalculatorInput.Age"
+                               type="number"
+                               min="13"
+                               max="90"
+                               inputmode="numeric"
+                               placeholder="28" />
+                        <span asp-validation-for="CalculatorInput.Age"></span>
+                    </div>
+
+                    <div class="kitchen-form-field">
+                        <label asp-for="CalculatorInput.Gender">Cinsiyet</label>
+                        <select asp-for="CalculatorInput.Gender">
+                            <option value="@Gender.Female">Kadın</option>
+                            <option value="@Gender.Male">Erkek</option>
+                        </select>
+                        <span asp-validation-for="CalculatorInput.Gender"></span>
+                    </div>
+
+                    <div class="kitchen-form-field kitchen-form-field-wide">
+                        <label asp-for="CalculatorInput.ActivityLevel">Günlük aktivite</label>
+                        <select asp-for="CalculatorInput.ActivityLevel">
+                            <option value="@ActivityLevel.Sedentary">Hareketsiz</option>
+                            <option value="@ActivityLevel.LightlyActive">Hafif aktif</option>
+                            <option value="@ActivityLevel.ModeratelyActive">Orta düzey aktif</option>
+                            <option value="@ActivityLevel.VeryActive">Çok aktif</option>
+                            <option value="@ActivityLevel.Athlete">Sporcu</option>
+                        </select>
+                        <span asp-validation-for="CalculatorInput.ActivityLevel"></span>
+                    </div>
+
+                    <div class="kitchen-form-field kitchen-form-field-wide">
+                        <label asp-for="CalculatorInput.Goal">Hedefin</label>
+                        <select asp-for="CalculatorInput.Goal">
+                            <option value="@NutritionGoal.FatLoss">Yağ Yakımı</option>
+                            <option value="@NutritionGoal.MuscleGain">Kas Kazanımı</option>
+                            <option value="@NutritionGoal.WeightMaintenance">Kilo Koruma</option>
+                            <option value="@NutritionGoal.PerformanceNutrition">Performans Beslenmesi</option>
+                            <option value="@NutritionGoal.HealthyLifestyle">Sağlıklı Yaşam</option>
+                        </select>
+                        <span asp-validation-for="CalculatorInput.Goal"></span>
+                    </div>
+                </div>
+
+                <button type="submit" class="kitchen-calculate-button">
+                    <span>Hedefimi Hesapla</span>
+                    <span aria-hidden="true">→</span>
+                </button>
+            </form>
+        </div>
+
+        <div class="kitchen-result-panel">
+            <div class="kitchen-panel-heading">
+                <span>02</span>
+                <div>
+                    <p>Kişisel sonuç</p>
+                    <h3>Günlük beslenme hedefin.</h3>
+                </div>
+            </div>
+
+            @if (Model.Recommendation is null)
+            {
+                <div class="kitchen-result-placeholder">
+                    <div class="kitchen-result-rings" aria-hidden="true">
+                        <span>23</span>
+                    </div>
+                    <h4>Sonuçların burada görünecek.</h4>
+                    <p>
+                        Formu doldurduğunda günlük enerji ihtiyacını
+                        ve makro dağılımını göstereceğiz.
+                    </p>
+                </div>
+            }
+            else
+            {
+                <div class="kitchen-result-content">
+                    <div class="kitchen-result-goal">
+                        <span>Seçilen hedef</span>
+                        <strong>@GetGoalName(Model.Recommendation.Goal)</strong>
+                    </div>
+
+                    <div class="kitchen-calorie-result">
+                        <div>
+                            <span>Günlük hedef</span>
+                            <strong>@Model.Recommendation.DailyCalories</strong>
+                            <small>kcal</small>
+                        </div>
+                        <span class="kitchen-result-mark">NO23</span>
+                    </div>
+
+                    <div class="kitchen-macro-grid">
+                        <article>
+                            <span>Protein</span>
+                            <strong>@Model.Recommendation.ProteinGrams <small>g</small></strong>
+                        </article>
+                        <article>
+                            <span>Karbonhidrat</span>
+                            <strong>@Model.Recommendation.CarbohydrateGrams <small>g</small></strong>
+                        </article>
+                        <article>
+                            <span>Yağ</span>
+                            <strong>@Model.Recommendation.FatGrams <small>g</small></strong>
+                        </article>
+                    </div>
+
+                    <a class="kitchen-result-plan-link" href="#plans">
+                        Planını seç <span aria-hidden="true">↓</span>
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</section>

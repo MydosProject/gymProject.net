@@ -111,26 +111,9 @@
             </aside>
         </header>
 
-        <nav class="member-panel-shortcuts member-panel-shortcuts-orders"
-             aria-label="Üye paneli bölümleri">
-            <a asp-area="Member" asp-controller="Home" asp-action="Index">
-                <span>01</span><strong>Panelim</strong><small>Üyelik ve dersler</small>
-            </a>
-            <a asp-area="Member" asp-controller="Kitchen" asp-action="Index">
-                <span>02</span><strong>Kitchen Planım</strong><small>Abonelik ve hedefler</small>
-            </a>
-            <a asp-area="Member" asp-controller="Shop" asp-action="Index">
-                <span>03</span><strong>Shop</strong><small>Ürünler ve sepet</small>
-            </a>
-            <a class="is-active"
-               asp-area="Member"
-               asp-controller="Orders"
-               asp-action="Index">
-                <span>04</span><strong>Siparişlerim</strong><small>Teslimat ve geçmiş</small>
-            </a>
-        </nav>
-
-        <section class="member-orders-content" aria-labelledby="member-orders-title">
+        <section class="member-orders-content"
+                 id="payment-statuses"
+                 aria-labelledby="member-orders-title">
             <div class="member-orders-section-heading">
                 <div>
                     <p>01 / SİPARİŞ GEÇMİŞİ</p>
