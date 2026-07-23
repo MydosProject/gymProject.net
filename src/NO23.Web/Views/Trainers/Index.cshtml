@@ -1,6 +1,12 @@
+@using NO23.Web.Data.Seed
 @model IReadOnlyList<NO23.Web.ViewModels.Trainers.TrainerCardViewModel>
 @{
     ViewData["Title"] = "Eğitmenler";
+
+    if (User.IsInRole(ApplicationRoles.Member))
+    {
+        Layout = "/Areas/Member/Views/Shared/_MemberLayout.cshtml";
+    }
 }
 
 <div class="trainers-page">
@@ -10,7 +16,6 @@
                 <p class="trainers-kicker">NO23 / COACHING TEAM</p>
                 <h1>Doğru ekip.<br /><span>Güçlü ilerleme.</span></h1>
                 <p class="trainers-lead">Hedefini anlayan, gelişimini ölçen ve her adımda yanında olan profesyonel eğitmenlerle çalış.</p>
-                <a class="no23-primary-button" asp-controller="Home" asp-action="Index" asp-fragment="services">Antrenmanı keşfet</a>
             </div>
             <aside class="trainers-hero-card">
                 <div class="trainers-hero-card-top"><span>NO23 / TEAM</span><strong>23</strong></div>
@@ -70,7 +75,13 @@
                                             <span>Personal Training</span>
                                         }
                                     </div>
-                                    <a asp-area="Identity" asp-page="/Account/Register">Birlikte çalış <span>↗</span></a>
+                                    <a asp-area="Member"
+                                       asp-controller="Reservations"
+                                       asp-action="Index"
+                                       asp-route-trainerId="@trainer.Id"
+                                       asp-fragment="personal-training">
+                                        Birlikte çalış <span>↗</span>
+                                    </a>
                                 </div>
                             </div>
                         </article>
@@ -80,10 +91,4 @@
         </div>
     </section>
 
-    <section class="trainers-cta">
-        <div class="container trainers-cta-inner">
-            <div><p class="trainers-kicker">RİTMİNİ BAŞLAT</p><h2>İlk adımı birlikte atalım.</h2><p>Hedefini paylaş, sana uygun üyelik ve antrenman modeliyle başlayalım.</p></div>
-            <a class="no23-primary-button" asp-area="Identity" asp-page="/Account/Register">Üyeliğini başlat</a>
-        </div>
-    </section>
 </div>

@@ -1,0 +1,676 @@
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? string.Empty;
+    var pageTitle = ViewData["Title"]?.ToString() ?? "Üye Paneli";
+    var userName = User.Identity?.Name ?? "NO23 Üyesi";
+    var userInitial = string.IsNullOrWhiteSpace(userName)
+        ? "N"
+        : userName.Trim()[0].ToString().ToUpperInvariant();
+
+    string ActiveClass(params string[] controllers) =>
+        controllers.Contains(currentController, StringComparer.OrdinalIgnoreCase)
+            ? "is-active"
+            : string.Empty;
+
+    string ActiveRoute(string controller, string action) =>
+        currentController.Equals(controller, StringComparison.OrdinalIgnoreCase) &&
+        currentAction.Equals(action, StringComparison.OrdinalIgnoreCase)
+            ? "is-active"
+            : string.Empty;
+
+    var isGeneralOpen = currentController.Equals("Home", StringComparison.OrdinalIgnoreCase);
+    var isTrainingOpen =
+        currentController.Equals("Classes", StringComparison.OrdinalIgnoreCase) ||
+        currentController.Equals("Reservations", StringComparison.OrdinalIgnoreCase) ||
+        currentController.Equals("Trainers", StringComparison.OrdinalIgnoreCase);
+    var isNutritionOpen = currentController.Equals("Kitchen", StringComparison.OrdinalIgnoreCase);
+    var isShoppingOpen =
+        currentController.Equals("Shop", StringComparison.OrdinalIgnoreCase) ||
+        currentController.Equals("Orders", StringComparison.OrdinalIgnoreCase);
+}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#090b09" />
+    <title>@pageTitle | NO23 Üye Paneli</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/NO23.Web.styles.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body class="no23-member-body">
+    <div class="member-shell">
+        <aside class="member-sidebar"
+               id="memberSidebar"
+               aria-label="Üye paneli navigasyonu">
+            <div class="member-sidebar-head">
+                <a class="member-sidebar-brand"
+                   asp-area="Member"
+                   asp-controller="Home"
+                   asp-action="Index">
+                    <span class="member-sidebar-brand-mark">NO23</span>
+                    <span class="member-sidebar-brand-copy">Member Club</span>
+                </a>
+
+                <button class="member-sidebar-close"
+                        type="button"
+                        data-member-sidebar-close
+                        aria-label="Menüyü kapat">
+                    ×
+                </button>
+            </div>
+
+            <nav class="member-sidebar-nav">
+                <div class="member-sidebar-group">
+                    <button class="member-sidebar-group-toggle"
+                            type="button"
+                            aria-controls="memberGeneralMenu"
+                            aria-expanded="@(isGeneralOpen ? "true" : "false")"
+                            data-member-group-toggle>
+                        <span class="member-sidebar-label">Genel</span>
+                        <i aria-hidden="true"></i>
+                    </button>
+
+                    <div class="member-sidebar-submenu @(isGeneralOpen ? "is-open" : string.Empty)"
+                         id="memberGeneralMenu">
+                        <a class="member-sidebar-link @ActiveClass("Home")"
+                           asp-area="Member"
+                           asp-controller="Home"
+                           asp-action="Index">
+                            <span class="member-sidebar-index">01</span>
+                            <span class="member-sidebar-label">Genel Bakış</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="member-sidebar-group">
+                    <button class="member-sidebar-group-toggle"
+                            type="button"
+                            aria-controls="memberTrainingMenu"
+                            aria-expanded="@(isTrainingOpen ? "true" : "false")"
+                            data-member-group-toggle>
+                        <span class="member-sidebar-label">Antrenman</span>
+                        <i aria-hidden="true"></i>
+                    </button>
+
+                    <div class="member-sidebar-submenu @(isTrainingOpen ? "is-open" : string.Empty)"
+                         id="memberTrainingMenu">
+                        <a class="member-sidebar-link @ActiveClass("Classes")"
+                           asp-area=""
+                           asp-controller="Classes"
+                           asp-action="Index">
+                            <span class="member-sidebar-index">02</span>
+                            <span class="member-sidebar-label">Ders Programı</span>
+                        </a>
+
+                        <a class="member-sidebar-link @ActiveClass("Reservations")"
+                           asp-area="Member"
+                           asp-controller="Reservations"
+                           asp-action="Index">
+                            <span class="member-sidebar-index">03</span>
+                            <span class="member-sidebar-label">Rezervasyonlarım</span>
+                        </a>
+
+                        <a class="member-sidebar-link @ActiveClass("Trainers")"
+                           asp-area=""
+                           asp-controller="Trainers"
+                           asp-action="Index">
+                            <span class="member-sidebar-index">04</span>
+                            <span class="member-sidebar-label">Eğitmenler</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="member-sidebar-group">
+                    <button class="member-sidebar-group-toggle"
+                            type="button"
+                            aria-controls="memberNutritionMenu"
+                            aria-expanded="@(isNutritionOpen ? "true" : "false")"
+                            data-member-group-toggle>
+                        <span class="member-sidebar-label">Beslenme</span>
+                        <i aria-hidden="true"></i>
+                    </button>
+
+                    <div class="member-sidebar-submenu @(isNutritionOpen ? "is-open" : string.Empty)"
+                         id="memberNutritionMenu">
+                        <a class="member-sidebar-link @ActiveRoute("Kitchen", "Index")"
+                           asp-area="Member"
+                           asp-controller="Kitchen"
+                           asp-action="Index">
+                            <span class="member-sidebar-index">05</span>
+                            <span class="member-sidebar-label">Kitchen Planı</span>
+                        </a>
+
+                        <a class="member-sidebar-link @ActiveRoute("Kitchen", "Menu")"
+                           asp-area="Member"
+                           asp-controller="Kitchen"
+                           asp-action="Menu">
+                            <span class="member-sidebar-index">06</span>
+                            <span class="member-sidebar-label">Menü</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="member-sidebar-group">
+                    <button class="member-sidebar-group-toggle"
+                            type="button"
+                            aria-controls="memberShoppingMenu"
+                            aria-expanded="@(isShoppingOpen ? "true" : "false")"
+                            data-member-group-toggle>
+                        <span class="member-sidebar-label">Alışveriş</span>
+                        <i aria-hidden="true"></i>
+                    </button>
+
+                    <div class="member-sidebar-submenu @(isShoppingOpen ? "is-open" : string.Empty)"
+                         id="memberShoppingMenu">
+                        <a class="member-sidebar-link @ActiveClass("Shop")"
+                           asp-area="Member"
+                           asp-controller="Shop"
+                           asp-action="Index">
+                            <span class="member-sidebar-index">07</span>
+                            <span class="member-sidebar-label">NO23 Shop</span>
+                        </a>
+
+                        <button class="member-sidebar-link member-sidebar-cart-link"
+                                type="button"
+                                data-member-cart-open>
+                            <span class="member-sidebar-index">08</span>
+                            <span class="member-sidebar-label">Sepetim</span>
+                        </button>
+
+                        <a class="member-sidebar-link @ActiveClass("Orders")"
+                           asp-area="Member"
+                           asp-controller="Orders"
+                           asp-action="Index">
+                            <span class="member-sidebar-index">09</span>
+                            <span class="member-sidebar-label">Siparişlerim</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="member-sidebar-group">
+                    <button class="member-sidebar-group-toggle"
+                            type="button"
+                            aria-controls="memberAccountMenu"
+                            aria-expanded="false"
+                            data-member-group-toggle>
+                        <span class="member-sidebar-label">Hesap</span>
+                        <i aria-hidden="true"></i>
+                    </button>
+
+                    <div class="member-sidebar-submenu"
+                         id="memberAccountMenu">
+                        <span class="member-sidebar-link is-disabled"
+                              aria-disabled="true">
+                            <span class="member-sidebar-index">10</span>
+                            <span class="member-sidebar-label">Profil</span>
+                            <small class="member-sidebar-badge">Yakında</small>
+                        </span>
+
+                        <span class="member-sidebar-link is-disabled"
+                              aria-disabled="true">
+                            <span class="member-sidebar-index">11</span>
+                            <span class="member-sidebar-label">Hedefler</span>
+                            <small class="member-sidebar-badge">Yakında</small>
+                        </span>
+
+                        <a class="member-sidebar-link"
+                           asp-area="Identity"
+                           asp-page="/Account/Manage/Index">
+                            <span class="member-sidebar-index">12</span>
+                            <span class="member-sidebar-label">Hesap Ayarları</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="member-sidebar-group">
+                    <p class="member-sidebar-title">Yakında</p>
+
+                    <span class="member-sidebar-link is-disabled"
+                          aria-disabled="true">
+                        <span class="member-sidebar-index">13</span>
+                        <span class="member-sidebar-label">İlerleme &amp; Ölçümler</span>
+                        <small class="member-sidebar-badge">Yakında</small>
+                    </span>
+
+                    <span class="member-sidebar-link is-disabled"
+                          aria-disabled="true">
+                        <span class="member-sidebar-index">14</span>
+                        <span class="member-sidebar-label">Community Etkinlikleri</span>
+                        <small class="member-sidebar-badge">Yakında</small>
+                    </span>
+
+                    <span class="member-sidebar-link is-disabled"
+                          aria-disabled="true">
+                        <span class="member-sidebar-index">15</span>
+                        <span class="member-sidebar-label">Puanlarım</span>
+                        <small class="member-sidebar-badge">Yakında</small>
+                    </span>
+
+                    <span class="member-sidebar-link is-disabled"
+                          aria-disabled="true">
+                        <span class="member-sidebar-index">16</span>
+                        <span class="member-sidebar-label">Mesajlar</span>
+                        <small class="member-sidebar-badge">Yakında</small>
+                    </span>
+                </div>
+            </nav>
+
+            <div class="member-sidebar-foot">
+                <form asp-area="Identity"
+                      asp-page="/Account/Logout"
+                      asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })"
+                      method="post">
+                    <button class="member-sidebar-logout" type="submit">
+                        <span class="member-logout-icon" aria-hidden="true"></span>
+                        <span class="member-sidebar-label">Çıkış</span>
+                    </button>
+                </form>
+            </div>
+        </aside>
+
+        <div class="member-sidebar-overlay" data-member-sidebar-close></div>
+
+        <main class="member-main">
+            <header class="member-topbar">
+                <div class="member-topbar-start">
+                    <button class="member-menu-button"
+                            type="button"
+                            data-member-sidebar-toggle
+                            aria-controls="memberSidebar"
+                            aria-expanded="true"
+                            aria-label="Üye menüsünü aç veya kapat">
+                        <span></span>
+                        <span></span>
+                    </button>
+
+                    <div>
+                        <p class="member-topbar-kicker">NO23 / MEMBER</p>
+                        <strong class="member-topbar-title">@pageTitle</strong>
+                    </div>
+                </div>
+
+                <div class="member-topbar-end">
+                    <button class="member-topbar-cart"
+                            type="button"
+                            data-member-cart-open
+                            aria-controls="memberCartDrawer"
+                            aria-expanded="false"
+                            aria-label="Sepetimi aç">
+                        <span class="member-cart-icon" aria-hidden="true"></span>
+                        <span>Sepet</span>
+                        @await Component.InvokeAsync("MemberCartSummary")
+                    </button>
+
+                    <div class="dropdown">
+                        <button class="member-topbar-user"
+                                type="button"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
+                                aria-label="Kullanıcı menüsünü aç">
+                            <span class="member-topbar-avatar">@userInitial</span>
+                            <span class="member-topbar-user-copy">
+                                <strong>@userName</strong>
+                                <small>NO23 Üyesi</small>
+                            </span>
+                            <span class="member-user-chevron" aria-hidden="true"></span>
+                        </button>
+
+                        <div class="dropdown-menu dropdown-menu-end member-account-menu">
+                            <div class="member-account-menu-head">
+                                <span>NO23 / HESAP</span>
+                                <strong>@userName</strong>
+                            </div>
+
+                            <a class="dropdown-item"
+                               asp-area="Identity"
+                               asp-page="/Account/Manage/Index">
+                                Hesap Ayarları
+                            </a>
+
+                            <form asp-area="Identity"
+                                  asp-page="/Account/Logout"
+                                  asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })"
+                                  method="post">
+                                <button class="dropdown-item member-account-logout"
+                                        type="submit">
+                                    <span class="member-logout-icon" aria-hidden="true"></span>
+                                    Çıkış
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="member-main-content">
+                @RenderBody()
+            </div>
+        </main>
+    </div>
+
+    <div class="member-cart-overlay" data-member-cart-close></div>
+
+    <aside class="member-cart-drawer"
+           id="memberCartDrawer"
+           aria-label="Sepetim"
+           aria-hidden="true"
+           data-member-cart-drawer
+           data-panel-url="@Url.Action("Panel", "Cart", new { area = "Member" })">
+        <header class="member-cart-drawer-head">
+            <div>
+                <p>NO23 / SEPETİM</p>
+                <strong>Siparişini tamamla.</strong>
+            </div>
+            <button type="button"
+                    data-member-cart-close
+                    aria-label="Sepeti kapat">
+                ×
+            </button>
+        </header>
+
+        <div class="member-cart-drawer-content"
+             data-member-cart-content>
+            <div class="member-cart-loading">
+                <span></span>
+                Sepetin hazırlanıyor
+            </div>
+        </div>
+    </aside>
+
+    <div class="member-cart-toast"
+         role="status"
+         aria-live="polite"
+         data-member-cart-toast></div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        (() => {
+            const body = document.body;
+            const toggle = document.querySelector("[data-member-sidebar-toggle]");
+            const closeElements = document.querySelectorAll("[data-member-sidebar-close]");
+            const sidebarLinks = document.querySelectorAll(".member-sidebar a");
+            const groupToggles = document.querySelectorAll("[data-member-group-toggle]");
+            const desktopQuery = window.matchMedia("(min-width: 992px)");
+            const cartDrawer = document.querySelector("[data-member-cart-drawer]");
+            const cartContent = document.querySelector("[data-member-cart-content]");
+            const cartOpenButtons = document.querySelectorAll("[data-member-cart-open]");
+            const cartCloseElements = document.querySelectorAll("[data-member-cart-close]");
+            const cartToast = document.querySelector("[data-member-cart-toast]");
+            let cartPreviousFocus = null;
+            let toastTimer = null;
+
+            const updateExpandedState = () => {
+                const isExpanded = desktopQuery.matches
+                    ? !body.classList.contains("member-sidebar-collapsed")
+                    : body.classList.contains("member-menu-open");
+
+                toggle?.setAttribute("aria-expanded", isExpanded ? "true" : "false");
+            };
+
+            toggle?.addEventListener("click", () => {
+                if (desktopQuery.matches) {
+                    body.classList.toggle("member-sidebar-collapsed");
+                } else {
+                    body.classList.toggle("member-menu-open");
+                }
+
+                updateExpandedState();
+            });
+
+            closeElements.forEach((element) => {
+                element.addEventListener("click", () => {
+                    if (desktopQuery.matches) {
+                        body.classList.add("member-sidebar-collapsed");
+                    } else {
+                        body.classList.remove("member-menu-open");
+                    }
+
+                    updateExpandedState();
+                });
+            });
+
+            sidebarLinks.forEach((link) => {
+                link.addEventListener("click", () => {
+                    if (!desktopQuery.matches) {
+                        body.classList.remove("member-menu-open");
+                        updateExpandedState();
+                    }
+                });
+            });
+
+            groupToggles.forEach((groupToggle) => {
+                groupToggle.addEventListener("click", () => {
+                    const submenuId = groupToggle.getAttribute("aria-controls");
+                    const submenu = submenuId
+                        ? document.getElementById(submenuId)
+                        : null;
+
+                    if (!submenu) {
+                        return;
+                    }
+
+                    const shouldOpen =
+                        groupToggle.getAttribute("aria-expanded") !== "true";
+                    groupToggle.setAttribute(
+                        "aria-expanded",
+                        shouldOpen ? "true" : "false"
+                    );
+                    submenu.classList.toggle("is-open", shouldOpen);
+                });
+            });
+
+            const updateCartCount = (count) => {
+                document.querySelectorAll("[data-member-cart-count]")
+                    .forEach((badge) => {
+                        badge.textContent = String(count);
+                        badge.hidden = count <= 0;
+                    });
+
+                document.querySelector(".member-topbar-cart")
+                    ?.classList.add("has-update");
+                window.setTimeout(() => {
+                    document.querySelector(".member-topbar-cart")
+                        ?.classList.remove("has-update");
+                }, 650);
+            };
+
+            const showCartToast = (message, isError = false) => {
+                if (!cartToast || !message) {
+                    return;
+                }
+
+                window.clearTimeout(toastTimer);
+                cartToast.textContent = message;
+                cartToast.classList.toggle("is-error", isError);
+                cartToast.classList.add("is-visible");
+                toastTimer = window.setTimeout(
+                    () => cartToast.classList.remove("is-visible"),
+                    3200
+                );
+            };
+
+            const loadCartPanel = async () => {
+                if (!cartDrawer || !cartContent) {
+                    return;
+                }
+
+                const panelUrl = cartDrawer.dataset.panelUrl;
+
+                if (!panelUrl) {
+                    return;
+                }
+
+                cartContent.innerHTML =
+                    '<div class="member-cart-loading"><span></span>Sepetin hazırlanıyor</div>';
+
+                try {
+                    const response = await fetch(panelUrl, {
+                        headers: { "X-Requested-With": "XMLHttpRequest" }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error("Cart panel could not be loaded.");
+                    }
+
+                    cartContent.innerHTML = await response.text();
+                } catch {
+                    cartContent.innerHTML =
+                        '<div class="member-cart-load-error">Sepet yüklenemedi. Lütfen tekrar dene.</div>';
+                }
+            };
+
+            const openCart = async (trigger) => {
+                if (!cartDrawer) {
+                    return;
+                }
+
+                cartPreviousFocus = trigger ?? document.activeElement;
+                body.classList.add("member-cart-open");
+                cartDrawer.setAttribute("aria-hidden", "false");
+                cartOpenButtons.forEach((button) =>
+                    button.setAttribute("aria-expanded", "true")
+                );
+                await loadCartPanel();
+                cartDrawer.querySelector("[data-member-cart-close]")?.focus();
+            };
+
+            const closeCart = () => {
+                if (!cartDrawer) {
+                    return;
+                }
+
+                body.classList.remove("member-cart-open");
+                cartDrawer.setAttribute("aria-hidden", "true");
+                cartOpenButtons.forEach((button) =>
+                    button.setAttribute("aria-expanded", "false")
+                );
+                cartPreviousFocus?.focus?.();
+            };
+
+            cartOpenButtons.forEach((button) => {
+                button.addEventListener("click", () => openCart(button));
+            });
+
+            cartCloseElements.forEach((element) => {
+                element.addEventListener("click", closeCart);
+            });
+
+            const clearCartValidation = (form) => {
+                form.querySelectorAll("[data-valmsg-for]").forEach((element) => {
+                    element.textContent = "";
+                });
+
+                const summary = form.querySelector("[data-valmsg-summary]");
+                if (summary) {
+                    summary.innerHTML = "";
+                }
+            };
+
+            const showCartValidation = (form, payload) => {
+                clearCartValidation(form);
+                const errors = payload?.errors ?? {};
+
+                Object.entries(errors).forEach(([key, messages]) => {
+                    const target = Array.from(
+                        form.querySelectorAll("[data-valmsg-for]")
+                    ).find((element) =>
+                        element.getAttribute("data-valmsg-for") === key
+                    );
+
+                    if (target) {
+                        target.textContent = Array.isArray(messages)
+                            ? messages[0]
+                            : String(messages);
+                    }
+                });
+
+                showCartToast(
+                    payload?.message ?? "Form bilgilerini kontrol et.",
+                    true
+                );
+            };
+
+            document.addEventListener("submit", async (event) => {
+                const form = event.target.closest(
+                    ".shop-add-form, [data-member-cart-mutation], [data-member-cart-checkout]"
+                );
+
+                if (!form || !window.fetch) {
+                    return;
+                }
+
+                event.preventDefault();
+                const submitButton = form.querySelector('[type="submit"]');
+                submitButton?.setAttribute("disabled", "disabled");
+                clearCartValidation(form);
+
+                try {
+                    const response = await fetch(form.action, {
+                        method: form.method || "POST",
+                        body: new FormData(form),
+                        headers: { "X-Requested-With": "XMLHttpRequest" }
+                    });
+                    const payload = await response.json();
+
+                    if (!response.ok || !payload.succeeded) {
+                        if (payload.errors) {
+                            showCartValidation(form, payload);
+                        } else {
+                            showCartToast(
+                                payload.message ?? "İşlem gerçekleştirilemedi.",
+                                true
+                            );
+                        }
+                        return;
+                    }
+
+                    updateCartCount(payload.itemCount ?? 0);
+                    showCartToast(payload.message);
+
+                    if (
+                        form.matches("[data-member-cart-mutation]") ||
+                        form.matches("[data-member-cart-checkout]")
+                    ) {
+                        await loadCartPanel();
+                    }
+                } catch {
+                    HTMLFormElement.prototype.submit.call(form);
+                } finally {
+                    submitButton?.removeAttribute("disabled");
+                }
+            });
+
+            document.addEventListener("keydown", (event) => {
+                if (event.key !== "Escape") {
+                    return;
+                }
+
+                if (body.classList.contains("member-cart-open")) {
+                    closeCart();
+                    return;
+                }
+
+                if (body.classList.contains("member-menu-open")) {
+                    body.classList.remove("member-menu-open");
+                    updateExpandedState();
+                    toggle?.focus();
+                }
+            });
+
+            desktopQuery.addEventListener("change", () => {
+                body.classList.remove("member-menu-open");
+                updateExpandedState();
+            });
+
+            updateExpandedState();
+        })();
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

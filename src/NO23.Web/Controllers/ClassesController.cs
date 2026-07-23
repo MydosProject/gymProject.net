@@ -8,7 +8,7 @@ namespace NO23.Web.Controllers;
 
 public class ClassesController(ApplicationDbContext dbContext) : Controller
 {
-    private const string ReservationTargetUrl = "/Member/Home#available-classes";
+    private const string ReservationTargetUrl = "/Member/Reservations#group-classes";
 
     public async Task<IActionResult> Index()
     {

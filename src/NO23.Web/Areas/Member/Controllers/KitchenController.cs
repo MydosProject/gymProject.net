@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,18 +18,41 @@ public class KitchenController(
     ApplicationDbContext dbContext,
     CalorieCalculatorService calorieCalculator) : Controller
 {
+    private const string CalculatorInputSessionKey = "NO23.Kitchen.CalculatorInput";
+    private const string CalculatorResultSessionKey = "NO23.Kitchen.CalculatorResult";
+
     public async Task<IActionResult> Index()
     {
-        return View(await BuildDashboardAsync(new CalorieCalculatorInputViewModel(), null));
+        return View(await BuildDashboardAsync(
+            GetStoredCalculatorInput() ?? new CalorieCalculatorInputViewModel(),
+            GetStoredCalculatorResult()));
+    }
+
+    [HttpGet]
+    public IActionResult Calculator()
+    {
+        return LocalRedirect($"{Url.Action(nameof(Index))}#calculator");
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Menu()
+    {
+        return View(new KitchenDashboardViewModel
+        {
+            MenuItems = await BuildMenuItemsAsync()
+        });
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Calculate([Bind(Prefix = "CalculatorInput")] CalorieCalculatorInputViewModel input)
+    public async Task<IActionResult> Calculate(
+        [Bind(Prefix = "CalculatorInput")] CalorieCalculatorInputViewModel input)
     {
         if (!ModelState.IsValid)
         {
-            return View("Index", await BuildDashboardAsync(input, null));
+            return View(
+                "Index",
+                await BuildDashboardAsync(input, null));
         }
 
         var result = calorieCalculator.Calculate(new CalorieCalculationRequest
@@ -41,14 +65,23 @@ public class KitchenController(
             Goal = input.Goal
         });
 
-        return View("Index", await BuildDashboardAsync(input, new CalorieRecommendationViewModel
+        var recommendation = new CalorieRecommendationViewModel
         {
             Goal = input.Goal,
             DailyCalories = result.DailyCalories,
             ProteinGrams = result.ProteinGrams,
             CarbohydrateGrams = result.CarbohydrateGrams,
             FatGrams = result.FatGrams
-        }));
+        };
+
+        HttpContext.Session.SetString(
+            CalculatorInputSessionKey,
+            JsonSerializer.Serialize(input));
+        HttpContext.Session.SetString(
+            CalculatorResultSessionKey,
+            JsonSerializer.Serialize(recommendation));
+
+        return LocalRedirect($"{Url.Action(nameof(Index))}#calculator");
     }
 
     [HttpPost]
@@ -131,27 +164,6 @@ public class KitchenController(
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var today = DateOnly.FromDateTime(DateTime.Today);
 
-        var menuItems = await dbContext.KitchenMenuItems
-            .AsNoTracking()
-            .Where(item => item.IsActive)
-            .OrderBy(item => item.DisplayOrder)
-            .ThenBy(item => item.Name)
-            .Select(item => new KitchenMenuItemCardViewModel
-            {
-                Id = item.Id,
-                Name = item.Name,
-                Category = item.Category.ToString(),
-                Calories = item.Calories,
-                UnitPrice = item.UnitPrice,
-                ProteinGrams = item.ProteinGrams,
-                CarbohydrateGrams = item.CarbohydrateGrams,
-                FatGrams = item.FatGrams,
-                Ingredients = item.Ingredients,
-                Allergens = item.Allergens,
-                Tags = item.Tags
-            })
-            .ToListAsync();
-
         ActiveKitchenSubscriptionViewModel? activeSubscription = null;
 
         if (!string.IsNullOrWhiteSpace(userId))
@@ -203,7 +215,6 @@ public class KitchenController(
             CalculatorInput = input,
             Recommendation = recommendation,
             ActiveSubscription = activeSubscription,
-            MenuItems = menuItems,
             SubscriptionPlans =
             [
                 new() { Plan = KitchenSubscriptionPlan.FiveDays, Name = "5 Günlük", Days = 5 },
@@ -212,6 +223,30 @@ public class KitchenController(
                 new() { Plan = KitchenSubscriptionPlan.Monthly, Name = "Aylık", Days = 30 }
             ]
         };
+    }
+
+    private async Task<IReadOnlyList<KitchenMenuItemCardViewModel>> BuildMenuItemsAsync()
+    {
+        return await dbContext.KitchenMenuItems
+            .AsNoTracking()
+            .Where(item => item.IsActive)
+            .OrderBy(item => item.DisplayOrder)
+            .ThenBy(item => item.Name)
+            .Select(item => new KitchenMenuItemCardViewModel
+            {
+                Id = item.Id,
+                Name = item.Name,
+                Category = item.Category.ToString(),
+                Calories = item.Calories,
+                UnitPrice = item.UnitPrice,
+                ProteinGrams = item.ProteinGrams,
+                CarbohydrateGrams = item.CarbohydrateGrams,
+                FatGrams = item.FatGrams,
+                Ingredients = item.Ingredients,
+                Allergens = item.Allergens,
+                Tags = item.Tags
+            })
+            .ToListAsync();
     }
 
     private static int GetPlanDays(KitchenSubscriptionPlan plan)
@@ -224,5 +259,37 @@ public class KitchenController(
             KitchenSubscriptionPlan.Monthly => 30,
             _ => throw new ArgumentOutOfRangeException(nameof(plan), plan, null)
         };
+    }
+
+    private CalorieCalculatorInputViewModel? GetStoredCalculatorInput()
+    {
+        return GetSessionValue<CalorieCalculatorInputViewModel>(
+            CalculatorInputSessionKey);
+    }
+
+    private CalorieRecommendationViewModel? GetStoredCalculatorResult()
+    {
+        return GetSessionValue<CalorieRecommendationViewModel>(
+            CalculatorResultSessionKey);
+    }
+
+    private T? GetSessionValue<T>(string key)
+    {
+        var value = HttpContext.Session.GetString(key);
+
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return default;
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize<T>(value);
+        }
+        catch (JsonException)
+        {
+            HttpContext.Session.Remove(key);
+            return default;
+        }
     }
 }

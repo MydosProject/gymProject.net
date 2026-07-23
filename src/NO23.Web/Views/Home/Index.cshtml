@@ -6,8 +6,22 @@
 }
 
 <section class="no23-hero">
+    <div class="hero-video-shell" aria-hidden="true">
+        @* Video source: https://www.pexels.com/video/silhouette-of-man-strength-training-in-dark-gym-31445380/ *@
+        <video class="hero-background-video"
+               data-hero-video
+               src="@Url.Content("~/videos/no23-hero.mp4")?v=20260723-1"
+               autoplay
+               muted
+               loop
+               playsinline
+               preload="auto"
+               poster="~/images/no23-home-hero.webp">
+        </video>
+    </div>
+
+    <div class="hero-video-overlay" aria-hidden="true"></div>
     <div class="hero-grid" aria-hidden="true"></div>
-    <div class="hero-glow" aria-hidden="true"></div>
 
     <div class="container position-relative">
         <div class="hero-layout">
@@ -47,46 +61,22 @@
                 </div>
             </div>
 
-            <figure class="hero-media">
-                <img src="~/images/no23-home-hero.webp"
-                     alt="Karanlık bir performans stüdyosunda battle rope ile çalışan sporcu"
-                     width="1983"
-                     height="793"
-                     fetchpriority="high" />
-
-                <div class="hero-media-status" aria-hidden="true">
-                    <span>NO23 / PERFORMANCE</span>
-                    <strong>01</strong>
-                </div>
-
-                <figcaption class="hero-experience-card">
-                    <span class="experience-number">23</span>
-                    <p class="experience-label">NO23 Ecosystem</p>
-
-                    <h2>
-                        Yaşam tarzının tamamı tek üyelikte.
-                    </h2>
-
-                    <ul class="experience-list">
-                        <li>
-                            <span>01</span>
-                            Sports Club
-                        </li>
-
-                        <li>
-                            <span>02</span>
-                            NO23 Kitchen
-                        </li>
-
-                        <li>
-                            <span>03</span>
-                            NO23 Community
-                        </li>
-                    </ul>
-                </figcaption>
-            </figure>
+            <div class="hero-video-meta" aria-hidden="true">
+                <span>NO23 / PERFORMANCE</span>
+                <strong>01</strong>
+                <small>Güç · Tempo · Disiplin</small>
+            </div>
         </div>
     </div>
+
+    <button class="hero-video-toggle"
+            type="button"
+            data-hero-video-toggle
+            aria-label="Arka plan videosunu durdur"
+            aria-pressed="false">
+        <span class="hero-video-toggle-icon" aria-hidden="true">Ⅱ</span>
+        <span data-hero-video-label>Durdur</span>
+    </button>
 </section>
 
 <section class="quick-access"
@@ -232,99 +222,349 @@
         </div>
 
         <div class="services-grid">
-            <article class="service-card service-card-accent">
-                <div class="service-card-top">
-                    <span class="service-number">01</span>
-                    <span class="service-category">Birebir</span>
-                </div>
+            <details class="service-card service-card-accent">
+                <summary class="service-card-summary">
+                    <span class="service-card-top">
+                        <span class="service-number">01</span>
+                        <span class="service-category">Birebir</span>
+                    </span>
 
-                <div class="service-card-content">
-                    <h3>Personal Training</h3>
+                    <span class="service-card-content">
+                        <strong class="service-card-title">Personal Training</strong>
 
-                    <p>
-                        Hedeflerine özel hazırlanan program ve profesyonel
-                        eğitmen takibiyle maksimum verim elde et.
-                    </p>
+                        <span class="service-card-description">
+                            Hedeflerine özel hazırlanan program ve profesyonel
+                            eğitmen takibiyle maksimum verim elde et.
+                        </span>
 
-                    <ul class="service-features">
-                        <li>Birebir antrenman</li>
-                        <li>Hedef analizi</li>
-                        <li>Ölçüm ve takip</li>
-                        <li>Program güncelleme</li>
-                    </ul>
-                </div>
-            </article>
+                        <span class="service-features">
+                            <span>Birebir antrenman</span>
+                            <span>Hedef analizi</span>
+                            <span>Ölçüm ve takip</span>
+                            <span>Program güncelleme</span>
+                        </span>
+                    </span>
 
-            <article class="service-card"
+                    <span class="service-card-toggle">
+                        <span class="service-card-toggle-label">Detayları Gör</span>
+                        <span class="service-card-toggle-icon" aria-hidden="true">+</span>
+                    </span>
+                </summary>
+
+                <dl class="service-detail-grid">
+                    <div>
+                        <dt>Süre</dt>
+                        <dd>60 dk</dd>
+                    </div>
+                    <div>
+                        <dt>Zorluk seviyesi</dt>
+                        <dd>Her seviye</dd>
+                    </div>
+                    <div>
+                        <dt>Ortalama kalori</dt>
+                        <dd>450–700 kcal</dd>
+                    </div>
+                    <div>
+                        <dt>Kimler için</dt>
+                        <dd>Kişisel hedefi olanlar</dd>
+                    </div>
+                </dl>
+            </details>
+
+            <details class="service-card"
                      id="schedule">
+                <summary class="service-card-summary">
+                    <span class="service-card-top">
+                        <span class="service-number">02</span>
+                        <span class="service-category">Birlikte</span>
+                    </span>
 
-                <div class="service-card-top">
-                    <span class="service-number">02</span>
-                    <span class="service-category">Birlikte</span>
-                </div>
+                    <span class="service-card-content">
+                        <strong class="service-card-title">Grup Dersleri</strong>
 
-                <div class="service-card-content">
-                    <h3>Grup Dersleri</h3>
+                        <span class="service-card-description">
+                            Yüksek enerji, güçlü motivasyon ve farklı seviyelere
+                            uygun grup antrenmanları.
+                        </span>
 
-                    <p>
-                        Yüksek enerji, güçlü motivasyon ve farklı seviyelere
-                        uygun grup antrenmanları.
-                    </p>
+                        <span class="service-features">
+                            <span>Bootcamp</span>
+                            <span>Metcon</span>
+                            <span>Mat &amp; Reformer Pilates</span>
+                            <span>Fonksiyonel antrenman</span>
+                        </span>
+                    </span>
 
-                    <ul class="service-features">
-                        <li>Bootcamp</li>
-                        <li>Metcon</li>
-                        <li>Mat &amp; Reformer Pilates</li>
-                        <li>Fonksiyonel antrenman</li>
-                    </ul>
-                </div>
-            </article>
+                    <span class="service-card-toggle">
+                        <span class="service-card-toggle-label">Detayları Gör</span>
+                        <span class="service-card-toggle-icon" aria-hidden="true">+</span>
+                    </span>
+                </summary>
 
-            <article class="service-card">
-                <div class="service-card-top">
-                    <span class="service-number">03</span>
-                    <span class="service-category">Performans</span>
-                </div>
+                <dl class="service-detail-grid">
+                    <div>
+                        <dt>Süre</dt>
+                        <dd>45–60 dk</dd>
+                    </div>
+                    <div>
+                        <dt>Zorluk seviyesi</dt>
+                        <dd>Her seviye</dd>
+                    </div>
+                    <div>
+                        <dt>Ortalama kalori</dt>
+                        <dd>350–650 kcal</dd>
+                    </div>
+                    <div>
+                        <dt>Kimler için</dt>
+                        <dd>Takımla motive olanlar</dd>
+                    </div>
+                </dl>
+            </details>
 
-                <div class="service-card-content">
-                    <h3>Atletik Performans</h3>
+            <details class="service-card">
+                <summary class="service-card-summary">
+                    <span class="service-card-top">
+                        <span class="service-number">03</span>
+                        <span class="service-category">Performans</span>
+                    </span>
 
-                    <p>
-                        Sporcular için ölçülebilir, branşa özel ve bilimsel
-                        performans gelişimi.
-                    </p>
+                    <span class="service-card-content">
+                        <strong class="service-card-title">Atletik Performans</strong>
 
-                    <ul class="service-features">
-                        <li>Kuvvet</li>
-                        <li>Hız ve çeviklik</li>
-                        <li>Patlayıcı güç</li>
-                        <li>Test ve ölçümler</li>
-                    </ul>
-                </div>
-            </article>
+                        <span class="service-card-description">
+                            Sporcular için ölçülebilir, branşa özel ve bilimsel
+                            performans gelişimi.
+                        </span>
 
-            <article class="service-card service-card-light">
-                <div class="service-card-top">
-                    <span class="service-number">04</span>
-                    <span class="service-category">Gelişim</span>
-                </div>
+                        <span class="service-features">
+                            <span>Kuvvet</span>
+                            <span>Hız ve çeviklik</span>
+                            <span>Patlayıcı güç</span>
+                            <span>Test ve ölçümler</span>
+                        </span>
+                    </span>
 
-                <div class="service-card-content">
-                    <h3>Kids Club</h3>
+                    <span class="service-card-toggle">
+                        <span class="service-card-toggle-label">Detayları Gör</span>
+                        <span class="service-card-toggle-icon" aria-hidden="true">+</span>
+                    </span>
+                </summary>
 
-                    <p>
-                        Çocuklar için güvenli, eğlenceli ve gelişim odaklı
-                        hareket eğitimi.
-                    </p>
+                <dl class="service-detail-grid">
+                    <div>
+                        <dt>Süre</dt>
+                        <dd>60–75 dk</dd>
+                    </div>
+                    <div>
+                        <dt>Zorluk seviyesi</dt>
+                        <dd>Orta–ileri</dd>
+                    </div>
+                    <div>
+                        <dt>Ortalama kalori</dt>
+                        <dd>550–800 kcal</dd>
+                    </div>
+                    <div>
+                        <dt>Kimler için</dt>
+                        <dd>Sporcular ve performans odaklı üyeler</dd>
+                    </div>
+                </dl>
+            </details>
 
-                    <ul class="service-features">
-                        <li>Motor beceri gelişimi</li>
-                        <li>Denge ve koordinasyon</li>
-                        <li>Kuvvet gelişimi</li>
-                        <li>Eğlenceli eğitim modeli</li>
-                    </ul>
-                </div>
-            </article>
+            <details class="service-card service-card-light">
+                <summary class="service-card-summary">
+                    <span class="service-card-top">
+                        <span class="service-number">04</span>
+                        <span class="service-category">Gelişim</span>
+                    </span>
+
+                    <span class="service-card-content">
+                        <strong class="service-card-title">Kids Club</strong>
+
+                        <span class="service-card-description">
+                            Çocuklar için güvenli, eğlenceli ve gelişim odaklı
+                            hareket eğitimi.
+                        </span>
+
+                        <span class="service-features">
+                            <span>Motor beceri gelişimi</span>
+                            <span>Denge ve koordinasyon</span>
+                            <span>Kuvvet gelişimi</span>
+                            <span>Eğlenceli eğitim modeli</span>
+                        </span>
+                    </span>
+
+                    <span class="service-card-toggle">
+                        <span class="service-card-toggle-label">Detayları Gör</span>
+                        <span class="service-card-toggle-icon" aria-hidden="true">+</span>
+                    </span>
+                </summary>
+
+                <dl class="service-detail-grid">
+                    <div>
+                        <dt>Süre</dt>
+                        <dd>45 dk</dd>
+                    </div>
+                    <div>
+                        <dt>Zorluk seviyesi</dt>
+                        <dd>Başlangıç</dd>
+                    </div>
+                    <div>
+                        <dt>Ortalama kalori</dt>
+                        <dd>200–350 kcal</dd>
+                    </div>
+                    <div>
+                        <dt>Kimler için</dt>
+                        <dd>7–14 yaş grubu</dd>
+                    </div>
+                </dl>
+            </details>
+
+            <details class="service-card service-card-kitchen">
+                <summary class="service-card-summary">
+                    <span class="service-card-top">
+                        <span class="service-number">05</span>
+                        <span class="service-category">Beslenme</span>
+                    </span>
+
+                    <span class="service-card-content">
+                        <strong class="service-card-title">NO23 Kitchen</strong>
+
+                        <span class="service-card-description">
+                            Hedeflerine ve günlük makrolarına uygun, dengeli
+                            öğünlerle antrenmanını destekle.
+                        </span>
+
+                        <span class="service-features">
+                            <span>Protein odaklı menüler</span>
+                            <span>Makro takibi</span>
+                            <span>Günlük planlama</span>
+                            <span>Teslimat seçeneği</span>
+                        </span>
+                    </span>
+
+                    <span class="service-card-toggle">
+                        <span class="service-card-toggle-label">Detayları Gör</span>
+                        <span class="service-card-toggle-icon" aria-hidden="true">+</span>
+                    </span>
+                </summary>
+
+                <dl class="service-detail-grid">
+                    <div>
+                        <dt>Süre</dt>
+                        <dd>Günlük plan</dd>
+                    </div>
+                    <div>
+                        <dt>Zorluk seviyesi</dt>
+                        <dd>Kişiye özel</dd>
+                    </div>
+                    <div>
+                        <dt>Ortalama kalori</dt>
+                        <dd>400–650 kcal / öğün</dd>
+                    </div>
+                    <div>
+                        <dt>Kimler için</dt>
+                        <dd>Beslenmesini hedefiyle eşleştirenler</dd>
+                    </div>
+                </dl>
+            </details>
+
+            <details class="service-card service-card-light">
+                <summary class="service-card-summary">
+                    <span class="service-card-top">
+                        <span class="service-number">06</span>
+                        <span class="service-category">Sosyal</span>
+                    </span>
+
+                    <span class="service-card-content">
+                        <strong class="service-card-title">Kahve Alanı</strong>
+
+                        <span class="service-card-description">
+                            Antrenman öncesi enerjini toplamak veya sonrasında
+                            nefes almak için kulübün sosyal buluşma noktası.
+                        </span>
+
+                        <span class="service-features">
+                            <span>Nitelikli kahve</span>
+                            <span>Fonksiyonel içecekler</span>
+                            <span>Rahat çalışma alanı</span>
+                            <span>Sosyal buluşmalar</span>
+                        </span>
+                    </span>
+
+                    <span class="service-card-toggle">
+                        <span class="service-card-toggle-label">Detayları Gör</span>
+                        <span class="service-card-toggle-icon" aria-hidden="true">+</span>
+                    </span>
+                </summary>
+
+                <dl class="service-detail-grid">
+                    <div>
+                        <dt>Süre</dt>
+                        <dd>Gün boyu</dd>
+                    </div>
+                    <div>
+                        <dt>Zorluk seviyesi</dt>
+                        <dd>Herkese uygun</dd>
+                    </div>
+                    <div>
+                        <dt>Ortalama kalori</dt>
+                        <dd>Seçime göre 0–300 kcal</dd>
+                    </div>
+                    <div>
+                        <dt>Kimler için</dt>
+                        <dd>Üyeler ve misafirler</dd>
+                    </div>
+                </dl>
+            </details>
+
+            <details class="service-card service-card-community">
+                <summary class="service-card-summary">
+                    <span class="service-card-top">
+                        <span class="service-number">07</span>
+                        <span class="service-category">Topluluk</span>
+                    </span>
+
+                    <span class="service-card-content">
+                        <strong class="service-card-title">Topluluk Etkinlikleri</strong>
+
+                        <span class="service-card-description">
+                            Birlikte hareket etmek, yeni insanlarla tanışmak ve
+                            kulüp ritmini paylaşmak için düzenlenen etkinlikler.
+                        </span>
+
+                        <span class="service-features">
+                            <span>Açık hava antrenmanları</span>
+                            <span>Workshop&apos;lar</span>
+                            <span>Challenge buluşmaları</span>
+                            <span>Sosyal etkinlikler</span>
+                        </span>
+                    </span>
+
+                    <span class="service-card-toggle">
+                        <span class="service-card-toggle-label">Detayları Gör</span>
+                        <span class="service-card-toggle-icon" aria-hidden="true">+</span>
+                    </span>
+                </summary>
+
+                <dl class="service-detail-grid">
+                    <div>
+                        <dt>Süre</dt>
+                        <dd>60–120 dk</dd>
+                    </div>
+                    <div>
+                        <dt>Zorluk seviyesi</dt>
+                        <dd>Her seviye</dd>
+                    </div>
+                    <div>
+                        <dt>Ortalama kalori</dt>
+                        <dd>Etkinliğe göre değişir</dd>
+                    </div>
+                    <div>
+                        <dt>Kimler için</dt>
+                        <dd>NO23 topluluğuna katılmak isteyenler</dd>
+                    </div>
+                </dl>
+            </details>
         </div>
     </div>
 </section>
@@ -626,3 +866,68 @@
         </div>
     </div>
 </section>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const video = document.querySelector("[data-hero-video]");
+            const toggle = document.querySelector("[data-hero-video-toggle]");
+
+            if (!video || !toggle) {
+                return;
+            }
+
+            const icon = toggle.querySelector(".hero-video-toggle-icon");
+            const label = toggle.querySelector("[data-hero-video-label]");
+
+            const playVideo = () => {
+                video.defaultMuted = true;
+                video.muted = true;
+                video.playsInline = true;
+
+                video.play().catch(updateToggle);
+            };
+
+            const updateToggle = () => {
+                const isPaused = video.paused;
+
+                toggle.setAttribute("aria-pressed", isPaused ? "true" : "false");
+                toggle.setAttribute(
+                    "aria-label",
+                    isPaused
+                        ? "Arka plan videosunu oynat"
+                        : "Arka plan videosunu durdur"
+                );
+
+                icon.textContent = isPaused ? "▶" : "Ⅱ";
+                label.textContent = isPaused ? "Oynat" : "Durdur";
+            };
+
+            toggle.addEventListener("click", () => {
+                if (video.paused) {
+                    playVideo();
+                    return;
+                }
+
+                video.pause();
+            });
+
+            video.addEventListener("play", updateToggle);
+            video.addEventListener("pause", updateToggle);
+            video.addEventListener(
+                "canplay",
+                () => {
+                    if (video.paused) {
+                        playVideo();
+                    }
+                },
+                { once: true }
+            );
+
+            video.load();
+            playVideo();
+
+            updateToggle();
+        });
+    </script>
+}

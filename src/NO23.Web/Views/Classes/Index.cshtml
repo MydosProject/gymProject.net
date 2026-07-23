@@ -1,7 +1,13 @@
+@using NO23.Web.Data.Seed
 @model NO23.Web.ViewModels.Classes.ClassesIndexViewModel
 @{
     ViewData["Title"] = "Ders Programı";
     var nextSession = Model.UpcomingSessions.FirstOrDefault();
+
+    if (User.IsInRole(ApplicationRoles.Member))
+    {
+        Layout = "/Areas/Member/Views/Shared/_MemberLayout.cshtml";
+    }
 }
 
 <div class="classes-page">
@@ -17,7 +23,6 @@
 
                 <div class="classes-hero-actions">
                     <a class="no23-primary-button" href="@Model.ReservationTargetUrl">Rezervasyon Yap</a>
-                    <a class="classes-text-link" href="#class-schedule">Programı incele <span>↓</span></a>
                 </div>
             </div>
 

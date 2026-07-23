@@ -17,32 +17,6 @@
         };
     }
 
-    string GetCategoryName(string category)
-    {
-        return category switch
-        {
-            nameof(MenuItemCategory.Breakfast) => "Kahvaltı",
-            nameof(MenuItemCategory.MainMeal) => "Ana Öğün",
-            nameof(MenuItemCategory.Snack) => "Ara Öğün",
-            nameof(MenuItemCategory.Dessert) => "Tatlı",
-            nameof(MenuItemCategory.Beverage) => "İçecek",
-            _ => category
-        };
-    }
-
-    string GetCategoryNumber(string category)
-    {
-        return category switch
-        {
-            nameof(MenuItemCategory.Breakfast) => "01",
-            nameof(MenuItemCategory.MainMeal) => "02",
-            nameof(MenuItemCategory.Snack) => "03",
-            nameof(MenuItemCategory.Dessert) => "04",
-            nameof(MenuItemCategory.Beverage) => "05",
-            _ => "23"
-        };
-    }
-
     string GetSubscriptionPlanName(string plan)
     {
         return plan switch
@@ -95,7 +69,9 @@
                         <span aria-hidden="true">↓</span>
                     </a>
 
-                    <a href="#menu"
+                    <a asp-area="Member"
+                       asp-controller="Kitchen"
+                       asp-action="Menu"
                        class="kitchen-secondary-link">
                         Menüyü Keşfet
                     </a>
@@ -256,327 +232,97 @@
             </section>
         }
 
-        <section class="kitchen-calculator-section"
-                 id="calculator">
+        <partial name="_KitchenCalculator" model="Model" />
 
-            <div class="kitchen-section-heading">
-                <div>
-                    <p class="kitchen-section-kicker">Kişisel hesaplama</p>
-                    <h2>Vücudunun ihtiyacını öğren.</h2>
+        @if (Model.ActiveSubscription is null)
+        {
+            <section class="kitchen-plan-selection" id="plans">
+                <div class="kitchen-section-heading">
+                    <div>
+                        <p class="kitchen-section-kicker">Kitchen planı</p>
+                        <h2>Abonelik süreni seç.</h2>
+                    </div>
+                    <p>
+                        Kalori ve makro hesabındaki son kişisel sonucunu
+                        kullanarak Kitchen planını başlat.
+                    </p>
                 </div>
 
-                <p>
-                    Bilgilerini gir; günlük kalori, protein, karbonhidrat
-                    ve yağ hedefini birlikte oluşturalım.
-                </p>
-            </div>
-
-            <div class="kitchen-calculator-layout">
-                <div class="kitchen-calculator-panel">
-                    <div class="kitchen-panel-heading">
+                @if (Model.Recommendation is null)
+                {
+                    <div class="kitchen-plan-required">
                         <span>01</span>
-
                         <div>
-                            <p>Kalori hesaplama</p>
-                            <h3>Bilgilerini tamamla.</h3>
-                        </div>
-                    </div>
-
-                    <form asp-area="Member"
-                          asp-controller="Kitchen"
-                          asp-action="Calculate"
-                          asp-fragment="calculator"
-                          asp-antiforgery="true"
-                          method="post"
-                          class="kitchen-calculator-form">
-
-                        <div asp-validation-summary="ModelOnly"
-                             class="kitchen-validation-summary"
-                             role="alert"></div>
-
-                        <div class="kitchen-form-grid">
-                            <div class="kitchen-form-field">
-                                <label asp-for="CalculatorInput.HeightCm">
-                                    Boy
-                                    <small>cm</small>
-                                </label>
-
-                                <input asp-for="CalculatorInput.HeightCm"
-                                       type="number"
-                                       min="120"
-                                       max="230"
-                                       inputmode="numeric"
-                                       placeholder="170" />
-
-                                <span asp-validation-for="CalculatorInput.HeightCm"></span>
-                            </div>
-
-                            <div class="kitchen-form-field">
-                                <label asp-for="CalculatorInput.WeightKg">
-                                    Kilo
-                                    <small>kg</small>
-                                </label>
-
-                                <input asp-for="CalculatorInput.WeightKg"
-                                       type="number"
-                                       min="35"
-                                       max="250"
-                                       step="0.1"
-                                       inputmode="decimal"
-                                       placeholder="70" />
-
-                                <span asp-validation-for="CalculatorInput.WeightKg"></span>
-                            </div>
-
-                            <div class="kitchen-form-field">
-                                <label asp-for="CalculatorInput.Age">
-                                    Yaş
-                                </label>
-
-                                <input asp-for="CalculatorInput.Age"
-                                       type="number"
-                                       min="13"
-                                       max="90"
-                                       inputmode="numeric"
-                                       placeholder="28" />
-
-                                <span asp-validation-for="CalculatorInput.Age"></span>
-                            </div>
-
-                            <div class="kitchen-form-field">
-                                <label asp-for="CalculatorInput.Gender">
-                                    Cinsiyet
-                                </label>
-
-                                <select asp-for="CalculatorInput.Gender">
-                                    <option value="@Gender.Female">Kadın</option>
-                                    <option value="@Gender.Male">Erkek</option>
-                                </select>
-
-                                <span asp-validation-for="CalculatorInput.Gender"></span>
-                            </div>
-
-                            <div class="kitchen-form-field kitchen-form-field-wide">
-                                <label asp-for="CalculatorInput.ActivityLevel">
-                                    Günlük aktivite
-                                </label>
-
-                                <select asp-for="CalculatorInput.ActivityLevel">
-                                    <option value="@ActivityLevel.Sedentary">
-                                        Hareketsiz
-                                    </option>
-
-                                    <option value="@ActivityLevel.LightlyActive">
-                                        Hafif aktif
-                                    </option>
-
-                                    <option value="@ActivityLevel.ModeratelyActive">
-                                        Orta düzey aktif
-                                    </option>
-
-                                    <option value="@ActivityLevel.VeryActive">
-                                        Çok aktif
-                                    </option>
-
-                                    <option value="@ActivityLevel.Athlete">
-                                        Sporcu
-                                    </option>
-                                </select>
-
-                                <span asp-validation-for="CalculatorInput.ActivityLevel"></span>
-                            </div>
-
-                            <div class="kitchen-form-field kitchen-form-field-wide">
-                                <label asp-for="CalculatorInput.Goal">
-                                    Hedefin
-                                </label>
-
-                                <select asp-for="CalculatorInput.Goal">
-                                    <option value="@NutritionGoal.FatLoss">
-                                        Yağ Yakımı
-                                    </option>
-
-                                    <option value="@NutritionGoal.MuscleGain">
-                                        Kas Kazanımı
-                                    </option>
-
-                                    <option value="@NutritionGoal.WeightMaintenance">
-                                        Kilo Koruma
-                                    </option>
-
-                                    <option value="@NutritionGoal.PerformanceNutrition">
-                                        Performans Beslenmesi
-                                    </option>
-
-                                    <option value="@NutritionGoal.HealthyLifestyle">
-                                        Sağlıklı Yaşam
-                                    </option>
-                                </select>
-
-                                <span asp-validation-for="CalculatorInput.Goal"></span>
-                            </div>
-                        </div>
-
-                        <button type="submit"
-                                class="kitchen-calculate-button">
-                            <span>Hedefimi Hesapla</span>
-                            <span aria-hidden="true">→</span>
-                        </button>
-                    </form>
-                </div>
-
-                <div class="kitchen-result-panel">
-                    <div class="kitchen-panel-heading">
-                        <span>02</span>
-
-                        <div>
-                            <p>Kişisel sonuç</p>
-                            <h3>Günlük beslenme planın.</h3>
-                        </div>
-                    </div>
-
-                    @if (Model.Recommendation is null)
-                    {
-                        <div class="kitchen-result-placeholder">
-                            <div class="kitchen-result-rings"
-                                 aria-hidden="true">
-                                <span>23</span>
-                            </div>
-
-                            <h4>Sonuçların burada görünecek.</h4>
-
+                            <h3>Önce kalori ve makro hedefini hesapla.</h3>
                             <p>
-                                Kalori formunu doldurduğunda günlük enerji
-                                ihtiyacını ve makro dağılımını göstereceğiz.
+                                Plan seçeneklerini açmak için kişisel
+                                hesaplamanı tamamlamalısın.
                             </p>
                         </div>
-                    }
-                    else
-                    {
-                        <div class="kitchen-result-content">
-                            <div class="kitchen-result-goal">
-                                <span>Seçilen hedef</span>
-
-                                <strong>
-                                    @GetGoalName(Model.Recommendation.Goal)
-                                </strong>
-                            </div>
-
-                            <div class="kitchen-calorie-result">
-                                <div>
-                                    <span>Günlük hedef</span>
-
-                                    <strong>
-                                        @Model.Recommendation.DailyCalories
-                                    </strong>
-
-                                    <small>kcal</small>
-                                </div>
-
-                                <span class="kitchen-result-mark">
-                                    NO23
-                                </span>
-                            </div>
-
-                            <div class="kitchen-macro-grid">
-                                <article>
-                                    <span>Protein</span>
-
-                                    <strong>
-                                        @Model.Recommendation.ProteinGrams
-                                        <small>g</small>
-                                    </strong>
-                                </article>
-
-                                <article>
-                                    <span>Karbonhidrat</span>
-
-                                    <strong>
-                                        @Model.Recommendation.CarbohydrateGrams
-                                        <small>g</small>
-                                    </strong>
-                                </article>
-
-                                <article>
-                                    <span>Yağ</span>
-
-                                    <strong>
-                                        @Model.Recommendation.FatGrams
-                                        <small>g</small>
-                                    </strong>
-                                </article>
-                            </div>
-
-                            <div class="kitchen-plan-heading">
-                                <p>Abonelik süreni seç</p>
-
-                                <span>
-                                    Planın yarın başlar
-                                </span>
-                            </div>
-
-                            <div class="kitchen-plan-grid">
-                                @foreach (var plan in Model.SubscriptionPlans)
-                                {
-                                    <form asp-area="Member"
-                                          asp-controller="Kitchen"
-                                          asp-action="Subscribe"
-                                          asp-antiforgery="true"
-                                          method="post"
-                                          class="kitchen-plan-card">
-
-                                        <input type="hidden"
-                                               name="plan"
-                                               value="@plan.Plan" />
-
-                                        <input type="hidden"
-                                               name="input.HeightCm"
-                                               value="@Model.CalculatorInput.HeightCm" />
-
-                                        <input type="hidden"
-                                               name="input.WeightKg"
-                                               value="@Model.CalculatorInput.WeightKg" />
-
-                                        <input type="hidden"
-                                               name="input.Age"
-                                               value="@Model.CalculatorInput.Age" />
-
-                                        <input type="hidden"
-                                               name="input.Gender"
-                                               value="@Model.CalculatorInput.Gender" />
-
-                                        <input type="hidden"
-                                               name="input.ActivityLevel"
-                                               value="@Model.CalculatorInput.ActivityLevel" />
-
-                                        <input type="hidden"
-                                               name="input.Goal"
-                                               value="@Model.CalculatorInput.Goal" />
-
-                                        <span class="kitchen-plan-days">
-                                            @plan.Days gün
-                                        </span>
-
-                                        <h4>@plan.Name</h4>
-
-                                        <p>
-                                            Hedefine göre hazırlanan günlük
-                                            beslenme planı.
-                                        </p>
-
-                                        <button type="submit">
-                                            Aboneliği Başlat
-                                            <span aria-hidden="true">→</span>
-                                        </button>
-                                    </form>
-                                }
-                            </div>
+                        <a href="#calculator">
+                            Hesaplamaya Dön <span aria-hidden="true">↑</span>
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <div class="kitchen-plan-target">
+                        <div>
+                            <span>Son kişisel hedef</span>
+                            <strong>@GetGoalName(Model.Recommendation.Goal)</strong>
                         </div>
-                    }
-                </div>
-            </div>
-        </section>
+                        <dl>
+                            <div>
+                                <dt>Kalori</dt>
+                                <dd>@Model.Recommendation.DailyCalories kcal</dd>
+                            </div>
+                            <div>
+                                <dt>Protein</dt>
+                                <dd>@Model.Recommendation.ProteinGrams g</dd>
+                            </div>
+                            <div>
+                                <dt>Karbonhidrat</dt>
+                                <dd>@Model.Recommendation.CarbohydrateGrams g</dd>
+                            </div>
+                            <div>
+                                <dt>Yağ</dt>
+                                <dd>@Model.Recommendation.FatGrams g</dd>
+                            </div>
+                        </dl>
+                    </div>
 
+                    <div class="kitchen-plan-grid">
+                        @foreach (var plan in Model.SubscriptionPlans)
+                        {
+                            <form asp-area="Member"
+                                  asp-controller="Kitchen"
+                                  asp-action="Subscribe"
+                                  asp-antiforgery="true"
+                                  method="post"
+                                  class="kitchen-plan-card">
+                                <input type="hidden" name="plan" value="@plan.Plan" />
+                                <input type="hidden" name="input.HeightCm" value="@Model.CalculatorInput.HeightCm" />
+                                <input type="hidden" name="input.WeightKg" value="@Model.CalculatorInput.WeightKg" />
+                                <input type="hidden" name="input.Age" value="@Model.CalculatorInput.Age" />
+                                <input type="hidden" name="input.Gender" value="@Model.CalculatorInput.Gender" />
+                                <input type="hidden" name="input.ActivityLevel" value="@Model.CalculatorInput.ActivityLevel" />
+                                <input type="hidden" name="input.Goal" value="@Model.CalculatorInput.Goal" />
+
+                                <span class="kitchen-plan-days">@plan.Days gün</span>
+                                <h4>@plan.Name</h4>
+                                <p>Hedefine göre hazırlanan günlük beslenme planı.</p>
+                                <button type="submit">
+                                    Aboneliği Başlat
+                                    <span aria-hidden="true">→</span>
+                                </button>
+                            </form>
+                        }
+                    </div>
+                }
+            </section>
+        }
+
+        @*
         <section class="kitchen-menu-section"
                  id="menu">
 
@@ -592,50 +338,131 @@
                 </p>
             </div>
 
-            <div class="kitchen-menu-filters"
-                 aria-label="Menü kategorileri">
+            <div class="kitchen-filter-panel"
+                 data-kitchen-filter-panel>
+                <div class="kitchen-filter-panel-heading">
+                    <div>
+                        <span>Menü Sistemi / Filtreleme</span>
+                        <p>Öğün tipini seç, beslenme tercihlerini ekle.</p>
+                    </div>
 
-                <button type="button"
-                        class="kitchen-filter-button active"
-                        data-kitchen-filter="all"
-                        aria-pressed="true">
-                    Tümü
-                </button>
+                    <strong aria-hidden="true">23</strong>
+                </div>
 
-                <button type="button"
-                        class="kitchen-filter-button"
-                        data-kitchen-filter="@nameof(MenuItemCategory.Breakfast)"
-                        aria-pressed="false">
-                    Kahvaltılar
-                </button>
+                <div class="kitchen-filter-toolbar">
+                    <label class="kitchen-filter-search">
+                        <span>Menüde ara</span>
 
-                <button type="button"
-                        class="kitchen-filter-button"
-                        data-kitchen-filter="@nameof(MenuItemCategory.MainMeal)"
-                        aria-pressed="false">
-                    Ana Öğünler
-                </button>
+                        <input type="search"
+                               data-kitchen-search
+                               placeholder="Ürün, içerik veya etiket ara"
+                               autocomplete="off" />
 
-                <button type="button"
-                        class="kitchen-filter-button"
-                        data-kitchen-filter="@nameof(MenuItemCategory.Snack)"
-                        aria-pressed="false">
-                    Ara Öğünler
-                </button>
+                        <i aria-hidden="true">⌕</i>
+                    </label>
 
-                <button type="button"
-                        class="kitchen-filter-button"
-                        data-kitchen-filter="@nameof(MenuItemCategory.Dessert)"
-                        aria-pressed="false">
-                    Tatlılar
-                </button>
+                    <div class="kitchen-filter-summary"
+                         aria-live="polite">
+                        <span>
+                            <strong data-kitchen-result-count>
+                                @Model.MenuItems.Count
+                            </strong>
+                            ürün gösteriliyor
+                        </span>
 
-                <button type="button"
-                        class="kitchen-filter-button"
-                        data-kitchen-filter="@nameof(MenuItemCategory.Beverage)"
-                        aria-pressed="false">
-                    İçecekler
-                </button>
+                        <button type="button"
+                                data-kitchen-clear
+                                hidden>
+                            Filtreleri Temizle
+                        </button>
+                    </div>
+                </div>
+
+                <div class="kitchen-filter-groups">
+                    <fieldset class="kitchen-filter-group">
+                        <legend>Öğün Türü</legend>
+
+                        <div class="kitchen-menu-filters"
+                             aria-label="Menü kategorileri">
+                            <button type="button"
+                                    class="kitchen-filter-button active"
+                                    data-kitchen-category-filter="all"
+                                    aria-pressed="true">
+                                Tümü
+                            </button>
+
+                            <button type="button"
+                                    class="kitchen-filter-button"
+                                    data-kitchen-category-filter="@nameof(MenuItemCategory.Breakfast)"
+                                    aria-pressed="false">
+                                Kahvaltılar
+                            </button>
+
+                            <button type="button"
+                                    class="kitchen-filter-button"
+                                    data-kitchen-category-filter="@nameof(MenuItemCategory.MainMeal)"
+                                    aria-pressed="false">
+                                Ana Öğünler
+                            </button>
+
+                            <button type="button"
+                                    class="kitchen-filter-button"
+                                    data-kitchen-category-filter="@nameof(MenuItemCategory.Snack)"
+                                    aria-pressed="false">
+                                Ara Öğünler
+                            </button>
+
+                            <button type="button"
+                                    class="kitchen-filter-button"
+                                    data-kitchen-category-filter="@nameof(MenuItemCategory.Dessert)"
+                                    aria-pressed="false">
+                                Tatlılar
+                            </button>
+
+                            <button type="button"
+                                    class="kitchen-filter-button"
+                                    data-kitchen-category-filter="@nameof(MenuItemCategory.Beverage)"
+                                    aria-pressed="false">
+                                İçecekler
+                            </button>
+                        </div>
+                    </fieldset>
+
+                    <fieldset class="kitchen-filter-group">
+                        <legend>Beslenme Tercihi</legend>
+
+                        <div class="kitchen-menu-filters"
+                             aria-label="Beslenme tercihleri">
+                            <button type="button"
+                                    class="kitchen-filter-button kitchen-tag-filter-button"
+                                    data-kitchen-tag-filter="yüksek protein"
+                                    aria-pressed="false">
+                                Yüksek Protein
+                            </button>
+
+                            <button type="button"
+                                    class="kitchen-filter-button kitchen-tag-filter-button"
+                                    data-kitchen-tag-filter="düşük kalori"
+                                    aria-pressed="false">
+                                Düşük Kalori
+                            </button>
+
+                            <button type="button"
+                                    class="kitchen-filter-button kitchen-tag-filter-button"
+                                    data-kitchen-tag-filter="glutensiz"
+                                    aria-pressed="false">
+                                Glutensiz
+                            </button>
+
+                            <button type="button"
+                                    class="kitchen-filter-button kitchen-tag-filter-button"
+                                    data-kitchen-tag-filter="vejetaryen"
+                                    aria-pressed="false">
+                                Vejetaryen
+                            </button>
+                        </div>
+                    </fieldset>
+                </div>
             </div>
 
             @if (Model.MenuItems.Count == 0)
@@ -666,7 +493,9 @@
                                 StringSplitOptions.TrimEntries);
 
                         <div class="kitchen-menu-card-wrapper"
-                             data-kitchen-category="@item.Category">
+                             data-kitchen-category="@item.Category"
+                             data-kitchen-tags="@item.Tags"
+                             data-kitchen-search="@($"{item.Name} {item.Ingredients} {item.Tags}")">
 
                             <article class="kitchen-menu-card">
                                 <div class="kitchen-menu-visual">
@@ -752,15 +581,19 @@
                     <span>00</span>
 
                     <div>
-                        <h3>Bu kategoride ürün bulunamadı.</h3>
+                        <h3 data-kitchen-empty-title>
+                            Bu filtrelere uygun ürün bulunamadı.
+                        </h3>
 
-                        <p>
-                            Diğer menü kategorilerini inceleyebilirsin.
+                        <p data-kitchen-empty-description>
+                            Filtrelerden birini kaldırarak diğer menü
+                            seçeneklerini inceleyebilirsin.
                         </p>
                     </div>
                 </div>
             }
         </section>
+        *@
     </div>
 </section>
 
@@ -769,8 +602,12 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            const filterButtons = document.querySelectorAll(
-                "[data-kitchen-filter]"
+            const categoryButtons = document.querySelectorAll(
+                "[data-kitchen-category-filter]"
+            );
+
+            const tagButtons = document.querySelectorAll(
+                "[data-kitchen-tag-filter]"
             );
 
             const menuCards = document.querySelectorAll(
@@ -781,18 +618,124 @@
                 ".kitchen-filter-empty"
             );
 
-            if (!filterButtons.length || !menuCards.length) {
+            const searchInput = document.querySelector(
+                "[data-kitchen-search]"
+            );
+
+            const clearButton = document.querySelector(
+                "[data-kitchen-clear]"
+            );
+
+            const resultCount = document.querySelector(
+                "[data-kitchen-result-count]"
+            );
+
+            const emptyTitle = document.querySelector(
+                "[data-kitchen-empty-title]"
+            );
+
+            const emptyDescription = document.querySelector(
+                "[data-kitchen-empty-description]"
+            );
+
+            if (!categoryButtons.length || !menuCards.length) {
                 return;
             }
 
-            filterButtons.forEach(function (button) {
+            let selectedCategory = "all";
+            const selectedTags = new Set();
+
+            const normalizeText = function (value) {
+                return (value || "")
+                    .toLocaleLowerCase("tr-TR")
+                    .trim();
+            };
+
+            const applyFilters = function () {
+                const query = normalizeText(searchInput?.value);
+                let visibleCardCount = 0;
+
+                menuCards.forEach(function (card) {
+                    const cardCategory =
+                        card.dataset.kitchenCategory;
+
+                    const cardTags = normalizeText(
+                        card.dataset.kitchenTags
+                    )
+                        .split(/[,;|]/)
+                        .map(function (tag) {
+                            return tag.trim();
+                        })
+                        .filter(Boolean);
+
+                    const searchableText = normalizeText(
+                        card.dataset.kitchenSearch
+                    );
+
+                    const matchesCategory =
+                        selectedCategory === "all" ||
+                        cardCategory === selectedCategory;
+
+                    const matchesTags = Array.from(
+                        selectedTags
+                    ).every(function (tag) {
+                        return cardTags.includes(tag);
+                    });
+
+                    const matchesSearch =
+                        !query || searchableText.includes(query);
+
+                    const shouldShow =
+                        matchesCategory &&
+                        matchesTags &&
+                        matchesSearch;
+
+                    card.hidden = !shouldShow;
+
+                    if (shouldShow) {
+                        visibleCardCount += 1;
+                    }
+                });
+
+                if (resultCount) {
+                    resultCount.textContent =
+                        visibleCardCount.toString();
+                }
+
+                const hasActiveFilters =
+                    selectedCategory !== "all" ||
+                    selectedTags.size > 0 ||
+                    Boolean(query);
+
+                if (clearButton) {
+                    clearButton.hidden = !hasActiveFilters;
+                }
+
+                if (emptyState) {
+                    emptyState.hidden = visibleCardCount !== 0;
+                }
+
+                if (visibleCardCount === 0 && emptyTitle) {
+                    emptyTitle.textContent = query
+                        ? "Aramana uygun ürün bulunamadı."
+                        : "Bu filtrelere uygun ürün bulunamadı.";
+                }
+
+                if (visibleCardCount === 0 && emptyDescription) {
+                    emptyDescription.textContent = query
+                        ? "Farklı bir ürün veya içerik adıyla tekrar arayabilirsin."
+                        : "Filtrelerden birini kaldırarak diğer menü seçeneklerini inceleyebilirsin.";
+                }
+            };
+
+            categoryButtons.forEach(function (button) {
                 button.addEventListener("click", function () {
-                    const selectedCategory =
-                        button.dataset.kitchenFilter;
+                    selectedCategory =
+                        button.dataset.kitchenCategoryFilter;
 
-                    let visibleCardCount = 0;
-
-                    filterButtons.forEach(function (filterButton) {
+                    categoryButtons.forEach(function (
+                        filterButton
+                    ) {
                         const isActive = filterButton === button;
 
                         filterButton.classList.toggle(
@@ -806,24 +749,65 @@
                         );
                     });
 
-                    menuCards.forEach(function (card) {
-                        const shouldShow =
-                            selectedCategory === "all" ||
-                            card.dataset.kitchenCategory ===
-                                selectedCategory;
-
-                        card.hidden = !shouldShow;
-
-                        if (shouldShow) {
-                            visibleCardCount += 1;
-                        }
-                    });
-
-                    if (emptyState) {
-                        emptyState.hidden = visibleCardCount !== 0;
-                    }
+                    applyFilters();
                 });
             });
+
+            tagButtons.forEach(function (button) {
+                button.addEventListener("click", function () {
+                    const tag = normalizeText(
+                        button.dataset.kitchenTagFilter
+                    );
+
+                    if (selectedTags.has(tag)) {
+                        selectedTags.delete(tag);
+                    } else {
+                        selectedTags.add(tag);
+                    }
+
+                    const isActive = selectedTags.has(tag);
+
+                    button.classList.toggle("active", isActive);
+                    button.setAttribute(
+                        "aria-pressed",
+                        isActive ? "true" : "false"
+                    );
+
+                    applyFilters();
+                });
+            });
+
+            searchInput?.addEventListener("input", applyFilters);
+
+            clearButton?.addEventListener("click", function () {
+                selectedCategory = "all";
+                selectedTags.clear();
+
+                if (searchInput) {
+                    searchInput.value = "";
+                }
+
+                categoryButtons.forEach(function (button) {
+                    const isAll =
+                        button.dataset.kitchenCategoryFilter ===
+                        "all";
+
+                    button.classList.toggle("active", isAll);
+                    button.setAttribute(
+                        "aria-pressed",
+                        isAll ? "true" : "false"
+                    );
+                });
+
+                tagButtons.forEach(function (button) {
+                    button.classList.remove("active");
+                    button.setAttribute("aria-pressed", "false");
+                });
+
+                applyFilters();
+            });
+
+            applyFilters();
         });
     </script>
 }

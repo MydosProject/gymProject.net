@@ -1,0 +1,413 @@
+@using NO23.Web.Domain.Enums
+@model KitchenDashboardViewModel
+
+@{
+    ViewData["Title"] = "Kitchen Menü";
+
+    string GetCategoryName(string category)
+    {
+        return category switch
+        {
+            nameof(MenuItemCategory.Breakfast) => "Kahvaltı",
+            nameof(MenuItemCategory.MainMeal) => "Ana Öğün",
+            nameof(MenuItemCategory.Snack) => "Ara Öğün",
+            nameof(MenuItemCategory.Dessert) => "Tatlı",
+            nameof(MenuItemCategory.Beverage) => "İçecek",
+            _ => category
+        };
+    }
+
+    string GetCategoryNumber(string category)
+    {
+        return category switch
+        {
+            nameof(MenuItemCategory.Breakfast) => "01",
+            nameof(MenuItemCategory.MainMeal) => "02",
+            nameof(MenuItemCategory.Snack) => "03",
+            nameof(MenuItemCategory.Dessert) => "04",
+            nameof(MenuItemCategory.Beverage) => "05",
+            _ => "23"
+        };
+    }
+}
+
+<section class="kitchen-page kitchen-menu-page">
+    <div class="kitchen-page-grid" aria-hidden="true"></div>
+    <div class="kitchen-page-glow" aria-hidden="true"></div>
+
+    <div class="container position-relative">
+        <header class="kitchen-calculator-page-hero">
+            <div>
+                <p class="kitchen-kicker">NO23 / KITCHEN MENÜ</p>
+                <h1>Öğününü seç.<br /><span>Hedefini destekle.</span></h1>
+            </div>
+            <p>
+                Kalori ve makroları şeffaf biçimde gösterilen dengeli,
+                performans odaklı NO23 Kitchen öğünlerini filtreleyerek keşfet.
+            </p>
+        </header>
+
+        <section class="kitchen-menu-section">
+            <div class="kitchen-section-heading">
+                <div>
+                    <p class="kitchen-section-kicker">NO23 menü</p>
+                    <h2>Hedefine uygun öğünü bul.</h2>
+                </div>
+                <p>
+                    Öğün türünü ve beslenme tercihlerini seçerek sana uygun
+                    seçeneklere hızlıca ulaş.
+                </p>
+            </div>
+
+            <div class="kitchen-filter-panel" data-kitchen-filter-panel>
+                <div class="kitchen-filter-panel-heading">
+                    <div>
+                        <span>Menü Sistemi / Filtreleme</span>
+                        <p>Öğün tipini seç, beslenme tercihlerini ekle.</p>
+                    </div>
+                    <strong aria-hidden="true">23</strong>
+                </div>
+
+                <div class="kitchen-filter-toolbar">
+                    <label class="kitchen-filter-search">
+                        <span>Menüde ara</span>
+                        <input type="search"
+                               data-kitchen-search
+                               placeholder="Ürün, içerik veya etiket ara"
+                               autocomplete="off" />
+                        <i aria-hidden="true">⌕</i>
+                    </label>
+
+                    <div class="kitchen-filter-summary" aria-live="polite">
+                        <span>
+                            <strong data-kitchen-result-count>@Model.MenuItems.Count</strong>
+                            ürün gösteriliyor
+                        </span>
+                        <button type="button" data-kitchen-clear hidden>
+                            Filtreleri Temizle
+                        </button>
+                    </div>
+                </div>
+
+                <div class="kitchen-filter-groups">
+                    <fieldset class="kitchen-filter-group">
+                        <legend>Öğün Türü</legend>
+                        <div class="kitchen-menu-filters" aria-label="Menü kategorileri">
+                            <button type="button"
+                                    class="kitchen-filter-button active"
+                                    data-kitchen-category-filter="all"
+                                    aria-pressed="true">
+                                Tümü
+                            </button>
+                            <button type="button"
+                                    class="kitchen-filter-button"
+                                    data-kitchen-category-filter="@nameof(MenuItemCategory.Breakfast)"
+                                    aria-pressed="false">
+                                Kahvaltılar
+                            </button>
+                            <button type="button"
+                                    class="kitchen-filter-button"
+                                    data-kitchen-category-filter="@nameof(MenuItemCategory.MainMeal)"
+                                    aria-pressed="false">
+                                Ana Öğünler
+                            </button>
+                            <button type="button"
+                                    class="kitchen-filter-button"
+                                    data-kitchen-category-filter="@nameof(MenuItemCategory.Snack)"
+                                    aria-pressed="false">
+                                Ara Öğünler
+                            </button>
+                            <button type="button"
+                                    class="kitchen-filter-button"
+                                    data-kitchen-category-filter="@nameof(MenuItemCategory.Dessert)"
+                                    aria-pressed="false">
+                                Tatlılar
+                            </button>
+                            <button type="button"
+                                    class="kitchen-filter-button"
+                                    data-kitchen-category-filter="@nameof(MenuItemCategory.Beverage)"
+                                    aria-pressed="false">
+                                İçecekler
+                            </button>
+                        </div>
+                    </fieldset>
+
+                    <fieldset class="kitchen-filter-group">
+                        <legend>Beslenme Tercihi</legend>
+                        <div class="kitchen-menu-filters" aria-label="Beslenme tercihleri">
+                            <button type="button"
+                                    class="kitchen-filter-button kitchen-tag-filter-button"
+                                    data-kitchen-tag-filter="yüksek protein"
+                                    aria-pressed="false">
+                                Yüksek Protein
+                            </button>
+                            <button type="button"
+                                    class="kitchen-filter-button kitchen-tag-filter-button"
+                                    data-kitchen-tag-filter="düşük kalori"
+                                    aria-pressed="false">
+                                Düşük Kalori
+                            </button>
+                            <button type="button"
+                                    class="kitchen-filter-button kitchen-tag-filter-button"
+                                    data-kitchen-tag-filter="glutensiz"
+                                    aria-pressed="false">
+                                Glutensiz
+                            </button>
+                            <button type="button"
+                                    class="kitchen-filter-button kitchen-tag-filter-button"
+                                    data-kitchen-tag-filter="vejetaryen"
+                                    aria-pressed="false">
+                                Vejetaryen
+                            </button>
+                        </div>
+                    </fieldset>
+                </div>
+            </div>
+
+            @if (Model.MenuItems.Count == 0)
+            {
+                <div class="kitchen-menu-empty">
+                    <span>00</span>
+                    <div>
+                        <h3>Menü hazırlanıyor.</h3>
+                        <p>Yeni NO23 Kitchen ürünleri yakında burada yayınlanacak.</p>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="kitchen-menu-grid">
+                    @foreach (var item in Model.MenuItems)
+                    {
+                        var tags = string.IsNullOrWhiteSpace(item.Tags)
+                            ? Array.Empty<string>()
+                            : item.Tags.Split(
+                                new[] { ',', ';' },
+                                StringSplitOptions.RemoveEmptyEntries |
+                                StringSplitOptions.TrimEntries);
+
+                        <div class="kitchen-menu-card-wrapper"
+                             data-kitchen-category="@item.Category"
+                             data-kitchen-tags="@item.Tags"
+                             data-kitchen-search="@($"{item.Name} {item.Ingredients} {item.Tags}")">
+                            <article class="kitchen-menu-card">
+                                <div class="kitchen-menu-visual">
+                                    <span class="kitchen-menu-category">
+                                        @GetCategoryName(item.Category)
+                                    </span>
+                                    <strong aria-hidden="true">
+                                        @GetCategoryNumber(item.Category)
+                                    </strong>
+                                    <div>
+                                        <span>@item.Calories</span>
+                                        <small>kcal</small>
+                                    </div>
+                                </div>
+
+                                <div class="kitchen-menu-card-content">
+                                    <div class="kitchen-menu-card-heading">
+                                        <div>
+                                            <p>@GetCategoryName(item.Category)</p>
+                                            <h3>@item.Name</h3>
+                                        </div>
+                                        <span class="kitchen-menu-id">
+                                            @item.UnitPrice.ToString("N0") ₺ · #@item.Id.ToString("00")
+                                        </span>
+                                    </div>
+
+                                    <p class="kitchen-menu-ingredients">@item.Ingredients</p>
+
+                                    <div class="kitchen-menu-macros">
+                                        <span>
+                                            <small>Protein</small>
+                                            @item.ProteinGrams.ToString("0.#") g
+                                        </span>
+                                        <span>
+                                            <small>Karbonhidrat</small>
+                                            @item.CarbohydrateGrams.ToString("0.#") g
+                                        </span>
+                                        <span>
+                                            <small>Yağ</small>
+                                            @item.FatGrams.ToString("0.#") g
+                                        </span>
+                                    </div>
+
+                                    <div class="kitchen-menu-meta">
+                                        <div class="kitchen-menu-tags">
+                                            @foreach (var tag in tags)
+                                            {
+                                                <span>@tag</span>
+                                            }
+                                        </div>
+
+                                        @if (!string.IsNullOrWhiteSpace(item.Allergens))
+                                        {
+                                            <p class="kitchen-allergen">
+                                                <strong>Alerjen:</strong> @item.Allergens
+                                            </p>
+                                        }
+                                        else
+                                        {
+                                            <p class="kitchen-allergen">
+                                                Alerjen bilgisi bulunmuyor
+                                            </p>
+                                        }
+                                    </div>
+                                </div>
+                            </article>
+                        </div>
+                    }
+                </div>
+
+                <div class="kitchen-menu-empty kitchen-filter-empty" hidden>
+                    <span>00</span>
+                    <div>
+                        <h3 data-kitchen-empty-title>
+                            Bu filtrelere uygun ürün bulunamadı.
+                        </h3>
+                        <p data-kitchen-empty-description>
+                            Filtrelerden birini kaldırarak diğer menü
+                            seçeneklerini inceleyebilirsin.
+                        </p>
+                    </div>
+                </div>
+            }
+        </section>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const categoryButtons = [...document.querySelectorAll(
+                "[data-kitchen-category-filter]"
+            )];
+            const tagButtons = [...document.querySelectorAll(
+                "[data-kitchen-tag-filter]"
+            )];
+            const menuCards = [...document.querySelectorAll(
+                "[data-kitchen-category]"
+            )];
+            const searchInput = document.querySelector("[data-kitchen-search]");
+            const clearButton = document.querySelector("[data-kitchen-clear]");
+            const resultCount = document.querySelector("[data-kitchen-result-count]");
+            const emptyState = document.querySelector(".kitchen-filter-empty");
+            const emptyTitle = document.querySelector("[data-kitchen-empty-title]");
+            const emptyDescription = document.querySelector(
+                "[data-kitchen-empty-description]"
+            );
+
+            if (!categoryButtons.length || !menuCards.length) {
+                return;
+            }
+
+            let selectedCategory = "all";
+            const selectedTags = new Set();
+            const normalize = (value) =>
+                (value || "").toLocaleLowerCase("tr-TR").trim();
+
+            const applyFilters = () => {
+                const query = normalize(searchInput?.value);
+                let visibleCount = 0;
+
+                menuCards.forEach((card) => {
+                    const tags = normalize(card.dataset.kitchenTags)
+                        .split(/[,;|]/)
+                        .map((tag) => tag.trim())
+                        .filter(Boolean);
+                    const matchesCategory =
+                        selectedCategory === "all" ||
+                        card.dataset.kitchenCategory === selectedCategory;
+                    const matchesTags = [...selectedTags]
+                        .every((tag) => tags.includes(tag));
+                    const matchesSearch =
+                        !query ||
+                        normalize(card.dataset.kitchenSearch).includes(query);
+                    const shouldShow =
+                        matchesCategory && matchesTags && matchesSearch;
+
+                    card.hidden = !shouldShow;
+                    visibleCount += shouldShow ? 1 : 0;
+                });
+
+                if (resultCount) {
+                    resultCount.textContent = String(visibleCount);
+                }
+
+                const hasFilters =
+                    selectedCategory !== "all" ||
+                    selectedTags.size > 0 ||
+                    Boolean(query);
+
+                if (clearButton) {
+                    clearButton.hidden = !hasFilters;
+                }
+
+                if (emptyState) {
+                    emptyState.hidden = visibleCount !== 0;
+                }
+
+                if (visibleCount === 0 && emptyTitle) {
+                    emptyTitle.textContent = query
+                        ? "Aramana uygun ürün bulunamadı."
+                        : "Bu filtrelere uygun ürün bulunamadı.";
+                }
+
+                if (visibleCount === 0 && emptyDescription) {
+                    emptyDescription.textContent = query
+                        ? "Farklı bir ürün veya içerik adıyla tekrar arayabilirsin."
+                        : "Filtrelerden birini kaldırarak diğer menü seçeneklerini inceleyebilirsin.";
+                }
+            };
+
+            categoryButtons.forEach((button) => {
+                button.addEventListener("click", () => {
+                    selectedCategory = button.dataset.kitchenCategoryFilter;
+                    categoryButtons.forEach((item) => {
+                        const active = item === button;
+                        item.classList.toggle("active", active);
+                        item.setAttribute("aria-pressed", String(active));
+                    });
+                    applyFilters();
+                });
+            });
+
+            tagButtons.forEach((button) => {
+                button.addEventListener("click", () => {
+                    const tag = normalize(button.dataset.kitchenTagFilter);
+                    selectedTags.has(tag)
+                        ? selectedTags.delete(tag)
+                        : selectedTags.add(tag);
+                    const active = selectedTags.has(tag);
+                    button.classList.toggle("active", active);
+                    button.setAttribute("aria-pressed", String(active));
+                    applyFilters();
+                });
+            });
+
+            searchInput?.addEventListener("input", applyFilters);
+            clearButton?.addEventListener("click", () => {
+                selectedCategory = "all";
+                selectedTags.clear();
+
+                if (searchInput) {
+                    searchInput.value = "";
+                }
+
+                categoryButtons.forEach((button) => {
+                    const active =
+                        button.dataset.kitchenCategoryFilter === "all";
+                    button.classList.toggle("active", active);
+                    button.setAttribute("aria-pressed", String(active));
+                });
+                tagButtons.forEach((button) => {
+                    button.classList.remove("active");
+                    button.setAttribute("aria-pressed", "false");
+                });
+                applyFilters();
+            });
+
+            applyFilters();
+        });
+    </script>
+}
