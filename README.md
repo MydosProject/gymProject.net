@@ -1,37 +1,124 @@
 # NO23 Sports Club
 
-NO23 Sports Club is an ASP.NET Core MVC application backed by PostgreSQL.
+## Proje Tanıtımı
 
-## Local Setup
+NO23 Sports Club; spor kulübü deneyimini üyelik, antrenman, beslenme,
+alışveriş ve topluluk özellikleriyle tek bir platformda birleştiren
+ASP.NET Core MVC tabanlı bir web uygulamasıdır.
 
-1. Install .NET 10 SDK and Docker Desktop.
-2. Restore local .NET tools:
+Proje üç temel kullanıcı deneyiminden oluşur:
+
+- Ziyaretçilerin kulübü ve hizmetleri inceleyebildiği public site
+- Üyelerin kendilerine özel işlemleri gerçekleştirebildiği üye paneli
+- Kulüp operasyonlarının yönetildiği admin paneli
+
+## Kullanılan Teknolojiler
+
+- .NET 10
+- ASP.NET Core MVC
+- Razor Views ve Razor Pages
+- Entity Framework Core
+- PostgreSQL
+- Npgsql Entity Framework Core Provider
+- ASP.NET Core Identity
+- Bootstrap
+- HTML, CSS ve JavaScript
+- xUnit
+- Swagger
+- Docker Compose
+
+## Proje Klasör Yapısı
+
+```text
+NO23SportsClub/
+├── src/
+│   └── NO23.Web/
+│       ├── Areas/
+│       │   ├── Admin/          # Admin controller ve view dosyaları
+│       │   ├── Identity/       # Giriş ve kayıt sayfaları
+│       │   └── Member/         # Üye paneli controller ve view dosyaları
+│       ├── Controllers/        # Public site controller'ları
+│       ├── Data/
+│       │   ├── Configurations/ # Entity Framework yapılandırmaları
+│       │   ├── Migrations/     # Veritabanı migration dosyaları
+│       │   └── Seed/           # Başlangıç verileri
+│       ├── Domain/
+│       │   ├── Entities/       # Veritabanı entity'leri
+│       │   └── Enums/          # Durum ve tür tanımları
+│       ├── Services/           # Rezervasyon, kalori, sepet ve sipariş işlemleri
+│       ├── ViewComponents/     # Tekrar kullanılabilen dinamik arayüz parçaları
+│       ├── ViewModels/         # Sayfalara özel veri modelleri
+│       ├── Views/              # Public Razor View dosyaları
+│       ├── wwwroot/
+│       │   ├── css/            # Stil dosyaları
+│       │   ├── images/         # Görseller
+│       │   ├── js/             # JavaScript dosyaları
+│       │   └── videos/         # Video dosyaları
+│       └── Program.cs          # Uygulama ve route yapılandırması
+├── tests/
+│   └── NO23.Tests/             # xUnit test projesi
+├── docker-compose.yml          # Yerel PostgreSQL servisi
+└── NO23SportsClub.sln          # Solution dosyası
+```
+
+## Projeyi Çalıştırma
+
+Projeyi çalıştırabilmek için bilgisayarda .NET 10 SDK, Docker Desktop ve
+Git kurulu olmalıdır.
+
+1. Repoyu klonlayın ve proje klasörüne geçin:
+
+   ```bash
+   git clone <REPOSITORY_URL>
+   cd NO23SportsClub
+   ```
+
+2. Yerel .NET araçlarını yükleyin:
+
    ```bash
    dotnet tool restore
    ```
-3. Start PostgreSQL:
+
+3. Ortam değişkenleri dosyasını oluşturun:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   `.env` dosyasındaki PostgreSQL bilgilerini kendi yerel geliştirme
+   ortamınıza göre düzenleyin.
+
+4. PostgreSQL servisini başlatın:
+
    ```bash
    docker compose up -d
    ```
-4. Configure the local application connection string with user-secrets:
+
+5. `.env` dosyasında belirlediğiniz veritabanı bilgileriyle uygulamanın
+   bağlantı metnini user-secrets üzerinden tanımlayın:
+
    ```bash
-   dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5433;Database=no23db;Username=no23;Password=change_me" --project src/NO23.Web/NO23.Web.csproj
+   dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5433;Database=no23db;Username=no23;Password=<YEREL_VERITABANI_SIFRENIZ>" --project src/NO23.Web/NO23.Web.csproj
    ```
-5. Optional default admin seed:
+
+6. Admin panelini kullanmak için yerel admin hesabını tanımlayın:
+
    ```bash
-   dotnet user-secrets set "SeedAdmin:Email" "admin@no23.local" --project src/NO23.Web/NO23.Web.csproj
-   dotnet user-secrets set "SeedAdmin:Password" "Change_me_123!" --project src/NO23.Web/NO23.Web.csproj
+   dotnet user-secrets set "SeedAdmin:Email" "<ADMIN_EPOSTA>" --project src/NO23.Web/NO23.Web.csproj
+   dotnet user-secrets set "SeedAdmin:Password" "<GUCLU_ADMIN_SIFRESI>" --project src/NO23.Web/NO23.Web.csproj
    ```
-6. Apply migrations and run the app:
+
+7. Veritabanı migration'larını uygulayın:
+
    ```bash
    dotnet ef database update --project src/NO23.Web/NO23.Web.csproj
+   ```
+
+8. Uygulamayı çalıştırın:
+
+   ```bash
    dotnet run --project src/NO23.Web/NO23.Web.csproj
    ```
 
-PostgreSQL local connection values:
-
-- Host: `localhost`
-- Port: `5433`
-- Database: `no23db`
-- Username: `no23`
-- Password: `change_me`
+Uygulama varsayılan geliştirme ayarlarıyla
+`https://localhost:7032` adresinden açılabilir.
