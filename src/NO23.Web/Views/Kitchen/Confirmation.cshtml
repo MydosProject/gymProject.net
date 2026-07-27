@@ -3,37 +3,40 @@
     ViewData["Title"] = "Sipariş Alındı";
 }
 
-<section class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-7">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body p-4 p-lg-5">
-                    <span class="badge text-bg-success mb-3">Siparişiniz alındı</span>
-                    <h1 class="h2 mb-3">NO23 Kitchen siparişin oluşturuldu.</h1>
-                    <p class="text-muted mb-4">
-                        Sipariş numaranı teslimat takibi için saklayabilirsin.
-                    </p>
-
-                    <dl class="row g-3">
-                        <dt class="col-sm-5">Sipariş Numarası</dt>
-                        <dd class="col-sm-7"><strong>@Model.OrderNumber</strong></dd>
-                        <dt class="col-sm-5">Ürün</dt>
-                        <dd class="col-sm-7">@Model.ProductName</dd>
-                        <dt class="col-sm-5">Adet</dt>
-                        <dd class="col-sm-7">@Model.Quantity</dd>
-                        <dt class="col-sm-5">Toplam</dt>
-                        <dd class="col-sm-7">@Model.Total.ToString("C0")</dd>
-                        <dt class="col-sm-5">Teslimat</dt>
-                        <dd class="col-sm-7">@Model.DeliveryDate.ToString("dd.MM.yyyy") / @Model.DeliveryTimeSlot</dd>
-                        <dt class="col-sm-5">Ödeme</dt>
-                        <dd class="col-sm-7">@Model.PaymentStatusText</dd>
-                    </dl>
-
-                    <a class="btn btn-dark mt-4" asp-controller="Kitchen" asp-action="Index">
-                        Kitchen'a Dön
-                    </a>
-                </div>
+<div class="public-confirmation-page public-confirmation-kitchen">
+    <div class="public-order-grid-bg" aria-hidden="true"></div>
+    <div class="container position-relative">
+        <section class="public-confirmation-layout">
+            <div class="public-confirmation-copy">
+                <p class="public-order-kicker">NO23 / Order Confirmed</p>
+                <span class="public-confirmation-status">Sipariş Alındı</span>
+                <h1>Öğünün<br /><em>hazırlanıyor.</em></h1>
+                <p>
+                    NO23 Kitchen siparişin sisteme kaydedildi.
+                    Teslimat takibi için sipariş numaranı saklayabilirsin.
+                </p>
+                <a class="public-order-back"
+                   asp-area=""
+                   asp-controller="Kitchen"
+                   asp-action="Index">
+                    Kitchen'a Dön <span aria-hidden="true">↗</span>
+                </a>
             </div>
-        </div>
+
+            <article class="public-confirmation-receipt">
+                <div class="public-confirmation-number">
+                    <span>Sipariş Numarası</span>
+                    <strong>@Model.OrderNumber</strong>
+                </div>
+                <dl>
+                    <div><dt>Ürün</dt><dd>@Model.ProductName</dd></div>
+                    <div><dt>Adet</dt><dd>@Model.Quantity</dd></div>
+                    <div><dt>Toplam</dt><dd class="public-confirmation-total">@Model.Total.ToString("C0")</dd></div>
+                    <div><dt>Teslimat</dt><dd>@Model.DeliveryDate.ToString("dd.MM.yyyy") / @Model.DeliveryTimeSlot</dd></div>
+                    <div><dt>Ödeme</dt><dd>@Model.PaymentStatusText</dd></div>
+                </dl>
+                <footer><span>NO23 Kitchen</span><strong>23</strong></footer>
+            </article>
+        </section>
     </div>
-</section>
+</div>
