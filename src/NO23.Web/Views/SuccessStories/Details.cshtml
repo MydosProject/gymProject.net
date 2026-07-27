@@ -1,0 +1,125 @@
+@model SuccessStoryDetailViewModel
+
+@{
+    ViewData["Title"] = Model.Title;
+    var publishedAt = Model.PublishedAtUtc ?? Model.CreatedAtUtc;
+    var paragraphs = Model.Story
+        .Replace("\r\n", "\n")
+        .Split("\n\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    var hasImages = !string.IsNullOrWhiteSpace(Model.BeforeImageUrl) ||
+                    !string.IsNullOrWhiteSpace(Model.AfterImageUrl);
+}
+
+<section class="story-detail-page content-page">
+    <div class="content-page-grid" aria-hidden="true"></div>
+    <div class="stories-page-glow" aria-hidden="true"></div>
+
+    <div class="container position-relative">
+        <header class="story-detail-hero">
+            <div class="story-detail-hero-copy">
+                <div class="story-detail-meta">
+                    <span>NO23 MEMBER</span>
+                    <time datetime="@publishedAt.ToString("yyyy-MM-dd")">
+                        @publishedAt.ToString("dd.MM.yyyy")
+                    </time>
+                </div>
+
+                <p class="content-section-kicker">@Model.MemberName</p>
+                <h1>@Model.Title</h1>
+                <p class="story-detail-summary">@Model.Summary</p>
+            </div>
+
+            <div class="story-detail-visual">
+                @if (hasImages)
+                {
+                    <div class="story-detail-image-grid">
+                        @if (!string.IsNullOrWhiteSpace(Model.BeforeImageUrl))
+                        {
+                            <figure>
+                                <img src="@Model.BeforeImageUrl"
+                                     alt="@Model.MemberName değişim öncesi"
+                                     loading="eager" />
+                                <figcaption>Başlangıç</figcaption>
+                            </figure>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(Model.AfterImageUrl))
+                        {
+                            <figure>
+                                <img src="@Model.AfterImageUrl"
+                                     alt="@Model.MemberName güncel durum"
+                                     loading="eager" />
+                                <figcaption>Şimdi</figcaption>
+                            </figure>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <span>REAL PROGRESS</span>
+                    <strong>23</strong>
+                    <small>@Model.MemberName</small>
+                }
+            </div>
+        </header>
+
+        <div class="story-detail-layout">
+            <article class="story-detail-article">
+                <div class="story-detail-article-heading">
+                    <span>01</span>
+                    <div>
+                        <p>DÖNÜŞÜM HİKÂYESİ</p>
+                        <h2>İstikrarla gelen değişim.</h2>
+                    </div>
+                </div>
+
+                <div class="story-detail-body">
+                    @foreach (var paragraph in paragraphs)
+                    {
+                        <p>@paragraph</p>
+                    }
+                </div>
+            </article>
+
+            <aside class="story-detail-aside">
+                <p class="content-section-kicker">Yolculuk özeti</p>
+
+                @if (!string.IsNullOrWhiteSpace(Model.AchievementMetric))
+                {
+                    <div class="story-detail-result">
+                        <span>Sonuç</span>
+                        <strong>@Model.AchievementMetric</strong>
+                    </div>
+                }
+
+                <dl>
+                    <div>
+                        <dt>Üye</dt>
+                        <dd>@Model.MemberName</dd>
+                    </div>
+                    <div>
+                        <dt>Yayın tarihi</dt>
+                        <dd>@publishedAt.ToString("dd.MM.yyyy")</dd>
+                    </div>
+                </dl>
+
+                @if (!string.IsNullOrWhiteSpace(Model.VideoUrl))
+                {
+                    <a class="story-detail-video"
+                       href="@Model.VideoUrl"
+                       target="_blank"
+                       rel="noopener noreferrer">
+                        Video Hikâyeyi İzle
+                        <span aria-hidden="true">↗</span>
+                    </a>
+                }
+
+                <a class="story-detail-back"
+                   asp-controller="SuccessStories"
+                   asp-action="Index">
+                    <span aria-hidden="true">←</span>
+                    Tüm hikâyelere dön
+                </a>
+            </aside>
+        </div>
+    </div>
+</section>

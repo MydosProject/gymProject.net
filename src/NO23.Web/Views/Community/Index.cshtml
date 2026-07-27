@@ -136,6 +136,14 @@
                                         <strong>@(item.Capacity?.ToString() ?? "Sınırsız")</strong>
                                     </span>
                                 </div>
+
+                                <a class="community-detail-link"
+                                   asp-controller="Community"
+                                   asp-action="EventDetails"
+                                   asp-route-slug="@item.Slug">
+                                    Detayları Gör
+                                    <span aria-hidden="true">→</span>
+                                </a>
                             </div>
                         </article>
                     }
@@ -194,6 +202,14 @@
                                 {
                                     <small><strong>Ödül:</strong> @item.Reward</small>
                                 }
+
+                                <a class="community-detail-link"
+                                   asp-controller="Community"
+                                   asp-action="ChallengeDetails"
+                                   asp-route-slug="@item.Slug">
+                                    Detayları Gör
+                                    <span aria-hidden="true">→</span>
+                                </a>
                             </div>
                         </article>
                     }

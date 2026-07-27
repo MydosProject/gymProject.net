@@ -1,0 +1,108 @@
+@model BlogPostDetailViewModel
+
+@{
+    ViewData["Title"] = Model.Title;
+    var publishedAt = Model.PublishedAtUtc ?? Model.CreatedAtUtc;
+    var paragraphs = Model.Content
+        .Replace("\r\n", "\n")
+        .Split("\n\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+    string GetCategoryName(string category)
+    {
+        return category switch
+        {
+            "Training" => "Antrenman",
+            "Nutrition" => "Beslenme",
+            "Lifestyle" => "Yaşam",
+            "Recovery" => "Toparlanma",
+            _ => category
+        };
+    }
+}
+
+<section class="blog-detail-page content-page">
+    <div class="content-page-grid" aria-hidden="true"></div>
+
+    <div class="container position-relative">
+        <header class="blog-detail-hero">
+            <div class="blog-detail-hero-copy">
+                <div class="blog-detail-meta">
+                    <span>@GetCategoryName(Model.Category)</span>
+                    <time datetime="@publishedAt.ToString("yyyy-MM-dd")">
+                        @publishedAt.ToString("dd.MM.yyyy")
+                    </time>
+                </div>
+
+                <p class="content-section-kicker">NO23 / BLOG</p>
+                <h1>@Model.Title</h1>
+                <p class="blog-detail-summary">@Model.Summary</p>
+            </div>
+
+            <div class="blog-detail-visual">
+                @if (!string.IsNullOrWhiteSpace(Model.CoverImageUrl))
+                {
+                    <img src="@Model.CoverImageUrl"
+                         alt="@Model.Title"
+                         loading="eager" />
+                }
+                else
+                {
+                    <span>NO23</span>
+                    <strong>BLOG</strong>
+                    <small>KNOWLEDGE IN MOTION</small>
+                }
+            </div>
+        </header>
+
+        <div class="blog-detail-layout">
+            <article class="blog-detail-article">
+                <div class="blog-detail-article-heading">
+                    <span>01</span>
+                    <div>
+                        <p>YAZI</p>
+                        <h2>Bilgiyi harekete geçir.</h2>
+                    </div>
+                </div>
+
+                <div class="blog-detail-body">
+                    @foreach (var paragraph in paragraphs)
+                    {
+                        <p>@paragraph</p>
+                    }
+                </div>
+            </article>
+
+            <aside class="blog-detail-aside">
+                <p class="content-section-kicker">Yazı bilgileri</p>
+
+                <dl>
+                    <div>
+                        <dt>Kategori</dt>
+                        <dd>@GetCategoryName(Model.Category)</dd>
+                    </div>
+                    <div>
+                        <dt>Yayın tarihi</dt>
+                        <dd>@publishedAt.ToString("dd.MM.yyyy")</dd>
+                    </div>
+                </dl>
+
+                @if (!string.IsNullOrWhiteSpace(Model.Tags))
+                {
+                    <div class="blog-tag-list" aria-label="Etiketler">
+                        @foreach (var tag in Model.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                        {
+                            <span>#@tag.Trim()</span>
+                        }
+                    </div>
+                }
+
+                <a class="blog-detail-back"
+                   asp-controller="Blog"
+                   asp-action="Index">
+                    <span aria-hidden="true">←</span>
+                    Tüm yazılara dön
+                </a>
+            </aside>
+        </div>
+    </div>
+</section>

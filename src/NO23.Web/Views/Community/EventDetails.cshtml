@@ -1,0 +1,114 @@
+@model CommunityEventDetailViewModel
+
+@{
+    ViewData["Title"] = Model.Title;
+    var paragraphs = Model.Description
+        .Replace("\r\n", "\n")
+        .Split("\n\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+    string GetEventTypeName(string type)
+    {
+        return type switch
+        {
+            "RunningGroup" => "Koşu Grubu",
+            "Workshop" => "Workshop",
+            "Seminar" => "Seminer",
+            "SocialEvent" => "Sosyal Buluşma",
+            "OutdoorTraining" => "Outdoor Antrenman",
+            "Competition" => "Yarışma",
+            _ => type
+        };
+    }
+}
+
+<section class="community-detail-page content-page">
+    <div class="content-page-grid" aria-hidden="true"></div>
+    <div class="content-page-orbit" aria-hidden="true"></div>
+
+    <div class="container position-relative">
+        <header class="community-detail-hero">
+            <div class="community-detail-hero-copy">
+                <div class="community-detail-meta">
+                    <span>@GetEventTypeName(Model.Type)</span>
+                    <span>@(Model.IsMembersOnly ? "Üyelere Özel" : "Herkese Açık")</span>
+                </div>
+
+                <p class="content-section-kicker">NO23 / COMMUNITY EVENT</p>
+                <h1>@Model.Title</h1>
+                <p class="community-detail-summary">@Model.Summary</p>
+            </div>
+
+            <div class="community-detail-visual community-detail-visual-event">
+                @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
+                {
+                    <img src="@Model.ImageUrl"
+                         alt="@Model.Title"
+                         loading="eager" />
+                }
+                else
+                {
+                    <span>@Model.StartsAtUtc.ToString("MMM").ToUpperInvariant()</span>
+                    <strong>@Model.StartsAtUtc.ToString("dd")</strong>
+                    <small>@Model.StartsAtUtc.ToString("yyyy")</small>
+                }
+            </div>
+        </header>
+
+        <div class="community-detail-layout">
+            <article class="community-detail-article">
+                <div class="community-detail-article-heading">
+                    <span>01</span>
+                    <div>
+                        <p>ETKİNLİK</p>
+                        <h2>Birlikte hareket et.</h2>
+                    </div>
+                </div>
+
+                <div class="community-detail-body">
+                    @foreach (var paragraph in paragraphs)
+                    {
+                        <p>@paragraph</p>
+                    }
+                </div>
+            </article>
+
+            <aside class="community-detail-aside">
+                <p class="content-section-kicker">Etkinlik bilgileri</p>
+
+                <dl>
+                    <div>
+                        <dt>Başlangıç</dt>
+                        <dd>@Model.StartsAtUtc.ToString("dd.MM.yyyy · HH:mm")</dd>
+                    </div>
+                    @if (Model.EndsAtUtc.HasValue)
+                    {
+                        <div>
+                            <dt>Bitiş</dt>
+                            <dd>@Model.EndsAtUtc.Value.ToString("dd.MM.yyyy · HH:mm")</dd>
+                        </div>
+                    }
+                    <div>
+                        <dt>Konum</dt>
+                        <dd>@Model.Location</dd>
+                    </div>
+                    <div>
+                        <dt>Kapasite</dt>
+                        <dd>@(Model.Capacity?.ToString() ?? "Sınırsız")</dd>
+                    </div>
+                    <div>
+                        <dt>Katılım</dt>
+                        <dd>@(Model.IsMembersOnly ? "Üyelere özel" : "Herkese açık")</dd>
+                    </div>
+                </dl>
+
+                <a class="community-detail-back"
+                   asp-controller="Community"
+                   asp-action="Index"
+                   asp-fragment="events">
+                    <span aria-hidden="true">←</span>
+                    Etkinliklere dön
+                </a>
+            </aside>
+        </div>
+    </div>
+</section>
