@@ -1,6 +1,6 @@
 @model IReadOnlyList<BlogPostListItemViewModel>
 @{
-    ViewData["Title"] = "NO23 Journal";
+    ViewData["Title"] = "Blog";
     var publishedCount = Model.Count(item => item.PublishedAtUtc.HasValue);
 }
 
@@ -8,7 +8,7 @@
     <div class="container">
         <header class="admin-page-head">
             <div>
-                <p class="admin-eyebrow">İÇERİK / NO23 JOURNAL</p>
+                <p class="admin-eyebrow">İÇERİK / BLOG</p>
                 <h1>Blog yönetimi</h1>
                 <p class="admin-page-description">Antrenman, beslenme ve yaşam tarzı içeriklerini yayına hazırla.</p>
             </div>
@@ -16,7 +16,7 @@
         </header>
 
         <div class="admin-metrics admin-metrics-two">
-            <article><span>Toplam içerik</span><strong>@Model.Count</strong><small>Journal arşivi</small></article>
+            <article><span>Toplam içerik</span><strong>@Model.Count</strong><small>Blog arşivi</small></article>
             <article><span>Yayın tarihli</span><strong>@publishedCount</strong><small>Planlanmış / yayında</small></article>
         </div>
 
@@ -26,7 +26,7 @@
                 <tbody>
                     @if (Model.Count == 0)
                     {
-                        <tr><td colspan="5"><div class="admin-empty-row">Henüz Journal yazısı eklenmedi.</div></td></tr>
+                        <tr><td colspan="5"><div class="admin-empty-row">Henüz Blog yazısı eklenmedi.</div></td></tr>
                     }
                     else
                     {

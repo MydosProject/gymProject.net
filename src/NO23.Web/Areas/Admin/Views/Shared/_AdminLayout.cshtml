@@ -97,7 +97,7 @@
                     </a>
                     <a class="admin-nav-link @ActiveClass("BlogPosts")" asp-area="Admin" asp-controller="BlogPosts" asp-action="Index">
                         <span class="admin-nav-index">06</span>
-                        <span>NO23 Journal</span>
+                        <span>Blog</span>
                     </a>
                     <a class="admin-nav-link @ActiveClass("SuccessStories")" asp-area="Admin" asp-controller="SuccessStories" asp-action="Index">
                         <span class="admin-nav-index">07</span>
@@ -169,15 +169,14 @@
             </nav>
 
             <div class="admin-sidebar-foot">
-                <a class="admin-site-link" asp-area="" asp-controller="Home" asp-action="Index">
-                    <span>Public siteyi görüntüle</span>
-                    <span aria-hidden="true">↗</span>
-                </a>
                 <form asp-area="Identity"
                       asp-page="/Account/Logout"
                       asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })"
                       method="post">
-                    <button class="admin-logout" type="submit">Güvenli çıkış</button>
+                    <button class="admin-logout" type="submit">
+                        <span class="admin-logout-icon" aria-hidden="true"></span>
+                        <span>Çıkış</span>
+                    </button>
                 </form>
             </div>
         </aside>

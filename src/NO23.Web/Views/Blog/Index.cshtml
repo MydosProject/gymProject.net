@@ -1,7 +1,7 @@
 @model IReadOnlyList<BlogPostCardViewModel>
 
 @{
-    ViewData["Title"] = "NO23 Journal";
+    ViewData["Title"] = "Blog";
     var featuredPost = Model.FirstOrDefault();
     var remainingPosts = Model.Skip(1).ToList();
 
@@ -24,7 +24,7 @@
     <div class="container position-relative">
         <header class="content-hero blog-hero">
             <div class="content-hero-copy">
-                <p class="content-kicker">NO23 Journal · Knowledge in Motion</p>
+                <p class="content-kicker">NO23 Blog · Knowledge in Motion</p>
                 <h1>
                     Bilgiyi
                     <span>harekete dönüştür.</span>
@@ -36,7 +36,7 @@
             </div>
 
             <aside class="blog-hero-index">
-                <span>Journal / @DateTime.Now.Year</span>
+                <span>Blog / @DateTime.Now.Year</span>
                 <strong>@Model.Count.ToString("00")</strong>
                 <p>Güncel içerik</p>
             </aside>
@@ -48,7 +48,7 @@
                 <span>J</span>
                 <div>
                     <h3>Yeni içerikler hazırlanıyor.</h3>
-                    <p>NO23 Journal çok yakında yeni yazılarla burada.</p>
+                    <p>NO23 Blog çok yakında yeni yazılarla burada.</p>
                 </div>
             </div>
         }
@@ -68,7 +68,7 @@
                         else
                         {
                             <span>NO23</span>
-                            <strong>JOURNAL</strong>
+                            <strong>BLOG</strong>
                             <small>01 / @DateTime.Now.Year</small>
                         }
                     </div>
