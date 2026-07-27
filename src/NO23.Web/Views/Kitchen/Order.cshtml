@@ -4,137 +4,143 @@
     var deliverySlots = new[] { "10:00-13:00", "13:00-16:00", "16:00-19:00" };
 }
 
-<section class="container py-5">
-    <div class="row g-5">
-        <div class="col-lg-5">
-            <a class="text-decoration-none" asp-controller="Kitchen" asp-action="Index">
-                Tüm Kitchen ürünleri
+<div class="public-order-page public-kitchen-order">
+    <div class="public-order-grid-bg" aria-hidden="true"></div>
+    <div class="container position-relative">
+        <header class="public-order-header">
+            <a class="public-order-back"
+               asp-area=""
+               asp-controller="Kitchen"
+               asp-action="Index">
+                <span aria-hidden="true">←</span> Kitchen Menüsüne Dön
             </a>
-
-            <div class="mt-4">
-                <span class="badge text-bg-light mb-3">@Model.Category</span>
-                <h1 class="h2">@Model.ItemName</h1>
-                <p class="text-muted">
-                    @(string.IsNullOrWhiteSpace(Model.Description)
-                        ? "NO23 Kitchen tarafından hazırlanan dengeli öğün."
-                        : Model.Description)
-                </p>
-                <strong class="fs-4">@Model.UnitPrice.ToString("C0")</strong>
+            <div>
+                <p class="public-order-kicker">NO23 / Guest Order</p>
+                <h1>Öğününü seçtin.<br /><span>Teslimatını planla.</span></h1>
             </div>
+            <p>
+                Üyelik gerektirmeden sipariş bilgilerini tamamla.
+                Siparişin oluşturulduğunda takip numaran ekranda gösterilecek.
+            </p>
+        </header>
 
-            <dl class="row small text-muted mt-4">
-                <dt class="col-6">Kalori</dt>
-                <dd class="col-6 text-end">@Model.Calories kcal</dd>
-                <dt class="col-6">Protein</dt>
-                <dd class="col-6 text-end">@Model.ProteinGrams g</dd>
-                <dt class="col-6">Karbonhidrat</dt>
-                <dd class="col-6 text-end">@Model.CarbohydrateGrams g</dd>
-                <dt class="col-6">Yağ</dt>
-                <dd class="col-6 text-end">@Model.FatGrams g</dd>
-            </dl>
+        <div class="public-order-layout">
+            <aside class="public-order-product public-order-kitchen-product">
+                <div class="public-order-product-top">
+                    <span>@Model.Category</span>
+                    <strong>NO23 / Nutrition</strong>
+                </div>
+                <div class="public-order-product-main">
+                    <span>@(Model.Calories ?? 0) <small>kcal</small></span>
+                    <h2>@Model.ItemName</h2>
+                    <p>
+                        @(string.IsNullOrWhiteSpace(Model.Description)
+                            ? "NO23 Kitchen tarafından hazırlanan dengeli ve performans odaklı öğün."
+                            : Model.Description)
+                    </p>
+                </div>
+                <div class="public-order-macro-grid">
+                    <span><small>Protein</small><strong>@Model.ProteinGrams?.ToString("0.#") g</strong></span>
+                    <span><small>Karbonhidrat</small><strong>@Model.CarbohydrateGrams?.ToString("0.#") g</strong></span>
+                    <span><small>Yağ</small><strong>@Model.FatGrams?.ToString("0.#") g</strong></span>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(Model.Ingredients))
+                {
+                    <p class="public-order-detail"><strong>İçerik</strong>@Model.Ingredients</p>
+                }
+                <p class="public-order-detail">
+                    <strong>Alerjen</strong>
+                    @(string.IsNullOrWhiteSpace(Model.Allergens) ? "Belirtilmedi" : Model.Allergens)
+                </p>
+                <div class="public-order-product-price">
+                    <span>Tek ürün fiyatı</span>
+                    <strong>@Model.UnitPrice.ToString("C0")</strong>
+                </div>
+            </aside>
 
-            @if (!string.IsNullOrWhiteSpace(Model.Ingredients))
-            {
-                <p class="small text-muted"><strong>İçerik:</strong> @Model.Ingredients</p>
-            }
-
-            @if (!string.IsNullOrWhiteSpace(Model.Allergens))
-            {
-                <p class="small text-muted"><strong>Alerjen:</strong> @Model.Allergens</p>
-            }
-        </div>
-
-        <div class="col-lg-7">
-            <form class="card border-0 shadow-sm"
+            <form class="public-order-form"
+                  asp-area=""
                   asp-controller="Kitchen"
                   asp-action="PlaceOrder"
                   method="post">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="menuItemId" value="@Model.ItemId" />
 
-                <div class="card-body p-4">
-                    <h2 class="h4 mb-4">Teslimat bilgileri</h2>
-
-                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <label class="form-label" for="guestQuantity">Adet</label>
-                            <input class="form-control" id="guestQuantity" name="input.Quantity" type="number" min="1" max="99" value="@Model.Input.Quantity" />
-                            @Html.ValidationMessage("input.Quantity", null, new { @class = "text-danger small" })
-                        </div>
-
-                        <div class="col-md-8">
-                            <label class="form-label" for="guestFullName">Ad Soyad</label>
-                            <input class="form-control" id="guestFullName" name="input.FullName" value="@Model.Input.FullName" autocomplete="name" />
-                            @Html.ValidationMessage("input.FullName", null, new { @class = "text-danger small" })
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label" for="guestEmail">E-posta</label>
-                            <input class="form-control" id="guestEmail" name="input.Email" type="email" value="@Model.Input.Email" autocomplete="email" />
-                            @Html.ValidationMessage("input.Email", null, new { @class = "text-danger small" })
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label" for="guestPhone">Telefon</label>
-                            <input class="form-control" id="guestPhone" name="input.PhoneNumber" value="@Model.Input.PhoneNumber" autocomplete="tel" />
-                            @Html.ValidationMessage("input.PhoneNumber", null, new { @class = "text-danger small" })
-                        </div>
-
-                        <div class="col-12">
-                            <label class="form-label" for="guestAddress">Adres</label>
-                            <textarea class="form-control" id="guestAddress" name="input.AddressLine" rows="3">@Model.Input.AddressLine</textarea>
-                            @Html.ValidationMessage("input.AddressLine", null, new { @class = "text-danger small" })
-                        </div>
-
-                        <div class="col-md-4">
-                            <label class="form-label" for="guestDistrict">İlçe</label>
-                            <input class="form-control" id="guestDistrict" name="input.District" value="@Model.Input.District" />
-                            @Html.ValidationMessage("input.District", null, new { @class = "text-danger small" })
-                        </div>
-
-                        <div class="col-md-4">
-                            <label class="form-label" for="guestCity">Şehir</label>
-                            <input class="form-control" id="guestCity" name="input.City" value="@Model.Input.City" />
-                            @Html.ValidationMessage("input.City", null, new { @class = "text-danger small" })
-                        </div>
-
-                        <div class="col-md-4">
-                            <label class="form-label" for="guestPostalCode">Posta Kodu</label>
-                            <input class="form-control" id="guestPostalCode" name="input.PostalCode" value="@Model.Input.PostalCode" />
-                            @Html.ValidationMessage("input.PostalCode", null, new { @class = "text-danger small" })
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label" for="guestDeliveryDate">Teslimat Tarihi</label>
-                            <input class="form-control" id="guestDeliveryDate" name="input.DeliveryDate" type="date" value="@Model.Input.DeliveryDate.ToString("yyyy-MM-dd")" />
-                            @Html.ValidationMessage("input.DeliveryDate", null, new { @class = "text-danger small" })
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label" for="guestDeliveryTimeSlot">Teslimat Saati</label>
-                            <select class="form-select" id="guestDeliveryTimeSlot" name="input.DeliveryTimeSlot">
-                                @foreach (var slot in deliverySlots)
-                                {
-                                    <option value="@slot" selected="@(slot == Model.Input.DeliveryTimeSlot ? "selected" : null)">@slot</option>
-                                }
-                            </select>
-                            @Html.ValidationMessage("input.DeliveryTimeSlot", null, new { @class = "text-danger small" })
-                        </div>
-
-                        <div class="col-12">
-                            <label class="form-label" for="guestNotes">Sipariş Notu</label>
-                            <textarea class="form-control" id="guestNotes" name="input.Notes" rows="3">@Model.Input.Notes</textarea>
-                            @Html.ValidationMessage("input.Notes", null, new { @class = "text-danger small" })
-                        </div>
-                    </div>
-
-                    <button class="btn btn-dark w-100 mt-4" type="submit">
-                        Siparişi Oluştur
-                    </button>
+                <div class="public-order-form-heading">
+                    <div><span>02</span><p>Teslimat Bilgileri</p></div>
+                    <h2>Siparişini tamamla.</h2>
                 </div>
+
+                <div asp-validation-summary="ModelOnly" class="public-order-validation"></div>
+
+                <div class="public-order-form-grid">
+                    <div class="public-order-field public-order-field-quantity">
+                        <label for="guestQuantity">Adet</label>
+                        <input id="guestQuantity" name="input.Quantity" type="number" min="1" max="99" value="@Model.Input.Quantity" />
+                        @Html.ValidationMessage("input.Quantity", null, new { @class = "public-order-error" })
+                    </div>
+                    <div class="public-order-field public-order-field-name">
+                        <label for="guestFullName">Ad Soyad</label>
+                        <input id="guestFullName" name="input.FullName" value="@Model.Input.FullName" autocomplete="name" placeholder="Adınız ve soyadınız" />
+                        @Html.ValidationMessage("input.FullName", null, new { @class = "public-order-error" })
+                    </div>
+                    <div class="public-order-field">
+                        <label for="guestEmail">E-posta</label>
+                        <input id="guestEmail" name="input.Email" type="email" value="@Model.Input.Email" autocomplete="email" placeholder="ornek@mail.com" />
+                        @Html.ValidationMessage("input.Email", null, new { @class = "public-order-error" })
+                    </div>
+                    <div class="public-order-field">
+                        <label for="guestPhone">Telefon</label>
+                        <input id="guestPhone" name="input.PhoneNumber" value="@Model.Input.PhoneNumber" autocomplete="tel" placeholder="05__ ___ __ __" />
+                        @Html.ValidationMessage("input.PhoneNumber", null, new { @class = "public-order-error" })
+                    </div>
+                    <div class="public-order-field public-order-field-wide">
+                        <label for="guestAddress">Adres</label>
+                        <textarea id="guestAddress" name="input.AddressLine" rows="3" placeholder="Teslimat adresiniz">@Model.Input.AddressLine</textarea>
+                        @Html.ValidationMessage("input.AddressLine", null, new { @class = "public-order-error" })
+                    </div>
+                    <div class="public-order-field">
+                        <label for="guestDistrict">İlçe</label>
+                        <input id="guestDistrict" name="input.District" value="@Model.Input.District" placeholder="İlçe" />
+                        @Html.ValidationMessage("input.District", null, new { @class = "public-order-error" })
+                    </div>
+                    <div class="public-order-field">
+                        <label for="guestCity">Şehir</label>
+                        <input id="guestCity" name="input.City" value="@Model.Input.City" placeholder="Şehir" />
+                        @Html.ValidationMessage("input.City", null, new { @class = "public-order-error" })
+                    </div>
+                    <div class="public-order-field">
+                        <label for="guestPostalCode">Posta Kodu</label>
+                        <input id="guestPostalCode" name="input.PostalCode" value="@Model.Input.PostalCode" placeholder="Posta kodu" />
+                        @Html.ValidationMessage("input.PostalCode", null, new { @class = "public-order-error" })
+                    </div>
+                    <div class="public-order-field">
+                        <label for="guestDeliveryDate">Teslimat Tarihi</label>
+                        <input id="guestDeliveryDate" name="input.DeliveryDate" type="date" value="@Model.Input.DeliveryDate.ToString("yyyy-MM-dd")" />
+                        @Html.ValidationMessage("input.DeliveryDate", null, new { @class = "public-order-error" })
+                    </div>
+                    <div class="public-order-field public-order-field-wide">
+                        <label for="guestDeliveryTimeSlot">Teslimat Saati</label>
+                        <select id="guestDeliveryTimeSlot" name="input.DeliveryTimeSlot">
+                            @foreach (var slot in deliverySlots)
+                            {
+                                <option value="@slot" selected="@(slot == Model.Input.DeliveryTimeSlot ? "selected" : null)">@slot</option>
+                            }
+                        </select>
+                        @Html.ValidationMessage("input.DeliveryTimeSlot", null, new { @class = "public-order-error" })
+                    </div>
+                    <div class="public-order-field public-order-field-wide">
+                        <label for="guestNotes">Sipariş Notu <small>İsteğe bağlı</small></label>
+                        <textarea id="guestNotes" name="input.Notes" rows="3" placeholder="Siparişinle ilgili eklemek istediklerin">@Model.Input.Notes</textarea>
+                        @Html.ValidationMessage("input.Notes", null, new { @class = "public-order-error" })
+                    </div>
+                </div>
+
+                <button class="public-order-submit" type="submit">
+                    <span>Siparişi Oluştur</span>
+                    <strong>@Model.UnitPrice.ToString("C0")</strong>
+                </button>
             </form>
         </div>
     </div>
-</section>
+</div>
