@@ -124,6 +124,14 @@
                                         <span aria-hidden="true">↗</span>
                                     </a>
                                 }
+
+                                <a class="story-read-link"
+                                   asp-controller="SuccessStories"
+                                   asp-action="Details"
+                                   asp-route-slug="@item.Slug">
+                                    Hikâyeyi Oku
+                                    <span aria-hidden="true">→</span>
+                                </a>
                             </div>
                         </article>
                     }

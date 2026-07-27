@@ -29,4 +29,41 @@ public class BlogController(ApplicationDbContext dbContext) : Controller
 
         return View(posts);
     }
+
+    [HttpGet("/Blog/{slug}")]
+    public async Task<IActionResult> Details(string slug)
+    {
+        if (string.IsNullOrWhiteSpace(slug))
+        {
+            return NotFound();
+        }
+
+        var normalizedSlug = slug.Trim();
+        var post = await dbContext.BlogPosts
+            .AsNoTracking()
+            .Where(item =>
+                item.Status == ContentStatus.Published &&
+                item.Slug == normalizedSlug)
+            .Select(item => new BlogPostDetailViewModel
+            {
+                Id = item.Id,
+                Title = item.Title,
+                Slug = item.Slug,
+                Summary = item.Summary,
+                Content = item.Content,
+                Category = item.Category,
+                Tags = item.Tags,
+                CoverImageUrl = item.CoverImageUrl,
+                PublishedAtUtc = item.PublishedAtUtc,
+                CreatedAtUtc = item.CreatedAtUtc
+            })
+            .SingleOrDefaultAsync();
+
+        if (post is null)
+        {
+            return NotFound();
+        }
+
+        return View(post);
+    }
 }

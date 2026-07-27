@@ -91,6 +91,14 @@
                                 }
                             </div>
                         }
+
+                        <a class="blog-read-link"
+                           asp-controller="Blog"
+                           asp-action="Details"
+                           asp-route-slug="@featuredPost.Slug">
+                            Yazıyı Oku
+                            <span aria-hidden="true">↗</span>
+                        </a>
                     </div>
                 </article>
             </section>
@@ -133,6 +141,14 @@
                                         }
                                     </div>
                                 }
+
+                                <a class="blog-read-link"
+                                   asp-controller="Blog"
+                                   asp-action="Details"
+                                   asp-route-slug="@item.Slug">
+                                    Yazıyı Oku
+                                    <span aria-hidden="true">↗</span>
+                                </a>
                             </article>
                         }
                     </div>

@@ -1,0 +1,112 @@
+@model CommunityChallengeDetailViewModel
+
+@{
+    ViewData["Title"] = Model.Title;
+    var paragraphs = Model.Description
+        .Replace("\r\n", "\n")
+        .Split("\n\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+    string GetChallengeStatusName(string status)
+    {
+        return status switch
+        {
+            "Upcoming" => "Yakında",
+            "Active" => "Devam Ediyor",
+            "Completed" => "Tamamlandı",
+            _ => status
+        };
+    }
+}
+
+<section class="community-detail-page content-page">
+    <div class="content-page-grid" aria-hidden="true"></div>
+    <div class="content-page-orbit" aria-hidden="true"></div>
+
+    <div class="container position-relative">
+        <header class="community-detail-hero">
+            <div class="community-detail-hero-copy">
+                <div class="community-detail-meta">
+                    <span>@GetChallengeStatusName(Model.Status)</span>
+                    <span>@Model.StartsOn.ToString("dd.MM") – @Model.EndsOn.ToString("dd.MM.yyyy")</span>
+                </div>
+
+                <p class="content-section-kicker">NO23 / COMMUNITY CHALLENGE</p>
+                <h1>@Model.Title</h1>
+                <p class="community-detail-summary">@Model.Summary</p>
+            </div>
+
+            <div class="community-detail-visual community-detail-visual-challenge">
+                @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
+                {
+                    <img src="@Model.ImageUrl"
+                         alt="@Model.Title"
+                         loading="eager" />
+                }
+                else
+                {
+                    <span>CHALLENGE</span>
+                    <strong>23</strong>
+                    <small>@GetChallengeStatusName(Model.Status)</small>
+                }
+            </div>
+        </header>
+
+        <div class="community-detail-layout">
+            <article class="community-detail-article">
+                <div class="community-detail-article-heading">
+                    <span>01</span>
+                    <div>
+                        <p>CHALLENGE</p>
+                        <h2>Hedefini görünür kıl.</h2>
+                    </div>
+                </div>
+
+                <div class="community-detail-body">
+                    @foreach (var paragraph in paragraphs)
+                    {
+                        <p>@paragraph</p>
+                    }
+                </div>
+            </article>
+
+            <aside class="community-detail-aside">
+                <p class="content-section-kicker">Challenge özeti</p>
+
+                <div class="community-detail-goal">
+                    <span>Hedef</span>
+                    <strong>@Model.Goal</strong>
+                </div>
+
+                <dl>
+                    <div>
+                        <dt>Başlangıç</dt>
+                        <dd>@Model.StartsOn.ToString("dd.MM.yyyy")</dd>
+                    </div>
+                    <div>
+                        <dt>Bitiş</dt>
+                        <dd>@Model.EndsOn.ToString("dd.MM.yyyy")</dd>
+                    </div>
+                    <div>
+                        <dt>Durum</dt>
+                        <dd>@GetChallengeStatusName(Model.Status)</dd>
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(Model.Reward))
+                    {
+                        <div>
+                            <dt>Ödül</dt>
+                            <dd>@Model.Reward</dd>
+                        </div>
+                    }
+                </dl>
+
+                <a class="community-detail-back"
+                   asp-controller="Community"
+                   asp-action="Index"
+                   asp-fragment="challenges">
+                    <span aria-hidden="true">←</span>
+                    Challenge'lara dön
+                </a>
+            </aside>
+        </div>
+    </div>
+</section>
