@@ -1,0 +1,163 @@
+@model MemberAccountSettingsViewModel
+
+@{
+    ViewData["Title"] = "Hesap Ayarları";
+}
+
+<section class="member-account-page member-settings-page">
+    <div class="member-account-grid" aria-hidden="true"></div>
+    <div class="member-account-orbit" aria-hidden="true"></div>
+
+    <div class="container position-relative">
+        <header class="member-account-hero">
+            <div>
+                <p class="member-account-kicker">NO23 / HESAP GÜVENLİĞİ</p>
+                <h1>Hesabın.<br /><span>Kontrolün sende.</span></h1>
+                <p>
+                    Hesabına bağlı bilgileri ve güvenlik durumunu incele;
+                    şifreni güvenli biçimde güncelle.
+                </p>
+            </div>
+        </header>
+
+        @if (TempData["SuccessMessage"] is string successMessage)
+        {
+            <div class="member-dashboard-alert member-dashboard-alert-success" role="status">
+                <span aria-hidden="true">✓</span>
+                <div>
+                    <strong>Güvenlik bilgilerin güncellendi</strong>
+                    <p>@successMessage</p>
+                </div>
+            </div>
+        }
+
+        <div class="member-settings-layout">
+            <aside class="member-settings-overview">
+                <div class="member-account-card-head">
+                    <span>01</span>
+                    <div>
+                        <p>HESAP BİLGİLERİ</p>
+                        <h2>Güvenlik özeti</h2>
+                    </div>
+                </div>
+
+                <div class="member-settings-list">
+                    <article>
+                        <div>
+                            <span>E-posta adresi</span>
+                            <strong>@Model.Email</strong>
+                        </div>
+                        <small class="@(Model.EmailConfirmed ? "is-secure" : "is-warning")">
+                            @(Model.EmailConfirmed ? "Doğrulandı" : "Doğrulanmadı")
+                        </small>
+                    </article>
+
+                    <article>
+                        <div>
+                            <span>Telefon</span>
+                            <strong>
+                                @(string.IsNullOrWhiteSpace(Model.PhoneNumber)
+                                    ? "Telefon eklenmedi"
+                                    : Model.PhoneNumber)
+                            </strong>
+                        </div>
+                        <a asp-area="Member"
+                           asp-controller="Profile"
+                           asp-action="Index">
+                            Düzenle
+                        </a>
+                    </article>
+
+                    <article>
+                        <div>
+                            <span>İki adımlı doğrulama</span>
+                            <strong>
+                                @(Model.TwoFactorEnabled ? "Etkin" : "Devre dışı")
+                            </strong>
+                        </div>
+                        <small class="@(Model.TwoFactorEnabled ? "is-secure" : string.Empty)">
+                            @(Model.TwoFactorEnabled ? "Açık" : "Kapalı")
+                        </small>
+                    </article>
+                </div>
+
+                <div class="member-settings-info">
+                    <span aria-hidden="true">i</span>
+                    <p>
+                        E-posta değişikliği için doğrulama servisi gerekir.
+                        Bu nedenle mevcut adres güvenli biçimde yalnızca görüntülenir.
+                    </p>
+                </div>
+            </aside>
+
+            <form asp-area="Member"
+                  asp-controller="Settings"
+                  asp-action="ChangePassword"
+                  asp-antiforgery="true"
+                  method="post"
+                  class="member-settings-password">
+                <div class="member-account-card-head">
+                    <span>02</span>
+                    <div>
+                        <p>ŞİFRE GÜVENLİĞİ</p>
+                        <h2>Şifreni güncelle</h2>
+                    </div>
+                </div>
+
+                <div asp-validation-summary="ModelOnly"
+                     class="member-account-validation"
+                     role="alert"></div>
+
+                @if (Model.HasPassword)
+                {
+                    <div class="member-settings-fields">
+                        <label>
+                            <span>Mevcut şifre</span>
+                            <input asp-for="ChangePassword.CurrentPassword"
+                                   autocomplete="current-password" />
+                            <small asp-validation-for="ChangePassword.CurrentPassword"></small>
+                        </label>
+
+                        <label>
+                            <span>Yeni şifre</span>
+                            <input asp-for="ChangePassword.NewPassword"
+                                   autocomplete="new-password" />
+                            <small asp-validation-for="ChangePassword.NewPassword"></small>
+                        </label>
+
+                        <label>
+                            <span>Yeni şifre tekrar</span>
+                            <input asp-for="ChangePassword.ConfirmPassword"
+                                   autocomplete="new-password" />
+                            <small asp-validation-for="ChangePassword.ConfirmPassword"></small>
+                        </label>
+                    </div>
+
+                    <div class="member-password-rules">
+                        <span>GÜÇLÜ ŞİFRE İÇİN</span>
+                        <ul>
+                            <li>En az 6 karakter kullan</li>
+                            <li>Büyük ve küçük harf ekle</li>
+                            <li>Rakam ve özel karakter kullan</li>
+                        </ul>
+                    </div>
+
+                    <button class="member-account-submit" type="submit">
+                        Şifremi Güncelle
+                        <span aria-hidden="true">→</span>
+                    </button>
+                }
+                else
+                {
+                    <div class="member-settings-empty">
+                        Bu hesap için henüz parola tanımlanmamış.
+                    </div>
+                }
+            </form>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

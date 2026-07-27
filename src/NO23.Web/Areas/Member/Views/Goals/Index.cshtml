@@ -1,0 +1,132 @@
+@model MemberGoalsIndexViewModel
+
+@{
+    ViewData["Title"] = "Hedeflerim";
+    var classCreditText = Model.HasUnlimitedClasses
+        ? "Sınırsız"
+        : Model.RemainingClassCredits.ToString("00");
+}
+
+<section class="member-account-page member-goals-page">
+    <div class="member-account-grid" aria-hidden="true"></div>
+    <div class="member-account-orbit" aria-hidden="true"></div>
+
+    <div class="container position-relative">
+        <header class="member-account-hero">
+            <div>
+                <p class="member-account-kicker">NO23 / HEDEF PLANI</p>
+                <h1>Hedefini belirle.<br /><span>Ritmini koru.</span></h1>
+                <p>
+                    Antrenman odağını güncel tut; üyelik paketin ve
+                    kalan ders hakkınla planını aynı ekrandan takip et.
+                </p>
+            </div>
+
+            <aside class="member-goals-score">
+                <span>AKTİF PAKET</span>
+                <strong>@Model.MembershipPackageName</strong>
+                <div>
+                    <small>KALAN DERS</small>
+                    <b>@classCreditText</b>
+                </div>
+            </aside>
+        </header>
+
+        @if (TempData["SuccessMessage"] is string successMessage)
+        {
+            <div class="member-dashboard-alert member-dashboard-alert-success" role="status">
+                <span aria-hidden="true">✓</span>
+                <div>
+                    <strong>Hedefin güncellendi</strong>
+                    <p>@successMessage</p>
+                </div>
+            </div>
+        }
+
+        <div class="member-goals-layout">
+            <form asp-area="Member"
+                  asp-controller="Goals"
+                  asp-action="Index"
+                  asp-antiforgery="true"
+                  method="post"
+                  class="member-goals-form">
+                <div class="member-account-card-head">
+                    <span>01</span>
+                    <div>
+                        <p>ANTRENMAN ODAĞIN</p>
+                        <h2>Neyi başarmak istiyorsun?</h2>
+                    </div>
+                </div>
+
+                <div asp-validation-summary="ModelOnly"
+                     class="member-account-validation"
+                     role="alert"></div>
+
+                <label class="member-goal-field">
+                    <span>Fitness hedefi</span>
+                    <textarea asp-for="FitnessGoal"
+                              rows="6"
+                              placeholder="Örneğin: Kuvvetimi artırmak, yağ oranımı düşürmek ve haftada üç gün düzenli antrenman yapmak istiyorum."></textarea>
+                    <small asp-validation-for="FitnessGoal"></small>
+                </label>
+
+                <div class="member-goal-note">
+                    <span aria-hidden="true">23</span>
+                    <p>
+                        Hedefini açık ve ölçülebilir yazman, ders ve
+                        eğitmen seçimlerini daha kolay planlamanı sağlar.
+                    </p>
+                </div>
+
+                <button class="member-account-submit" type="submit">
+                    Hedefimi Güncelle
+                    <span aria-hidden="true">→</span>
+                </button>
+            </form>
+
+            <aside class="member-goals-membership">
+                <div class="member-account-card-head">
+                    <span>02</span>
+                    <div>
+                        <p>PAKETİN</p>
+                        <h2>@Model.MembershipPackageName</h2>
+                    </div>
+                </div>
+
+                <p class="member-goals-audience">@Model.MembershipPackageAudience</p>
+                <p class="member-goals-description">@Model.MembershipPackageDescription</p>
+
+                <div class="member-goals-credit">
+                    <span>Kalan ders hakkın</span>
+                    <strong>@classCreditText</strong>
+                </div>
+
+                @if (Model.IncludedBenefits.Count > 0)
+                {
+                    <div class="member-goals-benefits">
+                        <span>PAKET AVANTAJLARI</span>
+                        <ul>
+                            @foreach (var benefit in Model.IncludedBenefits)
+                            {
+                                <li>@benefit</li>
+                            }
+                        </ul>
+                    </div>
+                }
+
+                <a asp-area="Member"
+                   asp-controller="Reservations"
+                   asp-action="Index"
+                   asp-fragment="group-classes"
+                   class="member-account-settings-link">
+                    Dersleri İncele
+                    <span aria-hidden="true">↗</span>
+                </a>
+            </aside>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

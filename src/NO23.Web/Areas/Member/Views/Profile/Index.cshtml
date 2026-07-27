@@ -1,0 +1,139 @@
+@using System.Globalization
+@model MemberProfileIndexViewModel
+
+@{
+    ViewData["Title"] = "Profilim";
+    var turkishCulture = CultureInfo.GetCultureInfo("tr-TR");
+    var fullName = $"{Model.FirstName} {Model.LastName}".Trim();
+    var profileInitials = string.Join(
+        string.Empty,
+        new[] { Model.FirstName, Model.LastName }
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Select(value => value.Trim()[0].ToString().ToUpper(turkishCulture)));
+}
+
+<section class="member-account-page">
+    <div class="member-account-grid" aria-hidden="true"></div>
+    <div class="member-account-orbit" aria-hidden="true"></div>
+
+    <div class="container position-relative">
+        <header class="member-account-hero">
+            <div>
+                <p class="member-account-kicker">NO23 / HESABIM</p>
+                <h1>Bilgilerin.<br /><span>Her zaman güncel.</span></h1>
+                <p>
+                    Kulüp iletişim bilgilerini buradan düzenle.
+                    E-posta ve hesap güvenliği işlemleri Hesap Ayarları alanında kalır.
+                </p>
+            </div>
+
+            <aside class="member-account-identity">
+                <span class="member-account-avatar">
+                    @(string.IsNullOrWhiteSpace(profileInitials) ? "N" : profileInitials)
+                </span>
+                <div>
+                    <small>NO23 ÜYESİ</small>
+                    <strong>@(string.IsNullOrWhiteSpace(fullName) ? Model.Email : fullName)</strong>
+                    <span>@Model.MembershipPackageName</span>
+                </div>
+                <b>23</b>
+            </aside>
+        </header>
+
+        @if (TempData["SuccessMessage"] is string successMessage)
+        {
+            <div class="member-dashboard-alert member-dashboard-alert-success" role="status">
+                <span aria-hidden="true">✓</span>
+                <div>
+                    <strong>Profilin güncellendi</strong>
+                    <p>@successMessage</p>
+                </div>
+            </div>
+        }
+
+        <div class="member-account-layout">
+            <form asp-area="Member"
+                  asp-controller="Profile"
+                  asp-action="Index"
+                  asp-antiforgery="true"
+                  method="post"
+                  class="member-account-form">
+                <div class="member-account-card-head">
+                    <span>01</span>
+                    <div>
+                        <p>KİŞİSEL BİLGİLER</p>
+                        <h2>Seni nasıl tanıyalım?</h2>
+                    </div>
+                </div>
+
+                <div asp-validation-summary="ModelOnly"
+                     class="member-account-validation"
+                     role="alert"></div>
+
+                <div class="member-account-fields">
+                    <label>
+                        <span>Ad</span>
+                        <input asp-for="FirstName" autocomplete="given-name" />
+                        <small asp-validation-for="FirstName"></small>
+                    </label>
+
+                    <label>
+                        <span>Soyad</span>
+                        <input asp-for="LastName" autocomplete="family-name" />
+                        <small asp-validation-for="LastName"></small>
+                    </label>
+
+                    <label class="member-account-field-wide">
+                        <span>Telefon</span>
+                        <input asp-for="PhoneNumber"
+                               autocomplete="tel"
+                               placeholder="05__ ___ __ __" />
+                        <small asp-validation-for="PhoneNumber"></small>
+                    </label>
+                </div>
+
+                <button class="member-account-submit" type="submit">
+                    Bilgilerimi Güncelle
+                    <span aria-hidden="true">→</span>
+                </button>
+            </form>
+
+            <aside class="member-account-summary">
+                <div class="member-account-card-head">
+                    <span>02</span>
+                    <div>
+                        <p>HESAP ÖZETİ</p>
+                        <h2>Üyelik bilgilerin</h2>
+                    </div>
+                </div>
+
+                <dl>
+                    <div>
+                        <dt>E-posta</dt>
+                        <dd>@Model.Email</dd>
+                    </div>
+                    <div>
+                        <dt>Aktif paket</dt>
+                        <dd>@Model.MembershipPackageName</dd>
+                    </div>
+                    <div>
+                        <dt>Üyelik başlangıcı</dt>
+                        <dd>@Model.MemberSinceUtc.ToLocalTime().ToString("dd MMMM yyyy", turkishCulture)</dd>
+                    </div>
+                </dl>
+
+                <a asp-area="Member"
+                   asp-controller="Settings"
+                   asp-action="Index"
+                   class="member-account-settings-link">
+                    Hesap Ayarlarına Git
+                    <span aria-hidden="true">↗</span>
+                </a>
+            </aside>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
