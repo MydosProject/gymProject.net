@@ -1,16 +1,16 @@
 @model BlogPostFormViewModel
 @{
-    ViewData["Title"] = "Yeni Journal Yazısı";
+    ViewData["Title"] = "Yeni Blog Yazısı";
 }
 
 <section class="admin-page">
     <div class="container">
         <header class="admin-page-head admin-form-head">
             <div>
-                <a asp-action="Index" class="admin-back-link">← Journal'a dön</a>
-                <p class="admin-eyebrow">İçerik / NO23 Journal</p>
+                <a asp-action="Index" class="admin-back-link">← Blog'a dön</a>
+                <p class="admin-eyebrow">İçerik / Blog</p>
                 <h1>Yeni yazı</h1>
-                <p class="admin-page-description">Antrenman, beslenme ve yaşam içeriklerini NO23 Journal'da yayınla.</p>
+                <p class="admin-page-description">Antrenman, beslenme ve yaşam içeriklerini Blog'da yayınla.</p>
             </div>
         </header>
         <partial name="_BlogPostForm" model="Model" />

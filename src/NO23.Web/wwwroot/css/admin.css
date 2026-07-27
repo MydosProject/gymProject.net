@@ -285,6 +285,45 @@ body.no23-admin-body {
     text-decoration: none;
 }
 
+.admin-logout {
+    justify-content: flex-start;
+    gap: 10px;
+}
+
+.admin-logout-icon {
+    position: relative;
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    flex: 0 0 auto;
+    border: 1px solid currentColor;
+    border-right: 0;
+    border-radius: 3px 0 0 3px;
+}
+
+.admin-logout-icon::before {
+    position: absolute;
+    top: 50%;
+    left: 6px;
+    width: 8px;
+    height: 1px;
+    background: currentColor;
+    content: "";
+    transform: translateY(-50%);
+}
+
+.admin-logout-icon::after {
+    position: absolute;
+    top: 50%;
+    right: -1px;
+    width: 5px;
+    height: 5px;
+    border-top: 1px solid currentColor;
+    border-right: 1px solid currentColor;
+    content: "";
+    transform: translate(4px, -50%) rotate(45deg);
+}
+
 .admin-site-link:hover,
 .admin-logout:hover {
     color: var(--admin-lime);
