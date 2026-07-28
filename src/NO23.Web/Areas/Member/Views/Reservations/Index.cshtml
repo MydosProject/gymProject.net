@@ -229,6 +229,8 @@
                     {
                         <a class="member-trainer-option
                                   @(Model.SelectedTrainerId == trainer.Id ? "is-selected" : string.Empty)"
+                           data-trainer-option
+                           data-trainer-name="@trainer.FullName"
                            asp-area="Member"
                            asp-controller="Reservations"
                            asp-action="Index"
@@ -258,7 +260,8 @@
 
                     <label>
                         <span>Seçilen eğitmen</span>
-                        <input value="@(Model.Trainers
+                        <input id="selected-personal-trainer"
+                               value="@(Model.Trainers
                             .FirstOrDefault(trainer => trainer.Id == Model.SelectedTrainerId)
                             ?.FullName ?? "Önce eğitmenini seç")"
                                disabled />
@@ -294,3 +297,49 @@
         </section>
     </div>
 </section>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const trainerOptions = Array.from(
+                document.querySelectorAll("[data-trainer-option]"));
+            const selectedTrainerInput = document.getElementById(
+                "selected-personal-trainer");
+
+            trainerOptions.forEach(option => {
+                option.addEventListener("click", event => {
+                    if (event.metaKey ||
+                        event.ctrlKey ||
+                        event.shiftKey ||
+                        event.altKey) {
+                        return;
+                    }
+
+                    event.preventDefault();
+
+                    trainerOptions.forEach(trainerOption => {
+                        const isSelected = trainerOption === option;
+                        trainerOption.classList.toggle("is-selected", isSelected);
+
+                        const status = trainerOption.querySelector("small");
+                        if (status) {
+                            status.textContent = isSelected
+                                ? "Seçildi"
+                                : "Eğitmeni seç";
+                        }
+                    });
+
+                    if (selectedTrainerInput) {
+                        selectedTrainerInput.value =
+                            option.dataset.trainerName ?? "Önce eğitmenini seç";
+                    }
+
+                    window.history.replaceState(
+                        null,
+                        "",
+                        option.href);
+                });
+            });
+        });
+    </script>
+}

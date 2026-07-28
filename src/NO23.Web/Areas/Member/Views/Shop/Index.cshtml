@@ -161,16 +161,43 @@
                                           method="post"
                                           class="shop-add-form">
                                         <input type="hidden" name="productId" value="@product.Id" />
-                                        <label>
-                                            <span class="visually-hidden">Adet</span>
+                                        <div class="shop-quantity-control"
+                                             data-quantity-control>
+                                            <button type="button"
+                                                    class="shop-quantity-button"
+                                                    data-quantity-decrease
+                                                    aria-label="@product.Name adedini azalt"
+                                                    disabled>
+                                                <svg class="shop-quantity-icon"
+                                                     viewBox="0 0 12 12"
+                                                     aria-hidden="true"
+                                                     focusable="false">
+                                                    <path d="M2.5 6h7" />
+                                                </svg>
+                                            </button>
                                             <input type="number"
                                                    name="quantity"
                                                    value="1"
                                                    min="1"
                                                    max="@Math.Max(product.StockQuantity, 1)"
+                                                   step="1"
+                                                   inputmode="numeric"
+                                                   required
                                                    aria-label="@product.Name adet"
                                                    @(product.StockQuantity == 0 ? "disabled" : null) />
-                                        </label>
+                                            <button type="button"
+                                                    class="shop-quantity-button"
+                                                    data-quantity-increase
+                                                    aria-label="@product.Name adedini artır"
+                                                    @(product.StockQuantity == 0 ? "disabled" : null)>
+                                                <svg class="shop-quantity-icon"
+                                                     viewBox="0 0 12 12"
+                                                     aria-hidden="true"
+                                                     focusable="false">
+                                                    <path d="M2.5 6h7M6 2.5v7" />
+                                                </svg>
+                                            </button>
+                                        </div>
                                         <button type="submit"
                                                 @(product.StockQuantity == 0 ? "disabled" : null)>
                                             @(product.StockQuantity == 0 ? "Tükendi" : "Sepete Ekle")
@@ -241,15 +268,41 @@
                                       method="post"
                                       class="shop-add-form">
                                     <input type="hidden" name="menuItemId" value="@item.Id" />
-                                    <label>
-                                        <span class="visually-hidden">Adet</span>
+                                    <div class="shop-quantity-control"
+                                         data-quantity-control>
+                                        <button type="button"
+                                                class="shop-quantity-button"
+                                                data-quantity-decrease
+                                                aria-label="@item.Name adedini azalt"
+                                                disabled>
+                                            <svg class="shop-quantity-icon"
+                                                 viewBox="0 0 12 12"
+                                                 aria-hidden="true"
+                                                 focusable="false">
+                                                <path d="M2.5 6h7" />
+                                            </svg>
+                                        </button>
                                         <input type="number"
                                                name="quantity"
                                                value="1"
                                                min="1"
                                                max="20"
+                                               step="1"
+                                               inputmode="numeric"
+                                               required
                                                aria-label="@item.Name adet" />
-                                    </label>
+                                        <button type="button"
+                                                class="shop-quantity-button"
+                                                data-quantity-increase
+                                                aria-label="@item.Name adedini artır">
+                                            <svg class="shop-quantity-icon"
+                                                 viewBox="0 0 12 12"
+                                                 aria-hidden="true"
+                                                 focusable="false">
+                                                <path d="M2.5 6h7M6 2.5v7" />
+                                            </svg>
+                                        </button>
+                                    </div>
                                     <button type="submit">
                                         Sepete Ekle
                                         <span aria-hidden="true">+</span>
@@ -267,4 +320,63 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            document.querySelectorAll("[data-quantity-control]")
+                .forEach(control => {
+                    const input = control.querySelector('input[name="quantity"]');
+                    const decreaseButton = control.querySelector(
+                        "[data-quantity-decrease]");
+                    const increaseButton = control.querySelector(
+                        "[data-quantity-increase]");
+
+                    if (!input || !decreaseButton || !increaseButton) {
+                        return;
+                    }
+
+                    const minimum = Number.parseInt(input.min, 10) || 1;
+                    const maximum = Number.parseInt(input.max, 10) ||
+                        Number.MAX_SAFE_INTEGER;
+
+                    const normalizeValue = () => {
+                        const parsedValue = Number.parseInt(input.value, 10);
+                        const value = Number.isNaN(parsedValue)
+                            ? minimum
+                            : Math.min(maximum, Math.max(minimum, parsedValue));
+
+                        input.value = value.toString();
+                        decreaseButton.disabled = input.disabled || value <= minimum;
+                        increaseButton.disabled = input.disabled || value >= maximum;
+
+                        return value;
+                    };
+
+                    const changeValue = amount => {
+                        const currentValue = normalizeValue();
+                        input.value = Math.min(
+                            maximum,
+                            Math.max(minimum, currentValue + amount))
+                            .toString();
+                        normalizeValue();
+                        input.dispatchEvent(new Event("input", { bubbles: true }));
+                    };
+
+                    decreaseButton.addEventListener("click", () => changeValue(-1));
+                    increaseButton.addEventListener("click", () => changeValue(1));
+                    input.addEventListener("change", normalizeValue);
+                    input.addEventListener("blur", normalizeValue);
+                    input.addEventListener("input", () => {
+                        const parsedValue = Number.parseInt(input.value, 10);
+                        decreaseButton.disabled = input.disabled ||
+                            Number.isNaN(parsedValue) ||
+                            parsedValue <= minimum;
+                        increaseButton.disabled = input.disabled ||
+                            Number.isNaN(parsedValue) ||
+                            parsedValue >= maximum;
+                    });
+
+                    normalizeValue();
+                });
+        });
+    </script>
 }
