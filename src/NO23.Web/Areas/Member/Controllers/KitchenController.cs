@@ -17,7 +17,8 @@ namespace NO23.Web.Areas.Member.Controllers;
 [Authorize(Roles = ApplicationRoles.Member)]
 public class KitchenController(
     ApplicationDbContext dbContext,
-    CalorieCalculatorService calorieCalculator) : Controller
+    CalorieCalculatorService calorieCalculator,
+    KitchenPlanMatchingService kitchenPlanMatchingService) : Controller
 {
     private const string CalculatorInputSessionKey = "NO23.Kitchen.CalculatorInput";
     private const string CalculatorResultSessionKey = "NO23.Kitchen.CalculatorResult";
@@ -63,7 +64,7 @@ public class KitchenController(
                 await BuildDashboardAsync(input, null));
         }
 
-        var result = calorieCalculator.Calculate(new CalorieCalculationRequest
+        var calculationRequest = new CalorieCalculationRequest
         {
             HeightCm = input.HeightCm,
             WeightKg = input.WeightKg,
@@ -71,7 +72,9 @@ public class KitchenController(
             Gender = input.Gender,
             ActivityLevel = input.ActivityLevel,
             Goal = input.Goal
-        });
+        };
+
+        var result = calorieCalculator.Calculate(calculationRequest);
 
         var recommendation = new CalorieRecommendationViewModel
         {
@@ -120,7 +123,7 @@ public class KitchenController(
             return RedirectToAction(nameof(Index));
         }
 
-        var result = calorieCalculator.Calculate(new CalorieCalculationRequest
+        var calculationRequest = new CalorieCalculationRequest
         {
             HeightCm = input.HeightCm,
             WeightKg = input.WeightKg,
@@ -128,7 +131,9 @@ public class KitchenController(
             Gender = input.Gender,
             ActivityLevel = input.ActivityLevel,
             Goal = input.Goal
-        });
+        };
+
+        var result = calorieCalculator.Calculate(calculationRequest);
 
         var today = DateOnly.FromDateTime(DateTime.Today);
         var hasActiveSubscription = await dbContext.KitchenSubscriptions
@@ -146,7 +151,9 @@ public class KitchenController(
         var startsOn = DateOnly.FromDateTime(DateTime.Today.AddDays(1));
         var days = GetPlanDays(plan);
 
-        dbContext.KitchenSubscriptions.Add(new KitchenSubscription
+        await using var transaction = await dbContext.Database.BeginTransactionAsync();
+
+        var subscription = new KitchenSubscription
         {
             MemberProfileId = profile.Id,
             Plan = plan,
@@ -157,10 +164,30 @@ public class KitchenController(
             FatGrams = result.FatGrams,
             StartsOn = startsOn,
             EndsOn = startsOn.AddDays(days - 1)
-        });
+        };
 
+        dbContext.KitchenSubscriptions.Add(subscription);
         await dbContext.SaveChangesAsync();
-        TempData["SuccessMessage"] = "Kitchen aboneliğin oluşturuldu.";
+
+        var planResult = await kitchenPlanMatchingService.GenerateAsync(
+            subscription.Id,
+            calculationRequest);
+
+        if (!planResult.Succeeded)
+        {
+            await transaction.RollbackAsync();
+
+            TempData["ErrorMessage"] =
+                planResult.Message ??
+                "Kitchen beslenme plani olusturulamadi.";
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        await transaction.CommitAsync();
+
+        TempData["SuccessMessage"] =
+            "Kitchen aboneligin ve 5 ogunluk beslenme planin olusturuldu.";
 
         return RedirectToAction(nameof(Index));
     }

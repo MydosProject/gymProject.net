@@ -41,6 +41,9 @@ public class KitchenMenuItemConfiguration : IEntityTypeConfiguration<KitchenMenu
         builder.Property(item => item.Tags)
             .HasMaxLength(500);
 
+        builder.Property(item => item.IsPlanEligible)
+            .HasDefaultValue(true);
+
         builder.Property(item => item.CreatedAtUtc)
             .HasDefaultValueSql("NOW()");
     }
