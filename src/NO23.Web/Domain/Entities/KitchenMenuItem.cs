@@ -30,6 +30,8 @@ public class KitchenMenuItem
 
     public bool IsActive { get; set; } = true;
 
+    public bool IsPlanEligible { get; set; } = true;
+
     public int DisplayOrder { get; set; }
 
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
@@ -39,4 +41,6 @@ public class KitchenMenuItem
     public ICollection<CartItem> CartItems { get; set; } = [];
 
     public ICollection<OrderItem> OrderItems { get; set; } = [];
+
+    public ICollection<KitchenMealPlanItem> MealPlanItems { get; set; } = [];
 }

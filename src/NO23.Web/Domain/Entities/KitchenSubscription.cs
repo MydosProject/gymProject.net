@@ -33,4 +33,6 @@ public class KitchenSubscription
     public DateTime? UpdatedAtUtc { get; set; }
 
     public ICollection<Order> Orders { get; set; } = [];
+
+    public KitchenMealPlan? MealPlan { get; set; }
 }

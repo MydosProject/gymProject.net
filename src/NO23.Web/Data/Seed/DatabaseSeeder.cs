@@ -190,6 +190,7 @@ public static class DatabaseSeeder
             item.Ingredients = defaultItem.Ingredients;
             item.Allergens = defaultItem.Allergens;
             item.Tags = defaultItem.Tags;
+            item.IsPlanEligible = defaultItem.IsPlanEligible;
             item.DisplayOrder = defaultItem.DisplayOrder;
             item.UpdatedAtUtc = DateTime.UtcNow;
         }

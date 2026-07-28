@@ -23,6 +23,12 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<KitchenSubscription> KitchenSubscriptions => Set<KitchenSubscription>();
 
+    public DbSet<KitchenMealPlan> KitchenMealPlans => Set<KitchenMealPlan>();
+
+    public DbSet<KitchenMealPlanDay> KitchenMealPlanDays => Set<KitchenMealPlanDay>();
+
+    public DbSet<KitchenMealPlanItem> KitchenMealPlanItems => Set<KitchenMealPlanItem>();
+
     public DbSet<ShopProduct> ShopProducts => Set<ShopProduct>();
 
     public DbSet<ShoppingCart> ShoppingCarts => Set<ShoppingCart>();
