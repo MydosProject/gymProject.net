@@ -1,0 +1,97 @@
+@page
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.AccessDeniedModel
+@{
+    ViewData["Title"] = "Erişim İzni Bulunmuyor";
+    Layout = "/Views/Shared/_Layout.cshtml";
+}
+
+<section class="no23-register-page">
+    <div class="register-page-grid" aria-hidden="true"></div>
+    <div class="register-page-glow" aria-hidden="true"></div>
+
+    <div class="container position-relative">
+        <div class="no23-register-shell">
+            <aside class="register-intro-panel">
+                <a class="register-back-link"
+                   asp-area=""
+                   asp-controller="Home"
+                   asp-action="Index">
+                    <span aria-hidden="true">←</span>
+                    Ana sayfaya dön
+                </a>
+
+                <div class="register-intro-content">
+                    <p class="register-kicker">NO23 / 403</p>
+
+                    <h1>
+                        Bu alan hesabına
+                        <span>açık değil.</span>
+                    </h1>
+
+                    <p class="register-intro-description">
+                        Görüntülemek istediğin sayfa farklı bir hesap yetkisi gerektiriyor.
+                        Mevcut hesabınla kullanabildiğin alanlardan devam edebilirsin.
+                    </p>
+                </div>
+
+                <p class="register-intro-footer">
+                    Train Better. Eat Better. Live Better.
+                </p>
+            </aside>
+
+            <div class="register-form-panel d-flex flex-column justify-content-center">
+                <div class="register-form-heading">
+                    <div>
+                        <p class="register-form-kicker">Erişim Sınırlandırıldı</p>
+                        <h2>Bu sayfaya erişemezsin.</h2>
+                    </div>
+
+                    <span class="register-step">403</span>
+                </div>
+
+                <p class="register-form-description">
+                    Sayfaya ulaşmak için gerekli yetki mevcut hesabında bulunmuyor.
+                    Bunun bir hata olduğunu düşünüyorsan yöneticinle iletişime geçebilirsin.
+                </p>
+
+                @if (User.IsInRole("Admin"))
+                {
+                    <a asp-area="Admin"
+                       asp-controller="Members"
+                       asp-action="Index"
+                       class="no23-register-submit">
+                        <span>Admin paneline dön</span>
+                        <span aria-hidden="true">→</span>
+                    </a>
+                }
+                else if (User.IsInRole("Member"))
+                {
+                    <a asp-area="Member"
+                       asp-controller="Home"
+                       asp-action="Index"
+                       class="no23-register-submit">
+                        <span>Üye panelime dön</span>
+                        <span aria-hidden="true">→</span>
+                    </a>
+                }
+                else
+                {
+                    <a asp-page="./Login"
+                       class="no23-register-submit">
+                        <span>Üye girişi yap</span>
+                        <span aria-hidden="true">→</span>
+                    </a>
+                }
+
+                <p class="register-login-link">
+                    <a asp-area=""
+                       asp-controller="Home"
+                       asp-action="Index">
+                        Ana sayfaya dön
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
