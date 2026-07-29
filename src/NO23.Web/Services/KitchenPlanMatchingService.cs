@@ -32,7 +32,7 @@ public class KitchenPlanMatchingService(ApplicationDbContext dbContext)
 
         if (subscription is null)
         {
-            return KitchenPlanGenerationResult.Fail("Kitchen aboneligi bulunamadi.");
+            return KitchenPlanGenerationResult.Fail("Kitchen aboneliği bulunamadı.");
         }
 
         var menuItems = await dbContext.KitchenMenuItems
@@ -47,7 +47,7 @@ public class KitchenPlanMatchingService(ApplicationDbContext dbContext)
         if (match.Status == KitchenMealPlanStatus.Failed)
         {
             return KitchenPlanGenerationResult.Fail(
-                match.Message ?? "Kitchen beslenme plani olusturulamadi.");
+                match.Message ?? "Kitchen beslenme planı oluşturulamadı.");
         }
 
         var mealPlan = BuildMealPlan(subscription, sourceRequest, match);
@@ -164,7 +164,7 @@ public static class KitchenPlanMatcher
         {
             return new KitchenPlanMatch(
                 KitchenMealPlanStatus.Failed,
-                "Kitchen aboneliginin tarih araligi gecerli degil.",
+                "Kitchen aboneliğinin tarih aralığı geçerli değil.",
                 []);
         }
 
@@ -210,7 +210,7 @@ public static class KitchenPlanMatcher
             {
                 return new KitchenPlanMatch(
                     KitchenMealPlanStatus.Failed,
-                    "Ayni gun icinde tekrar etmeyen 5 ogunluk Kitchen plani icin yeterli urun bulunamadi.",
+                    "Aynı gün içinde tekrar etmeyen 5 öğünlük Kitchen planı için yeterli ürün bulunamadı.",
                     []);
             }
 
@@ -428,11 +428,11 @@ public static class KitchenPlanMatcher
     {
         return slot switch
         {
-            KitchenMealSlot.Breakfast => "Kahvalti",
-            KitchenMealSlot.MorningSnack => "Ara ogun 1",
-            KitchenMealSlot.Lunch => "Ogle yemegi",
-            KitchenMealSlot.AfternoonSnack => "Ara ogun 2",
-            KitchenMealSlot.Dinner => "Aksam yemegi",
+            KitchenMealSlot.Breakfast => "Kahvaltı",
+            KitchenMealSlot.MorningSnack => "Ara Öğün 1",
+            KitchenMealSlot.Lunch => "Öğle Yemeği",
+            KitchenMealSlot.AfternoonSnack => "Ara Öğün 2",
+            KitchenMealSlot.Dinner => "Akşam Yemeği",
             _ => slot.ToString()
         };
     }
@@ -443,11 +443,17 @@ public static class KitchenPlanMatcher
 
         return goal switch
         {
-            NutritionGoal.FatLoss when tags.Contains("dusuk kalori", StringComparison.Ordinal) => 0.15,
-            NutritionGoal.MuscleGain when tags.Contains("yuksek protein", StringComparison.Ordinal) => 0.15,
+            NutritionGoal.FatLoss when
+                tags.Contains("düşük kalori", StringComparison.Ordinal) ||
+                tags.Contains("dusuk kalori", StringComparison.Ordinal) => 0.15,
+            NutritionGoal.MuscleGain when
+                tags.Contains("yüksek protein", StringComparison.Ordinal) ||
+                tags.Contains("yuksek protein", StringComparison.Ordinal) => 0.15,
             NutritionGoal.PerformanceNutrition when tags.Contains("performans", StringComparison.Ordinal) => 0.15,
             NutritionGoal.WeightMaintenance when tags.Contains("dengeli", StringComparison.Ordinal) => 0.10,
-            NutritionGoal.HealthyLifestyle when tags.Contains("saglikli yasam", StringComparison.Ordinal) => 0.10,
+            NutritionGoal.HealthyLifestyle when
+                tags.Contains("sağlıklı yaşam", StringComparison.Ordinal) ||
+                tags.Contains("saglikli yasam", StringComparison.Ordinal) => 0.10,
             NutritionGoal.HealthyLifestyle when tags.Contains("vejetaryen", StringComparison.Ordinal) => 0.05,
             _ => 0
         };

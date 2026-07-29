@@ -20,6 +20,13 @@ public class KitchenSubscriptionConfiguration : IEntityTypeConfiguration<Kitchen
             .HasConversion<string>()
             .HasMaxLength(40);
 
+        builder.Property(subscription => subscription.PackageNameSnapshot)
+            .HasMaxLength(80)
+            .IsRequired();
+
+        builder.Property(subscription => subscription.PackagePriceSnapshot)
+            .HasPrecision(10, 2);
+
         builder.HasIndex(subscription => new { subscription.MemberProfileId, subscription.Status });
 
         builder.Property(subscription => subscription.CreatedAtUtc)
@@ -29,5 +36,10 @@ public class KitchenSubscriptionConfiguration : IEntityTypeConfiguration<Kitchen
             .WithMany(profile => profile.KitchenSubscriptions)
             .HasForeignKey(subscription => subscription.MemberProfileId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(subscription => subscription.KitchenSubscriptionPackage)
+            .WithMany(package => package.KitchenSubscriptions)
+            .HasForeignKey(subscription => subscription.KitchenSubscriptionPackageId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

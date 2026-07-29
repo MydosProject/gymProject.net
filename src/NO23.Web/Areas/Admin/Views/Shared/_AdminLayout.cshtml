@@ -5,6 +5,7 @@
     var userInitial = string.IsNullOrWhiteSpace(userName) ? "N" : userName.Trim()[0].ToString().ToUpperInvariant();
     var isKitchenSection =
         currentController.Equals("KitchenMenuItems", StringComparison.OrdinalIgnoreCase) ||
+        currentController.Equals("KitchenSubscriptionPackages", StringComparison.OrdinalIgnoreCase) ||
         currentController.Equals("KitchenSubscriptions", StringComparison.OrdinalIgnoreCase);
     var isClassSection =
         currentController.Equals("GroupClasses", StringComparison.OrdinalIgnoreCase) ||
@@ -56,7 +57,7 @@
                         <span class="admin-nav-index">02</span>
                         <span>Shop Ürünleri</span>
                     </a>
-                    <a class="admin-nav-link has-submenu @ActiveClass("KitchenMenuItems", "KitchenSubscriptions")"
+                    <a class="admin-nav-link has-submenu @ActiveClass("KitchenMenuItems", "KitchenSubscriptionPackages", "KitchenSubscriptions")"
                        asp-area="Admin"
                        asp-controller="KitchenMenuItems"
                        asp-action="Index"
@@ -75,6 +76,12 @@
                            asp-controller="KitchenMenuItems"
                            asp-action="Index">
                             Menü Ürünleri
+                        </a>
+                        <a class="admin-nav-sublink @ActiveClass("KitchenSubscriptionPackages")"
+                           asp-area="Admin"
+                           asp-controller="KitchenSubscriptionPackages"
+                           asp-action="Index">
+                            Paketler
                         </a>
                         <a class="admin-nav-sublink @ActiveClass("KitchenSubscriptions")"
                            asp-area="Admin"
