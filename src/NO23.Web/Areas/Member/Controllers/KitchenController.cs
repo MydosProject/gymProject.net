@@ -240,7 +240,8 @@ public class KitchenController(
                     FatGrams = subscription.FatGrams,
                     StartsOn = subscription.StartsOn,
                     EndsOn = subscription.EndsOn,
-                    RemainingDays = Math.Max(0, subscription.EndsOn.DayNumber - today.DayNumber + 1)
+                    RemainingDays = Math.Max(0, subscription.EndsOn.DayNumber - today.DayNumber + 1),
+                    MealPlan = await BuildMealPlanAsync(subscription.Id)
                 };
             }
         }
@@ -257,6 +258,132 @@ public class KitchenController(
                 new() { Plan = KitchenSubscriptionPlan.TwentyDays, Name = "20 Günlük", Days = 20 },
                 new() { Plan = KitchenSubscriptionPlan.Monthly, Name = "Aylık", Days = 30 }
             ]
+        };
+    }
+
+    private async Task<KitchenMealPlanViewModel?> BuildMealPlanAsync(int kitchenSubscriptionId)
+    {
+        var mealPlan = await dbContext.KitchenMealPlans
+            .AsNoTracking()
+            .Where(plan => plan.KitchenSubscriptionId == kitchenSubscriptionId)
+            .OrderByDescending(plan => plan.GeneratedAtUtc)
+            .ThenByDescending(plan => plan.Id)
+            .Select(plan => new
+            {
+                plan.Id,
+                plan.Status,
+                plan.GeneratedAtUtc
+            })
+            .FirstOrDefaultAsync();
+
+        if (mealPlan is null)
+        {
+            return null;
+        }
+
+        var days = await dbContext.KitchenMealPlanDays
+            .AsNoTracking()
+            .Where(day => day.KitchenMealPlanId == mealPlan.Id)
+            .OrderBy(day => day.DayNumber)
+            .Select(day => new
+            {
+                day.Id,
+                day.DayNumber,
+                day.PlanDate,
+                day.TotalCalories,
+                day.TotalProteinGrams,
+                day.TotalCarbohydrateGrams,
+                day.TotalFatGrams
+            })
+            .ToListAsync();
+
+        var dayIds = days
+            .Select(day => day.Id)
+            .ToList();
+
+        var items = await dbContext.KitchenMealPlanItems
+            .AsNoTracking()
+            .Where(item => dayIds.Contains(item.KitchenMealPlanDayId))
+            .OrderBy(item => item.KitchenMealPlanDayId)
+            .ThenBy(item => item.MealSlot)
+            .ThenBy(item => item.Id)
+            .Select(item => new
+            {
+                item.Id,
+                item.KitchenMealPlanDayId,
+                item.KitchenMenuItemId,
+                item.MealSlot,
+                item.Quantity,
+                item.ProductNameSnapshot,
+                item.CaloriesSnapshot,
+                item.ProteinGramsSnapshot,
+                item.CarbohydrateGramsSnapshot,
+                item.FatGramsSnapshot,
+                item.UnitPriceSnapshot
+            })
+            .ToListAsync();
+
+        var itemsByDayId = items
+            .GroupBy(item => item.KitchenMealPlanDayId)
+            .ToDictionary(group => group.Key, group => group.ToList());
+
+        return new KitchenMealPlanViewModel
+        {
+            Id = mealPlan.Id,
+            Status = mealPlan.Status.ToString(),
+            GeneratedAtUtc = mealPlan.GeneratedAtUtc,
+            Days = days
+                .Select(day =>
+                {
+                    var dayMeals = itemsByDayId.TryGetValue(day.Id, out var dayItems)
+                        ? dayItems
+                        : [];
+
+                    var meals = dayMeals
+                        .Select(item => new KitchenMealPlanMealViewModel
+                        {
+                            Id = item.Id,
+                            KitchenMenuItemId = item.KitchenMenuItemId,
+                            MealSlot = item.MealSlot.ToString(),
+                            MealSlotDisplayName = GetMealSlotDisplayName(item.MealSlot),
+                            Quantity = item.Quantity,
+                            ProductName = item.ProductNameSnapshot,
+                            Calories = item.CaloriesSnapshot * item.Quantity,
+                            ProteinGrams = item.ProteinGramsSnapshot * item.Quantity,
+                            CarbohydrateGrams = item.CarbohydrateGramsSnapshot * item.Quantity,
+                            FatGrams = item.FatGramsSnapshot * item.Quantity,
+                            UnitPrice = item.UnitPriceSnapshot,
+                            TotalPrice = item.UnitPriceSnapshot * item.Quantity
+                        })
+                        .ToList();
+
+                    return new KitchenMealPlanDayViewModel
+                    {
+                        Id = day.Id,
+                        DayNumber = day.DayNumber,
+                        PlanDate = day.PlanDate,
+                        TotalCalories = day.TotalCalories,
+                        TotalProteinGrams = day.TotalProteinGrams,
+                        TotalCarbohydrateGrams = day.TotalCarbohydrateGrams,
+                        TotalFatGrams = day.TotalFatGrams,
+                        TotalPrice = meals.Sum(meal => meal.TotalPrice),
+                        Meals = meals
+                    };
+                })
+                .ToList()
+        };
+    }
+
+    private static string GetMealSlotDisplayName(KitchenMealSlot slot)
+    {
+        return slot switch
+        {
+            KitchenMealSlot.Breakfast => "Kahvalt\u0131",
+            KitchenMealSlot.MorningSnack => "1. Ara \u00d6\u011f\u00fcn",
+            KitchenMealSlot.Lunch => "\u00d6\u011fle Yeme\u011fi",
+            KitchenMealSlot.AfternoonSnack => "2. Ara \u00d6\u011f\u00fcn",
+            KitchenMealSlot.Dinner => "Ak\u015fam Yeme\u011fi",
+            _ => slot.ToString()
         };
     }
 

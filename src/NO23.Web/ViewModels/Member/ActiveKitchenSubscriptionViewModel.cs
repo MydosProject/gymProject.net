@@ -23,4 +23,9 @@ public class ActiveKitchenSubscriptionViewModel
     public DateOnly EndsOn { get; init; }
 
     public int RemainingDays { get; init; }
+
+    public KitchenMealPlanViewModel? MealPlan { get; init; }
+
+    public IReadOnlyList<KitchenMealPlanDayViewModel> MealPlanDays =>
+        MealPlan?.Days ?? [];
 }
