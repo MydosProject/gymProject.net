@@ -1,0 +1,60 @@
+namespace NO23.Web.ViewModels.Member;
+
+public class KitchenMealPlanViewModel
+{
+    public int Id { get; init; }
+
+    public string Status { get; init; } = string.Empty;
+
+    public DateTime GeneratedAtUtc { get; init; }
+
+    public IReadOnlyList<KitchenMealPlanDayViewModel> Days { get; init; } = [];
+}
+
+public class KitchenMealPlanDayViewModel
+{
+    public int Id { get; init; }
+
+    public int DayNumber { get; init; }
+
+    public DateOnly PlanDate { get; init; }
+
+    public int TotalCalories { get; init; }
+
+    public decimal TotalProteinGrams { get; init; }
+
+    public decimal TotalCarbohydrateGrams { get; init; }
+
+    public decimal TotalFatGrams { get; init; }
+
+    public decimal TotalPrice { get; init; }
+
+    public IReadOnlyList<KitchenMealPlanMealViewModel> Meals { get; init; } = [];
+}
+
+public class KitchenMealPlanMealViewModel
+{
+    public int Id { get; init; }
+
+    public int KitchenMenuItemId { get; init; }
+
+    public string MealSlot { get; init; } = string.Empty;
+
+    public string MealSlotDisplayName { get; init; } = string.Empty;
+
+    public int Quantity { get; init; }
+
+    public string ProductName { get; init; } = string.Empty;
+
+    public int Calories { get; init; }
+
+    public decimal ProteinGrams { get; init; }
+
+    public decimal CarbohydrateGrams { get; init; }
+
+    public decimal FatGrams { get; init; }
+
+    public decimal UnitPrice { get; init; }
+
+    public decimal TotalPrice { get; init; }
+}
