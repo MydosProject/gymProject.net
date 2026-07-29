@@ -30,10 +30,28 @@
             <textarea asp-for="Goal" class="form-control" rows="2"></textarea>
             <span asp-validation-for="Goal" class="text-danger"></span>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-3">
             <label asp-for="Reward" class="form-label">Ödül</label>
             <input asp-for="Reward" class="form-control" />
             <span asp-validation-for="Reward" class="text-danger"></span>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="TargetDailyCalories" class="form-label">Günlük hedef kalori</label>
+            <input asp-for="TargetDailyCalories" class="form-control" type="number" min="800" max="5000" />
+            <div class="form-text">Challenge için baz alınacak günlük hedef.</div>
+            <span asp-validation-for="TargetDailyCalories" class="text-danger"></span>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="CalorieTolerancePercent" class="form-label">Tolerans (%)</label>
+            <input asp-for="CalorieTolerancePercent" class="form-control" type="number" min="0" max="50" step="0.1" />
+            <div class="form-text">Örn. 10 girilirse hedefin yüzde 10 altı/üstü uyumlu sayılır.</div>
+            <span asp-validation-for="CalorieTolerancePercent" class="text-danger"></span>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="RequiredCompletionPercent" class="form-label">Tamamlama oranı (%)</label>
+            <input asp-for="RequiredCompletionPercent" class="form-control" type="number" min="1" max="100" />
+            <div class="form-text">Başarılı gün oranı bu değere ulaşınca challenge tamamlanır.</div>
+            <span asp-validation-for="RequiredCompletionPercent" class="text-danger"></span>
         </div>
         <div class="col-md-3">
             <label asp-for="StartsOn" class="form-label">Başlangıç tarihi</label>

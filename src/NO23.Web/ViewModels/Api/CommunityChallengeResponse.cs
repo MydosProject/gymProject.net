@@ -14,6 +14,12 @@ public class CommunityChallengeResponse
 
     public string? Reward { get; init; }
 
+    public int TargetDailyCalories { get; init; }
+
+    public decimal CalorieTolerancePercent { get; init; }
+
+    public int RequiredCompletionPercent { get; init; }
+
     public DateOnly StartsOn { get; init; }
 
     public DateOnly EndsOn { get; init; }

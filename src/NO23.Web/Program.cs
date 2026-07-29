@@ -56,6 +56,7 @@ builder.Services.AddControllersWithViews(options =>
 builder.Services.AddScoped<ClassReservationService>();
 builder.Services.AddScoped<CalorieCalculatorService>();
 builder.Services.AddScoped<KitchenPlanMatchingService>();
+builder.Services.AddScoped<CommunityChallengeProgressService>();
 builder.Services.AddScoped<CommerceService>();
 builder.Services.AddScoped<MemberCartQueryService>();
 
@@ -238,6 +239,9 @@ if (app.Environment.IsDevelopment())
                 Summary = item.Summary,
                 Goal = item.Goal,
                 Reward = item.Reward,
+                TargetDailyCalories = item.TargetDailyCalories,
+                CalorieTolerancePercent = item.CalorieTolerancePercent,
+                RequiredCompletionPercent = item.RequiredCompletionPercent,
                 StartsOn = item.StartsOn,
                 EndsOn = item.EndsOn,
                 Status = item.Status.ToString(),
