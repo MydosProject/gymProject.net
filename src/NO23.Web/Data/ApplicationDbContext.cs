@@ -23,6 +23,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<KitchenSubscription> KitchenSubscriptions => Set<KitchenSubscription>();
 
+    public DbSet<KitchenSubscriptionPackage> KitchenSubscriptionPackages =>
+        Set<KitchenSubscriptionPackage>();
+
     public DbSet<KitchenMealPlan> KitchenMealPlans => Set<KitchenMealPlan>();
 
     public DbSet<KitchenMealPlanDay> KitchenMealPlanDays => Set<KitchenMealPlanDay>();

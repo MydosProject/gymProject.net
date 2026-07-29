@@ -8,6 +8,23 @@ namespace NO23.Web.Data.Seed;
 
 public static class DatabaseSeeder
 {
+    private static readonly IReadOnlyDictionary<KitchenSubscriptionPlan, (string Name, string Description)>
+        LegacyKitchenSubscriptionPackageTexts = new Dictionary<KitchenSubscriptionPlan, (string Name, string Description)>
+        {
+            [KitchenSubscriptionPlan.FiveDays] = (
+                "5 Gunluk Kitchen Paketi",
+                "Kalori ve makro hedeflerine gore hazirlanan 5 gunluk NO23 Kitchen yemek paketi."),
+            [KitchenSubscriptionPlan.TenDays] = (
+                "10 Gunluk Kitchen Paketi",
+                "Duzenli beslenme ritmini kurmak icin 10 gunluk NO23 Kitchen yemek paketi."),
+            [KitchenSubscriptionPlan.TwentyDays] = (
+                "20 Gunluk Kitchen Paketi",
+                "Uzun sureli hedef takibi icin 20 gunluk NO23 Kitchen yemek paketi."),
+            [KitchenSubscriptionPlan.Monthly] = (
+                "Aylik Kitchen Paketi",
+                "Aylik rutin olusturmak isteyen uyeler icin 30 gunluk NO23 Kitchen yemek paketi.")
+        };
+
     public static async Task SeedAsync(IServiceProvider serviceProvider)
     {
         using var scope = serviceProvider.CreateScope();
@@ -19,6 +36,7 @@ public static class DatabaseSeeder
         await SeedRolesAsync(roleManager);
         await SeedMembershipPackagesAsync(dbContext);
         await SeedClassOperationsAsync(dbContext);
+        await SeedKitchenSubscriptionPackagesAsync(dbContext);
         await SeedKitchenMenuItemsAsync(dbContext);
         await SeedShopProductsAsync(dbContext);
         await SeedCommunityContentAsync(dbContext);
@@ -193,6 +211,59 @@ public static class DatabaseSeeder
             item.IsPlanEligible = defaultItem.IsPlanEligible;
             item.DisplayOrder = defaultItem.DisplayOrder;
             item.UpdatedAtUtc = DateTime.UtcNow;
+        }
+
+        await dbContext.SaveChangesAsync();
+    }
+
+    private static async Task SeedKitchenSubscriptionPackagesAsync(ApplicationDbContext dbContext)
+    {
+        foreach (var defaultPackage in KitchenSubscriptionPackageSeed.Defaults)
+        {
+            var package = await dbContext.KitchenSubscriptionPackages
+                .FirstOrDefaultAsync(existing => existing.Plan == defaultPackage.Plan);
+
+            if (package is null)
+            {
+                dbContext.KitchenSubscriptionPackages.Add(defaultPackage);
+                continue;
+            }
+
+            if (!LegacyKitchenSubscriptionPackageTexts.TryGetValue(package.Plan, out var legacyTexts))
+            {
+                continue;
+            }
+
+            var updatedText = false;
+
+            if (package.Name == legacyTexts.Name)
+            {
+                package.Name = defaultPackage.Name;
+                updatedText = true;
+            }
+
+            if (package.Description == legacyTexts.Description)
+            {
+                package.Description = defaultPackage.Description;
+                updatedText = true;
+            }
+
+            if (updatedText)
+            {
+                package.UpdatedAtUtc = DateTime.UtcNow;
+            }
+
+            var subscriptionsWithLegacySnapshot = await dbContext.KitchenSubscriptions
+                .Where(subscription =>
+                    subscription.Plan == defaultPackage.Plan &&
+                    subscription.PackageNameSnapshot == legacyTexts.Name)
+                .ToListAsync();
+
+            foreach (var subscription in subscriptionsWithLegacySnapshot)
+            {
+                subscription.PackageNameSnapshot = defaultPackage.Name;
+                subscription.UpdatedAtUtc = DateTime.UtcNow;
+            }
         }
 
         await dbContext.SaveChangesAsync();

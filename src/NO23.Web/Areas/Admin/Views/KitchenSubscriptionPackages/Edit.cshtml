@@ -1,0 +1,22 @@
+@model KitchenSubscriptionPackageFormViewModel
+@{
+    ViewData["Title"] = "Kitchen Paketi Düzenle";
+}
+
+<section class="admin-page">
+    <div class="container">
+        <header class="admin-page-head">
+            <div>
+                <p class="admin-eyebrow">NO23 KITCHEN / PAKETLER</p>
+                <h1>Kitchen paketini düzenle</h1>
+                <p class="admin-page-description">Paket fiyatı, açıklaması ve üye panelindeki görünürlüğünü güncelle.</p>
+            </div>
+        </header>
+
+        <partial name="_KitchenSubscriptionPackageForm" model="Model" />
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

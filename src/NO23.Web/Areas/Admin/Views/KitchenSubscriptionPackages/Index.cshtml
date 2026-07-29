@@ -1,0 +1,73 @@
+@model IReadOnlyList<KitchenSubscriptionPackageListItemViewModel>
+@{
+    ViewData["Title"] = "Kitchen Paketleri";
+    var activeCount = Model.Count(package => package.IsActive);
+    var totalSubscriptionCount = Model.Sum(package => package.SubscriptionCount);
+}
+
+<section class="admin-page">
+    <div class="container">
+        <header class="admin-page-head">
+            <div>
+                <p class="admin-eyebrow">NO23 KITCHEN / PAKETLER</p>
+                <h1>Kitchen paketleri</h1>
+                <p class="admin-page-description">5, 10, 20 günlük ve aylık Kitchen yemek paketlerinin fiyatlarını ve görünürlüğünü yönet.</p>
+            </div>
+            <a class="btn btn-dark" asp-action="Create">+ Yeni paket</a>
+        </header>
+
+        <div class="admin-metrics">
+            <article><span>Kitchen paketi</span><strong>@Model.Count</strong><small>Toplam paket</small></article>
+            <article><span>Aktif paket</span><strong>@activeCount</strong><small>Üye panelinde görünür</small></article>
+            <article><span>Abonelik</span><strong>@totalSubscriptionCount</strong><small>Bu paketlerden oluşan</small></article>
+        </div>
+
+        <div class="table-responsive admin-table-card">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Sıra</th>
+                        <th>Plan</th>
+                        <th>Paket</th>
+                        <th>Gün</th>
+                        <th>Fiyat</th>
+                        <th>Abonelik</th>
+                        <th>Durum</th>
+                        <th class="text-end">İşlem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Count == 0)
+                    {
+                        <tr><td colspan="8"><div class="admin-empty-row">Henüz Kitchen paketi eklenmedi.</div></td></tr>
+                    }
+                    else
+                    {
+                        @foreach (var package in Model)
+                        {
+                            <tr>
+                                <td><span class="admin-order-no">@package.DisplayOrder.ToString("00")</span></td>
+                                <td><span class="admin-status">@package.Plan</span></td>
+                                <td>
+                                    <strong>@package.Name</strong>
+                                    <small class="admin-cell-note">@package.Description</small>
+                                </td>
+                                <td><strong>@package.Days</strong><span class="admin-cell-note">gün</span></td>
+                                <td><strong>@package.UnitPrice.ToString("C0")</strong></td>
+                                <td><strong>@package.SubscriptionCount</strong></td>
+                                <td><span class="badge @(package.IsActive ? "text-bg-success" : "text-bg-secondary")">@(package.IsActive ? "Aktif" : "Pasif")</span></td>
+                                <td class="text-end">
+                                    <a class="btn btn-sm btn-outline-dark"
+                                       asp-action="Edit"
+                                       asp-route-id="@package.Id">
+                                        Düzenle
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>

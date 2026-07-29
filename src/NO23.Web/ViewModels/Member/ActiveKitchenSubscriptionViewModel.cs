@@ -10,6 +10,12 @@ public class ActiveKitchenSubscriptionViewModel
 
     public string Goal { get; init; } = string.Empty;
 
+    public string PackageName { get; init; } = string.Empty;
+
+    public decimal PackagePrice { get; init; }
+
+    public int PackageDays { get; init; }
+
     public int DailyCalories { get; init; }
 
     public int ProteinGrams { get; init; }

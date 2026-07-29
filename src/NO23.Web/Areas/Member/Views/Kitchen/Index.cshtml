@@ -173,7 +173,7 @@
 
                         <div class="kitchen-subscription-title">
                             <p>@GetSubscriptionGoalName(subscription.Goal)</p>
-                            <h3>@GetSubscriptionPlanName(subscription.Plan)</h3>
+                            <h3>@(string.IsNullOrWhiteSpace(subscription.PackageName) ? GetSubscriptionPlanName(subscription.Plan) : subscription.PackageName)</h3>
                         </div>
 
                         <div class="kitchen-subscription-progress">
@@ -219,13 +219,11 @@
 
                     <footer class="kitchen-subscription-footer">
                         <p>
-                            Planına bağlı siparişlerini ve teslimat durumlarını
-                            Siparişlerim alanından takip edebilirsin.
+                            @subscription.PackagePrice.ToString("C0") tutarındaki Kitchen paketin,
+                            günlük hedeflerine göre hazırlanan beslenme planını kapsar.
                         </p>
-                        <a asp-area="Member"
-                           asp-controller="Orders"
-                           asp-action="Index">
-                            Siparişlerime Git <span aria-hidden="true">↗</span>
+                        <a href="#active-subscription-title">
+                            Planımı Gör <span aria-hidden="true">↗</span>
                         </a>
                     </footer>
                 </article>
@@ -291,6 +289,18 @@
                         </dl>
                     </div>
 
+                    @if (Model.SubscriptionPlans.Count == 0)
+                    {
+                        <div class="kitchen-plan-required">
+                            <span>00</span>
+                            <div>
+                                <h3>Aktif Kitchen paketi bulunmuyor.</h3>
+                                <p>Yeni paketler yayına alındığında burada görünecek.</p>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
                     <div class="kitchen-plan-grid">
                         @foreach (var plan in Model.SubscriptionPlans)
                         {
@@ -308,9 +318,9 @@
                                 <input type="hidden" name="input.ActivityLevel" value="@Model.CalculatorInput.ActivityLevel" />
                                 <input type="hidden" name="input.Goal" value="@Model.CalculatorInput.Goal" />
 
-                                <span class="kitchen-plan-days">@plan.Days gün</span>
+                                <span class="kitchen-plan-days">@plan.Days gün · @plan.UnitPrice.ToString("C0")</span>
                                 <h4>@plan.Name</h4>
-                                <p>Hedefine göre hazırlanan günlük beslenme planı.</p>
+                                <p>@plan.Description</p>
                                 <button type="submit">
                                     Aboneliği Başlat
                                     <span aria-hidden="true">→</span>
@@ -318,6 +328,7 @@
                             </form>
                         }
                     </div>
+                    }
                 }
             </section>
         }

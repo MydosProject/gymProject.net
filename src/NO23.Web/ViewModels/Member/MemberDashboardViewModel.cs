@@ -10,6 +10,8 @@ public class MemberDashboardViewModel
 
     public bool HasUnlimitedClasses { get; init; }
 
+    public bool HasActiveKitchenSubscription { get; init; }
+
     public IReadOnlyList<MemberReservationViewModel> UpcomingReservations { get; init; } = [];
 
     public IReadOnlyList<AvailableClassSessionViewModel> AvailableSessions { get; init; } = [];

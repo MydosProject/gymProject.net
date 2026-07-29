@@ -10,9 +10,19 @@ public class KitchenSubscription
 
     public MemberProfile MemberProfile { get; set; } = null!;
 
+    public int KitchenSubscriptionPackageId { get; set; }
+
+    public KitchenSubscriptionPackage KitchenSubscriptionPackage { get; set; } = null!;
+
     public KitchenSubscriptionPlan Plan { get; set; }
 
     public KitchenSubscriptionStatus Status { get; set; } = KitchenSubscriptionStatus.Active;
+
+    public string PackageNameSnapshot { get; set; } = string.Empty;
+
+    public decimal PackagePriceSnapshot { get; set; }
+
+    public int PackageDaysSnapshot { get; set; }
 
     public NutritionGoal Goal { get; set; }
 
