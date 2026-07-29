@@ -41,6 +41,18 @@
             _ => goal
         };
     }
+
+    string GetCalorieComparison(int totalCalories, int targetCalories)
+    {
+        var difference = totalCalories - targetCalories;
+
+        return difference switch
+        {
+            0 => "Günlük hedefle tam uyumlu",
+            > 0 => $"Hedeften {difference} kcal fazla",
+            _ => $"Hedeften {Math.Abs(difference)} kcal az"
+        };
+    }
 }
 
 <section class="kitchen-page">
@@ -173,7 +185,7 @@
 
                         <div class="kitchen-subscription-title">
                             <p>@GetSubscriptionGoalName(subscription.Goal)</p>
-                            <h3>@GetSubscriptionPlanName(subscription.Plan)</h3>
+                            <h3>@(string.IsNullOrWhiteSpace(subscription.PackageName) ? GetSubscriptionPlanName(subscription.Plan) : subscription.PackageName)</h3>
                         </div>
 
                         <div class="kitchen-subscription-progress">
@@ -219,16 +231,139 @@
 
                     <footer class="kitchen-subscription-footer">
                         <p>
-                            Planına bağlı siparişlerini ve teslimat durumlarını
-                            Siparişlerim alanından takip edebilirsin.
+                            @subscription.PackagePrice.ToString("C0") tutarındaki Kitchen paketin,
+                            günlük hedeflerine göre hazırlanan beslenme planını kapsar.
                         </p>
-                        <a asp-area="Member"
-                           asp-controller="Orders"
-                           asp-action="Index">
-                            Siparişlerime Git <span aria-hidden="true">↗</span>
+                        <a href="#nutrition-plan">
+                            Planımı Gör <span aria-hidden="true">↗</span>
                         </a>
                     </footer>
                 </article>
+            </section>
+
+            <section class="kitchen-meal-plan-section"
+                     id="nutrition-plan"
+                     aria-labelledby="nutrition-plan-title">
+                <div class="kitchen-section-heading">
+                    <div>
+                        <p class="kitchen-section-kicker">Kişisel beslenme planı</p>
+                        <h2 id="nutrition-plan-title">Gün gün öğün planın.</h2>
+                    </div>
+
+                    <p>
+                        Boy, kilo, yaş, aktivite ve hedef bilgilerine göre eşleştirilen
+                        öğünlerini ve günlük toplamlarını buradan takip edebilirsin.
+                    </p>
+                </div>
+
+                @if (subscription.MealPlan is not null && subscription.MealPlanDays.Count > 0)
+                {
+                    <div class="kitchen-meal-plan-overview">
+                        <div>
+                            <span>Plan süresi</span>
+                            <strong>@subscription.MealPlanDays.Count gün</strong>
+                        </div>
+                        <div>
+                            <span>Günlük hedef</span>
+                            <strong>@subscription.DailyCalories kcal</strong>
+                        </div>
+                        <div>
+                            <span>Hedef türü</span>
+                            <strong>@GetSubscriptionGoalName(subscription.Goal)</strong>
+                        </div>
+                    </div>
+
+                    <div class="kitchen-meal-day-list">
+                        @foreach (var day in subscription.MealPlanDays)
+                        {
+                            <details class="kitchen-meal-day-card">
+                                <summary>
+                                    <span class="kitchen-meal-day-number">
+                                        @day.DayNumber.ToString("00")
+                                    </span>
+
+                                    <span class="kitchen-meal-day-title">
+                                        <small>@day.PlanDate.ToString("dd.MM.yyyy")</small>
+                                        <strong>@day.DayNumber. gün planı</strong>
+                                    </span>
+
+                                    <span class="kitchen-meal-day-calories">
+                                        <small>@GetCalorieComparison(day.TotalCalories, subscription.DailyCalories)</small>
+                                        <strong>@day.TotalCalories kcal</strong>
+                                    </span>
+
+                                    <span class="kitchen-meal-day-toggle"
+                                          aria-hidden="true"></span>
+                                </summary>
+
+                                <div class="kitchen-meal-day-content">
+                                    <dl class="kitchen-meal-day-totals">
+                                        <div>
+                                            <dt>Protein</dt>
+                                            <dd>@day.TotalProteinGrams.ToString("0.#") g</dd>
+                                        </div>
+                                        <div>
+                                            <dt>Karbonhidrat</dt>
+                                            <dd>@day.TotalCarbohydrateGrams.ToString("0.#") g</dd>
+                                        </div>
+                                        <div>
+                                            <dt>Yağ</dt>
+                                            <dd>@day.TotalFatGrams.ToString("0.#") g</dd>
+                                        </div>
+                                        <div>
+                                            <dt>Öğün</dt>
+                                            <dd>@day.Meals.Count</dd>
+                                        </div>
+                                    </dl>
+
+                                    <div class="kitchen-meal-list">
+                                        @foreach (var meal in day.Meals)
+                                        {
+                                            <article class="kitchen-meal-row">
+                                                <div>
+                                                    <span>@meal.MealSlotDisplayName</span>
+                                                    <strong>@meal.ProductName</strong>
+                                                </div>
+
+                                                <dl>
+                                                    <div>
+                                                        <dt>Adet</dt>
+                                                        <dd>@meal.Quantity</dd>
+                                                    </div>
+                                                    <div>
+                                                        <dt>Kalori</dt>
+                                                        <dd>@meal.Calories kcal</dd>
+                                                    </div>
+                                                    <div>
+                                                        <dt>Makro</dt>
+                                                        <dd>
+                                                            P @meal.ProteinGrams.ToString("0.#") ·
+                                                            K @meal.CarbohydrateGrams.ToString("0.#") ·
+                                                            Y @meal.FatGrams.ToString("0.#")
+                                                        </dd>
+                                                    </div>
+                                                </dl>
+                                            </article>
+                                        }
+                                    </div>
+                                </div>
+                            </details>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="kitchen-meal-plan-empty" role="status">
+                        <span aria-hidden="true">23</span>
+                        <div>
+                            <h3>Beslenme planın hazırlanıyor.</h3>
+                            <p>
+                                Uygun Kitchen öğünleri hedeflerinle eşleştirildiğinde
+                                gün gün planın burada görünecek.
+                            </p>
+                        </div>
+                    </div>
+                }
             </section>
         }
 
@@ -291,6 +426,18 @@
                         </dl>
                     </div>
 
+                    @if (Model.SubscriptionPlans.Count == 0)
+                    {
+                        <div class="kitchen-plan-required">
+                            <span>00</span>
+                            <div>
+                                <h3>Aktif Kitchen paketi bulunmuyor.</h3>
+                                <p>Yeni paketler yayına alındığında burada görünecek.</p>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
                     <div class="kitchen-plan-grid">
                         @foreach (var plan in Model.SubscriptionPlans)
                         {
@@ -308,9 +455,9 @@
                                 <input type="hidden" name="input.ActivityLevel" value="@Model.CalculatorInput.ActivityLevel" />
                                 <input type="hidden" name="input.Goal" value="@Model.CalculatorInput.Goal" />
 
-                                <span class="kitchen-plan-days">@plan.Days gün</span>
+                                <span class="kitchen-plan-days">@plan.Days gün · @plan.UnitPrice.ToString("C0")</span>
                                 <h4>@plan.Name</h4>
-                                <p>Hedefine göre hazırlanan günlük beslenme planı.</p>
+                                <p>@plan.Description</p>
                                 <button type="submit">
                                     Aboneliği Başlat
                                     <span aria-hidden="true">→</span>
@@ -318,6 +465,7 @@
                             </form>
                         }
                     </div>
+                    }
                 }
             </section>
         }

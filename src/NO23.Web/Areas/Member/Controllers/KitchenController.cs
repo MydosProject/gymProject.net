@@ -134,6 +134,23 @@ public class KitchenController(
         };
 
         var result = calorieCalculator.Calculate(calculationRequest);
+        var subscriptionPackage = await dbContext.KitchenSubscriptionPackages
+            .AsNoTracking()
+            .FirstOrDefaultAsync(package =>
+                package.Plan == plan &&
+                package.IsActive);
+
+        if (subscriptionPackage is null)
+        {
+            TempData["ErrorMessage"] = "Seçilen Kitchen paketi şu anda aktif değil.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        if (subscriptionPackage.Days <= 0)
+        {
+            TempData["ErrorMessage"] = "Seçilen Kitchen paketinin gün sayısı geçerli değil.";
+            return RedirectToAction(nameof(Index));
+        }
 
         var today = DateOnly.FromDateTime(DateTime.Today);
         var hasActiveSubscription = await dbContext.KitchenSubscriptions
@@ -149,21 +166,24 @@ public class KitchenController(
         }
 
         var startsOn = DateOnly.FromDateTime(DateTime.Today.AddDays(1));
-        var days = GetPlanDays(plan);
 
         await using var transaction = await dbContext.Database.BeginTransactionAsync();
 
         var subscription = new KitchenSubscription
         {
             MemberProfileId = profile.Id,
-            Plan = plan,
+            KitchenSubscriptionPackageId = subscriptionPackage.Id,
+            Plan = subscriptionPackage.Plan,
+            PackageNameSnapshot = subscriptionPackage.Name,
+            PackagePriceSnapshot = subscriptionPackage.UnitPrice,
+            PackageDaysSnapshot = subscriptionPackage.Days,
             Goal = input.Goal,
             DailyCalories = result.DailyCalories,
             ProteinGrams = result.ProteinGrams,
             CarbohydrateGrams = result.CarbohydrateGrams,
             FatGrams = result.FatGrams,
             StartsOn = startsOn,
-            EndsOn = startsOn.AddDays(days - 1)
+            EndsOn = startsOn.AddDays(subscriptionPackage.Days - 1)
         };
 
         dbContext.KitchenSubscriptions.Add(subscription);
@@ -179,7 +199,7 @@ public class KitchenController(
 
             TempData["ErrorMessage"] =
                 planResult.Message ??
-                "Kitchen beslenme plani olusturulamadi.";
+                "Kitchen beslenme planı oluşturulamadı.";
 
             return RedirectToAction(nameof(Index));
         }
@@ -187,7 +207,7 @@ public class KitchenController(
         await transaction.CommitAsync();
 
         TempData["SuccessMessage"] =
-            "Kitchen aboneligin ve 5 ogunluk beslenme planin olusturuldu.";
+            "Kitchen aboneliğin ve 5 öğünlük beslenme planın oluşturuldu.";
 
         return RedirectToAction(nameof(Index));
     }
@@ -217,6 +237,9 @@ public class KitchenController(
                     item.Plan,
                     item.Status,
                     item.Goal,
+                    item.PackageNameSnapshot,
+                    item.PackagePriceSnapshot,
+                    item.PackageDaysSnapshot,
                     item.DailyCalories,
                     item.ProteinGrams,
                     item.CarbohydrateGrams,
@@ -234,6 +257,9 @@ public class KitchenController(
                     Plan = subscription.Plan.ToString(),
                     Status = subscription.Status.ToString(),
                     Goal = subscription.Goal.ToString(),
+                    PackageName = subscription.PackageNameSnapshot,
+                    PackagePrice = subscription.PackagePriceSnapshot,
+                    PackageDays = subscription.PackageDaysSnapshot,
                     DailyCalories = subscription.DailyCalories,
                     ProteinGrams = subscription.ProteinGrams,
                     CarbohydrateGrams = subscription.CarbohydrateGrams,
@@ -251,14 +277,27 @@ public class KitchenController(
             CalculatorInput = input,
             Recommendation = recommendation,
             ActiveSubscription = activeSubscription,
-            SubscriptionPlans =
-            [
-                new() { Plan = KitchenSubscriptionPlan.FiveDays, Name = "5 Günlük", Days = 5 },
-                new() { Plan = KitchenSubscriptionPlan.TenDays, Name = "10 Günlük", Days = 10 },
-                new() { Plan = KitchenSubscriptionPlan.TwentyDays, Name = "20 Günlük", Days = 20 },
-                new() { Plan = KitchenSubscriptionPlan.Monthly, Name = "Aylık", Days = 30 }
-            ]
+            SubscriptionPlans = await BuildSubscriptionPackagesAsync()
         };
+    }
+
+    private async Task<IReadOnlyList<KitchenSubscriptionPlanViewModel>> BuildSubscriptionPackagesAsync()
+    {
+        return await dbContext.KitchenSubscriptionPackages
+            .AsNoTracking()
+            .Where(package => package.IsActive)
+            .OrderBy(package => package.DisplayOrder)
+            .ThenBy(package => package.Name)
+            .Select(package => new KitchenSubscriptionPlanViewModel
+            {
+                Plan = package.Plan,
+                Name = package.Name,
+                Description = package.Description,
+                Days = package.Days,
+                UnitPrice = package.UnitPrice,
+                IsActive = package.IsActive
+            })
+            .ToListAsync();
     }
 
     private async Task<KitchenMealPlanViewModel?> BuildMealPlanAsync(int kitchenSubscriptionId)
@@ -527,18 +566,6 @@ public class KitchenController(
             MenuItemCategory.Dessert => "Tatlılar",
             MenuItemCategory.Beverage => "İçecekler",
             _ => category.ToString()
-        };
-    }
-
-    private static int GetPlanDays(KitchenSubscriptionPlan plan)
-    {
-        return plan switch
-        {
-            KitchenSubscriptionPlan.FiveDays => 5,
-            KitchenSubscriptionPlan.TenDays => 10,
-            KitchenSubscriptionPlan.TwentyDays => 20,
-            KitchenSubscriptionPlan.Monthly => 30,
-            _ => throw new ArgumentOutOfRangeException(nameof(plan), plan, null)
         };
     }
 

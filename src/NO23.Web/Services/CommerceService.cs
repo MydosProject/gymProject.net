@@ -196,37 +196,6 @@ public class CommerceService(ApplicationDbContext dbContext)
         return CommerceResult.Ok(order.Id);
     }
 
-    public async Task<CommerceResult> CreateKitchenSubscriptionOrderAsync(
-        string userId,
-        int kitchenSubscriptionId,
-        DeliveryDetails deliveryDetails)
-    {
-        var profile = await GetMemberProfileAsync(userId);
-
-        if (profile is null)
-        {
-            return CommerceResult.Fail("Üye profili bulunamadı.");
-        }
-
-        var subscription = await dbContext.KitchenSubscriptions
-            .FirstOrDefaultAsync(item =>
-                item.Id == kitchenSubscriptionId &&
-                item.MemberProfileId == profile.Id &&
-                item.Status == KitchenSubscriptionStatus.Active);
-
-        if (subscription is null)
-        {
-            return CommerceResult.Fail("Aktif Kitchen aboneliği bulunamadı.");
-        }
-
-        var order = BuildOrder(profile.Id, OrderType.KitchenSubscription, deliveryDetails, subscription.Id, []);
-
-        dbContext.Orders.Add(order);
-        await dbContext.SaveChangesAsync();
-
-        return CommerceResult.Ok(order.Id);
-    }
-
     public async Task<CommerceResult> CreateGuestShopOrderAsync(
         int productId,
         int quantity,

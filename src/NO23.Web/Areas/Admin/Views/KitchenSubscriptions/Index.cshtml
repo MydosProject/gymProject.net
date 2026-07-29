@@ -105,7 +105,10 @@
                                     <strong>@(string.IsNullOrWhiteSpace(subscription.MemberName) ? "İsimsiz üye" : subscription.MemberName)</strong>
                                     <small class="admin-cell-note">@subscription.MemberEmail</small>
                                 </td>
-                                <td><span class="admin-status">@GetPlanName(subscription.Plan)</span></td>
+                                <td>
+                                    <span class="admin-status">@(string.IsNullOrWhiteSpace(subscription.PackageName) ? GetPlanName(subscription.Plan) : subscription.PackageName)</span>
+                                    <small class="admin-cell-note">@subscription.PackageDays gün · @subscription.PackagePrice.ToString("C0")</small>
+                                </td>
                                 <td>@GetGoalName(subscription.Goal)</td>
                                 <td>
                                     <strong>@subscription.DailyCalories kcal</strong>

@@ -84,6 +84,13 @@ public class HomeController(
             .ToListAsync();
 
         var memberName = (profile.ApplicationUser.FirstName + " " + profile.ApplicationUser.LastName).Trim();
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var hasActiveKitchenSubscription = await dbContext.KitchenSubscriptions
+            .AsNoTracking()
+            .AnyAsync(subscription =>
+                subscription.MemberProfileId == profile.Id &&
+                subscription.Status == KitchenSubscriptionStatus.Active &&
+                subscription.EndsOn >= today);
 
         return View(new MemberDashboardViewModel
         {
@@ -91,6 +98,7 @@ public class HomeController(
             PackageName = profile.MembershipPackage.Name,
             RemainingClassCredits = profile.RemainingClassCredits,
             HasUnlimitedClasses = profile.MembershipPackage.WeeklyClassLimit is null,
+            HasActiveKitchenSubscription = hasActiveKitchenSubscription,
             UpcomingReservations = upcomingReservations,
             AvailableSessions = availableSessions
         });
