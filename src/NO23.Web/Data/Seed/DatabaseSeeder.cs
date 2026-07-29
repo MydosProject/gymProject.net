@@ -221,10 +221,19 @@ public static class DatabaseSeeder
 
         foreach (var defaultChallenge in CommunityContentSeed.Challenges)
         {
-            if (!await dbContext.CommunityChallenges.AnyAsync(item => item.Slug == defaultChallenge.Slug))
+            var challenge = await dbContext.CommunityChallenges
+                .FirstOrDefaultAsync(item => item.Slug == defaultChallenge.Slug);
+
+            if (challenge is null)
             {
                 dbContext.CommunityChallenges.Add(defaultChallenge);
+                continue;
             }
+
+            challenge.TargetDailyCalories = defaultChallenge.TargetDailyCalories;
+            challenge.CalorieTolerancePercent = defaultChallenge.CalorieTolerancePercent;
+            challenge.RequiredCompletionPercent = defaultChallenge.RequiredCompletionPercent;
+            challenge.UpdatedAtUtc = DateTime.UtcNow;
         }
 
         foreach (var defaultPost in CommunityContentSeed.BlogPosts)

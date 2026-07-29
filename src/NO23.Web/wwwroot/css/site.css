@@ -3172,6 +3172,175 @@ button:focus-visible {
   content: "";
 }
 
+.member-goals-challenges {
+  margin-top: 1.25rem;
+  padding: 1.7rem;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 28px;
+  color: #fff;
+  background:
+    radial-gradient(circle at 100% 0, rgba(197, 255, 32, 0.1), transparent 18rem),
+    #111510;
+}
+
+.member-goals-empty {
+  margin-top: 1.2rem;
+  padding: 1.2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.member-goals-empty strong {
+  display: block;
+  color: #fff;
+  font-size: 1rem;
+}
+
+.member-goals-empty p {
+  margin: 0.4rem 0 1rem;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 0.82rem;
+}
+
+.member-goals-empty a {
+  color: #c5ff20;
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.member-challenge-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1.2rem;
+}
+
+.member-challenge-card {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+  padding: 1.2rem;
+  border-radius: 22px;
+  color: #10130f;
+  background: #f4f2eb;
+}
+
+.member-challenge-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.member-challenge-card-head span {
+  color: #587000;
+  font-size: 0.6rem;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.member-challenge-card-head h3 {
+  margin: 0.22rem 0 0;
+  font-size: 1.05rem;
+  font-weight: 950;
+}
+
+.member-challenge-card-head strong {
+  color: #151a10;
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.member-challenge-progress {
+  overflow: hidden;
+  height: 9px;
+  border-radius: 999px;
+  background: rgba(16, 19, 15, 0.12);
+}
+
+.member-challenge-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #587000;
+}
+
+.member-challenge-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem;
+  margin: 0;
+}
+
+.member-challenge-stats div {
+  min-width: 0;
+  padding: 0.75rem;
+  border-radius: 16px;
+  background: rgba(16, 19, 15, 0.06);
+}
+
+.member-challenge-stats dt {
+  color: rgba(16, 19, 15, 0.55);
+  font-size: 0.58rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.member-challenge-stats dd {
+  margin: 0.2rem 0 0;
+  font-size: 0.82rem;
+  font-weight: 850;
+}
+
+.member-challenge-today,
+.member-challenge-note {
+  margin: 0;
+  color: rgba(16, 19, 15, 0.68);
+  font-size: 0.78rem;
+}
+
+.member-challenge-log-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.7rem;
+  align-items: end;
+}
+
+.member-challenge-log-form label {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.member-challenge-log-form span {
+  color: rgba(16, 19, 15, 0.56);
+  font-size: 0.62rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.member-challenge-log-form input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid rgba(16, 19, 15, 0.16);
+  border-radius: 14px;
+  color: #10130f;
+  background: #fff;
+}
+
+.member-challenge-log-form button {
+  min-height: 44px;
+  padding: 0.7rem 1rem;
+  border: 0;
+  border-radius: 14px;
+  color: #10130f;
+  background: #c5ff20;
+  font-size: 0.72rem;
+  font-weight: 950;
+}
+
 .member-settings-page .member-account-hero {
   grid-template-columns: 1fr;
 }
@@ -3394,6 +3563,7 @@ button:focus-visible {
   .member-account-hero,
   .member-account-layout,
   .member-goals-layout,
+  .member-challenge-grid,
   .member-settings-layout {
     grid-template-columns: 1fr;
   }
@@ -3406,6 +3576,7 @@ button:focus-visible {
 
   .member-account-fields,
   .member-goals-benefits,
+  .member-challenge-stats,
   .member-settings-fields {
     grid-template-columns: 1fr;
   }
@@ -3419,10 +3590,15 @@ button:focus-visible {
   .member-account-summary,
   .member-goals-form,
   .member-goals-membership,
+  .member-goals-challenges,
   .member-settings-overview,
   .member-settings-password {
     padding: 1.2rem;
     border-radius: 21px;
+  }
+
+  .member-challenge-log-form {
+    grid-template-columns: 1fr;
   }
 }
 

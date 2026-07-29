@@ -13,6 +13,7 @@
             "Upcoming" => "Yakında",
             "Active" => "Devam Ediyor",
             "Completed" => "Tamamlandı",
+            "Cancelled" => "İptal Edildi",
             _ => status
         };
     }
@@ -51,6 +52,28 @@
             </div>
         </header>
 
+        @if (TempData["SuccessMessage"] is string successMessage)
+        {
+            <div class="member-dashboard-alert member-dashboard-alert-success" role="status">
+                <span aria-hidden="true">✓</span>
+                <div>
+                    <strong>İşlem tamamlandı</strong>
+                    <p>@successMessage</p>
+                </div>
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] is string errorMessage)
+        {
+            <div class="member-dashboard-alert" role="alert">
+                <span aria-hidden="true">!</span>
+                <div>
+                    <strong>İşlem tamamlanamadı</strong>
+                    <p>@errorMessage</p>
+                </div>
+            </div>
+        }
+
         <div class="community-detail-layout">
             <article class="community-detail-article">
                 <div class="community-detail-article-heading">
@@ -77,6 +100,12 @@
                     <strong>@Model.Goal</strong>
                 </div>
 
+                <div class="community-detail-goal">
+                    <span>Kalori hedefi</span>
+                    <strong>@Model.TargetDailyCalories kcal</strong>
+                    <small>@Model.MinDailyCalories - @Model.MaxDailyCalories kcal aralığı uyumlu sayılır.</small>
+                </div>
+
                 <dl>
                     <div>
                         <dt>Başlangıç</dt>
@@ -90,6 +119,10 @@
                         <dt>Durum</dt>
                         <dd>@GetChallengeStatusName(Model.Status)</dd>
                     </div>
+                    <div>
+                        <dt>Tamamlanma</dt>
+                        <dd>@Model.RequiredCompletionPercent% başarılı gün oranı</dd>
+                    </div>
                     @if (!string.IsNullOrWhiteSpace(Model.Reward))
                     {
                         <div>
@@ -98,6 +131,42 @@
                         </div>
                     }
                 </dl>
+
+                <div class="community-detail-goal">
+                    @if (Model.IsJoined)
+                    {
+                        <span>Senin ilerlemen</span>
+                        <strong>@Model.MyProgressPercent%</strong>
+                        <small>@Model.MyCompliantDays / @Model.TotalDays başarılı gün · @Model.MyLoggedDays gün giriş yapıldı</small>
+                        <a class="community-detail-link mt-3"
+                           asp-area="Member"
+                           asp-controller="Goals"
+                           asp-action="Index">
+                            Kalori girişine git
+                            <span aria-hidden="true">→</span>
+                        </a>
+                    }
+                    else if (Model.CanJoin)
+                    {
+                        <span>Katılım</span>
+                        <strong>Community üyelerine açık</strong>
+                        <form asp-controller="Community"
+                              asp-action="JoinChallenge"
+                              asp-route-slug="@Model.Slug"
+                              method="post"
+                              class="mt-3">
+                            <button class="community-detail-link border-0 w-100" type="submit">
+                                Challenge'a Katıl
+                                <span aria-hidden="true">→</span>
+                            </button>
+                        </form>
+                    }
+                    else if (!string.IsNullOrWhiteSpace(Model.JoinMessage))
+                    {
+                        <span>Katılım</span>
+                        <strong>@Model.JoinMessage</strong>
+                    }
+                </div>
 
                 <a class="community-detail-back"
                    asp-controller="Community"
@@ -108,5 +177,54 @@
                 </a>
             </aside>
         </div>
+
+        <section class="content-section">
+            <div class="content-section-heading">
+                <div>
+                    <p class="content-section-kicker">Leaderboard</p>
+                    <h2>Kalori uyumunda öne çıkanlar.</h2>
+                </div>
+                <p>
+                    Sıralama başarılı gün oranı ve başarılı gün sayısına göre hesaplanır.
+                </p>
+            </div>
+
+            @if (Model.Leaderboard.Count == 0)
+            {
+                <div class="content-empty-state">
+                    <span>00</span>
+                    <div>
+                        <h3>Henüz katılımcı yok.</h3>
+                        <p>Challenge'a katılan üyeler burada görünecek.</p>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="community-challenge-list">
+                    @foreach (var item in Model.Leaderboard)
+                    {
+                        <article class="community-challenge-card">
+                            <div class="community-challenge-number">
+                                <span>Sıra</span>
+                                <strong>@item.Rank.ToString("00")</strong>
+                            </div>
+                            <div class="community-challenge-content">
+                                <div class="community-challenge-meta">
+                                    <span>@(item.IsCompleted ? "Tamamlandı" : "Devam Ediyor")</span>
+                                    <span>@item.CompliantDays / @item.TotalDays başarılı gün</span>
+                                </div>
+                                <h3>@item.MemberName</h3>
+                                <p>@item.LoggedDays gün kalori girişi yaptı.</p>
+                            </div>
+                            <div class="community-challenge-goal">
+                                <span>İlerleme</span>
+                                <p>@item.ProgressPercent%</p>
+                            </div>
+                        </article>
+                    }
+                </div>
+            }
+        </section>
     </div>
 </section>

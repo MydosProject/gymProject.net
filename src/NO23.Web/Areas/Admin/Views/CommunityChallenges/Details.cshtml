@@ -1,0 +1,111 @@
+@model CommunityChallengeDetailsViewModel
+
+@{
+    ViewData["Title"] = "Challenge Takibi";
+
+    string GetStatusName(string status)
+    {
+        return status switch
+        {
+            "Upcoming" => "Yakında",
+            "Active" => "Devam Ediyor",
+            "Completed" => "Tamamlandı",
+            "Cancelled" => "İptal Edildi",
+            _ => status
+        };
+    }
+}
+
+<section class="admin-page">
+    <div class="container">
+        <header class="admin-page-head admin-form-head">
+            <div>
+                <a asp-action="Index" class="admin-back-link">← Challenge'lara dön</a>
+                <p class="admin-eyebrow">Topluluk / Challenge Takibi</p>
+                <h1>@Model.Title</h1>
+                <p class="admin-page-description">Katılımcı ilerlemesini ve günlük kalori girişlerini sadece takip et.</p>
+            </div>
+            <a class="btn btn-outline-dark" asp-action="Edit" asp-route-id="@Model.Id">Düzenle</a>
+        </header>
+
+        <div class="admin-metrics">
+            <article><span>Durum</span><strong>@GetStatusName(Model.Status)</strong><small>@Model.StartsOn.ToString("dd.MM.yyyy") — @Model.EndsOn.ToString("dd.MM.yyyy")</small></article>
+            <article><span>Kalori Hedefi</span><strong>@Model.TargetDailyCalories kcal</strong><small>@Model.MinDailyCalories - @Model.MaxDailyCalories kcal aralığı</small></article>
+            <article><span>Tamamlanma</span><strong>@Model.RequiredCompletionPercent%</strong><small>Başarılı gün oranı</small></article>
+            <article><span>Katılımcı</span><strong>@Model.Participants.Count</strong><small>Community üyesi</small></article>
+        </div>
+
+        <div class="table-responsive admin-table-card mt-4">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Üye</th>
+                        <th>Durum</th>
+                        <th>Katılım</th>
+                        <th>Başarılı Gün</th>
+                        <th>Log</th>
+                        <th>İlerleme</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Participants.Count == 0)
+                    {
+                        <tr><td colspan="6"><div class="admin-empty-row">Henüz katılımcı yok.</div></td></tr>
+                    }
+                    else
+                    {
+                        @foreach (var participant in Model.Participants)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@participant.MemberName</strong>
+                                    <small class="d-block text-muted">@participant.MemberEmail</small>
+                                </td>
+                                <td><span class="admin-status">@participant.Status</span></td>
+                                <td>@participant.JoinedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
+                                <td>@participant.CompliantDays / @participant.TotalDays</td>
+                                <td>@participant.LoggedDays gün</td>
+                                <td><strong>@participant.ProgressPercent%</strong></td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-responsive admin-table-card mt-4">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Son Kalori Girişleri</th>
+                        <th>Tarih</th>
+                        <th>Alınan Kalori</th>
+                        <th>Hedef Aralığı</th>
+                        <th>Uyum</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.RecentLogs.Count == 0)
+                    {
+                        <tr><td colspan="5"><div class="admin-empty-row">Henüz kalori girişi yok.</div></td></tr>
+                    }
+                    else
+                    {
+                        @foreach (var log in Model.RecentLogs)
+                        {
+                            <tr>
+                                <td><strong>@log.MemberName</strong></td>
+                                <td>@log.EntryDate.ToString("dd.MM.yyyy")</td>
+                                <td>@log.CaloriesConsumed kcal</td>
+                                <td>@log.MinCalories - @log.MaxCalories kcal</td>
+                                <td>
+                                    <span class="admin-status">@(log.IsCompliant ? "Uygun" : "Aralık Dışı")</span>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
