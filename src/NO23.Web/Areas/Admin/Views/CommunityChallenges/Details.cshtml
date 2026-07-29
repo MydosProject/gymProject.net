@@ -14,6 +14,17 @@
             _ => status
         };
     }
+
+    string GetParticipationStatusName(string status)
+    {
+        return status switch
+        {
+            "Active" => "Devam Ediyor",
+            "Completed" => "Tamamlandı",
+            "Withdrawn" => "Ayrıldı",
+            _ => status
+        };
+    }
 }
 
 <section class="admin-page">
@@ -43,7 +54,7 @@
                         <th>Durum</th>
                         <th>Katılım</th>
                         <th>Başarılı Gün</th>
-                        <th>Log</th>
+                        <th>Kayıt</th>
                         <th>İlerleme</th>
                     </tr>
                 </thead>
@@ -61,7 +72,7 @@
                                     <strong>@participant.MemberName</strong>
                                     <small class="d-block text-muted">@participant.MemberEmail</small>
                                 </td>
-                                <td><span class="admin-status">@participant.Status</span></td>
+                                <td><span class="admin-status">@GetParticipationStatusName(participant.Status)</span></td>
                                 <td>@participant.JoinedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
                                 <td>@participant.CompliantDays / @participant.TotalDays</td>
                                 <td>@participant.LoggedDays gün</td>

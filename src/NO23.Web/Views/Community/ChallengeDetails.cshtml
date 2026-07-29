@@ -31,7 +31,7 @@
                     <span>@Model.StartsOn.ToString("dd.MM") – @Model.EndsOn.ToString("dd.MM.yyyy")</span>
                 </div>
 
-                <p class="content-section-kicker">NO23 / COMMUNITY CHALLENGE</p>
+                <p class="content-section-kicker">NO23 / TOPLU CHALLENGE</p>
                 <h1>@Model.Title</h1>
                 <p class="community-detail-summary">@Model.Summary</p>
             </div>
@@ -45,7 +45,7 @@
                 }
                 else
                 {
-                    <span>CHALLENGE</span>
+                    <span>TOPLU HEDEF</span>
                     <strong>23</strong>
                     <small>@GetChallengeStatusName(Model.Status)</small>
                 }
@@ -79,7 +79,7 @@
                 <div class="community-detail-article-heading">
                     <span>01</span>
                     <div>
-                        <p>CHALLENGE</p>
+                        <p>TOPLU HEDEF</p>
                         <h2>Hedefini görünür kıl.</h2>
                     </div>
                 </div>
@@ -132,41 +132,31 @@
                     }
                 </dl>
 
-                <div class="community-detail-goal">
-                    @if (Model.IsJoined)
-                    {
-                        <span>Senin ilerlemen</span>
-                        <strong>@Model.MyProgressPercent%</strong>
-                        <small>@Model.MyCompliantDays / @Model.TotalDays başarılı gün · @Model.MyLoggedDays gün giriş yapıldı</small>
-                        <a class="community-detail-link mt-3"
-                           asp-area="Member"
-                           asp-controller="Goals"
-                           asp-action="Index">
-                            Kalori girişine git
-                            <span aria-hidden="true">→</span>
-                        </a>
-                    }
-                    else if (Model.CanJoin)
-                    {
-                        <span>Katılım</span>
-                        <strong>Community üyelerine açık</strong>
-                        <form asp-controller="Community"
-                              asp-action="JoinChallenge"
-                              asp-route-slug="@Model.Slug"
-                              method="post"
-                              class="mt-3">
-                            <button class="community-detail-link border-0 w-100" type="submit">
-                                Challenge'a Katıl
-                                <span aria-hidden="true">→</span>
-                            </button>
-                        </form>
-                    }
-                    else if (!string.IsNullOrWhiteSpace(Model.JoinMessage))
-                    {
-                        <span>Katılım</span>
-                        <strong>@Model.JoinMessage</strong>
-                    }
-                </div>
+                @if (!Model.IsJoined)
+                {
+                    <div class="community-detail-goal">
+                        @if (Model.CanJoin)
+                        {
+                            <span>Katılım</span>
+                            <strong>Community üyelerine açık</strong>
+                            <form asp-controller="Community"
+                                  asp-action="JoinChallenge"
+                                  asp-route-slug="@Model.Slug"
+                                  method="post"
+                                  class="mt-3">
+                                <button class="community-detail-link border-0 w-100" type="submit">
+                                    Challenge'a Katıl
+                                    <span aria-hidden="true">→</span>
+                                </button>
+                            </form>
+                        }
+                        else if (!string.IsNullOrWhiteSpace(Model.JoinMessage))
+                        {
+                            <span>Katılım</span>
+                            <strong>@Model.JoinMessage</strong>
+                        }
+                    </div>
+                }
 
                 <a class="community-detail-back"
                    asp-controller="Community"
@@ -181,7 +171,7 @@
         <section class="content-section">
             <div class="content-section-heading">
                 <div>
-                    <p class="content-section-kicker">Leaderboard</p>
+                    <p class="content-section-kicker">Sıralama</p>
                     <h2>Kalori uyumunda öne çıkanlar.</h2>
                 </div>
                 <p>

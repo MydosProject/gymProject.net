@@ -1,0 +1,181 @@
+@model MemberCommunityIndexViewModel
+
+@{
+    ViewData["Title"] = "Community Etkinlikleri";
+
+    string GetChallengeStatusName(string status)
+    {
+        return status switch
+        {
+            "Upcoming" => "Yakında",
+            "Active" => "Devam Ediyor",
+            "Completed" => "Tamamlandı",
+            "Cancelled" => "İptal Edildi",
+            _ => status
+        };
+    }
+}
+
+<section class="member-account-page member-community-page">
+    <div class="member-account-grid" aria-hidden="true"></div>
+    <div class="member-account-orbit" aria-hidden="true"></div>
+
+    <div class="container position-relative">
+        <header class="member-account-hero member-community-hero">
+            <div>
+                <p class="member-account-kicker">NO23 / COMMUNITY</p>
+                <h1>Birlikte başla.<br /><span>Hedefine bağlan.</span></h1>
+                <p>
+                    Toplu challenge'ları incele, sana uygun hedefe katıl ve günlük
+                    ilerlemeni Kalori Takibi ekranında kaydet.
+                </p>
+            </div>
+
+            <aside class="member-community-flow">
+                <span>COMMUNITY AKIŞI</span>
+                <ol>
+                    <li><b>01</b> Challenge'ı seç</li>
+                    <li><b>02</b> Topluluğa katıl</li>
+                    <li><b>03</b> Kalorini takip et</li>
+                </ol>
+            </aside>
+        </header>
+
+        @if (TempData["SuccessMessage"] is string successMessage)
+        {
+            <div class="member-dashboard-alert member-dashboard-alert-success" role="status">
+                <span aria-hidden="true">✓</span>
+                <div>
+                    <strong>Challenge katılımın hazır</strong>
+                    <p>@successMessage</p>
+                </div>
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] is string errorMessage)
+        {
+            <div class="member-dashboard-alert member-dashboard-alert-error" role="alert">
+                <span aria-hidden="true">!</span>
+                <div>
+                    <strong>Katılım tamamlanamadı</strong>
+                    <p>@errorMessage</p>
+                </div>
+            </div>
+        }
+
+        @if (!Model.HasCommunityMembership)
+        {
+            <div class="member-community-access-note">
+                <span aria-hidden="true">i</span>
+                <div>
+                    <strong>Challenge'ları inceleyebilirsin.</strong>
+                    <p>
+                        Katılım için Community üyeliği içeren bir paket gerekir.
+                        Mevcut paketinle challenge detaylarını görüntülemeye devam edebilirsin.
+                    </p>
+                </div>
+            </div>
+        }
+
+        <section class="member-community-challenges">
+            <div class="member-account-card-head">
+                <span>01</span>
+                <div>
+                    <p>TOPLU CHALLENGE'LAR</p>
+                    <h2>Bir hedef seç, birlikte ilerle.</h2>
+                </div>
+            </div>
+
+            @if (Model.Challenges.Count == 0)
+            {
+                <div class="member-community-empty">
+                    <strong>Şu anda katılıma açık challenge bulunmuyor.</strong>
+                    <p>Yeni Community hedefleri yayınlandığında burada görünecek.</p>
+                </div>
+            }
+            else
+            {
+                <div class="member-community-grid">
+                    @foreach (var challenge in Model.Challenges)
+                    {
+                        <article class="member-community-card">
+                            <div class="member-community-card-top">
+                                <span>@GetChallengeStatusName(challenge.Status)</span>
+                                <strong>@challenge.ParticipantCount.ToString("00")</strong>
+                                <small>katılımcı</small>
+                            </div>
+
+                            <div class="member-community-card-copy">
+                                <p>@challenge.StartsOn.ToString("dd.MM.yyyy") — @challenge.EndsOn.ToString("dd.MM.yyyy")</p>
+                                <h3>@challenge.Title</h3>
+                                <span>@challenge.Summary</span>
+                            </div>
+
+                            <div class="member-community-card-goal">
+                                <small>HEDEF</small>
+                                <strong>@challenge.Goal</strong>
+                            </div>
+
+                            <dl class="member-community-card-stats">
+                                <div>
+                                    <dt>Günlük hedef</dt>
+                                    <dd>@challenge.TargetDailyCalories kcal</dd>
+                                </div>
+                                <div>
+                                    <dt>Hedef aralığı</dt>
+                                    <dd>@challenge.MinDailyCalories–@challenge.MaxDailyCalories kcal</dd>
+                                </div>
+                                <div>
+                                    <dt>Tamamlama</dt>
+                                    <dd>%@challenge.RequiredCompletionPercent</dd>
+                                </div>
+                            </dl>
+
+                            @if (!string.IsNullOrWhiteSpace(challenge.Reward))
+                            {
+                                <p class="member-community-reward">
+                                    <span>ÖDÜL</span>
+                                    @challenge.Reward
+                                </p>
+                            }
+
+                            <div class="member-community-card-actions">
+                                <a asp-area=""
+                                   asp-controller="Community"
+                                   asp-action="ChallengeDetails"
+                                   asp-route-slug="@challenge.Slug">
+                                    Detayları Gör
+                                </a>
+
+                                @if (challenge.IsJoined)
+                                {
+                                    <a class="is-primary"
+                                       asp-area="Member"
+                                       asp-controller="Goals"
+                                       asp-action="CalorieTracking">
+                                        Kalori Takibine Git
+                                    </a>
+                                }
+                                else if (Model.HasCommunityMembership)
+                                {
+                                    <form asp-area="Member"
+                                          asp-controller="Community"
+                                          asp-action="JoinChallenge"
+                                          asp-route-slug="@challenge.Slug"
+                                          asp-antiforgery="true"
+                                          method="post">
+                                        <button type="submit">Challenge'a Katıl</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <span class="is-disabled">Community üyeliği gerekir</span>
+                                }
+                            </div>
+                        </article>
+                    }
+                </div>
+            }
+        </section>
+    </div>
+</section>

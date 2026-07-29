@@ -6,6 +6,8 @@ public class MemberChallengeProgressCardViewModel
 
     public string Title { get; init; } = string.Empty;
 
+    public string Slug { get; init; } = string.Empty;
+
     public string Status { get; init; } = string.Empty;
 
     public DateOnly StartsOn { get; init; }

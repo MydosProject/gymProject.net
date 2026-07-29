@@ -33,11 +33,12 @@ public static class MembershipPackageSeed
             Code = MembershipPackageCode.Pro,
             Name = "PRO",
             Audience = "Net hedefleri olanlar için",
-            Description = "Haftada 4 ders, detaylı takip, aylık analiz ve öncelikli rezervasyon.",
+            Description = "Haftada 4 ders, detaylı takip, aylık analiz, öncelikli rezervasyon ve Community üyeliği.",
             WeeklyClassLimit = 4,
             IncludesDetailedTracking = true,
             IncludesMonthlyAnalysis = true,
             IncludesPriorityReservation = true,
+            IncludesCommunityMembership = true,
             DisplayOrder = 3
         },
         new()

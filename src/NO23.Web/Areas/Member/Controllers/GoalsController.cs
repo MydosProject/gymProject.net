@@ -25,6 +25,33 @@ public class GoalsController(
         return model is null ? Challenge() : View(model);
     }
 
+    [HttpGet]
+    public async Task<IActionResult> CalorieTracking()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Challenge();
+        }
+
+        var memberProfileId = await dbContext.MemberProfiles
+            .AsNoTracking()
+            .Where(member => member.ApplicationUserId == userId)
+            .Select(member => (int?)member.Id)
+            .FirstOrDefaultAsync();
+
+        if (!memberProfileId.HasValue)
+        {
+            return Challenge();
+        }
+
+        return View(new MemberCalorieTrackingViewModel
+        {
+            ChallengeProgressCards = await BuildChallengeProgressCardsAsync(memberProfileId.Value)
+        });
+    }
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Index(MemberGoalsIndexViewModel model)
@@ -48,7 +75,6 @@ public class GoalsController(
         if (!ModelState.IsValid)
         {
             PopulateMembershipFields(model, profile);
-            model.ChallengeProgressCards = await BuildChallengeProgressCardsAsync(profile.Id);
             return View(model);
         }
 
@@ -76,7 +102,7 @@ public class GoalsController(
                 .FirstOrDefault(error => !string.IsNullOrWhiteSpace(error)) ??
                 "Kalori girişini kontrol et.";
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(CalorieTracking));
         }
 
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -94,7 +120,7 @@ public class GoalsController(
                 input.CaloriesConsumed));
 
         TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] = result.Message;
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(CalorieTracking));
     }
 
     private async Task<MemberGoalsIndexViewModel?> BuildViewModelAsync()
@@ -118,8 +144,7 @@ public class GoalsController(
 
         var model = new MemberGoalsIndexViewModel
         {
-            FitnessGoal = profile.FitnessGoal,
-            ChallengeProgressCards = await BuildChallengeProgressCardsAsync(profile.Id)
+            FitnessGoal = profile.FitnessGoal
         };
 
         PopulateMembershipFields(model, profile);
@@ -162,6 +187,7 @@ public class GoalsController(
                 {
                     ParticipationId = participation.Id,
                     Title = challenge.Title,
+                    Slug = challenge.Slug,
                     Status = challenge.Status.ToString(),
                     StartsOn = challenge.StartsOn,
                     EndsOn = challenge.EndsOn,

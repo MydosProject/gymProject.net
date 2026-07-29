@@ -19,6 +19,4 @@ public class MemberGoalsIndexViewModel
     public bool HasUnlimitedClasses { get; set; }
 
     public IReadOnlyList<string> IncludedBenefits { get; set; } = [];
-
-    public IReadOnlyList<MemberChallengeProgressCardViewModel> ChallengeProgressCards { get; set; } = [];
 }

@@ -1,0 +1,184 @@
+@using System.Globalization
+@model MemberCalorieTrackingViewModel
+
+@{
+    ViewData["Title"] = "Kalori Takibi";
+    var totalChallenges = Model.ChallengeProgressCards.Count;
+    var totalCompliantDays = Model.ChallengeProgressCards.Sum(item => item.CompliantDays);
+
+    string GetChallengeStatusName(string status)
+    {
+        return status switch
+        {
+            "Upcoming" => "Yakında",
+            "Active" => "Devam Ediyor",
+            "Completed" => "Tamamlandı",
+            "Cancelled" => "İptal Edildi",
+            _ => status
+        };
+    }
+}
+
+<section class="member-account-page member-calorie-tracking-page">
+    <div class="member-account-grid" aria-hidden="true"></div>
+    <div class="member-account-orbit" aria-hidden="true"></div>
+
+    <div class="container position-relative">
+        <header class="member-account-hero member-calorie-tracking-hero">
+            <div>
+                <p class="member-account-kicker">NO23 / KALORİ TAKİBİ</p>
+                <h1>Gününü kaydet.<br /><span>İlerlemeni gör.</span></h1>
+                <p>
+                    Community challenge'larına birlikte katıl; günlük kalori girişini,
+                    hedef aralığını ve kişisel ilerlemeni burada takip et.
+                </p>
+            </div>
+
+            <aside class="member-calorie-tracking-score">
+                <span>AKTİF TAKİP</span>
+                <strong>@totalChallenges.ToString("00")</strong>
+                <div>
+                    <small>BAŞARILI GÜN</small>
+                    <b>@totalCompliantDays.ToString("00")</b>
+                </div>
+            </aside>
+        </header>
+
+        @if (TempData["SuccessMessage"] is string successMessage)
+        {
+            <div class="member-dashboard-alert member-dashboard-alert-success" role="status">
+                <span aria-hidden="true">✓</span>
+                <div>
+                    <strong>İşlem tamamlandı</strong>
+                    <p>@successMessage</p>
+                </div>
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] is string errorMessage)
+        {
+            <div class="member-dashboard-alert" role="alert">
+                <span aria-hidden="true">!</span>
+                <div>
+                    <strong>İşlem tamamlanamadı</strong>
+                    <p>@errorMessage</p>
+                </div>
+            </div>
+        }
+
+        <section class="member-goals-challenges" id="challenge-progress">
+            <div class="member-account-card-head">
+                <span>01</span>
+                <div>
+                    <p>COMMUNITY CHALLENGE</p>
+                    <h2>Katıldığın hedefler.</h2>
+                </div>
+            </div>
+
+            @if (Model.ChallengeProgressCards.Count == 0)
+            {
+                <div class="member-goals-empty">
+                    <strong>Henüz aktif challenge katılımın yok.</strong>
+                    <p>
+                        Community sayfasındaki toplu challenge'lardan birine katıldığında
+                        günlük kalori takibin ve kişisel ilerlemen burada görünecek.
+                    </p>
+                    <a asp-area="Member"
+                       asp-controller="Community"
+                       asp-action="Index">
+                        Community challenge'larını incele
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="member-challenge-grid">
+                    @foreach (var challenge in Model.ChallengeProgressCards)
+                    {
+                        var progressWidth = Math.Min(100, challenge.ProgressPercent)
+                            .ToString("0.#", CultureInfo.InvariantCulture);
+
+                        <article class="member-challenge-card">
+                            <div class="member-challenge-card-head">
+                                <div>
+                                    <span>@GetChallengeStatusName(challenge.Status)</span>
+                                    <h3>@challenge.Title</h3>
+                                    <p class="member-challenge-date">
+                                        @challenge.StartsOn.ToString("dd.MM.yyyy") — @challenge.EndsOn.ToString("dd.MM.yyyy")
+                                    </p>
+                                </div>
+                                <strong>@challenge.ProgressPercent%</strong>
+                            </div>
+
+                            <div class="member-challenge-progress"
+                                 role="progressbar"
+                                 aria-label="@challenge.Title ilerleme oranı"
+                                 aria-valuemin="0"
+                                 aria-valuemax="100"
+                                 aria-valuenow="@challenge.ProgressPercent">
+                                <span style="width: @progressWidth%"></span>
+                            </div>
+
+                            <dl class="member-challenge-stats">
+                                <div>
+                                    <dt>Günlük hedef</dt>
+                                    <dd>@challenge.TargetDailyCalories kcal</dd>
+                                </div>
+                                <div>
+                                    <dt>Tolerans aralığı</dt>
+                                    <dd>@challenge.MinDailyCalories - @challenge.MaxDailyCalories kcal</dd>
+                                </div>
+                                <div>
+                                    <dt>Başarılı gün</dt>
+                                    <dd>@challenge.CompliantDays / @challenge.TotalDays</dd>
+                                </div>
+                                <div>
+                                    <dt>Kalori kaydı</dt>
+                                    <dd>@challenge.LoggedDays gün</dd>
+                                </div>
+                            </dl>
+
+                            @if (challenge.TodayCaloriesConsumed.HasValue)
+                            {
+                                <p class="member-challenge-today">
+                                    Bugünkü kayıt: @challenge.TodayCaloriesConsumed kcal ·
+                                    @(challenge.TodayIsCompliant == true ? "Hedef aralığında" : "Hedef aralığı dışında")
+                                </p>
+                            }
+
+                            @if (challenge.CanLogToday)
+                            {
+                                <form asp-area="Member"
+                                      asp-controller="Goals"
+                                      asp-action="LogChallengeCalories"
+                                      asp-antiforgery="true"
+                                      method="post"
+                                      class="member-challenge-log-form">
+                                    <input type="hidden" name="ParticipationId" value="@challenge.ParticipationId" />
+                                    <input type="hidden" name="EntryDate" value="@challenge.LogDate.ToString("yyyy-MM-dd")" />
+                                    <label>
+                                        <span>Bugün alınan kalori</span>
+                                        <input type="number"
+                                               name="CaloriesConsumed"
+                                               min="1"
+                                               max="10000"
+                                               value="@(challenge.TodayCaloriesConsumed?.ToString() ?? string.Empty)"
+                                               placeholder="Örn. @challenge.TargetDailyCalories" />
+                                    </label>
+                                    <button type="submit">Kaloriyi Kaydet</button>
+                                </form>
+                            }
+                            else
+                            {
+                                <p class="member-challenge-note">
+                                    Kalori girişi challenge aktif tarih aralığında açılır.
+                                </p>
+                            }
+
+                        </article>
+                    }
+                </div>
+            }
+        </section>
+    </div>
+</section>

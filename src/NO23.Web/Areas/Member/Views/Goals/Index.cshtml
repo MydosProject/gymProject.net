@@ -1,4 +1,3 @@
-@using System.Globalization
 @model MemberGoalsIndexViewModel
 
 @{
@@ -7,17 +6,6 @@
         ? "Sınırsız"
         : Model.RemainingClassCredits.ToString("00");
 
-    string GetChallengeStatusName(string status)
-    {
-        return status switch
-        {
-            "Upcoming" => "Yakında",
-            "Active" => "Devam Ediyor",
-            "Completed" => "Tamamlandı",
-            "Cancelled" => "İptal Edildi",
-            _ => status
-        };
-    }
 }
 
 <section class="member-account-page member-goals-page">
@@ -149,109 +137,6 @@
             </aside>
         </div>
 
-        <section class="member-goals-challenges" id="challenge-progress">
-            <div class="member-account-card-head">
-                <span>03</span>
-                <div>
-                    <p>COMMUNITY CHALLENGE</p>
-                    <h2>Kalori uyumunu takip et.</h2>
-                </div>
-            </div>
-
-            @if (Model.ChallengeProgressCards.Count == 0)
-            {
-                <div class="member-goals-empty">
-                    <strong>Henüz aktif challenge katılımın yok.</strong>
-                    <p>Community sayfasındaki açık challenge'lara katıldığında ilerlemen burada görünecek.</p>
-                    <a asp-area=""
-                       asp-controller="Community"
-                       asp-action="Index"
-                       asp-fragment="challenges">
-                        Challenge'ları incele
-                    </a>
-                </div>
-            }
-            else
-            {
-                <div class="member-challenge-grid">
-                    @foreach (var challenge in Model.ChallengeProgressCards)
-                    {
-                        var progressWidth = Math.Min(100, challenge.ProgressPercent)
-                            .ToString("0.#", CultureInfo.InvariantCulture);
-
-                        <article class="member-challenge-card">
-                            <div class="member-challenge-card-head">
-                                <div>
-                                    <span>@GetChallengeStatusName(challenge.Status)</span>
-                                    <h3>@challenge.Title</h3>
-                                </div>
-                                <strong>@challenge.ProgressPercent%</strong>
-                            </div>
-
-                            <div class="member-challenge-progress">
-                                <span style="width: @progressWidth%"></span>
-                            </div>
-
-                            <dl class="member-challenge-stats">
-                                <div>
-                                    <dt>Hedef aralığı</dt>
-                                    <dd>@challenge.MinDailyCalories - @challenge.MaxDailyCalories kcal</dd>
-                                </div>
-                                <div>
-                                    <dt>Başarılı gün</dt>
-                                    <dd>@challenge.CompliantDays / @challenge.TotalDays</dd>
-                                </div>
-                                <div>
-                                    <dt>Giriş</dt>
-                                    <dd>@challenge.LoggedDays gün</dd>
-                                </div>
-                                <div>
-                                    <dt>Tamamlanma</dt>
-                                    <dd>@challenge.RequiredCompletionPercent%</dd>
-                                </div>
-                            </dl>
-
-                            @if (challenge.TodayCaloriesConsumed.HasValue)
-                            {
-                                <p class="member-challenge-today">
-                                    Bugün: @challenge.TodayCaloriesConsumed kcal ·
-                                    @(challenge.TodayIsCompliant == true ? "Hedef aralığında" : "Hedef aralığı dışında")
-                                </p>
-                            }
-
-                            @if (challenge.CanLogToday)
-                            {
-                                <form asp-area="Member"
-                                      asp-controller="Goals"
-                                      asp-action="LogChallengeCalories"
-                                      asp-antiforgery="true"
-                                      method="post"
-                                      class="member-challenge-log-form">
-                                    <input type="hidden" name="ParticipationId" value="@challenge.ParticipationId" />
-                                    <input type="hidden" name="EntryDate" value="@challenge.LogDate.ToString("yyyy-MM-dd")" />
-                                    <label>
-                                        <span>Bugün alınan kalori</span>
-                                        <input type="number"
-                                               name="CaloriesConsumed"
-                                               min="1"
-                                               max="10000"
-                                               value="@(challenge.TodayCaloriesConsumed?.ToString() ?? string.Empty)"
-                                               placeholder="Örn. @challenge.TargetDailyCalories" />
-                                    </label>
-                                    <button type="submit">Kaloriyi Kaydet</button>
-                                </form>
-                            }
-                            else
-                            {
-                                <p class="member-challenge-note">
-                                    Kalori girişi challenge aktif tarih aralığında açılır.
-                                </p>
-                            }
-                        </article>
-                    }
-                </div>
-            }
-        </section>
     </div>
 </section>
 

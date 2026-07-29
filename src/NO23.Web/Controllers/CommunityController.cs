@@ -269,13 +269,16 @@ public class CommunityController(
 
     private static string GetMemberName(Domain.Entities.ApplicationUser user)
     {
-        var fullName = $"{user.FirstName} {user.LastName}".Trim();
+        var firstName = user.FirstName?.Trim();
+        var lastName = user.LastName?.Trim();
 
-        if (!string.IsNullOrWhiteSpace(fullName))
+        if (!string.IsNullOrWhiteSpace(firstName))
         {
-            return fullName;
+            return string.IsNullOrWhiteSpace(lastName)
+                ? firstName
+                : $"{firstName} {char.ToUpperInvariant(lastName[0])}.";
         }
 
-        return user.UserName ?? user.Email ?? "NO23 Üyesi";
+        return "NO23 Üyesi";
     }
 }
