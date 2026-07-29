@@ -25,6 +25,24 @@ public class KitchenSubscriptionPackageSeedTests
         });
     }
 
+    [Theory]
+    [InlineData(KitchenSubscriptionPlan.FiveDays, 5, 4250)]
+    [InlineData(KitchenSubscriptionPlan.TenDays, 10, 7900)]
+    [InlineData(KitchenSubscriptionPlan.TwentyDays, 20, 14500)]
+    [InlineData(KitchenSubscriptionPlan.Monthly, 30, 19900)]
+    public void Defaults_MatchPublishedPackageDurationAndPrice(
+        KitchenSubscriptionPlan plan,
+        int expectedDays,
+        int expectedPrice)
+    {
+        var package = Assert.Single(
+            KitchenSubscriptionPackageSeed.Defaults,
+            item => item.Plan == plan);
+
+        Assert.Equal(expectedDays, package.Days);
+        Assert.Equal((decimal)expectedPrice, package.UnitPrice);
+    }
+
     [Fact]
     public void KitchenSubscription_KeepsPackagePriceSnapshot()
     {

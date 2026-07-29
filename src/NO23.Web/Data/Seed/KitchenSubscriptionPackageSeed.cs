@@ -13,7 +13,7 @@ public static class KitchenSubscriptionPackageSeed
             Name = "5 Günlük Kitchen Paketi",
             Description = "Kalori ve makro hedeflerine göre hazırlanan 5 günlük NO23 Kitchen yemek paketi.",
             Days = 5,
-            UnitPrice = 200,
+            UnitPrice = 4250,
             IsActive = true,
             DisplayOrder = 10
         },
@@ -23,7 +23,7 @@ public static class KitchenSubscriptionPackageSeed
             Name = "10 Günlük Kitchen Paketi",
             Description = "Düzenli beslenme ritmini kurmak için 10 günlük NO23 Kitchen yemek paketi.",
             Days = 10,
-            UnitPrice = 700,
+            UnitPrice = 7900,
             IsActive = true,
             DisplayOrder = 20
         },
@@ -33,7 +33,7 @@ public static class KitchenSubscriptionPackageSeed
             Name = "20 Günlük Kitchen Paketi",
             Description = "Uzun süreli hedef takibi için 20 günlük NO23 Kitchen yemek paketi.",
             Days = 20,
-            UnitPrice = 1200,
+            UnitPrice = 14500,
             IsActive = true,
             DisplayOrder = 30
         },
@@ -43,7 +43,7 @@ public static class KitchenSubscriptionPackageSeed
             Name = "Aylık Kitchen Paketi",
             Description = "Aylık rutin oluşturmak isteyen üyeler için 30 günlük NO23 Kitchen yemek paketi.",
             Days = 30,
-            UnitPrice = 1500,
+            UnitPrice = 19900,
             IsActive = true,
             DisplayOrder = 40
         }
