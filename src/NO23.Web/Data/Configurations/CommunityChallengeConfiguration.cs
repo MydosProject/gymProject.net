@@ -34,6 +34,9 @@ public class CommunityChallengeConfiguration : IEntityTypeConfiguration<Communit
         builder.Property(item => item.Reward)
             .HasMaxLength(500);
 
+        builder.Property(item => item.CalorieTolerancePercent)
+            .HasPrecision(5, 2);
+
         builder.Property(item => item.Status)
             .HasConversion<string>()
             .HasMaxLength(40);

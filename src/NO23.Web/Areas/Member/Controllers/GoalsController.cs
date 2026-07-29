@@ -5,13 +5,17 @@ using Microsoft.EntityFrameworkCore;
 using NO23.Web.Data;
 using NO23.Web.Data.Seed;
 using NO23.Web.Domain.Entities;
+using NO23.Web.Domain.Enums;
+using NO23.Web.Services;
 using NO23.Web.ViewModels.Member;
 
 namespace NO23.Web.Areas.Member.Controllers;
 
 [Area("Member")]
 [Authorize(Roles = ApplicationRoles.Member)]
-public class GoalsController(ApplicationDbContext dbContext) : Controller
+public class GoalsController(
+    ApplicationDbContext dbContext,
+    CommunityChallengeProgressService challengeProgressService) : Controller
 {
     [HttpGet]
     public async Task<IActionResult> Index()
@@ -19,6 +23,33 @@ public class GoalsController(ApplicationDbContext dbContext) : Controller
         var model = await BuildViewModelAsync();
 
         return model is null ? Challenge() : View(model);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> CalorieTracking()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Challenge();
+        }
+
+        var memberProfileId = await dbContext.MemberProfiles
+            .AsNoTracking()
+            .Where(member => member.ApplicationUserId == userId)
+            .Select(member => (int?)member.Id)
+            .FirstOrDefaultAsync();
+
+        if (!memberProfileId.HasValue)
+        {
+            return Challenge();
+        }
+
+        return View(new MemberCalorieTrackingViewModel
+        {
+            ChallengeProgressCards = await BuildChallengeProgressCardsAsync(memberProfileId.Value)
+        });
     }
 
     [HttpPost]
@@ -58,6 +89,40 @@ public class GoalsController(ApplicationDbContext dbContext) : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> LogChallengeCalories(ChallengeCalorieLogInputViewModel input)
+    {
+        if (!ModelState.IsValid)
+        {
+            TempData["ErrorMessage"] = ModelState
+                .Where(item => item.Value?.Errors.Count > 0)
+                .SelectMany(item => item.Value!.Errors)
+                .Select(error => error.ErrorMessage)
+                .FirstOrDefault(error => !string.IsNullOrWhiteSpace(error)) ??
+                "Kalori girişini kontrol et.";
+
+            return RedirectToAction(nameof(CalorieTracking));
+        }
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Challenge();
+        }
+
+        var result = await challengeProgressService.UpsertDailyCaloriesAsync(
+            userId,
+            new ChallengeCalorieLogRequest(
+                input.ParticipationId,
+                input.EntryDate,
+                input.CaloriesConsumed));
+
+        TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] = result.Message;
+        return RedirectToAction(nameof(CalorieTracking));
+    }
+
     private async Task<MemberGoalsIndexViewModel?> BuildViewModelAsync()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -84,6 +149,67 @@ public class GoalsController(ApplicationDbContext dbContext) : Controller
 
         PopulateMembershipFields(model, profile);
         return model;
+    }
+
+    private async Task<IReadOnlyList<MemberChallengeProgressCardViewModel>> BuildChallengeProgressCardsAsync(
+        int memberProfileId)
+    {
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var participations = await dbContext.CommunityChallengeParticipations
+            .AsNoTracking()
+            .Include(item => item.CommunityChallenge)
+            .Include(item => item.ProgressEntries)
+            .Where(item =>
+                item.MemberProfileId == memberProfileId &&
+                item.Status != CommunityChallengeParticipationStatus.Withdrawn &&
+                (item.CommunityChallenge.Status == CommunityChallengeStatus.Upcoming ||
+                 item.CommunityChallenge.Status == CommunityChallengeStatus.Active))
+            .OrderBy(item => item.CommunityChallenge.StartsOn)
+            .ThenBy(item => item.CommunityChallenge.Title)
+            .ToListAsync();
+
+        return participations
+            .Select(participation =>
+            {
+                var challenge = participation.CommunityChallenge;
+                var range = CommunityChallengeProgressCalculator.GetCalorieRange(
+                    challenge.TargetDailyCalories,
+                    challenge.CalorieTolerancePercent);
+                var stats = CommunityChallengeProgressCalculator.GetProgressStats(
+                    challenge.StartsOn,
+                    challenge.EndsOn,
+                    challenge.RequiredCompletionPercent,
+                    participation.ProgressEntries);
+                var todayEntry = participation.ProgressEntries
+                    .FirstOrDefault(entry => entry.EntryDate == today);
+
+                return new MemberChallengeProgressCardViewModel
+                {
+                    ParticipationId = participation.Id,
+                    Title = challenge.Title,
+                    Slug = challenge.Slug,
+                    Status = challenge.Status.ToString(),
+                    StartsOn = challenge.StartsOn,
+                    EndsOn = challenge.EndsOn,
+                    TargetDailyCalories = challenge.TargetDailyCalories,
+                    MinDailyCalories = range.MinCalories,
+                    MaxDailyCalories = range.MaxCalories,
+                    RequiredCompletionPercent = challenge.RequiredCompletionPercent,
+                    LoggedDays = stats.LoggedDays,
+                    CompliantDays = stats.CompliantDays,
+                    TotalDays = stats.TotalDays,
+                    ProgressPercent = stats.ProgressPercent,
+                    IsCompleted = participation.Status == CommunityChallengeParticipationStatus.Completed,
+                    CanLogToday =
+                        challenge.Status == CommunityChallengeStatus.Active &&
+                        today >= challenge.StartsOn &&
+                        today <= challenge.EndsOn,
+                    LogDate = today,
+                    TodayCaloriesConsumed = todayEntry?.CaloriesConsumed,
+                    TodayIsCompliant = todayEntry?.IsCompliant
+                };
+            })
+            .ToList();
     }
 
     private static void PopulateMembershipFields(

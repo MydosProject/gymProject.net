@@ -151,15 +151,15 @@
             }
         </section>
 
-        <section class="content-section" id="challenges">
+        <section class="content-section community-challenge-section" id="challenges">
             <div class="content-section-heading">
                 <div>
-                    <p class="content-section-kicker">02 · Community challenge</p>
-                    <h2>Hedefini görünür kıl.</h2>
+                    <p class="content-section-kicker">02 · Toplu challenge'lar</p>
+                    <h2>Birlikte katıl. Kendi ritmini takip et.</h2>
                 </div>
                 <p>
-                    Küçük adımları güçlü bir alışkanlığa dönüştür. Hedefi takip et,
-                    toplulukla birlikte ilerle.
+                    Community ile aynı hedefte buluş; günlük sonucunu üye panelindeki
+                    Kalori Takibi alanına kaydet ve kişisel ilerlemeni izle.
                 </p>
             </div>
 
@@ -182,7 +182,7 @@
 
                         <article class="community-challenge-card">
                             <div class="community-challenge-number">
-                                <span>Challenge</span>
+                                <span>Toplu Hedef</span>
                                 <strong>@((index + 1).ToString("00"))</strong>
                             </div>
 
@@ -190,6 +190,7 @@
                                 <div class="community-challenge-meta">
                                     <span>@GetChallengeStatusName(item.Status)</span>
                                     <span>@item.StartsOn.ToString("dd.MM") – @item.EndsOn.ToString("dd.MM.yyyy")</span>
+                                    <span>Toplu Katılım</span>
                                 </div>
                                 <h3>@item.Title</h3>
                                 <p>@item.Summary</p>
@@ -198,6 +199,9 @@
                             <div class="community-challenge-goal">
                                 <span>Hedef</span>
                                 <p>@item.Goal</p>
+                                <small class="community-challenge-flow-note">
+                                    Katılım Community'de, kişisel takip üye panelinde yapılır.
+                                </small>
                                 @if (!string.IsNullOrWhiteSpace(item.Reward))
                                 {
                                     <small><strong>Ödül:</strong> @item.Reward</small>

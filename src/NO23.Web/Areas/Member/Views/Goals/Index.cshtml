@@ -5,6 +5,7 @@
     var classCreditText = Model.HasUnlimitedClasses
         ? "Sınırsız"
         : Model.RemainingClassCredits.ToString("00");
+
 }
 
 <section class="member-account-page member-goals-page">
@@ -39,6 +40,17 @@
                 <div>
                     <strong>Hedefin güncellendi</strong>
                     <p>@successMessage</p>
+                </div>
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] is string errorMessage)
+        {
+            <div class="member-dashboard-alert" role="alert">
+                <span aria-hidden="true">!</span>
+                <div>
+                    <strong>İşlem tamamlanamadı</strong>
+                    <p>@errorMessage</p>
                 </div>
             </div>
         }
@@ -124,6 +136,7 @@
                 </a>
             </aside>
         </div>
+
     </div>
 </section>
 

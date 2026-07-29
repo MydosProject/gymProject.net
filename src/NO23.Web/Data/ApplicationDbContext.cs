@@ -43,6 +43,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<CommunityChallenge> CommunityChallenges => Set<CommunityChallenge>();
 
+    public DbSet<CommunityChallengeParticipation> CommunityChallengeParticipations =>
+        Set<CommunityChallengeParticipation>();
+
+    public DbSet<ChallengeProgressEntry> ChallengeProgressEntries => Set<ChallengeProgressEntry>();
+
     public DbSet<BlogPost> BlogPosts => Set<BlogPost>();
 
     public DbSet<SuccessStory> SuccessStories => Set<SuccessStory>();

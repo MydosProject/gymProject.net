@@ -14,5 +14,13 @@ public class CommunityChallengeListItemViewModel
 
     public string Goal { get; init; } = string.Empty;
 
+    public int TargetDailyCalories { get; init; }
+
+    public decimal CalorieTolerancePercent { get; init; }
+
+    public int RequiredCompletionPercent { get; init; }
+
+    public int ParticipantCount { get; init; }
+
     public int DisplayOrder { get; init; }
 }
