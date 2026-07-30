@@ -1,0 +1,48 @@
+@model KitchenIngredientFormViewModel
+@using NO23.Web.Domain.Enums
+
+<div class="bg-white border rounded-3 p-4 text-dark admin-form-card">
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" name="selectedDate" value="@(ViewData["SelectedDate"] ?? DateOnly.FromDateTime(DateTime.Today).ToString("yyyy-MM-dd"))" />
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label asp-for="Name" class="form-label"></label>
+            <input asp-for="Name" class="form-control" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="Unit" class="form-label"></label>
+            <select asp-for="Unit" class="form-select">
+                <option value="@KitchenIngredientUnit.Gram">Gram</option>
+                <option value="@KitchenIngredientUnit.Milliliter">Mililitre</option>
+                <option value="@KitchenIngredientUnit.Piece">Adet</option>
+            </select>
+            <span asp-validation-for="Unit" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="CurrentStockQuantity" class="form-label"></label>
+            <input asp-for="CurrentStockQuantity" class="form-control" min="0" step="0.001" />
+            <span asp-validation-for="CurrentStockQuantity" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="MinimumStockQuantity" class="form-label"></label>
+            <input asp-for="MinimumStockQuantity" class="form-control" min="0" step="0.001" />
+            <span asp-validation-for="MinimumStockQuantity" class="text-danger"></span>
+        </div>
+        <div class="col-12">
+            <label class="form-check">
+                <input asp-for="IsActive" class="form-check-input" />
+                @Html.DisplayNameFor(model => model.IsActive)
+            </label>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2 mt-4">
+        <a asp-action="Index"
+           asp-route-date="@(ViewData["SelectedDate"] ?? DateOnly.FromDateTime(DateTime.Today).ToString("yyyy-MM-dd"))"
+           class="btn btn-outline-secondary">Vazgeç</a>
+        <button type="submit" class="btn btn-dark">Kaydet</button>
+    </div>
+</div>

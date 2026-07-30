@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using NO23.Web.Data;
 using NO23.Web.Data.Seed;
 using NO23.Web.Domain.Entities;
+using NO23.Web.Domain.Enums;
 using NO23.Web.ViewModels.Admin;
 
 namespace NO23.Web.Areas.Admin.Controllers;
@@ -37,7 +38,7 @@ public class KitchenMenuItemsController(ApplicationDbContext dbContext) : Contro
         return View(items);
     }
 
-    public IActionResult Create()
+    public async Task<IActionResult> Create()
     {
         return View(new KitchenMenuItemFormViewModel
         {
@@ -47,7 +48,8 @@ public class KitchenMenuItemsController(ApplicationDbContext dbContext) : Contro
             CarbohydrateGrams = 45,
             FatGrams = 15,
             DisplayOrder = 10,
-            IsActive = true
+            IsActive = true,
+            RecipeIngredients = await BuildRecipeInputsAsync(null)
         });
     }
 
@@ -57,6 +59,7 @@ public class KitchenMenuItemsController(ApplicationDbContext dbContext) : Contro
     {
         if (!ModelState.IsValid)
         {
+            model.RecipeIngredients = await BuildRecipeInputsAsync(null, model.RecipeIngredients);
             return View(model);
         }
 
@@ -70,6 +73,7 @@ public class KitchenMenuItemsController(ApplicationDbContext dbContext) : Contro
     {
         var item = await dbContext.KitchenMenuItems
             .AsNoTracking()
+            .Include(item => item.RecipeIngredients)
             .FirstOrDefaultAsync(item => item.Id == id);
 
         if (item is null)
@@ -77,7 +81,10 @@ public class KitchenMenuItemsController(ApplicationDbContext dbContext) : Contro
             return NotFound();
         }
 
-        return View(MapToFormModel(item));
+        var model = MapToFormModel(item);
+        model.RecipeIngredients = await BuildRecipeInputsAsync(id);
+
+        return View(model);
     }
 
     [HttpPost]
@@ -91,10 +98,13 @@ public class KitchenMenuItemsController(ApplicationDbContext dbContext) : Contro
 
         if (!ModelState.IsValid)
         {
+            model.RecipeIngredients = await BuildRecipeInputsAsync(id, model.RecipeIngredients);
             return View(model);
         }
 
-        var item = await dbContext.KitchenMenuItems.FindAsync(id);
+        var item = await dbContext.KitchenMenuItems
+            .Include(item => item.RecipeIngredients)
+            .FirstOrDefaultAsync(item => item.Id == id);
 
         if (item is null)
         {
@@ -102,6 +112,9 @@ public class KitchenMenuItemsController(ApplicationDbContext dbContext) : Contro
         }
 
         ApplyFormModel(item, model);
+        dbContext.KitchenRecipeIngredients.RemoveRange(item.RecipeIngredients);
+        item.RecipeIngredients.Clear();
+        ApplyRecipeIngredients(item, model);
         await dbContext.SaveChangesAsync();
 
         return RedirectToAction(nameof(Index));
@@ -111,6 +124,7 @@ public class KitchenMenuItemsController(ApplicationDbContext dbContext) : Contro
     {
         var item = new KitchenMenuItem();
         ApplyFormModel(item, model);
+        ApplyRecipeIngredients(item, model);
         return item;
     }
 
@@ -150,6 +164,73 @@ public class KitchenMenuItemsController(ApplicationDbContext dbContext) : Contro
             Tags = item.Tags,
             IsActive = item.IsActive,
             DisplayOrder = item.DisplayOrder
+        };
+    }
+
+    private async Task<List<KitchenMenuItemRecipeIngredientInputViewModel>> BuildRecipeInputsAsync(
+        int? kitchenMenuItemId,
+        IReadOnlyList<KitchenMenuItemRecipeIngredientInputViewModel>? postedInputs = null)
+    {
+        var postedQuantityByIngredientId = postedInputs?
+            .ToDictionary(input => input.KitchenIngredientId, input => input.QuantityPerPortion)
+            ?? [];
+
+        Dictionary<int, decimal> existingQuantityByIngredientId = [];
+
+        if (kitchenMenuItemId is not null)
+        {
+            existingQuantityByIngredientId = await dbContext.KitchenRecipeIngredients
+                .AsNoTracking()
+                .Where(recipe => recipe.KitchenMenuItemId == kitchenMenuItemId.Value)
+                .ToDictionaryAsync(
+                    recipe => recipe.KitchenIngredientId,
+                    recipe => recipe.QuantityPerPortion);
+        }
+
+        var ingredients = await dbContext.KitchenIngredients
+            .AsNoTracking()
+            .Where(ingredient => ingredient.IsActive)
+            .OrderBy(ingredient => ingredient.Name)
+            .ToListAsync();
+
+        return ingredients
+            .Select(ingredient => new KitchenMenuItemRecipeIngredientInputViewModel
+            {
+                KitchenIngredientId = ingredient.Id,
+                IngredientName = ingredient.Name,
+                Unit = ingredient.Unit,
+                UnitDisplayName = GetIngredientUnitDisplayName(ingredient.Unit),
+                QuantityPerPortion = postedQuantityByIngredientId.TryGetValue(ingredient.Id, out var postedQuantity)
+                    ? postedQuantity
+                    : existingQuantityByIngredientId.TryGetValue(ingredient.Id, out var existingQuantity)
+                        ? existingQuantity
+                        : 0
+            })
+            .ToList();
+    }
+
+    private static void ApplyRecipeIngredients(
+        KitchenMenuItem item,
+        KitchenMenuItemFormViewModel model)
+    {
+        foreach (var recipeInput in model.RecipeIngredients.Where(input => input.QuantityPerPortion > 0))
+        {
+            item.RecipeIngredients.Add(new KitchenRecipeIngredient
+            {
+                KitchenIngredientId = recipeInput.KitchenIngredientId,
+                QuantityPerPortion = recipeInput.QuantityPerPortion
+            });
+        }
+    }
+
+    private static string GetIngredientUnitDisplayName(KitchenIngredientUnit unit)
+    {
+        return unit switch
+        {
+            KitchenIngredientUnit.Gram => "gr",
+            KitchenIngredientUnit.Milliliter => "ml",
+            KitchenIngredientUnit.Piece => "adet",
+            _ => unit.ToString()
         };
     }
 }

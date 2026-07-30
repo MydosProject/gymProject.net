@@ -32,6 +32,22 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<KitchenMealPlanItem> KitchenMealPlanItems => Set<KitchenMealPlanItem>();
 
+    public DbSet<KitchenIngredient> KitchenIngredients => Set<KitchenIngredient>();
+
+    public DbSet<KitchenRecipeIngredient> KitchenRecipeIngredients =>
+        Set<KitchenRecipeIngredient>();
+
+    public DbSet<KitchenProductionPlan> KitchenProductionPlans =>
+        Set<KitchenProductionPlan>();
+
+    public DbSet<KitchenProductionPlanItem> KitchenProductionPlanItems =>
+        Set<KitchenProductionPlanItem>();
+
+    public DbSet<KitchenProductionPlanMaterial> KitchenProductionPlanMaterials =>
+        Set<KitchenProductionPlanMaterial>();
+
+    public DbSet<KitchenStockMovement> KitchenStockMovements => Set<KitchenStockMovement>();
+
     public DbSet<ShopProduct> ShopProducts => Set<ShopProduct>();
 
     public DbSet<ShoppingCart> ShoppingCarts => Set<ShoppingCart>();

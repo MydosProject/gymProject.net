@@ -1,0 +1,26 @@
+@model KitchenIngredientFormViewModel
+@{
+    ViewData["Title"] = "Malzeme Düzenle";
+}
+
+<section class="admin-page">
+    <div class="container">
+        <header class="admin-page-head">
+            <div>
+                <p class="admin-eyebrow">NO23 KITCHEN / STOK TAKİBİ</p>
+                <h1>Malzeme düzenle</h1>
+                <p class="admin-page-description">Malzeme birimini, stok seviyesini ve görünürlüğünü güncelle.</p>
+            </div>
+        </header>
+
+        <form asp-action="EditIngredient"
+              asp-route-id="@Model.Id"
+              method="post">
+            <partial name="_KitchenIngredientForm" model="Model" />
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

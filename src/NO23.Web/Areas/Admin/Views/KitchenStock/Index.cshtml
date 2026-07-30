@@ -1,0 +1,323 @@
+@using NO23.Web.Domain.Enums
+@model KitchenStockDashboardViewModel
+@{
+    ViewData["Title"] = "Kitchen Stok Takibi";
+    ViewData["SelectedDate"] = Model.SelectedDate.ToString("yyyy-MM-dd");
+    var plan = Model.ProductionPlan;
+    var activeIngredients = Model.Ingredients.Where(ingredient => ingredient.IsActive).ToList();
+
+    static string FormatQuantity(decimal value) => value.ToString("0.###");
+}
+
+<section class="admin-page">
+    <div class="container">
+        <header class="admin-page-head">
+            <div>
+                <p class="admin-eyebrow">NO23 KITCHEN / STOK TAKİBİ</p>
+                <h1>Kitchen stok takibi</h1>
+                <p class="admin-page-description">Günlük üretim ihtiyacını, reçete bazlı malzeme gereksinimini ve stok durumunu takip et.</p>
+            </div>
+            <span class="admin-page-tag">Operasyon</span>
+        </header>
+
+        @if (TempData["SuccessMessage"] is string successMessage)
+        {
+            <div class="alert alert-success" role="status">@successMessage</div>
+        }
+
+        @if (TempData["ErrorMessage"] is string errorMessage)
+        {
+            <div class="alert alert-danger" role="alert">@errorMessage</div>
+        }
+
+        <div class="bg-white border rounded-3 p-3 mb-4 text-dark">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label" for="date">Üretim tarihi</label>
+                    <input id="date" name="date" type="date" class="form-control" value="@Model.SelectedDate.ToString("yyyy-MM-dd")" />
+                </div>
+                <div class="col-md-auto">
+                    <button type="submit" class="btn btn-outline-dark">Tarihi Göster</button>
+                </div>
+            </form>
+
+            <div class="d-flex flex-wrap gap-2 mt-3">
+                <form asp-action="GeneratePlan" method="post">
+                    <input type="hidden" name="selectedDate" value="@Model.SelectedDate.ToString("yyyy-MM-dd")" />
+                    <button type="submit" class="btn btn-dark" @(plan?.IsCompleted == true ? "disabled" : null)>
+                        @(plan is null ? "Plan Oluştur" : "Planı Yenile")
+                    </button>
+                </form>
+
+                @if (plan is not null && !plan.IsCompleted)
+                {
+                    <form asp-action="UpdatePlanStatus" method="post">
+                        <input type="hidden" name="planId" value="@plan.Id" />
+                        <input type="hidden" name="status" value="@KitchenProductionPlanStatus.InPreparation" />
+                        <input type="hidden" name="selectedDate" value="@Model.SelectedDate.ToString("yyyy-MM-dd")" />
+                        <button type="submit" class="btn btn-outline-dark">Hazırlığa Al</button>
+                    </form>
+
+                    <form asp-action="UpdatePlanStatus" method="post">
+                        <input type="hidden" name="planId" value="@plan.Id" />
+                        <input type="hidden" name="status" value="@KitchenProductionPlanStatus.Completed" />
+                        <input type="hidden" name="selectedDate" value="@Model.SelectedDate.ToString("yyyy-MM-dd")" />
+                        <button type="submit" class="btn btn-outline-success">Tamamla</button>
+                    </form>
+                }
+            </div>
+
+            @if (plan?.StockDeductedAtUtc is not null)
+            {
+                <p class="text-muted small mb-0 mt-3">
+                    Stok düşümü: @plan.StockDeductedAtUtc.Value.ToString("dd.MM.yyyy HH:mm")
+                </p>
+            }
+        </div>
+
+        <div class="admin-metrics">
+            <article><span>Toplam porsiyon</span><strong>@(plan?.TotalPortions ?? 0)</strong><small>Günlük üretim</small></article>
+            <article><span>Abonelik</span><strong>@(plan?.TotalSubscriptionPortions ?? 0)</strong><small>Plan öğünleri</small></article>
+            <article><span>Sipariş</span><strong>@(plan?.TotalOrderPortions ?? 0)</strong><small>Tek seferlik</small></article>
+            <article><span>Eksik stok</span><strong>@(plan?.MissingMaterialCount ?? 0)</strong><small>Malzeme kalemi</small></article>
+        </div>
+
+        <div class="table-responsive admin-table-card mb-4">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Ürün</th>
+                        <th>Abonelik</th>
+                        <th>Sipariş</th>
+                        <th>Toplam</th>
+                        <th>Reçete</th>
+                        <th>Hazırlık</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (plan is null)
+                    {
+                        <tr><td colspan="6"><div class="admin-empty-row">Bu tarih için üretim planı oluşturulmadı.</div></td></tr>
+                    }
+                    else if (plan.Items.Count == 0)
+                    {
+                        <tr><td colspan="6"><div class="admin-empty-row">Bu tarihte Kitchen üretim ihtiyacı bulunmuyor.</div></td></tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in plan.Items)
+                        {
+                            <tr>
+                                <td><strong>@item.ProductName</strong></td>
+                                <td>@item.SubscriptionPortions</td>
+                                <td>@item.OrderPortions</td>
+                                <td><strong>@item.TotalPortions</strong></td>
+                                <td>
+                                    <span class="badge @(item.HasRecipe ? "text-bg-success" : "text-bg-warning")">
+                                        @(item.HasRecipe ? "Hazır" : "Reçete eksik")
+                                    </span>
+                                </td>
+                                <td>
+                                    @if (plan.IsCompleted)
+                                    {
+                                        <span class="admin-status">@item.StatusDisplayName</span>
+                                    }
+                                    else
+                                    {
+                                        <form asp-action="UpdateItemStatus" method="post" class="d-flex gap-2">
+                                            <input type="hidden" name="itemId" value="@item.Id" />
+                                            <input type="hidden" name="selectedDate" value="@Model.SelectedDate.ToString("yyyy-MM-dd")" />
+                                            <select name="status" class="form-select form-select-sm">
+                                                <option value="@KitchenProductionItemStatus.NotStarted" selected="@(item.Status == nameof(KitchenProductionItemStatus.NotStarted))">Başlamadı</option>
+                                                <option value="@KitchenProductionItemStatus.Preparing" selected="@(item.Status == nameof(KitchenProductionItemStatus.Preparing))">Hazırlanıyor</option>
+                                                <option value="@KitchenProductionItemStatus.Ready" selected="@(item.Status == nameof(KitchenProductionItemStatus.Ready))">Hazır</option>
+                                            </select>
+                                            <button type="submit" class="btn btn-sm btn-outline-dark">Kaydet</button>
+                                        </form>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-responsive admin-table-card mb-4">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Malzeme</th>
+                        <th>Gereken</th>
+                        <th>Stok</th>
+                        <th>Eksik</th>
+                        <th>Önerilen stok girişi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (plan is null || plan.Materials.Count == 0)
+                    {
+                        <tr><td colspan="5"><div class="admin-empty-row">Malzeme ihtiyacı için üretim planı ve ürün reçetesi gerekir.</div></td></tr>
+                    }
+                    else
+                    {
+                        @foreach (var material in plan.Materials)
+                        {
+                            <tr>
+                                <td><strong>@material.IngredientName</strong></td>
+                                <td>@FormatQuantity(material.RequiredQuantity) @material.Unit</td>
+                                <td>@FormatQuantity(material.StockQuantity) @material.Unit</td>
+                                <td>
+                                    <span class="badge @(material.HasMissingStock ? "text-bg-danger" : "text-bg-success")">
+                                        @FormatQuantity(material.MissingQuantity) @material.Unit
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge @(material.HasSuggestedStockEntry ? "text-bg-warning" : "text-bg-success")">
+                                        @FormatQuantity(material.SuggestedStockEntryQuantity) @material.Unit
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <h2 class="h5 mb-3">Yeni malzeme</h2>
+                <form asp-action="CreateIngredient" method="post">
+                    <partial name="_KitchenIngredientForm" model="Model.IngredientForm" />
+                </form>
+            </div>
+            <div class="col-lg-6">
+                <h2 class="h5 mb-3">Stok hareketi</h2>
+                <form asp-action="CreateStockMovement" method="post" class="bg-white border rounded-3 p-4 text-dark admin-form-card">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    <input type="hidden" name="selectedDate" value="@Model.SelectedDate.ToString("yyyy-MM-dd")" />
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="StockMovementForm.KitchenIngredientId" class="form-label"></label>
+                            <select asp-for="StockMovementForm.KitchenIngredientId" name="KitchenIngredientId" class="form-select">
+                                <option value="">Malzeme seç</option>
+                                @foreach (var ingredient in activeIngredients)
+                                {
+                                    <option value="@ingredient.Id">@ingredient.Name (@ingredient.Unit)</option>
+                                }
+                            </select>
+                            @Html.ValidationMessage("KitchenIngredientId", null, new { @class = "text-danger" })
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="StockMovementForm.Type" class="form-label"></label>
+                            <select asp-for="StockMovementForm.Type" name="Type" class="form-select">
+                                <option value="@KitchenStockMovementType.StockIn">Stok Girişi</option>
+                                <option value="@KitchenStockMovementType.StockOut">Stok Çıkışı</option>
+                                <option value="@KitchenStockMovementType.Adjustment">Sayım Düzeltmesi</option>
+                            </select>
+                            @Html.ValidationMessage("Type", null, new { @class = "text-danger" })
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="StockMovementForm.Quantity" class="form-label"></label>
+                            <input asp-for="StockMovementForm.Quantity" name="Quantity" class="form-control" min="0" step="0.001" />
+                            @Html.ValidationMessage("Quantity", null, new { @class = "text-danger" })
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="StockMovementForm.Note" class="form-label"></label>
+                            <input asp-for="StockMovementForm.Note" name="Note" class="form-control" />
+                            @Html.ValidationMessage("Note", null, new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-4">
+                        <button type="submit" class="btn btn-dark">Hareket Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="table-responsive admin-table-card mt-4">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Malzeme</th>
+                        <th>Stok</th>
+                        <th>Minimum</th>
+                        <th>Durum</th>
+                        <th class="text-end">İşlem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Ingredients.Count == 0)
+                    {
+                        <tr><td colspan="5"><div class="admin-empty-row">Henüz malzeme tanımlanmadı.</div></td></tr>
+                    }
+                    else
+                    {
+                        @foreach (var ingredient in Model.Ingredients)
+                        {
+                            <tr>
+                                <td><strong>@ingredient.Name</strong></td>
+                                <td>@FormatQuantity(ingredient.CurrentStockQuantity) @ingredient.Unit</td>
+                                <td>@FormatQuantity(ingredient.MinimumStockQuantity) @ingredient.Unit</td>
+                                <td>
+                                    <span class="badge @(ingredient.IsBelowMinimum ? "text-bg-warning" : ingredient.IsActive ? "text-bg-success" : "text-bg-secondary")">
+                                        @(ingredient.IsBelowMinimum ? "Minimum altı" : ingredient.IsActive ? "Aktif" : "Pasif")
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <a class="btn btn-sm btn-outline-dark"
+                                       asp-action="EditIngredient"
+                                       asp-route-id="@ingredient.Id"
+                                       asp-route-date="@Model.SelectedDate.ToString("yyyy-MM-dd")">
+                                        Düzenle
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-responsive admin-table-card mt-4">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Tarih</th>
+                        <th>Malzeme</th>
+                        <th>Tip</th>
+                        <th>Miktar</th>
+                        <th>Stok</th>
+                        <th>Not</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.RecentMovements.Count == 0)
+                    {
+                        <tr><td colspan="6"><div class="admin-empty-row">Henüz stok hareketi kaydedilmedi.</div></td></tr>
+                    }
+                    else
+                    {
+                        @foreach (var movement in Model.RecentMovements)
+                        {
+                            <tr>
+                                <td>@movement.CreatedAtUtc.ToString("dd.MM.yyyy HH:mm")</td>
+                                <td><strong>@movement.IngredientName</strong></td>
+                                <td>@movement.Type</td>
+                                <td>@FormatQuantity(movement.Quantity) @movement.Unit</td>
+                                <td>@FormatQuantity(movement.QuantityBefore) → @FormatQuantity(movement.QuantityAfter)</td>
+                                <td>@(movement.Note ?? "-")</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
