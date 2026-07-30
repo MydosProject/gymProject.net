@@ -193,7 +193,12 @@
         <main class="admin-main">
             <header class="admin-topbar">
                 <div class="admin-topbar-start">
-                    <button class="admin-menu-button" type="button" data-admin-sidebar-open aria-label="Menüyü aç">
+                    <button class="admin-menu-button"
+                            type="button"
+                            data-admin-sidebar-open
+                            aria-controls="adminSidebar"
+                            aria-expanded="false"
+                            aria-label="Menüyü aç">
                         <span></span><span></span>
                     </button>
                     <div>
@@ -225,9 +230,19 @@
     <script>
         (() => {
             const body = document.body;
-            document.querySelector('[data-admin-sidebar-open]')?.addEventListener('click', () => body.classList.add('admin-menu-open'));
+            const openButton = document.querySelector('[data-admin-sidebar-open]');
+            const closeMenu = () => {
+                body.classList.remove('admin-menu-open');
+                openButton?.setAttribute('aria-expanded', 'false');
+            };
+
+            openButton?.addEventListener('click', () => {
+                body.classList.add('admin-menu-open');
+                openButton.setAttribute('aria-expanded', 'true');
+            });
+
             document.querySelectorAll('[data-admin-sidebar-close]').forEach((element) => {
-                element.addEventListener('click', () => body.classList.remove('admin-menu-open'));
+                element.addEventListener('click', closeMenu);
             });
 
             document.querySelectorAll('[data-admin-submenu-toggle]').forEach((toggle) => {
@@ -245,6 +260,13 @@
                     toggle.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
                     submenu.classList.toggle('is-open', shouldOpen);
                 });
+            });
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && body.classList.contains('admin-menu-open')) {
+                    closeMenu();
+                    openButton?.focus();
+                }
             });
         })();
     </script>

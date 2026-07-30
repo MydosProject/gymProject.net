@@ -63,18 +63,18 @@
                             var isScheduled = session.Status.Equals("Scheduled", StringComparison.OrdinalIgnoreCase);
 
                             <tr>
-                                <td><span class="admin-order-no">@((index + 1).ToString("00"))</span></td>
-                                <td><strong class="admin-class-name">@session.ClassName</strong></td>
-                                <td>@session.TrainerName</td>
-                                <td><strong>@startsAtLocal.ToString("dd.MM.yyyy")</strong></td>
-                                <td><span class="admin-code">@startsAtLocal.ToString("HH:mm")</span></td>
-                                <td>
+                                <td data-label="Sıra"><span class="admin-order-no">@((index + 1).ToString("00"))</span></td>
+                                <td data-label="Ders"><strong class="admin-class-name">@session.ClassName</strong></td>
+                                <td data-label="Eğitmen">@session.TrainerName</td>
+                                <td data-label="Tarih"><strong>@startsAtLocal.ToString("dd.MM.yyyy")</strong></td>
+                                <td data-label="Saat"><span class="admin-code">@startsAtLocal.ToString("HH:mm")</span></td>
+                                <td data-label="Kontenjan">
                                     <strong>@session.ReservedCount / @session.Capacity</strong>
                                     <span class="admin-cell-note">rezervasyon</span>
                                 </td>
-                                <td><span class="admin-capacity @(remainingCapacity == 0 ? "is-full" : null)">@remainingCapacity yer</span></td>
-                                <td><span class="badge @(isScheduled ? "text-bg-success" : "text-bg-secondary")">@StatusLabel(session.Status)</span></td>
-                                <td class="text-end"><a class="btn btn-sm btn-outline-dark" asp-action="Edit" asp-route-id="@session.Id">Düzenle</a></td>
+                                <td data-label="Kalan"><span class="admin-capacity @(remainingCapacity == 0 ? "is-full" : null)">@remainingCapacity yer</span></td>
+                                <td data-label="Durum"><span class="badge @(isScheduled ? "text-bg-success" : "text-bg-secondary")">@StatusLabel(session.Status)</span></td>
+                                <td class="text-end" data-label="İşlem"><a class="btn btn-sm btn-outline-dark" asp-action="Edit" asp-route-id="@session.Id">Düzenle</a></td>
                             </tr>
                         }
                     }

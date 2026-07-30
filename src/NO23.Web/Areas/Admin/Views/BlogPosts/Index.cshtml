@@ -33,11 +33,11 @@
                         @foreach (var item in Model)
                         {
                             <tr>
-                                <td><strong>@item.Title</strong></td>
-                                <td>@item.Category</td>
-                                <td><span class="admin-status">@item.Status</span></td>
-                                <td>@(item.PublishedAtUtc?.ToLocalTime().ToString("dd.MM.yyyy") ?? "-")</td>
-                                <td class="text-end"><a class="btn btn-sm btn-outline-dark" asp-action="Edit" asp-route-id="@item.Id">Düzenle</a></td>
+                                <td data-label="Başlık"><strong>@item.Title</strong></td>
+                                <td data-label="Kategori">@item.Category</td>
+                                <td data-label="Durum"><span class="admin-status">@item.Status</span></td>
+                                <td data-label="Yayın tarihi">@(item.PublishedAtUtc?.ToLocalTime().ToString("dd.MM.yyyy") ?? "-")</td>
+                                <td class="text-end" data-label="İşlem"><a class="btn btn-sm btn-outline-dark" asp-action="Edit" asp-route-id="@item.Id">Düzenle</a></td>
                             </tr>
                         }
                     }

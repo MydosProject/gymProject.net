@@ -100,27 +100,27 @@
                                 StringComparison.OrdinalIgnoreCase);
 
                             <tr>
-                                <td><strong class="admin-code">K-@subscription.Id.ToString("D4")</strong></td>
-                                <td>
+                                <td data-label="Abonelik"><strong class="admin-code">K-@subscription.Id.ToString("D4")</strong></td>
+                                <td data-label="Üye">
                                     <strong>@(string.IsNullOrWhiteSpace(subscription.MemberName) ? "İsimsiz üye" : subscription.MemberName)</strong>
                                     <small class="admin-cell-note">@subscription.MemberEmail</small>
                                 </td>
-                                <td>
+                                <td data-label="Plan">
                                     <span class="admin-status">@(string.IsNullOrWhiteSpace(subscription.PackageName) ? GetPlanName(subscription.Plan) : subscription.PackageName)</span>
                                     <small class="admin-cell-note">@subscription.PackageDays gün · @subscription.PackagePrice.ToString("C0")</small>
                                 </td>
-                                <td>@GetGoalName(subscription.Goal)</td>
-                                <td>
+                                <td data-label="Hedef">@GetGoalName(subscription.Goal)</td>
+                                <td data-label="Makro">
                                     <strong>@subscription.DailyCalories kcal</strong>
                                     <small class="admin-cell-note admin-code">
                                         P @subscription.ProteinGrams / K @subscription.CarbohydrateGrams / Y @subscription.FatGrams
                                     </small>
                                 </td>
-                                <td>
+                                <td data-label="Tarih">
                                     <strong>@subscription.StartsOn.ToString("dd.MM.yyyy")</strong>
                                     <small class="admin-cell-note">@subscription.EndsOn.ToString("dd.MM.yyyy") tarihine kadar</small>
                                 </td>
-                                <td>
+                                <td data-label="Durum">
                                     <span class="badge @(isActive ? "text-bg-success" : "text-bg-secondary")">
                                         @GetStatusName(subscription.Status)
                                     </span>

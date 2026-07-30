@@ -46,17 +46,17 @@
                         @foreach (var package in Model)
                         {
                             <tr>
-                                <td><span class="admin-order-no">@package.DisplayOrder.ToString("00")</span></td>
-                                <td><span class="admin-status">@package.Plan</span></td>
-                                <td>
+                                <td data-label="Sıra"><span class="admin-order-no">@package.DisplayOrder.ToString("00")</span></td>
+                                <td data-label="Plan"><span class="admin-status">@package.Plan</span></td>
+                                <td data-label="Paket">
                                     <strong>@package.Name</strong>
                                     <small class="admin-cell-note">@package.Description</small>
                                 </td>
-                                <td><strong>@package.Days</strong><span class="admin-cell-note">gün</span></td>
-                                <td><strong>@package.UnitPrice.ToString("C0")</strong></td>
-                                <td><strong>@package.SubscriptionCount</strong></td>
-                                <td><span class="badge @(package.IsActive ? "text-bg-success" : "text-bg-secondary")">@(package.IsActive ? "Aktif" : "Pasif")</span></td>
-                                <td class="text-end">
+                                <td data-label="Gün"><strong>@package.Days</strong><span class="admin-cell-note">gün</span></td>
+                                <td data-label="Fiyat"><strong>@package.UnitPrice.ToString("C0")</strong></td>
+                                <td data-label="Abonelik"><strong>@package.SubscriptionCount</strong></td>
+                                <td data-label="Durum"><span class="badge @(package.IsActive ? "text-bg-success" : "text-bg-secondary")">@(package.IsActive ? "Aktif" : "Pasif")</span></td>
+                                <td class="text-end" data-label="İşlem">
                                     <a class="btn btn-sm btn-outline-dark"
                                        asp-action="Edit"
                                        asp-route-id="@package.Id">

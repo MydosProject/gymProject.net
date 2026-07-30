@@ -46,20 +46,20 @@
                         @foreach (var order in Model)
                         {
                             <tr>
-                                <td><strong class="admin-code">@order.OrderNumber</strong></td>
-                                <td>
+                                <td data-label="Sipariş"><strong class="admin-code">@order.OrderNumber</strong></td>
+                                <td data-label="Müşteri">
                                     <strong>@order.MemberName</strong>
                                     @if (!string.IsNullOrWhiteSpace(order.GuestEmail))
                                     {
                                         <small class="admin-cell-note">@order.GuestEmail</small>
                                     }
                                 </td>
-                                <td>@order.Type</td>
-                                <td><span class="admin-status">@order.Status</span></td>
-                                <td>@order.PaymentStatus</td>
-                                <td><strong>@order.DeliveryDate.ToString("dd.MM.yyyy")</strong><small class="admin-cell-note">@order.DeliveryTimeSlot</small></td>
-                                <td>@order.ItemCount</td>
-                                <td><strong>@order.Total.ToString("C0")</strong></td>
+                                <td data-label="Tür">@order.Type</td>
+                                <td data-label="Durum"><span class="admin-status">@order.Status</span></td>
+                                <td data-label="Ödeme">@order.PaymentStatus</td>
+                                <td data-label="Teslimat"><strong>@order.DeliveryDate.ToString("dd.MM.yyyy")</strong><small class="admin-cell-note">@order.DeliveryTimeSlot</small></td>
+                                <td data-label="Ürün">@order.ItemCount</td>
+                                <td data-label="Toplam"><strong>@order.Total.ToString("C0")</strong></td>
                             </tr>
                         }
                     }

@@ -47,15 +47,15 @@
                         @foreach (var item in Model)
                         {
                             <tr>
-                                <td><span class="admin-order-no">@item.DisplayOrder.ToString("00")</span></td>
-                                <td><strong>@item.Name</strong></td>
-                                <td>@item.Category</td>
-                                <td><strong>@item.UnitPrice.ToString("C0")</strong></td>
-                                <td>@item.Calories kcal</td>
-                                <td><span class="admin-code">P @item.ProteinGrams / K @item.CarbohydrateGrams / Y @item.FatGrams</span></td>
-                                <td>@(item.Tags ?? "-")</td>
-                                <td><span class="badge @(item.IsActive ? "text-bg-success" : "text-bg-secondary")">@(item.IsActive ? "Aktif" : "Pasif")</span></td>
-                                <td class="text-end"><a class="btn btn-sm btn-outline-dark" asp-action="Edit" asp-route-id="@item.Id">Düzenle</a></td>
+                                <td data-label="Sıra"><span class="admin-order-no">@item.DisplayOrder.ToString("00")</span></td>
+                                <td data-label="Ürün"><strong>@item.Name</strong></td>
+                                <td data-label="Kategori">@item.Category</td>
+                                <td data-label="Fiyat"><strong>@item.UnitPrice.ToString("C0")</strong></td>
+                                <td data-label="Kalori">@item.Calories kcal</td>
+                                <td data-label="Makro"><span class="admin-code">P @item.ProteinGrams / K @item.CarbohydrateGrams / Y @item.FatGrams</span></td>
+                                <td data-label="Etiket">@(item.Tags ?? "-")</td>
+                                <td data-label="Durum"><span class="badge @(item.IsActive ? "text-bg-success" : "text-bg-secondary")">@(item.IsActive ? "Aktif" : "Pasif")</span></td>
+                                <td class="text-end" data-label="İşlem"><a class="btn btn-sm btn-outline-dark" asp-action="Edit" asp-route-id="@item.Id">Düzenle</a></td>
                             </tr>
                         }
                     }

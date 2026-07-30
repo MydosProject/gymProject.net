@@ -52,19 +52,19 @@
                         {
                             var groupClass = Model[index];
                             <tr>
-                                <td><span class="admin-order-no">@((index + 1).ToString("00"))</span></td>
-                                <td><strong class="admin-class-name">@groupClass.Name</strong></td>
-                                <td>@groupClass.TrainerName</td>
-                                <td><span class="admin-code">@groupClass.DurationMinutes dk</span></td>
-                                <td>@groupClass.DifficultyLevel</td>
-                                <td>@groupClass.AverageCaloriesBurned kcal</td>
-                                <td>@groupClass.Capacity kişi</td>
-                                <td>
+                                <td data-label="Sıra"><span class="admin-order-no">@((index + 1).ToString("00"))</span></td>
+                                <td data-label="Ders"><strong class="admin-class-name">@groupClass.Name</strong></td>
+                                <td data-label="Eğitmen">@groupClass.TrainerName</td>
+                                <td data-label="Süre"><span class="admin-code">@groupClass.DurationMinutes dk</span></td>
+                                <td data-label="Zorluk">@groupClass.DifficultyLevel</td>
+                                <td data-label="Enerji">@groupClass.AverageCaloriesBurned kcal</td>
+                                <td data-label="Kapasite">@groupClass.Capacity kişi</td>
+                                <td data-label="Program">
                                     <strong>@groupClass.SessionCount</strong>
                                     <span class="admin-cell-note">seans</span>
                                 </td>
-                                <td><span class="badge @(groupClass.IsActive ? "text-bg-success" : "text-bg-secondary")">@(groupClass.IsActive ? "Aktif" : "Pasif")</span></td>
-                                <td class="text-end"><a class="btn btn-sm btn-outline-dark" asp-action="Edit" asp-route-id="@groupClass.Id">Düzenle</a></td>
+                                <td data-label="Durum"><span class="badge @(groupClass.IsActive ? "text-bg-success" : "text-bg-secondary")">@(groupClass.IsActive ? "Aktif" : "Pasif")</span></td>
+                                <td class="text-end" data-label="İşlem"><a class="btn btn-sm btn-outline-dark" asp-action="Edit" asp-route-id="@groupClass.Id">Düzenle</a></td>
                             </tr>
                         }
                     }

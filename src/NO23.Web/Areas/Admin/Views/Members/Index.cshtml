@@ -74,18 +74,18 @@
                         @foreach (var member in Model)
                         {
                             <tr>
-                                <td>
+                                <td data-label="Üye">
                                     <strong>@(string.IsNullOrWhiteSpace(member.FullName) ? "İsimsiz üye" : member.FullName)</strong>
                                     <small class="admin-cell-note">@member.Email</small>
                                 </td>
-                                <td>@(string.IsNullOrWhiteSpace(member.PhoneNumber) ? "-" : member.PhoneNumber)</td>
-                                <td><span class="admin-status">@member.PackageName</span></td>
-                                <td>@(string.IsNullOrWhiteSpace(member.FitnessGoal) ? "-" : member.FitnessGoal)</td>
-                                <td>
+                                <td data-label="İletişim">@(string.IsNullOrWhiteSpace(member.PhoneNumber) ? "-" : member.PhoneNumber)</td>
+                                <td data-label="Paket"><span class="admin-status">@member.PackageName</span></td>
+                                <td data-label="Hedef">@(string.IsNullOrWhiteSpace(member.FitnessGoal) ? "-" : member.FitnessGoal)</td>
+                                <td data-label="Kalan ders">
                                     <strong>@(member.RemainingClassCredits == 0 ? "Sınırsız" : member.RemainingClassCredits)</strong>
                                     <small class="admin-cell-note">Ders hakkı</small>
                                 </td>
-                                <td>
+                                <td data-label="Kayıt">
                                     <strong>@member.CreatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy")</strong>
                                     <small class="admin-cell-note">Kayıt tarihi</small>
                                 </td>

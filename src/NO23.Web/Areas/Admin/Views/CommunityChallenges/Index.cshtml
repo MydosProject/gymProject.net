@@ -45,16 +45,16 @@
                         @foreach (var item in Model)
                         {
                             <tr>
-                                <td><span class="admin-order-no">@item.DisplayOrder.ToString("00")</span></td>
-                                <td><strong>@item.Title</strong></td>
-                                <td><span class="admin-status">@GetStatusName(item.Status)</span></td>
-                                <td>@item.StartsOn.ToString("dd.MM.yyyy") — @item.EndsOn.ToString("dd.MM.yyyy")</td>
-                                <td>
+                                <td data-label="Sıra"><span class="admin-order-no">@item.DisplayOrder.ToString("00")</span></td>
+                                <td data-label="Challenge"><strong>@item.Title</strong></td>
+                                <td data-label="Durum"><span class="admin-status">@GetStatusName(item.Status)</span></td>
+                                <td data-label="Tarih">@item.StartsOn.ToString("dd.MM.yyyy") — @item.EndsOn.ToString("dd.MM.yyyy")</td>
+                                <td data-label="Kalori kuralı">
                                     <strong>@item.TargetDailyCalories kcal</strong>
                                     <small class="d-block text-muted">± @item.CalorieTolerancePercent% · @item.RequiredCompletionPercent% tamamlama</small>
                                 </td>
-                                <td>@item.ParticipantCount</td>
-                                <td class="text-end">
+                                <td data-label="Katılımcı">@item.ParticipantCount</td>
+                                <td class="text-end" data-label="İşlem">
                                     <div class="d-flex justify-content-end gap-2">
                                         <a class="btn btn-sm btn-outline-dark" asp-action="Details" asp-route-id="@item.Id">Takip</a>
                                         <a class="btn btn-sm btn-dark" asp-action="Edit" asp-route-id="@item.Id">Düzenle</a>
