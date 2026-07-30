@@ -276,7 +276,7 @@
                     <div class="kitchen-meal-day-list">
                         @foreach (var day in subscription.MealPlanDays)
                         {
-                            <details class="kitchen-meal-day-card">
+                            <details class="kitchen-meal-day-card @(day.IsFullySkipped ? "is-skipped" : null)">
                                 <summary>
                                     <span class="kitchen-meal-day-number">
                                         @day.DayNumber.ToString("00")
@@ -291,6 +291,13 @@
                                         <small>@GetCalorieComparison(day.TotalCalories, subscription.DailyCalories)</small>
                                         <strong>@day.TotalCalories kcal</strong>
                                     </span>
+
+                                    @if (day.SkippedMealCount > 0)
+                                    {
+                                        <span class="kitchen-meal-day-status">
+                                            @day.SkippedMealCount öğün pas geçildi
+                                        </span>
+                                    }
 
                                     <span class="kitchen-meal-day-toggle"
                                           aria-hidden="true"></span>
@@ -312,17 +319,36 @@
                                         </div>
                                         <div>
                                             <dt>Öğün</dt>
-                                            <dd>@day.Meals.Count</dd>
+                                            <dd>@day.ActiveMealCount / @day.Meals.Count</dd>
                                         </div>
                                     </dl>
+
+                                    @if (day.CanSkip)
+                                    {
+                                        <div class="kitchen-meal-day-actions">
+                                            <form asp-area="Member"
+                                                  asp-controller="Kitchen"
+                                                  asp-action="@(day.IsFullySkipped ? "RestoreDay" : "SkipDay")"
+                                                  method="post">
+                                                <input type="hidden" name="mealPlanDayId" value="@day.Id" />
+                                                <button type="submit" class="kitchen-inline-action">
+                                                    @(day.IsFullySkipped ? "Günü Plana Al" : "Günü Pas Geç")
+                                                </button>
+                                            </form>
+                                        </div>
+                                    }
 
                                     <div class="kitchen-meal-list">
                                         @foreach (var meal in day.Meals)
                                         {
-                                            <article class="kitchen-meal-row">
+                                            <article class="kitchen-meal-row @(meal.IsSkipped ? "is-skipped" : null)">
                                                 <div>
                                                     <span>@meal.MealSlotDisplayName</span>
                                                     <strong>@meal.ProductName</strong>
+                                                    @if (meal.IsSkipped)
+                                                    {
+                                                        <small>Bu öğün üretime dahil edilmeyecek.</small>
+                                                    }
                                                 </div>
 
                                                 <dl>
@@ -341,6 +367,24 @@
                                                             K @meal.CarbohydrateGrams.ToString("0.#") ·
                                                             Y @meal.FatGrams.ToString("0.#")
                                                         </dd>
+                                                    </div>
+                                                    <div class="kitchen-meal-action-cell">
+                                                        @if (meal.CanSkip)
+                                                        {
+                                                            <form asp-area="Member"
+                                                                  asp-controller="Kitchen"
+                                                                  asp-action="@(meal.IsSkipped ? "RestoreMeal" : "SkipMeal")"
+                                                                  method="post">
+                                                                <input type="hidden" name="mealPlanItemId" value="@meal.Id" />
+                                                                <button type="submit" class="kitchen-inline-action">
+                                                                    @(meal.IsSkipped ? "Plana Al" : "Pas Geç")
+                                                                </button>
+                                                            </form>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="kitchen-meal-locked">Kilitli</span>
+                                                        }
                                                     </div>
                                                 </dl>
                                             </article>

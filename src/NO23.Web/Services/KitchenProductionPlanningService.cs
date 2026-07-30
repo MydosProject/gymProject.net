@@ -16,11 +16,13 @@ public class KitchenProductionPlanningService(ApplicationDbContext dbContext)
 
         if (existingPlan?.Status == KitchenProductionPlanStatus.Completed)
         {
-            return KitchenProductionPlanResult.Fail("Tamamlanmış üretim planı yeniden oluşturulamaz.");
+            return KitchenProductionPlanResult.Fail(
+                "Tamamlanmış üretim planı yeniden oluşturulamaz.");
         }
 
         var demandRows = await BuildDemandRowsAsync(planDate);
-        var recipeRows = await BuildRecipeRowsAsync(demandRows.Select(row => row.KitchenMenuItemId).ToList());
+        var recipeRows = await BuildRecipeRowsAsync(
+            demandRows.Select(row => row.KitchenMenuItemId).ToList());
         var draft = KitchenProductionPlanCalculator.Calculate(demandRows, recipeRows);
 
         var itemStatusByMenuItemId = existingPlan?.Items
@@ -98,7 +100,8 @@ public class KitchenProductionPlanningService(ApplicationDbContext dbContext)
         if (plan.Status == KitchenProductionPlanStatus.Completed &&
             status != KitchenProductionPlanStatus.Completed)
         {
-            return KitchenProductionPlanResult.Fail("Tamamlanmış üretim planı durumu değiştirilemez.");
+            return KitchenProductionPlanResult.Fail(
+                "Tamamlanmış üretim planı durumu değiştirilemez.");
         }
 
         plan.Status = status;
@@ -128,7 +131,22 @@ public class KitchenProductionPlanningService(ApplicationDbContext dbContext)
 
         if (plan.Status == KitchenProductionPlanStatus.Completed)
         {
-            return KitchenProductionPlanResult.Fail("Tamamlanmış üretim planı yeniden tamamlanamaz.");
+            return KitchenProductionPlanResult.Fail(
+                "Tamamlanmış üretim planı yeniden tamamlanamaz.");
+        }
+
+        var notReadyProducts = plan.Items
+            .Where(item =>
+                item.TotalPortions > 0 &&
+                item.Status != KitchenProductionItemStatus.Ready)
+            .Select(item => item.ProductNameSnapshot)
+            .OrderBy(name => name)
+            .ToList();
+
+        if (notReadyProducts.Count > 0)
+        {
+            return KitchenProductionPlanResult.Fail(
+                $"Hazır olmayan ürünler var: {string.Join(", ", notReadyProducts)}. Planı tamamlamadan önce tüm ürünleri hazır yapmalısın.");
         }
 
         var missingRecipeProducts = plan.Items
@@ -220,7 +238,8 @@ public class KitchenProductionPlanningService(ApplicationDbContext dbContext)
 
         if (item.KitchenProductionPlan.Status == KitchenProductionPlanStatus.Completed)
         {
-            return KitchenProductionPlanResult.Fail("Tamamlanmış üretim planındaki ürün durumu değiştirilemez.");
+            return KitchenProductionPlanResult.Fail(
+                "Tamamlanmış üretim planındaki ürün durumu değiştirilemez.");
         }
 
         item.Status = status;
@@ -264,7 +283,8 @@ public class KitchenProductionPlanningService(ApplicationDbContext dbContext)
 
         if (quantityAfter < 0)
         {
-            return KitchenProductionPlanResult.Fail("Stok miktarı sıfırın altına düşemez.");
+            return KitchenProductionPlanResult.Fail(
+                "Stok miktarı sıfırın altına düşemez.");
         }
 
         ingredient.CurrentStockQuantity = quantityAfter;
@@ -283,12 +303,14 @@ public class KitchenProductionPlanningService(ApplicationDbContext dbContext)
         return KitchenProductionPlanResult.Ok(ingredient.Id);
     }
 
-    private async Task<IReadOnlyList<KitchenProductionDemandRow>> BuildDemandRowsAsync(DateOnly planDate)
+    private async Task<IReadOnlyList<KitchenProductionDemandRow>> BuildDemandRowsAsync(
+        DateOnly planDate)
     {
         var subscriptionRows = await dbContext.KitchenMealPlanItems
             .AsNoTracking()
             .Where(item =>
                 item.KitchenMealPlanDay.PlanDate == planDate &&
+                !item.IsSkipped &&
                 item.KitchenMealPlanDay.KitchenMealPlan.KitchenSubscription.Status !=
                     KitchenSubscriptionStatus.Cancelled)
             .GroupBy(item => new

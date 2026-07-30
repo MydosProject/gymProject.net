@@ -29,6 +29,14 @@ public class KitchenMealPlanDayViewModel
 
     public decimal TotalPrice { get; init; }
 
+    public bool CanSkip { get; init; }
+
+    public int ActiveMealCount => Meals.Count(meal => !meal.IsSkipped);
+
+    public int SkippedMealCount => Meals.Count(meal => meal.IsSkipped);
+
+    public bool IsFullySkipped => Meals.Count > 0 && ActiveMealCount == 0;
+
     public IReadOnlyList<KitchenMealPlanMealViewModel> Meals { get; init; } = [];
 }
 
@@ -57,4 +65,8 @@ public class KitchenMealPlanMealViewModel
     public decimal UnitPrice { get; init; }
 
     public decimal TotalPrice { get; init; }
+
+    public bool IsSkipped { get; init; }
+
+    public bool CanSkip { get; init; }
 }

@@ -29,4 +29,8 @@ public class KitchenMealPlanItem
     public decimal FatGramsSnapshot { get; set; }
 
     public decimal UnitPriceSnapshot { get; set; }
+
+    public bool IsSkipped { get; set; }
+
+    public DateTime? SkippedAtUtc { get; set; }
 }

@@ -38,6 +38,7 @@ public static class DatabaseSeeder
         await SeedClassOperationsAsync(dbContext);
         await SeedKitchenSubscriptionPackagesAsync(dbContext);
         await SeedKitchenMenuItemsAsync(dbContext);
+        await SeedKitchenStockAsync(dbContext);
         await SeedShopProductsAsync(dbContext);
         await SeedCommunityContentAsync(dbContext);
         await SeedAdminUserAsync(userManager, configuration);
@@ -211,6 +212,91 @@ public static class DatabaseSeeder
             item.IsPlanEligible = defaultItem.IsPlanEligible;
             item.DisplayOrder = defaultItem.DisplayOrder;
             item.UpdatedAtUtc = DateTime.UtcNow;
+        }
+
+        await dbContext.SaveChangesAsync();
+    }
+
+    private static async Task SeedKitchenStockAsync(ApplicationDbContext dbContext)
+    {
+        var existingIngredientsByName = await dbContext.KitchenIngredients
+            .ToDictionaryAsync(ingredient => ingredient.Name);
+        var newIngredients = new List<KitchenIngredient>();
+
+        foreach (var defaultIngredient in KitchenStockSeed.Ingredients)
+        {
+            if (existingIngredientsByName.ContainsKey(defaultIngredient.Name))
+            {
+                continue;
+            }
+
+            var ingredient = new KitchenIngredient
+            {
+                Name = defaultIngredient.Name,
+                Unit = defaultIngredient.Unit,
+                CurrentStockQuantity = defaultIngredient.CurrentStockQuantity,
+                MinimumStockQuantity = defaultIngredient.MinimumStockQuantity,
+                IsActive = true
+            };
+
+            dbContext.KitchenIngredients.Add(ingredient);
+            newIngredients.Add(ingredient);
+        }
+
+        if (newIngredients.Count > 0)
+        {
+            await dbContext.SaveChangesAsync();
+
+            foreach (var ingredient in newIngredients.Where(item => item.CurrentStockQuantity > 0))
+            {
+                dbContext.KitchenStockMovements.Add(new KitchenStockMovement
+                {
+                    KitchenIngredientId = ingredient.Id,
+                    Type = KitchenStockMovementType.StockIn,
+                    Quantity = ingredient.CurrentStockQuantity,
+                    QuantityBeforeSnapshot = 0,
+                    QuantityAfterSnapshot = ingredient.CurrentStockQuantity,
+                    Note = "Seed başlangıç stok girişi"
+                });
+            }
+        }
+
+        var ingredientsByName = await dbContext.KitchenIngredients
+            .ToDictionaryAsync(ingredient => ingredient.Name);
+        var menuItemsByName = await dbContext.KitchenMenuItems
+            .ToDictionaryAsync(item => item.Name);
+
+        var menuItemIds = menuItemsByName.Values
+            .Select(item => item.Id)
+            .ToList();
+        var existingRecipeKeys = await dbContext.KitchenRecipeIngredients
+            .Where(recipe => menuItemIds.Contains(recipe.KitchenMenuItemId))
+            .Select(recipe => recipe.KitchenMenuItemId + ":" + recipe.KitchenIngredientId)
+            .ToListAsync();
+        var existingRecipeKeySet = existingRecipeKeys.ToHashSet();
+
+        foreach (var defaultRecipe in KitchenStockSeed.Recipes)
+        {
+            if (!menuItemsByName.TryGetValue(defaultRecipe.KitchenMenuItemName, out var menuItem) ||
+                !ingredientsByName.TryGetValue(defaultRecipe.IngredientName, out var ingredient))
+            {
+                continue;
+            }
+
+            var recipeKey = menuItem.Id + ":" + ingredient.Id;
+
+            if (existingRecipeKeySet.Contains(recipeKey))
+            {
+                continue;
+            }
+
+            dbContext.KitchenRecipeIngredients.Add(new KitchenRecipeIngredient
+            {
+                KitchenMenuItemId = menuItem.Id,
+                KitchenIngredientId = ingredient.Id,
+                QuantityPerPortion = defaultRecipe.QuantityPerPortion
+            });
+            existingRecipeKeySet.Add(recipeKey);
         }
 
         await dbContext.SaveChangesAsync();

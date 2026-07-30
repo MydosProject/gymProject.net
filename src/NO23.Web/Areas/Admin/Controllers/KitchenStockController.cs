@@ -196,6 +196,29 @@ public class KitchenStockController(
                 .ThenInclude(material => material.KitchenIngredient)
             .FirstOrDefaultAsync(plan => plan.PlanDate == selectedDate);
 
+        var productionMenuItemIds = productionPlan?.Items
+            .Select(item => item.KitchenMenuItemId)
+            .Distinct()
+            .ToList()
+            ?? [];
+
+        List<KitchenStockRecipeRow> recipeRows = productionMenuItemIds.Count == 0
+            ? []
+            : await dbContext.KitchenRecipeIngredients
+                .AsNoTracking()
+                .Where(recipe => productionMenuItemIds.Contains(recipe.KitchenMenuItemId))
+                .Select(recipe => new KitchenStockRecipeRow(
+                    recipe.KitchenMenuItemId,
+                    recipe.KitchenIngredient.Name,
+                    recipe.KitchenIngredient.Unit,
+                    recipe.QuantityPerPortion,
+                    recipe.KitchenIngredient.CurrentStockQuantity))
+                .ToListAsync();
+
+        var recipeRowsByMenuItemId = recipeRows
+            .GroupBy(recipe => recipe.KitchenMenuItemId)
+            .ToDictionary(group => group.Key, group => group.ToList());
+
         var rawIngredients = await dbContext.KitchenIngredients
             .AsNoTracking()
             .OrderBy(ingredient => ingredient.Name)
@@ -237,7 +260,9 @@ public class KitchenStockController(
         return new KitchenStockDashboardViewModel
         {
             SelectedDate = selectedDate,
-            ProductionPlan = productionPlan is null ? null : MapProductionPlan(productionPlan),
+            ProductionPlan = productionPlan is null
+                ? null
+                : MapProductionPlan(productionPlan, recipeRowsByMenuItemId),
             Ingredients = ingredients,
             RecentMovements = movements,
             IngredientForm = ingredientForm,
@@ -245,7 +270,9 @@ public class KitchenStockController(
         };
     }
 
-    private static KitchenProductionPlanViewModel MapProductionPlan(KitchenProductionPlan plan)
+    private static KitchenProductionPlanViewModel MapProductionPlan(
+        KitchenProductionPlan plan,
+        IReadOnlyDictionary<int, List<KitchenStockRecipeRow>> recipeRowsByMenuItemId)
     {
         return new KitchenProductionPlanViewModel
         {
@@ -267,7 +294,22 @@ public class KitchenStockController(
                     TotalPortions = item.TotalPortions,
                     HasRecipe = item.HasRecipeSnapshot,
                     Status = item.Status.ToString(),
-                    StatusDisplayName = GetProductionItemStatusDisplayName(item.Status)
+                    StatusDisplayName = GetProductionItemStatusDisplayName(item.Status),
+                    RecipeIngredients = recipeRowsByMenuItemId.TryGetValue(
+                            item.KitchenMenuItemId,
+                            out var recipeRows)
+                        ? recipeRows
+                            .OrderBy(recipe => recipe.IngredientName)
+                            .Select(recipe => new KitchenProductionPlanRecipeIngredientViewModel
+                            {
+                                IngredientName = recipe.IngredientName,
+                                Unit = GetIngredientUnitDisplayName(recipe.Unit),
+                                QuantityPerPortion = recipe.QuantityPerPortion,
+                                RequiredQuantity = recipe.QuantityPerPortion * item.TotalPortions,
+                                CurrentStockQuantity = recipe.CurrentStockQuantity
+                            })
+                            .ToList()
+                        : []
                 })
                 .ToList(),
             Materials = plan.Materials
@@ -386,3 +428,10 @@ public class KitchenStockController(
         };
     }
 }
+
+public record KitchenStockRecipeRow(
+    int KitchenMenuItemId,
+    string IngredientName,
+    KitchenIngredientUnit Unit,
+    decimal QuantityPerPortion,
+    decimal CurrentStockQuantity);

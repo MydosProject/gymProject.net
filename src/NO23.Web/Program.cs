@@ -63,6 +63,13 @@ builder.Services.AddScoped<MemberCartQueryService>();
 
 var app = builder.Build();
 
+if (app.Environment.IsDevelopment())
+{
+    using var scope = app.Services.CreateScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await dbContext.Database.MigrateAsync();
+}
+
 await DatabaseSeeder.SeedAsync(app.Services);
 
 // Configure the HTTP request pipeline.

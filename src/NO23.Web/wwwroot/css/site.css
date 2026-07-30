@@ -13062,7 +13062,7 @@ button:focus-visible {
 
 .kitchen-meal-day-card summary {
   display: grid;
-  grid-template-columns: 54px minmax(0, 1fr) minmax(190px, auto) 34px;
+  grid-template-columns: 54px minmax(0, 1fr) minmax(190px, auto) auto 34px;
   align-items: center;
   gap: 1rem;
   min-height: 82px;
@@ -13124,6 +13124,17 @@ button:focus-visible {
   font-size: 1rem;
 }
 
+.kitchen-meal-day-status {
+  justify-self: end;
+  padding: 0.35rem 0.55rem;
+  border: 1px solid rgba(190, 255, 28, 0.38);
+  border-radius: 999px;
+  color: var(--no23-accent);
+  font-size: 0.58rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
 .kitchen-meal-day-toggle {
   position: relative;
   width: 32px;
@@ -13155,9 +13166,17 @@ button:focus-visible {
 
 .kitchen-meal-day-content {
   display: grid;
-  grid-template-columns: minmax(260px, 0.42fr) minmax(0, 1fr);
+  grid-template-columns: minmax(260px, 0.34fr) minmax(150px, 0.18fr) minmax(0, 1fr);
   background: #f5f3ed;
   color: #111;
+}
+
+.kitchen-meal-day-actions {
+  display: flex;
+  align-items: start;
+  justify-content: center;
+  padding: 1rem;
+  border-right: 1px solid #dedbd2;
 }
 
 .kitchen-meal-day-totals {
@@ -13204,7 +13223,7 @@ button:focus-visible {
 
 .kitchen-meal-row {
   display: grid;
-  grid-template-columns: minmax(180px, 1fr) minmax(300px, 1.2fr);
+  grid-template-columns: minmax(180px, 1fr) minmax(360px, 1.35fr);
   align-items: center;
   gap: 1rem;
   padding: 0.9rem 1rem;
@@ -13226,7 +13245,7 @@ button:focus-visible {
 
 .kitchen-meal-row dl {
   display: grid;
-  grid-template-columns: 52px 82px minmax(150px, 1fr);
+  grid-template-columns: 52px 82px minmax(150px, 1fr) minmax(92px, auto);
 }
 
 .kitchen-meal-row dl > div {
@@ -13239,6 +13258,54 @@ button:focus-visible {
 .kitchen-meal-row dd {
   font-size: 0.7rem;
   font-weight: 850;
+}
+
+.kitchen-meal-row.is-skipped {
+  background: rgba(17, 17, 17, 0.04);
+  color: rgba(17, 17, 17, 0.58);
+}
+
+.kitchen-meal-row.is-skipped strong {
+  text-decoration: line-through;
+}
+
+.kitchen-meal-row small {
+  color: #8a6d11;
+  font-size: 0.66rem;
+  font-weight: 800;
+}
+
+.kitchen-meal-action-cell {
+  align-content: center;
+}
+
+.kitchen-inline-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid rgba(17, 17, 17, 0.2);
+  border-radius: 8px;
+  color: #111;
+  background: #fff;
+  font-size: 0.62rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.kitchen-inline-action:hover,
+.kitchen-inline-action:focus-visible {
+  border-color: #111;
+  background: var(--no23-accent);
+}
+
+.kitchen-meal-locked {
+  color: rgba(17, 17, 17, 0.45);
+  font-size: 0.62rem;
+  font-weight: 900;
+  text-transform: uppercase;
 }
 
 .kitchen-meal-plan-empty {
@@ -13290,6 +13357,12 @@ button:focus-visible {
     border-bottom: 1px solid #dedbd2;
   }
 
+  .kitchen-meal-day-actions {
+    justify-content: start;
+    border-right: 0;
+    border-bottom: 1px solid #dedbd2;
+  }
+
   .kitchen-meal-day-totals > div {
     border-bottom: 0;
   }
@@ -13316,6 +13389,11 @@ button:focus-visible {
   .kitchen-meal-day-card summary {
     grid-template-columns: 46px minmax(0, 1fr) 30px;
     gap: 0.75rem;
+  }
+
+  .kitchen-meal-day-status {
+    grid-column: 2;
+    justify-self: start;
   }
 
   .kitchen-meal-day-calories {
@@ -13351,7 +13429,7 @@ button:focus-visible {
   }
 
   .kitchen-meal-row dl {
-    grid-template-columns: 52px 82px minmax(120px, 1fr);
+    grid-template-columns: 52px 82px minmax(120px, 1fr) auto;
   }
 
   .kitchen-meal-plan-empty {
