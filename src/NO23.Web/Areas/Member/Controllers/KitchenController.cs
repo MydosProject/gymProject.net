@@ -212,6 +212,165 @@ public class KitchenController(
         return RedirectToAction(nameof(Index));
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SkipMeal(int mealPlanItemId)
+    {
+        return await SetMealSkippedAsync(
+            mealPlanItemId,
+            isSkipped: true,
+            successMessage: "Öğün pas geçildi. Plan yenilendiğinde bu öğün üretim ihtiyacına dahil edilmez.");
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RestoreMeal(int mealPlanItemId)
+    {
+        return await SetMealSkippedAsync(
+            mealPlanItemId,
+            isSkipped: false,
+            successMessage: "Öğün yeniden plana alındı. Üretim planını güncellemek için admin tarafında Planı Yenile kullanılmalı.");
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SkipDay(int mealPlanDayId)
+    {
+        return await SetDaySkippedAsync(
+            mealPlanDayId,
+            isSkipped: true,
+            successMessage: "Gün pas geçildi. Bu güne ait aktif öğünler üretim ihtiyacına dahil edilmez.");
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RestoreDay(int mealPlanDayId)
+    {
+        return await SetDaySkippedAsync(
+            mealPlanDayId,
+            isSkipped: false,
+            successMessage: "Gün yeniden plana alındı. Üretim planını güncellemek için admin tarafında Planı Yenile kullanılmalı.");
+    }
+
+    private async Task<IActionResult> SetMealSkippedAsync(
+        int mealPlanItemId,
+        bool isSkipped,
+        string successMessage)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Challenge();
+        }
+
+        var meal = await dbContext.KitchenMealPlanItems
+            .Include(item => item.KitchenMealPlanDay)
+            .ThenInclude(day => day.KitchenMealPlan)
+            .ThenInclude(plan => plan.KitchenSubscription)
+            .ThenInclude(subscription => subscription.MemberProfile)
+            .FirstOrDefaultAsync(item => item.Id == mealPlanItemId);
+
+        if (meal is null ||
+            meal.KitchenMealPlanDay.KitchenMealPlan.KitchenSubscription.MemberProfile
+                .ApplicationUserId != userId)
+        {
+            return NotFound();
+        }
+
+        var result = ValidateMealPlanChange(meal.KitchenMealPlanDay);
+
+        if (!result.Succeeded)
+        {
+            TempData["ErrorMessage"] = result.Message;
+            return RedirectToAction(nameof(Index), null, "nutrition-plan");
+        }
+
+        if (meal.IsSkipped != isSkipped)
+        {
+            meal.IsSkipped = isSkipped;
+            meal.SkippedAtUtc = isSkipped ? DateTime.UtcNow : null;
+            await dbContext.SaveChangesAsync();
+        }
+
+        TempData["SuccessMessage"] = successMessage;
+
+        return RedirectToAction(nameof(Index), null, "nutrition-plan");
+    }
+
+    private async Task<IActionResult> SetDaySkippedAsync(
+        int mealPlanDayId,
+        bool isSkipped,
+        string successMessage)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Challenge();
+        }
+
+        var day = await dbContext.KitchenMealPlanDays
+            .Include(item => item.Items)
+            .Include(item => item.KitchenMealPlan)
+            .ThenInclude(plan => plan.KitchenSubscription)
+            .ThenInclude(subscription => subscription.MemberProfile)
+            .FirstOrDefaultAsync(item => item.Id == mealPlanDayId);
+
+        if (day is null ||
+            day.KitchenMealPlan.KitchenSubscription.MemberProfile.ApplicationUserId != userId)
+        {
+            return NotFound();
+        }
+
+        var result = ValidateMealPlanChange(day);
+
+        if (!result.Succeeded)
+        {
+            TempData["ErrorMessage"] = result.Message;
+            return RedirectToAction(nameof(Index), null, "nutrition-plan");
+        }
+
+        var changedAtUtc = DateTime.UtcNow;
+
+        foreach (var meal in day.Items)
+        {
+            if (meal.IsSkipped == isSkipped)
+            {
+                continue;
+            }
+
+            meal.IsSkipped = isSkipped;
+            meal.SkippedAtUtc = isSkipped ? changedAtUtc : null;
+        }
+
+        await dbContext.SaveChangesAsync();
+
+        TempData["SuccessMessage"] = successMessage;
+
+        return RedirectToAction(nameof(Index), null, "nutrition-plan");
+    }
+
+    private static KitchenMealPlanChangeResult ValidateMealPlanChange(KitchenMealPlanDay day)
+    {
+        var subscription = day.KitchenMealPlan.KitchenSubscription;
+        var today = DateOnly.FromDateTime(DateTime.Today);
+
+        if (subscription.Status != KitchenSubscriptionStatus.Active)
+        {
+            return KitchenMealPlanChangeResult.Fail(
+                "Sadece aktif Kitchen aboneliğindeki öğünler değiştirilebilir.");
+        }
+
+        if (day.PlanDate <= today)
+        {
+            return KitchenMealPlanChangeResult.Fail(
+                "Bugün veya geçmiş tarihli öğünler pas geçilemez. Sadece yarın ve sonrası için değişiklik yapabilirsin.");
+        }
+
+        return KitchenMealPlanChangeResult.Ok();
+    }
+
     private async Task<KitchenDashboardViewModel> BuildDashboardAsync(
         CalorieCalculatorInputViewModel input,
         CalorieRecommendationViewModel? recommendation)
@@ -358,7 +517,8 @@ public class KitchenController(
                 item.ProteinGramsSnapshot,
                 item.CarbohydrateGramsSnapshot,
                 item.FatGramsSnapshot,
-                item.UnitPriceSnapshot
+                item.UnitPriceSnapshot,
+                item.IsSkipped
             })
             .ToListAsync();
 
@@ -392,8 +552,13 @@ public class KitchenController(
                             CarbohydrateGrams = item.CarbohydrateGramsSnapshot * item.Quantity,
                             FatGrams = item.FatGramsSnapshot * item.Quantity,
                             UnitPrice = item.UnitPriceSnapshot,
-                            TotalPrice = item.UnitPriceSnapshot * item.Quantity
+                            TotalPrice = item.UnitPriceSnapshot * item.Quantity,
+                            IsSkipped = item.IsSkipped,
+                            CanSkip = day.PlanDate > DateOnly.FromDateTime(DateTime.Today)
                         })
+                        .ToList();
+                    var activeMeals = meals
+                        .Where(meal => !meal.IsSkipped)
                         .ToList();
 
                     return new KitchenMealPlanDayViewModel
@@ -401,11 +566,12 @@ public class KitchenController(
                         Id = day.Id,
                         DayNumber = day.DayNumber,
                         PlanDate = day.PlanDate,
-                        TotalCalories = day.TotalCalories,
-                        TotalProteinGrams = day.TotalProteinGrams,
-                        TotalCarbohydrateGrams = day.TotalCarbohydrateGrams,
-                        TotalFatGrams = day.TotalFatGrams,
-                        TotalPrice = meals.Sum(meal => meal.TotalPrice),
+                        TotalCalories = activeMeals.Sum(meal => meal.Calories),
+                        TotalProteinGrams = activeMeals.Sum(meal => meal.ProteinGrams),
+                        TotalCarbohydrateGrams = activeMeals.Sum(meal => meal.CarbohydrateGrams),
+                        TotalFatGrams = activeMeals.Sum(meal => meal.FatGrams),
+                        TotalPrice = activeMeals.Sum(meal => meal.TotalPrice),
+                        CanSkip = day.PlanDate > DateOnly.FromDateTime(DateTime.Today),
                         Meals = meals
                     };
                 })
@@ -599,5 +765,20 @@ public class KitchenController(
             HttpContext.Session.Remove(key);
             return default;
         }
+    }
+}
+
+public record KitchenMealPlanChangeResult(
+    bool Succeeded,
+    string? Message)
+{
+    public static KitchenMealPlanChangeResult Ok()
+    {
+        return new KitchenMealPlanChangeResult(true, null);
+    }
+
+    public static KitchenMealPlanChangeResult Fail(string message)
+    {
+        return new KitchenMealPlanChangeResult(false, message);
     }
 }

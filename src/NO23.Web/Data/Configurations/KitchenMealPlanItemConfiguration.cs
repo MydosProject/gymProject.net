@@ -28,6 +28,9 @@ public class KitchenMealPlanItemConfiguration : IEntityTypeConfiguration<Kitchen
         builder.Property(item => item.UnitPriceSnapshot)
             .HasPrecision(10, 2);
 
+        builder.Property(item => item.IsSkipped)
+            .HasDefaultValue(false);
+
         builder.HasIndex(item => new { item.KitchenMealPlanDayId, item.MealSlot })
             .IsUnique();
 

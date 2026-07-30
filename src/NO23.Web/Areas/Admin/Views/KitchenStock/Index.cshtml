@@ -82,6 +82,40 @@
             <article><span>Eksik stok</span><strong>@(plan?.MissingMaterialCount ?? 0)</strong><small>Malzeme kalemi</small></article>
         </div>
 
+        <div class="bg-white border rounded-3 p-3 mb-3 text-dark admin-stock-filter-panel">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-6">
+                    <label class="form-label" for="productionSearch">Üründe ara</label>
+                    <input id="productionSearch"
+                           type="search"
+                           class="form-control"
+                           placeholder="Ürün adı yaz"
+                           autocomplete="off"
+                           data-production-search />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="productionFilter">Reçete / hazırlık filtresi</label>
+                    <select id="productionFilter"
+                            class="form-select"
+                            data-production-filter>
+                        <option value="all">Tüm ürünler</option>
+                        <option value="missingRecipe">Reçetesi eksik</option>
+                        <option value="readyRecipe">Reçetesi hazır</option>
+                        <option value="notStarted">Başlamadı</option>
+                        <option value="preparing">Hazırlanıyor</option>
+                        <option value="ready">Hazır</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="button"
+                            class="btn btn-outline-dark w-100"
+                            data-production-clear>
+                        Temizle
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <div class="table-responsive admin-table-card mb-4">
             <table class="table align-middle mb-0">
                 <thead>
@@ -107,7 +141,10 @@
                     {
                         @foreach (var item in plan.Items)
                         {
-                            <tr>
+                            <tr data-production-row
+                                data-product-name="@item.ProductName"
+                                data-recipe-state="@(item.HasRecipe ? "ready" : "missing")"
+                                data-status="@item.Status">
                                 <td><strong>@item.ProductName</strong></td>
                                 <td>@item.SubscriptionPortions</td>
                                 <td>@item.OrderPortions</td>
@@ -135,6 +172,52 @@
                                             <button type="submit" class="btn btn-sm btn-outline-dark">Kaydet</button>
                                         </form>
                                     }
+                                </td>
+                            </tr>
+                            <tr data-production-row
+                                data-product-name="@item.ProductName"
+                                data-recipe-state="@(item.HasRecipe ? "ready" : "missing")"
+                                data-status="@item.Status">
+                                <td colspan="6">
+                                    <details class="admin-recipe-details">
+                                        <summary>
+                                            <span>Ürün reçetesi ve malzeme ihtiyacı</span>
+                                            <strong>@item.ProductName</strong>
+                                        </summary>
+
+                                        @if (item.RecipeIngredients.Count == 0)
+                                        {
+                                            <div class="admin-empty-row">
+                                                Bu ürün için reçete tanımlanmadı.
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="table-responsive">
+                                                <table class="table table-sm align-middle mb-0">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Malzeme</th>
+                                                            <th>Porsiyon başı</th>
+                                                            <th>Bugünkü ihtiyaç</th>
+                                                            <th>Mevcut stok</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach (var recipe in item.RecipeIngredients)
+                                                        {
+                                                            <tr>
+                                                                <td><strong>@recipe.IngredientName</strong></td>
+                                                                <td>@FormatQuantity(recipe.QuantityPerPortion) @recipe.Unit</td>
+                                                                <td>@FormatQuantity(recipe.RequiredQuantity) @recipe.Unit</td>
+                                                                <td>@FormatQuantity(recipe.CurrentStockQuantity) @recipe.Unit</td>
+                                                            </tr>
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        }
+                                    </details>
                                 </td>
                             </tr>
                         }
@@ -237,6 +320,42 @@
             </div>
         </div>
 
+        <div class="bg-white border rounded-3 p-3 mt-4 mb-3 text-dark admin-stock-filter-panel">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-6">
+                    <label class="form-label" for="ingredientSearch">Malzemede ara</label>
+                    <input id="ingredientSearch"
+                           type="search"
+                           class="form-control"
+                           placeholder="Malzeme adı yaz"
+                           autocomplete="off"
+                           data-ingredient-search />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="ingredientFilter">Durum filtresi</label>
+                    <select id="ingredientFilter"
+                            class="form-select"
+                            data-ingredient-filter>
+                        <option value="all">Tüm malzemeler</option>
+                        <option value="missing">Üretim için eksik</option>
+                        <option value="belowMinimum">Minimum stok altı</option>
+                        <option value="active">Aktif</option>
+                        <option value="passive">Pasif</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="button"
+                            class="btn btn-outline-dark w-100"
+                            data-ingredient-clear>
+                        Temizle
+                    </button>
+                </div>
+            </div>
+            <p class="text-muted small mb-0 mt-2">
+                Filtreler yalnızca aşağıdaki malzeme listesini daraltır; stok hareketi kaydı değiştirmez.
+            </p>
+        </div>
+
         <div class="table-responsive admin-table-card mt-4">
             <table class="table align-middle mb-0">
                 <thead>
@@ -257,7 +376,14 @@
                     {
                         @foreach (var ingredient in Model.Ingredients)
                         {
-                            <tr>
+                            var productionMaterial = plan?.Materials
+                                .FirstOrDefault(material => material.IngredientName == ingredient.Name);
+
+                            <tr data-ingredient-row
+                                data-name="@ingredient.Name"
+                                data-active="@ingredient.IsActive.ToString().ToLowerInvariant()"
+                                data-below-minimum="@ingredient.IsBelowMinimum.ToString().ToLowerInvariant()"
+                                data-missing="@((productionMaterial?.HasMissingStock == true).ToString().ToLowerInvariant())">
                                 <td><strong>@ingredient.Name</strong></td>
                                 <td>@FormatQuantity(ingredient.CurrentStockQuantity) @ingredient.Unit</td>
                                 <td>@FormatQuantity(ingredient.MinimumStockQuantity) @ingredient.Unit</td>
@@ -320,4 +446,95 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const searchInput = document.querySelector("[data-ingredient-search]");
+            const filterSelect = document.querySelector("[data-ingredient-filter]");
+            const clearButton = document.querySelector("[data-ingredient-clear]");
+            const ingredientRows = document.querySelectorAll("[data-ingredient-row]");
+            const productionSearchInput = document.querySelector("[data-production-search]");
+            const productionFilterSelect = document.querySelector("[data-production-filter]");
+            const productionClearButton = document.querySelector("[data-production-clear]");
+            const productionRows = document.querySelectorAll("[data-production-row]");
+
+            if (!ingredientRows.length && !productionRows.length) {
+                return;
+            }
+
+            const normalizeText = function (value) {
+                return (value || "").toLocaleLowerCase("tr-TR").trim();
+            };
+
+            const applyIngredientFilters = function () {
+                const query = normalizeText(searchInput?.value);
+                const filter = filterSelect?.value || "all";
+
+                ingredientRows.forEach(function (row) {
+                    const matchesSearch = !query ||
+                        normalizeText(row.dataset.name).includes(query);
+
+                    const matchesFilter =
+                        filter === "all" ||
+                        (filter === "missing" && row.dataset.missing === "true") ||
+                        (filter === "belowMinimum" && row.dataset.belowMinimum === "true") ||
+                        (filter === "active" && row.dataset.active === "true") ||
+                        (filter === "passive" && row.dataset.active === "false");
+
+                    row.hidden = !(matchesSearch && matchesFilter);
+                });
+            };
+
+            const applyProductionFilters = function () {
+                const query = normalizeText(productionSearchInput?.value);
+                const filter = productionFilterSelect?.value || "all";
+
+                productionRows.forEach(function (row) {
+                    const matchesSearch = !query ||
+                        normalizeText(row.dataset.productName).includes(query);
+
+                    const matchesFilter =
+                        filter === "all" ||
+                        (filter === "missingRecipe" && row.dataset.recipeState === "missing") ||
+                        (filter === "readyRecipe" && row.dataset.recipeState === "ready") ||
+                        (filter === "notStarted" && row.dataset.status === "NotStarted") ||
+                        (filter === "preparing" && row.dataset.status === "Preparing") ||
+                        (filter === "ready" && row.dataset.status === "Ready");
+
+                    row.hidden = !(matchesSearch && matchesFilter);
+                });
+            };
+
+            searchInput?.addEventListener("input", applyIngredientFilters);
+            filterSelect?.addEventListener("change", applyIngredientFilters);
+            clearButton?.addEventListener("click", function () {
+                if (searchInput) {
+                    searchInput.value = "";
+                }
+
+                if (filterSelect) {
+                    filterSelect.value = "all";
+                }
+
+                applyIngredientFilters();
+            });
+
+            productionSearchInput?.addEventListener("input", applyProductionFilters);
+            productionFilterSelect?.addEventListener("change", applyProductionFilters);
+            productionClearButton?.addEventListener("click", function () {
+                if (productionSearchInput) {
+                    productionSearchInput.value = "";
+                }
+
+                if (productionFilterSelect) {
+                    productionFilterSelect.value = "all";
+                }
+
+                applyProductionFilters();
+            });
+
+            applyIngredientFilters();
+            applyProductionFilters();
+        });
+    </script>
 }

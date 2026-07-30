@@ -17,4 +17,19 @@ public class KitchenProductionPlanItemViewModel
     public string Status { get; init; } = string.Empty;
 
     public string StatusDisplayName { get; init; } = string.Empty;
+
+    public IReadOnlyList<KitchenProductionPlanRecipeIngredientViewModel> RecipeIngredients { get; init; } = [];
+}
+
+public class KitchenProductionPlanRecipeIngredientViewModel
+{
+    public string IngredientName { get; init; } = string.Empty;
+
+    public string Unit { get; init; } = string.Empty;
+
+    public decimal QuantityPerPortion { get; init; }
+
+    public decimal RequiredQuantity { get; init; }
+
+    public decimal CurrentStockQuantity { get; init; }
 }

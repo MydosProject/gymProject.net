@@ -665,6 +665,40 @@ body.no23-admin-body {
     text-align: center;
 }
 
+.admin-recipe-details {
+    padding: 10px 12px;
+    border: 1px solid var(--admin-line);
+    border-radius: 8px;
+    background: #fbfaf6;
+}
+
+.admin-recipe-details summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    cursor: pointer;
+    color: var(--admin-copy);
+    font-size: .68rem;
+    font-weight: 900;
+}
+
+.admin-recipe-details summary span {
+    color: var(--admin-muted);
+    font-size: .58rem;
+    text-transform: uppercase;
+}
+
+.admin-recipe-details .table {
+    margin-top: 10px;
+}
+
+.admin-stock-filter-panel {
+    max-width: 1480px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
 .admin-content .mb-4:has(> h1),
 .admin-content .d-flex.mb-4:has(h1) {
     min-height: 76px;
