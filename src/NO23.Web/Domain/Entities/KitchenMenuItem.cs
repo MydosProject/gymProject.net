@@ -43,4 +43,8 @@ public class KitchenMenuItem
     public ICollection<OrderItem> OrderItems { get; set; } = [];
 
     public ICollection<KitchenMealPlanItem> MealPlanItems { get; set; } = [];
+
+    public ICollection<KitchenRecipeIngredient> RecipeIngredients { get; set; } = [];
+
+    public ICollection<KitchenProductionPlanItem> ProductionPlanItems { get; set; } = [];
 }

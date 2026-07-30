@@ -56,6 +56,7 @@ builder.Services.AddControllersWithViews(options =>
 builder.Services.AddScoped<ClassReservationService>();
 builder.Services.AddScoped<CalorieCalculatorService>();
 builder.Services.AddScoped<KitchenPlanMatchingService>();
+builder.Services.AddScoped<KitchenProductionPlanningService>();
 builder.Services.AddScoped<CommunityChallengeProgressService>();
 builder.Services.AddScoped<CommerceService>();
 builder.Services.AddScoped<MemberCartQueryService>();

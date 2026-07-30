@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NO23.Web.Data;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace NO23.Web.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260729135900_AddKitchenStockTracking")]
+    partial class AddKitchenStockTracking
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1050,9 +1053,6 @@ namespace NO23.Web.Data.Migrations
                         .HasMaxLength(40)
                         .HasColumnType("character varying(40)");
 
-                    b.Property<DateTime?>("StockDeductedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<DateTime?>("UpdatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
@@ -1216,9 +1216,6 @@ namespace NO23.Web.Data.Migrations
                     b.Property<int>("KitchenIngredientId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("KitchenProductionPlanId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Note")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
@@ -1243,8 +1240,6 @@ namespace NO23.Web.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("KitchenIngredientId");
-
-                    b.HasIndex("KitchenProductionPlanId");
 
                     b.ToTable("KitchenStockMovements");
                 });
@@ -2125,14 +2120,7 @@ namespace NO23.Web.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("NO23.Web.Domain.Entities.KitchenProductionPlan", "KitchenProductionPlan")
-                        .WithMany("StockMovements")
-                        .HasForeignKey("KitchenProductionPlanId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.Navigation("KitchenIngredient");
-
-                    b.Navigation("KitchenProductionPlan");
                 });
 
             modelBuilder.Entity("NO23.Web.Domain.Entities.KitchenSubscription", b =>
@@ -2288,8 +2276,6 @@ namespace NO23.Web.Data.Migrations
                     b.Navigation("Items");
 
                     b.Navigation("Materials");
-
-                    b.Navigation("StockMovements");
                 });
 
             modelBuilder.Entity("NO23.Web.Domain.Entities.KitchenSubscription", b =>

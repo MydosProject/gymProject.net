@@ -58,4 +58,6 @@ public class KitchenMenuItemFormViewModel
     [Range(1, 100)]
     [Display(Name = "Sıralama")]
     public int DisplayOrder { get; set; }
+
+    public List<KitchenMenuItemRecipeIngredientInputViewModel> RecipeIngredients { get; set; } = [];
 }
