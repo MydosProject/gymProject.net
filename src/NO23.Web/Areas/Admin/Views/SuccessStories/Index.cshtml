@@ -33,12 +33,12 @@
                         @foreach (var item in Model)
                         {
                             <tr>
-                                <td><strong>@item.MemberName</strong></td>
-                                <td>@item.Title</td>
-                                <td>@(item.AchievementMetric ?? "-")</td>
-                                <td><span class="admin-status">@item.Status</span></td>
-                                <td>@(item.PublishedAtUtc?.ToLocalTime().ToString("dd.MM.yyyy") ?? "-")</td>
-                                <td class="text-end"><a class="btn btn-sm btn-outline-dark" asp-action="Edit" asp-route-id="@item.Id">Düzenle</a></td>
+                                <td data-label="Üye"><strong>@item.MemberName</strong></td>
+                                <td data-label="Hikâye">@item.Title</td>
+                                <td data-label="Sonuç">@(item.AchievementMetric ?? "-")</td>
+                                <td data-label="Durum"><span class="admin-status">@item.Status</span></td>
+                                <td data-label="Yayın tarihi">@(item.PublishedAtUtc?.ToLocalTime().ToString("dd.MM.yyyy") ?? "-")</td>
+                                <td class="text-end" data-label="İşlem"><a class="btn btn-sm btn-outline-dark" asp-action="Edit" asp-route-id="@item.Id">Düzenle</a></td>
                             </tr>
                         }
                     }

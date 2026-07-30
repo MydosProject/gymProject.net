@@ -49,20 +49,20 @@
                         @foreach (var package in Model)
                         {
                             <tr>
-                                <td><span class="admin-order-no">@package.DisplayOrder.ToString("00")</span></td>
-                                <td><span class="admin-package-code">@package.Code</span></td>
-                                <td><strong class="admin-class-name">@package.Name</strong></td>
-                                <td><span class="admin-package-audience">@package.Audience</span></td>
-                                <td>
+                                <td data-label="Sıra"><span class="admin-order-no">@package.DisplayOrder.ToString("00")</span></td>
+                                <td data-label="Kod"><span class="admin-package-code">@package.Code</span></td>
+                                <td data-label="Paket"><strong class="admin-class-name">@package.Name</strong></td>
+                                <td data-label="Hedef kitle"><span class="admin-package-audience">@package.Audience</span></td>
+                                <td data-label="Haftalık ders">
                                     <strong>@(package.WeeklyClassLimit?.ToString() ?? "Sınırsız")</strong>
                                     <span class="admin-cell-note">ders / hafta</span>
                                 </td>
-                                <td>
+                                <td data-label="Üye">
                                     <strong>@package.MemberCount</strong>
                                     <span class="admin-cell-note">aktif profil</span>
                                 </td>
-                                <td><span class="badge @(package.IsActive ? "text-bg-success" : "text-bg-secondary")">@(package.IsActive ? "Aktif" : "Pasif")</span></td>
-                                <td class="text-end">
+                                <td data-label="Durum"><span class="badge @(package.IsActive ? "text-bg-success" : "text-bg-secondary")">@(package.IsActive ? "Aktif" : "Pasif")</span></td>
+                                <td class="text-end" data-label="İşlem">
                                     <a class="btn btn-sm btn-outline-dark"
                                        asp-area="Admin"
                                        asp-controller="MembershipPackages"

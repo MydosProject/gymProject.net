@@ -30,16 +30,16 @@
                     @foreach (var trainer in Model)
                     {
                         <tr>
-                            <td><strong>@trainer.FullName</strong></td>
-                            <td>@trainer.Specialty</td>
-                            <td>@(trainer.Certifications ?? "-")</td>
-                            <td>@trainer.ClassCount</td>
-                            <td>
+                            <td data-label="Eğitmen"><strong>@trainer.FullName</strong></td>
+                            <td data-label="Uzmanlık">@trainer.Specialty</td>
+                            <td data-label="Sertifikalar">@(trainer.Certifications ?? "-")</td>
+                            <td data-label="Ders">@trainer.ClassCount</td>
+                            <td data-label="Durum">
                                 <span class="badge @(trainer.IsActive ? "text-bg-success" : "text-bg-secondary")">
                                     @(trainer.IsActive ? "Aktif" : "Pasif")
                                 </span>
                             </td>
-                            <td class="text-end">
+                            <td class="text-end" data-label="İşlem">
                                 <a class="btn btn-sm btn-outline-dark" asp-action="Edit" asp-route-id="@trainer.Id">Düzenle</a>
                             </td>
                         </tr>

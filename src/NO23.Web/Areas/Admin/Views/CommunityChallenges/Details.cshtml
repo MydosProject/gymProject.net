@@ -68,15 +68,15 @@
                         @foreach (var participant in Model.Participants)
                         {
                             <tr>
-                                <td>
+                                <td data-label="Üye">
                                     <strong>@participant.MemberName</strong>
                                     <small class="d-block text-muted">@participant.MemberEmail</small>
                                 </td>
-                                <td><span class="admin-status">@GetParticipationStatusName(participant.Status)</span></td>
-                                <td>@participant.JoinedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
-                                <td>@participant.CompliantDays / @participant.TotalDays</td>
-                                <td>@participant.LoggedDays gün</td>
-                                <td><strong>@participant.ProgressPercent%</strong></td>
+                                <td data-label="Durum"><span class="admin-status">@GetParticipationStatusName(participant.Status)</span></td>
+                                <td data-label="Katılım">@participant.JoinedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
+                                <td data-label="Başarılı gün">@participant.CompliantDays / @participant.TotalDays</td>
+                                <td data-label="Kayıt">@participant.LoggedDays gün</td>
+                                <td data-label="İlerleme"><strong>@participant.ProgressPercent%</strong></td>
                             </tr>
                         }
                     }
@@ -105,11 +105,11 @@
                         @foreach (var log in Model.RecentLogs)
                         {
                             <tr>
-                                <td><strong>@log.MemberName</strong></td>
-                                <td>@log.EntryDate.ToString("dd.MM.yyyy")</td>
-                                <td>@log.CaloriesConsumed kcal</td>
-                                <td>@log.MinCalories - @log.MaxCalories kcal</td>
-                                <td>
+                                <td data-label="Üye"><strong>@log.MemberName</strong></td>
+                                <td data-label="Tarih">@log.EntryDate.ToString("dd.MM.yyyy")</td>
+                                <td data-label="Alınan kalori">@log.CaloriesConsumed kcal</td>
+                                <td data-label="Hedef aralığı">@log.MinCalories - @log.MaxCalories kcal</td>
+                                <td data-label="Uyum">
                                     <span class="admin-status">@(log.IsCompliant ? "Uygun" : "Aralık Dışı")</span>
                                 </td>
                             </tr>

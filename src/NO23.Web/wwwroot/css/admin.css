@@ -1129,3 +1129,230 @@ body.no23-admin-body {
         border-radius: 14px !important;
     }
 }
+
+/* Responsive admin tables and forms */
+@media (max-width: 991.98px) {
+    .admin-menu-open {
+        overflow: hidden;
+    }
+
+    .admin-topbar-start,
+    .admin-topbar-end,
+    .admin-user,
+    .admin-content,
+    .admin-content > section,
+    .admin-page-head > div {
+        min-width: 0;
+    }
+
+    .admin-menu-button,
+    .admin-sidebar-close,
+    .admin-page-actions .btn,
+    .admin-content .btn {
+        min-height: 44px;
+    }
+
+    .admin-page-head {
+        flex-wrap: wrap;
+    }
+
+    .admin-page-head h1,
+    .admin-page-description,
+    .admin-content :is(h1, h2, h3, h4, p, a, strong, small) {
+        overflow-wrap: anywhere;
+    }
+
+    .admin-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .admin-metrics article:nth-child(2n) {
+        border-right: 0;
+    }
+
+    .admin-metrics article:nth-child(n + 3) {
+        border-top: 1px solid rgba(255, 255, 255, .09);
+    }
+
+    .admin-content .table-responsive {
+        overflow: visible;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        box-shadow: none;
+    }
+
+    .admin-content .table {
+        display: block;
+        width: 100%;
+        min-width: 0;
+        margin: 0;
+        border: 0;
+        background: transparent;
+    }
+
+    .admin-content .table thead {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        padding: 0 !important;
+        margin: -1px !important;
+        overflow: hidden !important;
+        clip: rect(0, 0, 0, 0) !important;
+        white-space: nowrap !important;
+        border: 0 !important;
+    }
+
+    .admin-content .table tbody {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+        width: 100%;
+    }
+
+    .admin-content .table tbody tr {
+        display: grid;
+        min-width: 0;
+        align-content: start;
+        overflow: hidden;
+        border: 1px solid var(--admin-line);
+        border-radius: 16px;
+        background: var(--admin-card);
+        box-shadow: 0 14px 34px rgba(28, 34, 24, .06);
+    }
+
+    .admin-content .table tbody tr:hover {
+        background: var(--admin-card);
+    }
+
+    .admin-content .table > :not(caption) > * > * {
+        border-bottom: 1px solid var(--admin-line);
+        background: transparent;
+    }
+
+    .admin-content .table tbody td {
+        display: grid;
+        grid-template-columns: minmax(96px, .42fr) minmax(0, 1fr);
+        gap: 12px;
+        min-width: 0;
+        padding: 12px 14px;
+        text-align: left !important;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+    .admin-content .table tbody td:last-child {
+        border-bottom: 0;
+    }
+
+    .admin-content .table tbody td::before {
+        align-self: start;
+        color: #7b8274;
+        content: attr(data-label);
+        font-size: .55rem;
+        font-weight: 900;
+        letter-spacing: .1em;
+        line-height: 1.45;
+        text-transform: uppercase;
+    }
+
+    .admin-content .table tbody td[colspan] {
+        display: block;
+        grid-column: 1 / -1;
+        padding: 0;
+    }
+
+    .admin-content .table tbody td[colspan]::before {
+        content: none;
+    }
+
+    .admin-content .table tbody td[data-label="İşlem"] {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        margin-top: auto;
+        background: #f5f7f1;
+    }
+
+    .admin-content .table tbody td[data-label="İşlem"] :is(.btn, a, button, form) {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .admin-content .table tbody td[data-label="İşlem"] .btn {
+        width: 100%;
+        min-height: 44px;
+        white-space: normal;
+    }
+
+    .admin-truncate-cell {
+        max-width: none;
+        white-space: normal;
+    }
+
+    .admin-content :is(input, select, textarea, .form-control, .form-select) {
+        max-width: 100%;
+    }
+
+    .admin-content .row > [class*="col-"] {
+        min-width: 0;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .admin-page-actions {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    .admin-page-actions > * {
+        flex: 1 1 180px;
+        text-align: center;
+    }
+
+    .admin-metrics,
+    .admin-content .table tbody {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-metrics article {
+        border-right: 0;
+        border-top: 1px solid rgba(255, 255, 255, .09);
+    }
+
+    .admin-metrics article:first-child {
+        border-top: 0;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .admin-content .table-responsive {
+        overflow: visible;
+        border-radius: 0 !important;
+    }
+
+    .admin-content .table tbody {
+        gap: 12px;
+    }
+
+    .admin-content .table tbody td {
+        grid-template-columns: 1fr;
+        gap: 5px;
+        padding: 11px 13px;
+    }
+
+    .admin-content .table tbody td[data-label="İşlem"] {
+        gap: 7px;
+    }
+
+    .admin-content form .d-flex:has(> .btn) {
+        align-items: stretch !important;
+        flex-direction: column;
+    }
+
+    .admin-content form .d-flex:has(> .btn) > .btn,
+    .admin-content form .d-flex:has(> .btn) > form,
+    .admin-content form .d-flex:has(> .btn) > form > .btn {
+        width: 100%;
+    }
+}
