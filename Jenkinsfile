@@ -32,8 +32,10 @@ pipeline {
         stage('Canliya Al') {
             steps {
                 withCredentials([file(credentialsId: env.K3S_CRED_ID, variable: 'KUBECONFIG')]) {
-                    sh 'kubectl apply -f k8s.yaml'
-                    sh 'kubectl rollout restart deployment gymproject-deploy'
+                    sh 'curl -LO "https://dl.k8s.io/release/v1.30.0/bin/linux/amd64/kubectl"'
+                    sh 'chmod +x kubectl'
+                    sh './kubectl apply -f k8s.yaml'
+                    sh './kubectl rollout restart deployment gymproject-deploy'
                 }
             }
         }
