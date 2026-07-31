@@ -4,6 +4,7 @@ pipeline {
     environment {
         DOCKER_CRED_ID = 'dockerhub-cred'
         IMAGE_NAME = 'mehmetevg/gymproject:latest'
+        K3S_CRED_ID = 'k3s-kubeconfig'
     }
     
     stages {
@@ -24,6 +25,15 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: env.DOCKER_CRED_ID, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
                     sh 'echo $PASS | docker login -u $USER --password-stdin'
                     sh 'docker push $IMAGE_NAME'
+                }
+            }
+        }
+        
+        stage('Canliya Al') {
+            steps {
+                withCredentials([file(credentialsId: env.K3S_CRED_ID, variable: 'KUBECONFIG')]) {
+                    sh 'kubectl apply -f k8s.yaml'
+                    sh 'kubectl rollout restart deployment gymproject-deploy'
                 }
             }
         }
