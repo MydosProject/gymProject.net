@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using NO23.Web.Data;
 using NO23.Web.Data.Seed;
 using NO23.Web.Domain.Entities;
+using NO23.Web.Extensions;
 using NO23.Web.ViewModels.Admin;
 
 namespace NO23.Web.Areas.Admin.Controllers;
@@ -14,22 +15,36 @@ public class CommunityEventsController(ApplicationDbContext dbContext) : Control
 {
     public async Task<IActionResult> Index()
     {
-        var events = await dbContext.CommunityEvents
+        var eventRows = await dbContext.CommunityEvents
             .AsNoTracking()
             .OrderBy(item => item.DisplayOrder)
             .ThenBy(item => item.StartsAtUtc)
-            .Select(item => new CommunityEventListItemViewModel
+            .Select(item => new
             {
                 Id = item.Id,
                 Title = item.Title,
                 Type = item.Type.ToString(),
-                Status = item.Status.ToString(),
+                item.Status,
                 StartsAtUtc = item.StartsAtUtc,
                 Location = item.Location,
                 Capacity = item.Capacity,
                 DisplayOrder = item.DisplayOrder
             })
             .ToListAsync();
+
+        var events = eventRows
+            .Select(item => new CommunityEventListItemViewModel
+            {
+                Id = item.Id,
+                Title = item.Title,
+                Type = item.Type,
+                Status = item.Status.GetDisplayName(),
+                StartsAtUtc = item.StartsAtUtc,
+                Location = item.Location,
+                Capacity = item.Capacity,
+                DisplayOrder = item.DisplayOrder
+            })
+            .ToList();
 
         return View(events);
     }

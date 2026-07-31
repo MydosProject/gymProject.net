@@ -6,6 +6,7 @@ using NO23.Web.Data;
 using NO23.Web.Data.Seed;
 using NO23.Web.Domain.Entities;
 using NO23.Web.Domain.Enums;
+using NO23.Web.Extensions;
 using NO23.Web.ViewModels.Admin;
 
 namespace NO23.Web.Areas.Admin.Controllers;
@@ -16,13 +17,13 @@ public class ClassSessionsController(ApplicationDbContext dbContext) : Controlle
 {
     public async Task<IActionResult> Index()
     {
-        var sessions = await dbContext.ClassSessions
+        var sessionRows = await dbContext.ClassSessions
             .AsNoTracking()
             .Include(session => session.GroupClass)
             .ThenInclude(groupClass => groupClass.Trainer)
             .Include(session => session.Reservations)
             .OrderBy(session => session.StartsAtUtc)
-            .Select(session => new ClassSessionListItemViewModel
+            .Select(session => new
             {
                 Id = session.Id,
                 ClassName = session.GroupClass.Name,
@@ -30,9 +31,23 @@ public class ClassSessionsController(ApplicationDbContext dbContext) : Controlle
                 StartsAtUtc = session.StartsAtUtc,
                 Capacity = session.CapacityOverride ?? session.GroupClass.Capacity,
                 ReservedCount = session.Reservations.Count(reservation => reservation.Status == ClassReservationStatus.Reserved),
-                Status = session.Status.ToString()
+                session.Status
             })
             .ToListAsync();
+
+        var sessions = sessionRows
+            .Select(session => new ClassSessionListItemViewModel
+            {
+                Id = session.Id,
+                ClassName = session.ClassName,
+                TrainerName = session.TrainerName,
+                StartsAtUtc = session.StartsAtUtc,
+                Capacity = session.Capacity,
+                ReservedCount = session.ReservedCount,
+                Status = session.Status.GetDisplayName(),
+                IsScheduled = session.Status == ClassSessionStatus.Scheduled
+            })
+            .ToList();
 
         return View(sessions);
     }

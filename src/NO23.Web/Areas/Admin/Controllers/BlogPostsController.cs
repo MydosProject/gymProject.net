@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using NO23.Web.Data;
 using NO23.Web.Data.Seed;
 using NO23.Web.Domain.Entities;
+using NO23.Web.Extensions;
 using NO23.Web.ViewModels.Admin;
 
 namespace NO23.Web.Areas.Admin.Controllers;
@@ -14,18 +15,29 @@ public class BlogPostsController(ApplicationDbContext dbContext) : Controller
 {
     public async Task<IActionResult> Index()
     {
-        var posts = await dbContext.BlogPosts
+        var postRows = await dbContext.BlogPosts
             .AsNoTracking()
             .OrderByDescending(item => item.PublishedAtUtc ?? item.CreatedAtUtc)
+            .Select(item => new
+            {
+                Id = item.Id,
+                Title = item.Title,
+                Category = item.Category,
+                item.Status,
+                PublishedAtUtc = item.PublishedAtUtc
+            })
+            .ToListAsync();
+
+        var posts = postRows
             .Select(item => new BlogPostListItemViewModel
             {
                 Id = item.Id,
                 Title = item.Title,
                 Category = item.Category,
-                Status = item.Status.ToString(),
+                Status = item.Status.GetDisplayName(),
                 PublishedAtUtc = item.PublishedAtUtc
             })
-            .ToListAsync();
+            .ToList();
 
         return View(posts);
     }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NO23.Web.Data;
 using NO23.Web.Data.Seed;
+using NO23.Web.Extensions;
 using NO23.Web.ViewModels.Admin;
 
 namespace NO23.Web.Areas.Admin.Controllers;
@@ -13,10 +14,10 @@ public class OrdersController(ApplicationDbContext dbContext) : Controller
 {
     public async Task<IActionResult> Index()
     {
-        var orders = await dbContext.Orders
+        var orderRows = await dbContext.Orders
             .AsNoTracking()
             .OrderByDescending(order => order.CreatedAtUtc)
-            .Select(order => new OrderListItemViewModel
+            .Select(order => new
             {
                 Id = order.Id,
                 OrderNumber = order.OrderNumber,
@@ -25,15 +26,32 @@ public class OrdersController(ApplicationDbContext dbContext) : Controller
                     : ((order.MemberProfile!.ApplicationUser.FirstName ?? string.Empty) + " " +
                         (order.MemberProfile.ApplicationUser.LastName ?? string.Empty)).Trim(),
                 GuestEmail = order.GuestEmail,
-                Type = order.Type.ToString(),
-                Status = order.Status.ToString(),
-                PaymentStatus = order.PaymentStatus.ToString(),
+                order.Type,
+                order.Status,
+                order.PaymentStatus,
                 DeliveryDate = order.DeliveryDate,
                 DeliveryTimeSlot = order.DeliveryTimeSlot,
                 Total = order.Total,
                 ItemCount = order.Items.Sum(item => item.Quantity)
             })
             .ToListAsync();
+
+        var orders = orderRows
+            .Select(order => new OrderListItemViewModel
+            {
+                Id = order.Id,
+                OrderNumber = order.OrderNumber,
+                MemberName = order.MemberName,
+                GuestEmail = order.GuestEmail,
+                Type = order.Type.GetDisplayName(),
+                Status = order.Status.GetDisplayName(),
+                PaymentStatus = order.PaymentStatus.GetDisplayName(),
+                DeliveryDate = order.DeliveryDate,
+                DeliveryTimeSlot = order.DeliveryTimeSlot,
+                Total = order.Total,
+                ItemCount = order.ItemCount
+            })
+            .ToList();
 
         return View(orders);
     }

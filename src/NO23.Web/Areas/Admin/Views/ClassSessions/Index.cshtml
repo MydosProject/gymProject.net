@@ -1,16 +1,9 @@
 @model IReadOnlyList<ClassSessionListItemViewModel>
 @{
     ViewData["Title"] = "Ders Programı";
-    var scheduledCount = Model.Count(session => session.Status.Equals("Scheduled", StringComparison.OrdinalIgnoreCase));
+    var scheduledCount = Model.Count(session => session.IsScheduled);
     var totalReservations = Model.Sum(session => session.ReservedCount);
 
-    string StatusLabel(string status) => status switch
-    {
-        "Scheduled" => "Planlandı",
-        "Completed" => "Tamamlandı",
-        "Cancelled" => "İptal",
-        _ => status
-    };
 }
 
 <section class="admin-page">
@@ -60,7 +53,7 @@
                             var session = Model[index];
                             var startsAtLocal = session.StartsAtUtc.ToLocalTime();
                             var remainingCapacity = Math.Max(0, session.Capacity - session.ReservedCount);
-                            var isScheduled = session.Status.Equals("Scheduled", StringComparison.OrdinalIgnoreCase);
+                            var isScheduled = session.IsScheduled;
 
                             <tr>
                                 <td data-label="Sıra"><span class="admin-order-no">@((index + 1).ToString("00"))</span></td>
@@ -73,7 +66,7 @@
                                     <span class="admin-cell-note">rezervasyon</span>
                                 </td>
                                 <td data-label="Kalan"><span class="admin-capacity @(remainingCapacity == 0 ? "is-full" : null)">@remainingCapacity yer</span></td>
-                                <td data-label="Durum"><span class="badge @(isScheduled ? "text-bg-success" : "text-bg-secondary")">@StatusLabel(session.Status)</span></td>
+                                <td data-label="Durum"><span class="badge @(isScheduled ? "text-bg-success" : "text-bg-secondary")">@session.Status</span></td>
                                 <td class="text-end" data-label="İşlem"><a class="btn btn-sm btn-outline-dark" asp-action="Edit" asp-route-id="@session.Id">Düzenle</a></td>
                             </tr>
                         }
