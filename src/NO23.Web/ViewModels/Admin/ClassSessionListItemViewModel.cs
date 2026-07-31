@@ -15,4 +15,6 @@ public class ClassSessionListItemViewModel
     public int ReservedCount { get; init; }
 
     public string Status { get; init; } = string.Empty;
+
+    public bool IsScheduled { get; init; }
 }

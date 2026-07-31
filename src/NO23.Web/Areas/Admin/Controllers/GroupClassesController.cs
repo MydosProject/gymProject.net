@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using NO23.Web.Data;
 using NO23.Web.Data.Seed;
 using NO23.Web.Domain.Entities;
+using NO23.Web.Extensions;
 using NO23.Web.ViewModels.Admin;
 
 namespace NO23.Web.Areas.Admin.Controllers;
@@ -15,16 +16,16 @@ public class GroupClassesController(ApplicationDbContext dbContext) : Controller
 {
     public async Task<IActionResult> Index()
     {
-        var classes = await dbContext.GroupClasses
+        var classRows = await dbContext.GroupClasses
             .AsNoTracking()
             .Include(groupClass => groupClass.Trainer)
             .OrderBy(groupClass => groupClass.Name)
-            .Select(groupClass => new GroupClassListItemViewModel
+            .Select(groupClass => new
             {
                 Id = groupClass.Id,
                 Name = groupClass.Name,
                 TrainerName = groupClass.Trainer.FirstName + " " + groupClass.Trainer.LastName,
-                DifficultyLevel = groupClass.DifficultyLevel.ToString(),
+                groupClass.DifficultyLevel,
                 DurationMinutes = groupClass.DurationMinutes,
                 AverageCaloriesBurned = groupClass.AverageCaloriesBurned,
                 Capacity = groupClass.Capacity,
@@ -32,6 +33,21 @@ public class GroupClassesController(ApplicationDbContext dbContext) : Controller
                 IsActive = groupClass.IsActive
             })
             .ToListAsync();
+
+        var classes = classRows
+            .Select(groupClass => new GroupClassListItemViewModel
+            {
+                Id = groupClass.Id,
+                Name = groupClass.Name,
+                TrainerName = groupClass.TrainerName,
+                DifficultyLevel = groupClass.DifficultyLevel.GetDisplayName(),
+                DurationMinutes = groupClass.DurationMinutes,
+                AverageCaloriesBurned = groupClass.AverageCaloriesBurned,
+                Capacity = groupClass.Capacity,
+                SessionCount = groupClass.SessionCount,
+                IsActive = groupClass.IsActive
+            })
+            .ToList();
 
         return View(classes);
     }

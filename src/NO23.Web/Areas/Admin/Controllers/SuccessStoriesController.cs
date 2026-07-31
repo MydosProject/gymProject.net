@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using NO23.Web.Data;
 using NO23.Web.Data.Seed;
 using NO23.Web.Domain.Entities;
+using NO23.Web.Extensions;
 using NO23.Web.ViewModels.Admin;
 
 namespace NO23.Web.Areas.Admin.Controllers;
@@ -14,19 +15,31 @@ public class SuccessStoriesController(ApplicationDbContext dbContext) : Controll
 {
     public async Task<IActionResult> Index()
     {
-        var stories = await dbContext.SuccessStories
+        var storyRows = await dbContext.SuccessStories
             .AsNoTracking()
             .OrderByDescending(item => item.PublishedAtUtc ?? item.CreatedAtUtc)
+            .Select(item => new
+            {
+                Id = item.Id,
+                MemberName = item.MemberName,
+                Title = item.Title,
+                item.Status,
+                AchievementMetric = item.AchievementMetric,
+                PublishedAtUtc = item.PublishedAtUtc
+            })
+            .ToListAsync();
+
+        var stories = storyRows
             .Select(item => new SuccessStoryListItemViewModel
             {
                 Id = item.Id,
                 MemberName = item.MemberName,
                 Title = item.Title,
-                Status = item.Status.ToString(),
+                Status = item.Status.GetDisplayName(),
                 AchievementMetric = item.AchievementMetric,
                 PublishedAtUtc = item.PublishedAtUtc
             })
-            .ToListAsync();
+            .ToList();
 
         return View(stories);
     }
