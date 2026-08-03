@@ -10,60 +10,96 @@
             <input asp-for="Name" class="form-control" />
             <span asp-validation-for="Name" class="text-danger"></span>
         </div>
+
         <div class="col-md-3">
             <label asp-for="Category" class="form-label"></label>
-            <select asp-for="Category" asp-items="Html.GetEnumSelectList<MenuItemCategory>()" class="form-select"></select>
+            <select asp-for="Category"
+                    asp-items="Html.GetEnumSelectList<MenuItemCategory>()"
+                    class="form-select">
+            </select>
         </div>
+
         <div class="col-md-3">
             <label asp-for="DisplayOrder" class="form-label"></label>
             <input asp-for="DisplayOrder" class="form-control" />
             <span asp-validation-for="DisplayOrder" class="text-danger"></span>
         </div>
+
         <div class="col-md-3">
             <label asp-for="Calories" class="form-label"></label>
             <input asp-for="Calories" class="form-control" />
             <span asp-validation-for="Calories" class="text-danger"></span>
         </div>
+
         <div class="col-md-3">
             <label asp-for="UnitPrice" class="form-label"></label>
             <input asp-for="UnitPrice" class="form-control" />
             <span asp-validation-for="UnitPrice" class="text-danger"></span>
         </div>
+
         <div class="col-md-3">
             <label asp-for="ProteinGrams" class="form-label"></label>
             <input asp-for="ProteinGrams" class="form-control" />
             <span asp-validation-for="ProteinGrams" class="text-danger"></span>
         </div>
+
         <div class="col-md-3">
             <label asp-for="CarbohydrateGrams" class="form-label"></label>
             <input asp-for="CarbohydrateGrams" class="form-control" />
             <span asp-validation-for="CarbohydrateGrams" class="text-danger"></span>
         </div>
+
         <div class="col-md-3">
             <label asp-for="FatGrams" class="form-label"></label>
             <input asp-for="FatGrams" class="form-control" />
             <span asp-validation-for="FatGrams" class="text-danger"></span>
         </div>
+
         <div class="col-12">
             <label asp-for="Description" class="form-label"></label>
-            <textarea asp-for="Description" class="form-control" rows="2"></textarea>
+            <textarea asp-for="Description"
+                      class="form-control"
+                      rows="2"></textarea>
             <span asp-validation-for="Description" class="text-danger"></span>
         </div>
+
         <div class="col-12">
             <label asp-for="Ingredients" class="form-label"></label>
-            <textarea asp-for="Ingredients" class="form-control" rows="3"></textarea>
+            <textarea asp-for="Ingredients"
+                      class="form-control"
+                      rows="3"></textarea>
             <span asp-validation-for="Ingredients" class="text-danger"></span>
         </div>
+
         <div class="col-12">
             <label class="form-label">Reçete</label>
+
             @if (Model.RecipeIngredients.Count == 0)
             {
-                <div class="admin-empty-row">Reçete eklemek için önce Stok Takibi ekranından aktif malzeme tanımla.</div>
+                <div class="admin-empty-row">
+                    Reçete eklemek için önce Stok Takibi ekranından aktif malzeme tanımla.
+                </div>
             }
             else
             {
-                <div class="table-responsive admin-table-card">
-                    <table class="table align-middle mb-0">
+                <div class="admin-recipe-search">
+                    <input type="search"
+                           id="recipeIngredientSearch"
+                           class="form-control"
+                           placeholder="Malzeme ara..."
+                           autocomplete="off"
+                           aria-label="Malzeme ara"
+                           aria-controls="recipeIngredientsTable" />
+                </div>
+
+                <p id="recipeIngredientNoResults"
+                   class="small text-muted mb-3 d-none">
+                    Aramana uygun malzeme bulunamadı.
+                </p>
+
+                <div class="table-responsive admin-table-card admin-menu-table-scroll">
+                    <table id="recipeIngredientsTable"
+                           class="table align-middle mb-0">
                         <thead>
                             <tr>
                                 <th>Malzeme</th>
@@ -71,24 +107,45 @@
                                 <th>Porsiyon başı miktar</th>
                             </tr>
                         </thead>
+
                         <tbody>
-                            @for (var index = 0; index < Model.RecipeIngredients.Count; index++)
+                            @for (var index = 0;
+                                  index < Model.RecipeIngredients.Count;
+                                  index++)
                             {
-                                <tr>
+                                <tr data-recipe-ingredient-row
+                                    data-ingredient-name="@Model.RecipeIngredients[index].IngredientName">
                                     <td>
-                                        <strong>@Model.RecipeIngredients[index].IngredientName</strong>
-                                        <input type="hidden" asp-for="RecipeIngredients[index].KitchenIngredientId" />
-                                        <input type="hidden" asp-for="RecipeIngredients[index].IngredientName" />
-                                        <input type="hidden" asp-for="RecipeIngredients[index].Unit" />
-                                        <input type="hidden" asp-for="RecipeIngredients[index].UnitDisplayName" />
+                                        <strong>
+                                            @Model.RecipeIngredients[index].IngredientName
+                                        </strong>
+
+                                        <input type="hidden"
+                                               asp-for="RecipeIngredients[index].KitchenIngredientId" />
+
+                                        <input type="hidden"
+                                               asp-for="RecipeIngredients[index].IngredientName" />
+
+                                        <input type="hidden"
+                                               asp-for="RecipeIngredients[index].Unit" />
+
+                                        <input type="hidden"
+                                               asp-for="RecipeIngredients[index].UnitDisplayName" />
                                     </td>
-                                    <td>@Model.RecipeIngredients[index].UnitDisplayName</td>
+
+                                    <td>
+                                        @Model.RecipeIngredients[index].UnitDisplayName
+                                    </td>
+
                                     <td>
                                         <input asp-for="RecipeIngredients[index].QuantityPerPortion"
                                                class="form-control"
                                                min="0"
                                                step="0.001" />
-                                        <span asp-validation-for="RecipeIngredients[index].QuantityPerPortion" class="text-danger"></span>
+
+                                        <span asp-validation-for="RecipeIngredients[index].QuantityPerPortion"
+                                              class="text-danger">
+                                        </span>
                                     </td>
                                 </tr>
                             }
@@ -97,16 +154,19 @@
                 </div>
             }
         </div>
+
         <div class="col-md-6">
             <label asp-for="Allergens" class="form-label"></label>
             <input asp-for="Allergens" class="form-control" />
             <span asp-validation-for="Allergens" class="text-danger"></span>
         </div>
+
         <div class="col-md-6">
             <label asp-for="Tags" class="form-label"></label>
             <input asp-for="Tags" class="form-control" />
             <span asp-validation-for="Tags" class="text-danger"></span>
         </div>
+
         <div class="col-12">
             <label class="form-check">
                 <input asp-for="IsActive" class="form-check-input" />
@@ -115,8 +175,82 @@
         </div>
     </div>
 
-    <div class="d-flex justify-content-end gap-2 mt-4">
-        <a asp-action="Index" class="btn btn-outline-secondary">Vazgeç</a>
-        <button type="submit" class="btn btn-dark">Kaydet</button>
+    <div class="d-flex align-items-center flex-wrap gap-2 mt-4">
+        @if (Model.Id > 0)
+        {
+            <button type="submit"
+                    asp-action="Delete"
+                    asp-route-id="@Model.Id"
+                    formnovalidate
+                    class="btn btn-outline-danger"
+                    onclick="return confirm('Bu ürünü silmek istediğine emin misin? Bu işlem geri alınamaz.');">
+                Ürünü Sil
+            </button>
+        }
+
+        <div class="d-flex gap-2 ms-auto">
+            <a asp-action="Index"
+               class="btn btn-outline-secondary">
+                Vazgeç
+            </a>
+
+            <button type="submit" class="btn btn-dark">
+                Değişiklikleri Kaydet
+            </button>
+        </div>
     </div>
 </form>
+
+<script>
+    (() => {
+        const searchInput =
+            document.getElementById("recipeIngredientSearch");
+
+        const table =
+            document.getElementById("recipeIngredientsTable");
+
+        const noResults =
+            document.getElementById("recipeIngredientNoResults");
+
+        if (!searchInput || !table) {
+            return;
+        }
+
+        const rows = Array.from(
+            table.querySelectorAll("[data-recipe-ingredient-row]")
+        );
+
+        const normalizeText = (value) =>
+            value
+                .toLocaleLowerCase("tr-TR")
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/ı/g, "i");
+
+        searchInput.addEventListener("input", () => {
+            const query = normalizeText(searchInput.value.trim());
+            let visibleRowCount = 0;
+
+            rows.forEach((row) => {
+                const ingredientName = normalizeText(
+                    row.dataset.ingredientName ?? ""
+                );
+
+                const isVisible = ingredientName.includes(query);
+
+                row.classList.toggle("d-none", !isVisible);
+
+                if (isVisible) {
+                    visibleRowCount++;
+                }
+            });
+
+            if (noResults) {
+                noResults.classList.toggle(
+                    "d-none",
+                    visibleRowCount > 0
+                );
+            }
+        });
+    })();
+</script>

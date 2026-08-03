@@ -1557,3 +1557,25 @@ body.no23-admin-body {
         font-size: clamp(6rem, 38vw, 9rem);
     }
 }
+/* Kitchen menü tablosu: masaüstünde sabit yükseklik ve dikey kaydırma */
+@media (min-width: 992px) {
+    .admin-content .admin-menu-table-scroll {
+        max-height: 560px;
+        overflow-x: auto;
+        overflow-y: auto;
+        scrollbar-gutter: stable;
+    }
+
+    .admin-content .admin-menu-table-scroll .table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: #f6f7f2 !important;
+        box-shadow: 0 1px 0 #eceee7;
+    }
+}
+.admin-recipe-search {
+    width: 100%;
+    max-width: 420px;
+    margin-bottom: 14px;
+}

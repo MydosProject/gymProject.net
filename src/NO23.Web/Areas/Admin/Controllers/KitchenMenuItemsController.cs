@@ -120,6 +120,46 @@ public class KitchenMenuItemsController(ApplicationDbContext dbContext) : Contro
         return RedirectToAction(nameof(Index));
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var item = await dbContext.KitchenMenuItems
+            .FirstOrDefaultAsync(item => item.Id == id);
+
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        var isInUse =
+            await dbContext.OrderItems.AnyAsync(orderItem =>
+                orderItem.KitchenMenuItemId == id) ||
+            await dbContext.CartItems.AnyAsync(cartItem =>
+                cartItem.KitchenMenuItemId == id) ||
+            await dbContext.KitchenMealPlanItems.AnyAsync(planItem =>
+                planItem.KitchenMenuItemId == id) ||
+            await dbContext.KitchenProductionPlanItems.AnyAsync(productionItem =>
+                productionItem.KitchenMenuItemId == id);
+
+        if (isInUse)
+        {
+            ModelState.AddModelError(
+                string.Empty,
+                "Bu ürün sipariş, sepet veya plan kayıtlarında kullanıldığı için silinemez. Bunun yerine ürünü pasif duruma getirebilirsin.");
+
+            var model = MapToFormModel(item);
+            model.RecipeIngredients = await BuildRecipeInputsAsync(id);
+
+            return View("Edit", model);
+        }
+
+        dbContext.KitchenMenuItems.Remove(item);
+        await dbContext.SaveChangesAsync();
+
+        return RedirectToAction(nameof(Index));
+    }
+
     private static KitchenMenuItem MapToEntity(KitchenMenuItemFormViewModel model)
     {
         var item = new KitchenMenuItem();
