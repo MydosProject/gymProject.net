@@ -51,7 +51,7 @@ public class LoginModel(
             if (signedInUser is not null &&
                 await signInManager.UserManager.IsInRoleAsync(signedInUser, ApplicationRoles.Admin))
             {
-                return LocalRedirect("~/Admin/Members");
+                return LocalRedirect("~/Admin/Dashboard");
             }
 
             if (signedInUser is not null &&

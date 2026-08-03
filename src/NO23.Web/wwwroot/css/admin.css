@@ -1390,3 +1390,170 @@ body.no23-admin-body {
         width: 100%;
     }
 }
+
+/* Admin welcome */
+.admin-welcome {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1.12fr) minmax(300px, .72fr);
+    width: min(100%, 1480px);
+    min-height: min(680px, calc(100vh - 154px));
+    margin: 0 auto;
+    overflow: hidden;
+    border: 1px solid rgba(185, 255, 25, .2);
+    border-radius: 26px;
+    color: #fff;
+    background:
+        linear-gradient(rgba(255, 255, 255, .035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, .035) 1px, transparent 1px),
+        radial-gradient(circle at 82% 32%, rgba(185, 255, 25, .14), transparent 34%),
+        #0c100c;
+    background-size: 72px 72px, 72px 72px, auto, auto;
+    box-shadow: 0 28px 70px rgba(18, 23, 14, .12);
+}
+
+.admin-welcome-copy {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    min-width: 0;
+    padding: clamp(42px, 6vw, 92px);
+}
+
+.admin-welcome-kicker {
+    margin: 0 0 20px;
+    color: var(--admin-lime);
+    font-size: .75rem;
+    font-weight: 900;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+}
+
+.admin-welcome h1 {
+    max-width: 850px;
+    margin: 0;
+    font-size: clamp(3rem, 6vw, 6.8rem);
+    font-weight: 900;
+    letter-spacing: -.07em;
+    line-height: .9;
+}
+
+.admin-welcome h1 span {
+    color: var(--admin-lime);
+}
+
+.admin-welcome-description {
+    max-width: 610px;
+    margin: 28px 0 0;
+    color: rgba(255, 255, 255, .62);
+    font-size: clamp(1rem, 1.25vw, 1.25rem);
+    line-height: 1.65;
+}
+
+.admin-welcome-art {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-width: 0;
+    min-height: 100%;
+    padding: 52px;
+    overflow: hidden;
+    border-left: 1px solid rgba(255, 255, 255, .09);
+    background: linear-gradient(145deg, rgba(185, 255, 25, .05), rgba(185, 255, 25, .16));
+}
+
+.admin-welcome-art::before,
+.admin-welcome-art::after {
+    position: absolute;
+    border: 1px solid rgba(185, 255, 25, .22);
+    border-radius: 50%;
+    content: "";
+}
+
+.admin-welcome-art::before {
+    right: -28%;
+    bottom: -15%;
+    width: 560px;
+    aspect-ratio: 1;
+}
+
+.admin-welcome-art::after {
+    right: -7%;
+    bottom: 4%;
+    width: 340px;
+    aspect-ratio: 1;
+}
+
+.admin-welcome-art-label,
+.admin-welcome-art-copy {
+    position: relative;
+    z-index: 1;
+    font-size: .72rem;
+    font-weight: 900;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+}
+
+.admin-welcome-art-label {
+    color: rgba(255, 255, 255, .55);
+}
+
+.admin-welcome-art-copy {
+    color: rgba(255, 255, 255, .78);
+    line-height: 1.35;
+}
+
+.admin-welcome-art strong {
+    position: relative;
+    z-index: 1;
+    align-self: flex-end;
+    color: var(--admin-lime);
+    font-size: clamp(8rem, 15vw, 14rem);
+    font-weight: 900;
+    letter-spacing: -.09em;
+    line-height: .75;
+}
+
+@media (max-width: 991.98px) {
+    .admin-welcome {
+        grid-template-columns: 1fr;
+        min-height: auto;
+    }
+
+    .admin-welcome-art {
+        min-height: 280px;
+        border-top: 1px solid rgba(255, 255, 255, .09);
+        border-left: 0;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .admin-welcome {
+        border-radius: 20px;
+    }
+
+    .admin-welcome-copy {
+        padding: 34px 24px 38px;
+    }
+
+    .admin-welcome h1 {
+        font-size: clamp(2.8rem, 15vw, 4.2rem);
+    }
+
+    .admin-welcome-description {
+        margin-top: 20px;
+    }
+
+    .admin-welcome-art {
+        min-height: 220px;
+        padding: 28px 24px;
+    }
+
+    .admin-welcome-art strong {
+        font-size: clamp(6rem, 38vw, 9rem);
+    }
+}

@@ -35,7 +35,7 @@
     <div class="admin-shell">
         <aside class="admin-sidebar" id="adminSidebar" aria-label="Admin navigasyonu">
             <div class="admin-sidebar-head">
-                <a class="admin-brand" asp-area="Admin" asp-controller="Members" asp-action="Index">
+                <a class="admin-brand" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
                     <span class="admin-brand-mark">NO23</span>
                     <span class="admin-brand-copy">Control Room</span>
                 </a>
@@ -48,6 +48,17 @@
             </div>
 
             <nav class="admin-nav">
+                <div class="admin-nav-group">
+                    <p class="admin-nav-title">Genel</p>
+                    <a class="admin-nav-link @ActiveClass("Dashboard")"
+                       asp-area="Admin"
+                       asp-controller="Dashboard"
+                       asp-action="Index">
+                        <span class="admin-nav-index">00</span>
+                        <span>Genel Bakış</span>
+                    </a>
+                </div>
+
                 <div class="admin-nav-group">
                     <p class="admin-nav-title">Operasyon</p>
                     <a class="admin-nav-link @ActiveClass("Orders")" asp-area="Admin" asp-controller="Orders" asp-action="Index">
