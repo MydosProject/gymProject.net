@@ -1579,3 +1579,73 @@ body.no23-admin-body {
     max-width: 420px;
     margin-bottom: 14px;
 }
+/* Stok takibi tabloları */
+@media (min-width: 992px) {
+    .admin-content .admin-stock-table-scroll {
+        max-height: 560px;
+        overflow-x: auto;
+        overflow-y: auto;
+        scrollbar-gutter: stable;
+    }
+
+    .admin-content .admin-stock-table-scroll > .table > thead > tr > th {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: #f6f7f2 !important;
+        box-shadow: 0 1px 0 #eceee7;
+    }
+}
+/* Küçük ekranlarda tablo ve kart listelerini kaydır */
+@media (max-width: 991.98px) {
+    .admin-content .admin-menu-table-scroll,
+    .admin-content .admin-stock-table-scroll {
+        max-height: 70vh;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+/* Mobilde Kitchen tablolarını kendi içinde kaydır */
+@media (max-width: 991.98px) {
+    .admin-content .table-responsive.admin-menu-table-scroll,
+    .admin-content .table-responsive.admin-stock-table-scroll {
+        display: block !important;
+        max-height: 70vh !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-y;
+    }
+}
+
+/* Mobilde ürün silme butonunu gereksiz yere genişletme */
+@media (max-width: 575.98px) {
+    .admin-content form .admin-delete-product-button {
+        width: auto !important;
+        min-width: 140px;
+        max-width: 100%;
+        align-self: flex-start;
+        padding-right: 20px;
+        padding-left: 20px;
+    }
+}
+.admin-status.is-cancelled {
+    color: #a52a36;
+    background: #fff0f1;
+    border-color: #efb5bb;
+}
+
+/* Etkinlik iptal butonunun mobil görünümü */
+@media (max-width: 575.98px) {
+    .admin-content form .admin-cancel-event-button {
+        width: auto !important;
+        min-width: 170px;
+        max-width: 100%;
+        align-self: flex-start;
+        padding-right: 20px;
+        padding-left: 20px;
+    }
+}

@@ -6,6 +6,7 @@ using NO23.Web.Data.Seed;
 using NO23.Web.Domain.Entities;
 using NO23.Web.Extensions;
 using NO23.Web.ViewModels.Admin;
+using NO23.Web.Domain.Enums;
 
 namespace NO23.Web.Areas.Admin.Controllers;
 
@@ -120,6 +121,33 @@ public class CommunityEventsController(ApplicationDbContext dbContext) : Control
         return RedirectToAction(nameof(Index));
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Cancel(int id)
+    {
+        var item = await dbContext.CommunityEvents.FindAsync(id);
+
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        if (item.Status != CommunityEventStatus.Scheduled)
+        {
+            ModelState.AddModelError(
+                string.Empty,
+                "Yalnızca planlanmış etkinlikler iptal edilebilir.");
+
+            return View("Edit", MapToFormModel(item));
+        }
+
+        item.Status = CommunityEventStatus.Cancelled;
+        item.UpdatedAtUtc = DateTime.UtcNow;
+
+        await dbContext.SaveChangesAsync();
+
+        return RedirectToAction(nameof(Index));
+    }
     private Task<bool> SlugExistsAsync(string slug, int? currentId)
     {
         var normalizedSlug = slug.Trim();
