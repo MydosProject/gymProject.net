@@ -30,6 +30,14 @@ public class SeedContentLocalizationTests
     }
 
     [Fact]
+    public void ShopProductSeed_HasUniqueSkus()
+    {
+        Assert.All(
+            ShopProductSeed.Defaults.GroupBy(product => product.Sku),
+            group => Assert.Single(group));
+    }
+
+    [Fact]
     public void CommunityContentSeed_DoesNotContainMojibakeOrAsciiOnlyTurkishPlaceholders()
     {
         var eventValues = CommunityContentSeed.Events.SelectMany(item =>

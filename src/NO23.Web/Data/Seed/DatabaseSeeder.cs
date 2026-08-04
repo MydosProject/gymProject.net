@@ -114,12 +114,11 @@ public static class DatabaseSeeder
 
     private static async Task SeedClassOperationsAsync(ApplicationDbContext dbContext)
     {
-        if (await dbContext.Trainers.AnyAsync() || await dbContext.GroupClasses.AnyAsync())
-        {
-            return;
-        }
+        var existingTrainers = await dbContext.Trainers.ToListAsync();
+        var existingClasses = await dbContext.GroupClasses.ToListAsync();
+        var trainers = new List<Trainer>();
 
-        var trainers = new[]
+        var defaultTrainers = new[]
         {
             new Trainer
             {
@@ -138,6 +137,22 @@ public static class DatabaseSeeder
                 Bio = "Postür, core ve mobilite odaklı pilates dersleri verir."
             }
         };
+
+        foreach (var defaultTrainer in defaultTrainers)
+        {
+            var trainer = existingTrainers.FirstOrDefault(existing =>
+                string.Equals(existing.FirstName, defaultTrainer.FirstName, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(existing.LastName, defaultTrainer.LastName, StringComparison.OrdinalIgnoreCase));
+
+            if (trainer is null)
+            {
+                dbContext.Trainers.Add(defaultTrainer);
+                existingTrainers.Add(defaultTrainer);
+                trainer = defaultTrainer;
+            }
+
+            trainers.Add(trainer);
+        }
 
         var bootcamp = new GroupClass
         {
@@ -180,8 +195,17 @@ public static class DatabaseSeeder
             CapacityOverride = 6
         });
 
-        dbContext.Trainers.AddRange(trainers);
-        dbContext.GroupClasses.AddRange(bootcamp, reformerPilates);
+        if (!existingClasses.Any(existing =>
+                string.Equals(existing.Name, bootcamp.Name, StringComparison.OrdinalIgnoreCase)))
+        {
+            dbContext.GroupClasses.Add(bootcamp);
+        }
+
+        if (!existingClasses.Any(existing =>
+                string.Equals(existing.Name, reformerPilates.Name, StringComparison.OrdinalIgnoreCase)))
+        {
+            dbContext.GroupClasses.Add(reformerPilates);
+        }
 
         await dbContext.SaveChangesAsync();
     }
@@ -196,22 +220,7 @@ public static class DatabaseSeeder
             if (item is null)
             {
                 dbContext.KitchenMenuItems.Add(defaultItem);
-                continue;
             }
-
-            item.Description = defaultItem.Description;
-            item.Category = defaultItem.Category;
-            item.Calories = defaultItem.Calories;
-            item.UnitPrice = defaultItem.UnitPrice;
-            item.ProteinGrams = defaultItem.ProteinGrams;
-            item.CarbohydrateGrams = defaultItem.CarbohydrateGrams;
-            item.FatGrams = defaultItem.FatGrams;
-            item.Ingredients = defaultItem.Ingredients;
-            item.Allergens = defaultItem.Allergens;
-            item.Tags = defaultItem.Tags;
-            item.IsPlanEligible = defaultItem.IsPlanEligible;
-            item.DisplayOrder = defaultItem.DisplayOrder;
-            item.UpdatedAtUtc = DateTime.UtcNow;
         }
 
         await dbContext.SaveChangesAsync();
@@ -219,8 +228,9 @@ public static class DatabaseSeeder
 
     private static async Task SeedKitchenStockAsync(ApplicationDbContext dbContext)
     {
-        var existingIngredientsByName = await dbContext.KitchenIngredients
-            .ToDictionaryAsync(ingredient => ingredient.Name);
+        var existingIngredientsByName = (await dbContext.KitchenIngredients.ToListAsync())
+            .GroupBy(ingredient => ingredient.Name, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
         var newIngredients = new List<KitchenIngredient>();
 
         foreach (var defaultIngredient in KitchenStockSeed.Ingredients)
@@ -261,10 +271,12 @@ public static class DatabaseSeeder
             }
         }
 
-        var ingredientsByName = await dbContext.KitchenIngredients
-            .ToDictionaryAsync(ingredient => ingredient.Name);
-        var menuItemsByName = await dbContext.KitchenMenuItems
-            .ToDictionaryAsync(item => item.Name);
+        var ingredientsByName = (await dbContext.KitchenIngredients.ToListAsync())
+            .GroupBy(ingredient => ingredient.Name, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
+        var menuItemsByName = (await dbContext.KitchenMenuItems.ToListAsync())
+            .GroupBy(item => item.Name, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
 
         var menuItemIds = menuItemsByName.Values
             .Select(item => item.Id)
@@ -357,12 +369,13 @@ public static class DatabaseSeeder
 
     private static async Task SeedShopProductsAsync(ApplicationDbContext dbContext)
     {
-        if (await dbContext.ShopProducts.AnyAsync())
-        {
-            return;
-        }
+        var existingSkus = await dbContext.ShopProducts
+            .Select(product => product.Sku)
+            .ToListAsync();
+        var existingSkuSet = existingSkus.ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        dbContext.ShopProducts.AddRange(ShopProductSeed.Defaults);
+        dbContext.ShopProducts.AddRange(ShopProductSeed.Defaults
+            .Where(product => !existingSkuSet.Contains(product.Sku)));
         await dbContext.SaveChangesAsync();
     }
 

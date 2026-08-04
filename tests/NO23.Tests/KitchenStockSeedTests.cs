@@ -27,6 +27,14 @@ public class KitchenStockSeedTests
     }
 
     [Fact]
+    public void DefaultKitchenMenuItems_HaveUniqueNames()
+    {
+        Assert.All(
+            KitchenMenuItemSeed.Defaults.GroupBy(item => item.Name),
+            group => Assert.Single(group));
+    }
+
+    [Fact]
     public void Recipes_CoverLegacyKitchenMenuItems()
     {
         var recipeMenuNames = KitchenStockSeed.Recipes
@@ -50,6 +58,14 @@ public class KitchenStockSeedTests
         {
             Assert.Contains(recipe.IngredientName, ingredientNames);
         }
+    }
+
+    [Fact]
+    public void Ingredients_HaveUniqueNames()
+    {
+        Assert.All(
+            KitchenStockSeed.Ingredients.GroupBy(ingredient => ingredient.Name),
+            group => Assert.Single(group));
     }
 
     [Fact]
