@@ -53,7 +53,7 @@ public class SettingsController(
                     ? "ChangePassword.CurrentPassword"
                     : string.Empty;
 
-                ModelState.AddModelError(field, TranslateIdentityError(error));
+                ModelState.AddModelError(field, error.Description);
             }
 
             return View("Index", await BuildViewModelAsync(user, input));
@@ -80,21 +80,4 @@ public class SettingsController(
         };
     }
 
-    private static string TranslateIdentityError(IdentityError error)
-    {
-        return error.Code switch
-        {
-            "PasswordMismatch" => "Mevcut şifren doğru değil.",
-            "PasswordTooShort" => "Yeni şifren yeterince uzun değil.",
-            "PasswordRequiresNonAlphanumeric" =>
-                "Yeni şifrende en az bir özel karakter bulunmalıdır.",
-            "PasswordRequiresDigit" =>
-                "Yeni şifrende en az bir rakam bulunmalıdır.",
-            "PasswordRequiresLower" =>
-                "Yeni şifrende en az bir küçük harf bulunmalıdır.",
-            "PasswordRequiresUpper" =>
-                "Yeni şifrende en az bir büyük harf bulunmalıdır.",
-            _ => error.Description
-        };
-    }
 }

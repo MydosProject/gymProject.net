@@ -66,7 +66,7 @@ public class CommunityEventsController(ApplicationDbContext dbContext) : Control
 
         if (await SlugExistsAsync(model.Slug, null))
         {
-            ModelState.AddModelError(nameof(model.Slug), "This slug is already used.");
+            ModelState.AddModelError(nameof(model.Slug), "Bu URL kısa adı zaten kullanılıyor.");
             return View(model);
         }
 
@@ -104,7 +104,7 @@ public class CommunityEventsController(ApplicationDbContext dbContext) : Control
 
         if (await SlugExistsAsync(model.Slug, id))
         {
-            ModelState.AddModelError(nameof(model.Slug), "This slug is already used.");
+            ModelState.AddModelError(nameof(model.Slug), "Bu URL kısa adı zaten kullanılıyor.");
             return View(model);
         }
 

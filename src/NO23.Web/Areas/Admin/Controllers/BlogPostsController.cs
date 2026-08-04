@@ -60,7 +60,7 @@ public class BlogPostsController(ApplicationDbContext dbContext) : Controller
         {
             ModelState.AddModelError(
                 nameof(model.Slug),
-                "This slug is already used.");
+                "Bu URL kısa adı zaten kullanılıyor.");
 
             return View(model);
         }
@@ -105,7 +105,7 @@ public class BlogPostsController(ApplicationDbContext dbContext) : Controller
         {
             ModelState.AddModelError(
                 nameof(model.Slug),
-                "This slug is already used.");
+                "Bu URL kısa adı zaten kullanılıyor.");
 
             return View(model);
         }

@@ -56,7 +56,7 @@ public class ShopProductsController(ApplicationDbContext dbContext) : Controller
 
         if (await dbContext.ShopProducts.AnyAsync(product => product.Sku == model.Sku.Trim()))
         {
-            ModelState.AddModelError(nameof(model.Sku), "This SKU is already used.");
+            ModelState.AddModelError(nameof(model.Sku), "Bu SKU zaten kullanılıyor.");
             return View(model);
         }
 
@@ -98,7 +98,7 @@ public class ShopProductsController(ApplicationDbContext dbContext) : Controller
             product.Id != id &&
             product.Sku == model.Sku.Trim()))
         {
-            ModelState.AddModelError(nameof(model.Sku), "This SKU is already used.");
+            ModelState.AddModelError(nameof(model.Sku), "Bu SKU zaten kullanılıyor.");
             return View(model);
         }
 
