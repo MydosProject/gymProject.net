@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using NO23.Web.Data;
 using NO23.Web.Data.Seed;
@@ -6,6 +7,7 @@ using NO23.Web.Domain.Entities;
 using NO23.Web.Domain.Enums;
 using NO23.Web.Infrastructure.Validation;
 using NO23.Web.Services;
+using NO23.Web.Services.Email;
 using NO23.Web.ViewModels.Api;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,7 +19,54 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+builder.Services.Configure<SmtpEmailOptions>(
+    builder.Configuration.GetSection("Email:Smtp"));
+builder.Services.Configure<PasswordResetOptions>(
+    builder.Configuration.GetSection("Email:PasswordReset"));
+builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
+{
+    var tokenLifespanMinutes =
+        builder.Configuration.GetValue<int?>("Email:PasswordReset:TokenLifespanMinutes")
+        ?? 60;
+
+    options.TokenLifespan = TimeSpan.FromMinutes(tokenLifespanMinutes);
+});
+
+builder.Services.AddTransient<IEmailSender>(serviceProvider =>
+{
+    var smtpOptions =
+        serviceProvider.GetRequiredService<
+            Microsoft.Extensions.Options.IOptions<SmtpEmailOptions>>().Value;
+
+    var hasSmtpSettings =
+        smtpOptions.Enabled &&
+        !string.IsNullOrWhiteSpace(smtpOptions.Host) &&
+        smtpOptions.Port > 0 &&
+        !string.IsNullOrWhiteSpace(smtpOptions.UserName) &&
+        !string.IsNullOrWhiteSpace(smtpOptions.Password) &&
+        !string.IsNullOrWhiteSpace(smtpOptions.FromAddress);
+
+    if (hasSmtpSettings)
+    {
+        return ActivatorUtilities
+            .CreateInstance<SmtpIdentityEmailSender>(serviceProvider);
+    }
+
+    var environment =
+        serviceProvider.GetRequiredService<IWebHostEnvironment>();
+
+    return environment.IsDevelopment()
+        ? ActivatorUtilities
+            .CreateInstance<DevelopmentEmailSender>(serviceProvider)
+        : ActivatorUtilities
+            .CreateInstance<DisabledEmailSender>(serviceProvider);
+});
+
+builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
+    {
+        options.SignIn.RequireConfirmedAccount = true;
+        options.User.RequireUniqueEmail = true;
+    })
     .AddRoles<IdentityRole>()
     .AddErrorDescriber<TurkishIdentityErrorDescriber>()
     .AddEntityFrameworkStores<ApplicationDbContext>();

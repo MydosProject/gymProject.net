@@ -108,13 +108,36 @@ Git kurulu olmalıdır.
    dotnet user-secrets set "SeedAdmin:Password" "<GUCLU_ADMIN_SIFRESI>" --project src/NO23.Web/NO23.Web.csproj
    ```
 
-7. Veritabanı migration'larını uygulayın:
+7. Parola sıfırlama e-postalarını gerçek Gmail SMTP üzerinden test etmek
+   isterseniz Gmail uygulama şifresini user-secrets ile tanımlayın:
+
+   ```bash
+   dotnet user-secrets set "Email:Smtp:Enabled" "true" --project src/NO23.Web/NO23.Web.csproj
+   dotnet user-secrets set "Email:Smtp:UserName" "<GMAIL_EPOSTA>" --project src/NO23.Web/NO23.Web.csproj
+   dotnet user-secrets set "Email:Smtp:Password" "<GMAIL_UYGULAMA_SIFRESI>" --project src/NO23.Web/NO23.Web.csproj
+   dotnet user-secrets set "Email:Smtp:FromAddress" "<GMAIL_EPOSTA>" --project src/NO23.Web/NO23.Web.csproj
+   ```
+
+   Bu adım yerel geliştirme için zorunlu değildir. SMTP bilgileri
+   tanımlı değilse development ortamında parola sıfırlama bağlantısı
+   uygulama loglarına yazılır.
+
+   Deployment sorumlusu aynı ayarları kendi secret sistemi üzerinden aşağıdaki environment variable adlarıyla tanımlar:
+
+   ```text
+   Email__Smtp__Enabled=true
+   Email__Smtp__UserName=<GMAIL_EPOSTA>
+   Email__Smtp__Password=<GMAIL_UYGULAMA_SIFRESI>
+   Email__Smtp__FromAddress=<GMAIL_EPOSTA>
+   ```
+
+8. Veritabanı migration'larını uygulayın:
 
    ```bash
    dotnet ef database update --project src/NO23.Web/NO23.Web.csproj
    ```
 
-8. Uygulamayı çalıştırın:
+9. Uygulamayı çalıştırın:
 
    ```bash
    dotnet run --project src/NO23.Web/NO23.Web.csproj
