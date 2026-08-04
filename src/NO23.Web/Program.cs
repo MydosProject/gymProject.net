@@ -4,6 +4,7 @@ using NO23.Web.Data;
 using NO23.Web.Data.Seed;
 using NO23.Web.Domain.Entities;
 using NO23.Web.Domain.Enums;
+using NO23.Web.Infrastructure.Validation;
 using NO23.Web.Services;
 using NO23.Web.ViewModels.Api;
 
@@ -18,6 +19,7 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddRoles<IdentityRole>()
+    .AddErrorDescriber<TurkishIdentityErrorDescriber>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
@@ -31,6 +33,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllersWithViews(options =>
 {
+    options.ModelMetadataDetailsProviders.Add(new TurkishValidationMetadataProvider());
+
     var messages = options.ModelBindingMessageProvider;
     messages.SetAttemptedValueIsInvalidAccessor((value, field) =>
         $"{field} için girilen değer geçerli değil.");
