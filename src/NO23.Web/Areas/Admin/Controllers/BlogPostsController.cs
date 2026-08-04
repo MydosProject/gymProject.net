@@ -58,7 +58,10 @@ public class BlogPostsController(ApplicationDbContext dbContext) : Controller
 
         if (await SlugExistsAsync(model.Slug, null))
         {
-            ModelState.AddModelError(nameof(model.Slug), "This slug is already used.");
+            ModelState.AddModelError(
+                nameof(model.Slug),
+                "This slug is already used.");
+
             return View(model);
         }
 
@@ -70,7 +73,9 @@ public class BlogPostsController(ApplicationDbContext dbContext) : Controller
 
     public async Task<IActionResult> Edit(int id)
     {
-        var item = await dbContext.BlogPosts.AsNoTracking().FirstOrDefaultAsync(item => item.Id == id);
+        var item = await dbContext.BlogPosts
+            .AsNoTracking()
+            .FirstOrDefaultAsync(item => item.Id == id);
 
         if (item is null)
         {
@@ -82,7 +87,9 @@ public class BlogPostsController(ApplicationDbContext dbContext) : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int id, BlogPostFormViewModel model)
+    public async Task<IActionResult> Edit(
+        int id,
+        BlogPostFormViewModel model)
     {
         if (id != model.Id)
         {
@@ -96,7 +103,10 @@ public class BlogPostsController(ApplicationDbContext dbContext) : Controller
 
         if (await SlugExistsAsync(model.Slug, id))
         {
-            ModelState.AddModelError(nameof(model.Slug), "This slug is already used.");
+            ModelState.AddModelError(
+                nameof(model.Slug),
+                "This slug is already used.");
+
             return View(model);
         }
 
@@ -113,22 +123,30 @@ public class BlogPostsController(ApplicationDbContext dbContext) : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    private Task<bool> SlugExistsAsync(string slug, int? currentId)
+    private Task<bool> SlugExistsAsync(
+        string slug,
+        int? currentId)
     {
         var normalizedSlug = slug.Trim();
+
         return dbContext.BlogPosts.AnyAsync(item =>
             item.Slug == normalizedSlug &&
             (!currentId.HasValue || item.Id != currentId.Value));
     }
 
-    private static BlogPost MapToEntity(BlogPostFormViewModel model)
+    private static BlogPost MapToEntity(
+        BlogPostFormViewModel model)
     {
         var item = new BlogPost();
+
         ApplyFormModel(item, model);
+
         return item;
     }
 
-    private static void ApplyFormModel(BlogPost item, BlogPostFormViewModel model)
+    private static void ApplyFormModel(
+        BlogPost item,
+        BlogPostFormViewModel model)
     {
         item.Title = model.Title.Trim();
         item.Slug = model.Slug.Trim();
@@ -138,11 +156,18 @@ public class BlogPostsController(ApplicationDbContext dbContext) : Controller
         item.Tags = model.Tags?.Trim();
         item.CoverImageUrl = model.CoverImageUrl?.Trim();
         item.Status = model.Status;
-        item.PublishedAtUtc = model.PublishedAtUtc;
+
+        item.PublishedAtUtc = model.PublishedAtUtc.HasValue
+            ? DateTime.SpecifyKind(
+                model.PublishedAtUtc.Value,
+                DateTimeKind.Utc)
+            : null;
+
         item.UpdatedAtUtc = DateTime.UtcNow;
     }
 
-    private static BlogPostFormViewModel MapToFormModel(BlogPost item)
+    private static BlogPostFormViewModel MapToFormModel(
+        BlogPost item)
     {
         return new BlogPostFormViewModel
         {

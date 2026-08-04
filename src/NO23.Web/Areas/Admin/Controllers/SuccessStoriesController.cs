@@ -142,7 +142,9 @@ public class SuccessStoriesController(ApplicationDbContext dbContext) : Controll
         item.AfterImageUrl = model.AfterImageUrl?.Trim();
         item.VideoUrl = model.VideoUrl?.Trim();
         item.Status = model.Status;
-        item.PublishedAtUtc = model.PublishedAtUtc;
+        item.PublishedAtUtc = model.PublishedAtUtc.HasValue
+            ? DateTime.SpecifyKind(model.PublishedAtUtc.Value, DateTimeKind.Utc)
+            : null;
         item.UpdatedAtUtc = DateTime.UtcNow;
     }
 
