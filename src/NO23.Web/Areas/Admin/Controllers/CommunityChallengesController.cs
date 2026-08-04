@@ -204,6 +204,31 @@ public class CommunityChallengesController(ApplicationDbContext dbContext) : Con
         return RedirectToAction(nameof(Index));
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Cancel(int id)
+    {
+        var item = await dbContext.CommunityChallenges.FindAsync(id);
+
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        if (item.Status != CommunityChallengeStatus.Upcoming &&
+            item.Status != CommunityChallengeStatus.Active)
+        {
+            return RedirectToAction(nameof(Index));
+        }
+
+        item.Status = CommunityChallengeStatus.Cancelled;
+        item.UpdatedAtUtc = DateTime.UtcNow;
+
+        await dbContext.SaveChangesAsync();
+
+        return RedirectToAction(nameof(Index));
+    }
+
     private Task<bool> SlugExistsAsync(string slug, int? currentId)
     {
         var normalizedSlug = slug.Trim();

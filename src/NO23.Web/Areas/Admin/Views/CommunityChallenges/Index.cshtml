@@ -1,7 +1,9 @@
 @model IReadOnlyList<CommunityChallengeListItemViewModel>
 @{
     ViewData["Title"] = "Community Challenge'ları";
-    var openCount = Model.Count(item => item.EndsOn >= DateOnly.FromDateTime(DateTime.Today));
+    var openCount = Model.Count(item =>
+            (item.Status == "Upcoming" || item.Status == "Active") &&
+            item.EndsOn >= DateOnly.FromDateTime(DateTime.Today));
 
     string GetStatusName(string status)
     {
@@ -47,7 +49,11 @@
                             <tr>
                                 <td data-label="Sıra"><span class="admin-order-no">@item.DisplayOrder.ToString("00")</span></td>
                                 <td data-label="Challenge"><strong>@item.Title</strong></td>
-                                <td data-label="Durum"><span class="admin-status">@GetStatusName(item.Status)</span></td>
+                                <td data-label="Durum">
+                                    <span class="admin-status @(item.Status == "Cancelled" ? "is-cancelled" : "")">
+                                        @GetStatusName(item.Status)
+                                    </span>
+                                </td>
                                 <td data-label="Tarih">@item.StartsOn.ToString("dd.MM.yyyy") — @item.EndsOn.ToString("dd.MM.yyyy")</td>
                                 <td data-label="Kalori kuralı">
                                     <strong>@item.TargetDailyCalories kcal</strong>

@@ -51,8 +51,28 @@
         </div>
     </section>
 
-    <div class="d-flex justify-content-end gap-2 mt-4">
-        <a asp-action="Index" class="btn btn-outline-secondary">Vazgeç</a>
-        <button type="submit" class="btn btn-dark">Kaydet</button>
+    <div class="d-flex align-items-center flex-wrap gap-2 mt-4">
+        @if (Model.Id > 0 &&
+             Model.Status == ClassSessionStatus.Scheduled)
+        {
+            <button type="submit"
+                    asp-action="Cancel"
+                    asp-route-id="@Model.Id"
+                    formnovalidate
+                    class="btn btn-outline-danger admin-cancel-session-button"
+                    onclick="return confirm('Bu ders seansı iptal edilecek. Aktif rezervasyonlar iptal edilecek ve üyelerin ders hakları geri verilecek. Emin misin?');">
+                Ders Seansını İptal Et
+            </button>
+        }
+
+        <div class="d-flex gap-2 ms-auto">
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                Vazgeç
+            </a>
+
+            <button type="submit" class="btn btn-dark">
+                Değişiklikleri Kaydet
+            </button>
+        </div>
     </div>
 </form>

@@ -1638,11 +1638,12 @@ body.no23-admin-body {
     border-color: #efb5bb;
 }
 
-/* Etkinlik iptal butonunun mobil görünümü */
 @media (max-width: 575.98px) {
-    .admin-content form .admin-cancel-event-button {
+    .admin-content form .admin-cancel-event-button,
+    .admin-content form .admin-cancel-challenge-button,
+    .admin-content form .admin-cancel-session-button {
         width: auto !important;
-        min-width: 170px;
+        min-width: 180px;
         max-width: 100%;
         align-self: flex-start;
         padding-right: 20px;

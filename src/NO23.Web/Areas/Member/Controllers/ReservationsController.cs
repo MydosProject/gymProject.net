@@ -38,6 +38,7 @@ public class ReservationsController(
                 .Where(reservation =>
                     reservation.MemberProfileId == profileId &&
                     reservation.Status == ClassReservationStatus.Reserved &&
+                    reservation.ClassSession.Status == ClassSessionStatus.Scheduled &&
                     reservation.ClassSession.StartsAtUtc >= DateTime.UtcNow)
                 .OrderBy(reservation => reservation.ClassSession.StartsAtUtc)
                 .Select(reservation => new MemberReservationViewModel

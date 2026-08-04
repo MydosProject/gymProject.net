@@ -106,7 +106,9 @@ public class ClassSessionsController(ApplicationDbContext dbContext) : Controlle
 
         if (!await GroupClassExistsAsync(model.GroupClassId))
         {
-            ModelState.AddModelError(nameof(model.GroupClassId), "Geçerli bir grup dersi seçmelisin.");
+            ModelState.AddModelError(
+                nameof(model.GroupClassId),
+                "Geçerli bir grup dersi seçmelisin.");
         }
 
         if (!ModelState.IsValid)
@@ -121,12 +123,95 @@ public class ClassSessionsController(ApplicationDbContext dbContext) : Controlle
             return NotFound();
         }
 
+        if (model.Status == ClassSessionStatus.Cancelled &&
+            session.Status != ClassSessionStatus.Cancelled)
+        {
+            if (session.Status != ClassSessionStatus.Scheduled)
+            {
+                ModelState.AddModelError(
+                    nameof(model.Status),
+                    "Yalnızca planlanmış ders seansları iptal edilebilir.");
+
+                return View(await PopulateGroupClassOptionsAsync(model));
+            }
+
+            await CancelSessionAsync(session);
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        if (session.Status == ClassSessionStatus.Cancelled &&
+            model.Status != ClassSessionStatus.Cancelled)
+        {
+            ModelState.AddModelError(
+                nameof(model.Status),
+                "İptal edilmiş bir seans yeniden aktif edilemez. Yeni bir seans oluşturmalısın.");
+
+            return View(await PopulateGroupClassOptionsAsync(model));
+        }
+
         ApplyFormModel(session, model);
         await dbContext.SaveChangesAsync();
 
         return RedirectToAction(nameof(Index));
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Cancel(int id)
+    {
+        var session = await dbContext.ClassSessions.FindAsync(id);
+
+        if (session is null)
+        {
+            return NotFound();
+        }
+
+        if (session.Status != ClassSessionStatus.Scheduled)
+        {
+            return RedirectToAction(nameof(Index));
+        }
+
+        await CancelSessionAsync(session);
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    private async Task CancelSessionAsync(ClassSession session)
+    {
+        var nowUtc = DateTime.UtcNow;
+
+        var activeReservations = await dbContext.ClassReservations
+            .Include(reservation => reservation.MemberProfile)
+            .ThenInclude(profile => profile.MembershipPackage)
+            .Where(reservation =>
+                reservation.ClassSessionId == session.Id &&
+                reservation.Status == ClassReservationStatus.Reserved)
+            .ToListAsync();
+
+        foreach (var reservation in activeReservations)
+        {
+            reservation.Status = ClassReservationStatus.Cancelled;
+            reservation.CancelledAtUtc = nowUtc;
+            reservation.CancellationReason =
+                "Ders seansı yönetici tarafından iptal edildi.";
+
+            var hasLimitedPackage =
+                reservation.MemberProfile.MembershipPackage.WeeklyClassLimit is not null;
+
+            if (hasLimitedPackage)
+            {
+                reservation.MemberProfile.RemainingClassCredits++;
+            }
+
+            reservation.MemberProfile.UpdatedAtUtc = nowUtc;
+        }
+
+        session.Status = ClassSessionStatus.Cancelled;
+        session.UpdatedAtUtc = nowUtc;
+
+        await dbContext.SaveChangesAsync();
+    }
     private async Task<ClassSessionFormViewModel> PopulateGroupClassOptionsAsync(ClassSessionFormViewModel model)
     {
         model.GroupClassOptions = await dbContext.GroupClasses
