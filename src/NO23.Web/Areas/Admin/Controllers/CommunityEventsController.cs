@@ -171,8 +171,10 @@ public class CommunityEventsController(ApplicationDbContext dbContext) : Control
         item.Description = model.Description.Trim();
         item.Type = model.Type;
         item.Status = model.Status;
-        item.StartsAtUtc = model.StartsAtUtc;
-        item.EndsAtUtc = model.EndsAtUtc;
+        item.StartsAtUtc = DateTime.SpecifyKind(model.StartsAtUtc, DateTimeKind.Utc);
+        item.EndsAtUtc = model.EndsAtUtc.HasValue
+            ? DateTime.SpecifyKind(model.EndsAtUtc.Value, DateTimeKind.Utc)
+            : null;
         item.Location = model.Location.Trim();
         item.Capacity = model.Capacity;
         item.IsMembersOnly = model.IsMembersOnly;
