@@ -1,109 +1,248 @@
 @model PersonalTrainingRequestFormViewModel
+
 @{
     ViewData["Title"] = "Birebir Talep Yönetimi";
     var createdAtLocal = Model.CreatedAtUtc.ToLocalTime();
 }
 
-<section class="admin-page">
+<section class="admin-page admin-personal-request-edit-page">
     <div class="container">
-        <header class="admin-page-head admin-form-head">
+        <header class="admin-page-head admin-form-head admin-personal-edit-head">
             <div>
-                <a asp-action="Index" class="admin-back-link">← Taleplere dön</a>
-                <p class="admin-eyebrow">Kulüp / Ders Yönetimi</p>
+                <a asp-action="Index"
+                   class="admin-back-link admin-personal-back-link">
+                    <span aria-hidden="true">←</span>
+                    Taleplere dön
+                </a>
+
+                <p class="admin-eyebrow">NO23 CLUB / DERS YÖNETİMİ</p>
+
                 <h1>Birebir talebi yönet</h1>
-                <p class="admin-page-description">Üyenin tercih ettiği gün ve saat aralığına göre kesin randevu oluştur veya talebi kapat.</p>
+
+                <p class="admin-page-description">
+                    Üyenin tercih ettiği gün ve saat aralığını incele,
+                    kesin randevuyu planla veya talebi uygun durumla kapat.
+                </p>
+            </div>
+
+            <div class="admin-personal-edit-reference">
+                <span>Talep no</span>
+                <strong>#@Model.Id.ToString("0000")</strong>
             </div>
         </header>
 
-        <form method="post" class="bg-white border rounded-3 p-4 text-dark admin-form-card admin-session-form">
-            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+        <form method="post"
+              class="admin-form-card admin-personal-edit-form">
+
+            <div asp-validation-summary="ModelOnly"
+                 class="text-danger admin-personal-validation-summary">
+            </div>
+
             <input type="hidden" asp-for="Id" />
 
-            <section class="admin-form-section">
+            <section class="admin-form-section admin-personal-summary-section">
                 <header>
                     <span>01</span>
+
                     <div>
                         <h2>Talep özeti</h2>
-                        <p>Üye, eğitmen ve tercih edilen birebir çalışma bilgileri.</p>
+
+                        <p>
+                            Üye, eğitmen ve tercih edilen birebir çalışma bilgileri.
+                        </p>
                     </div>
                 </header>
 
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Üye</label>
-                        <input class="form-control" value="@Model.MemberName" disabled />
-                        <small class="admin-field-hint">@Model.MemberEmail</small>
+                <div class="admin-personal-summary-grid">
+                    <article class="admin-personal-summary-card">
+                        <span>Üye</span>
+
+                        <div class="admin-personal-summary-person">
+                            <strong class="admin-personal-summary-avatar">
+                                @(string.IsNullOrWhiteSpace(Model.MemberName)
+                                    ? "Ü"
+                                    : Model.MemberName.Trim()[0]
+                                        .ToString()
+                                        .ToUpper())
+                            </strong>
+
+                            <div>
+                                <h3>@Model.MemberName</h3>
+                                <p>@Model.MemberEmail</p>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="admin-personal-summary-card">
+                        <span>Eğitmen</span>
+
+                        <div class="admin-personal-summary-person">
+                            <strong class="admin-personal-summary-avatar">
+                                @(string.IsNullOrWhiteSpace(Model.TrainerName)
+                                    ? "E"
+                                    : Model.TrainerName.Trim()[0]
+                                        .ToString()
+                                        .ToUpper())
+                            </strong>
+
+                            <div>
+                                <h3>@Model.TrainerName</h3>
+
+                                <p class="admin-personal-trainer-state
+                                          @(Model.TrainerIsActive
+                                              ? "is-active"
+                                              : "is-inactive")">
+                                    @(Model.TrainerIsActive
+                                        ? "Aktif eğitmen"
+                                        : "Pasif eğitmen")
+                                </p>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="admin-personal-summary-card">
+                        <span>Tercih edilen gün</span>
+
+                        <strong class="admin-personal-summary-value">
+                            @Model.PreferredDate.ToString("dd.MM.yyyy")
+                        </strong>
+
+                        <p>Üyenin seçtiği tarih</p>
+                    </article>
+
+                    <article class="admin-personal-summary-card">
+                        <span>Saat aralığı</span>
+
+                        <strong class="admin-personal-summary-value">
+                            @Model.PreferredTimeWindow
+                        </strong>
+
+                        <p>Üyenin tercih ettiği zaman</p>
+                    </article>
+                </div>
+
+                <div class="admin-personal-member-note">
+                    <div>
+                        <span>Üye notu</span>
+                        <strong>Hedef ve beklenti</strong>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Eğitmen</label>
-                        <input class="form-control" value="@Model.TrainerName" disabled />
-                        <small class="admin-field-hint">@(Model.TrainerIsActive ? "Aktif eğitmen" : "Pasif eğitmen")</small>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Tercih edilen gün</label>
-                        <input class="form-control" value="@Model.PreferredDate.ToString("dd.MM.yyyy")" disabled />
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Saat aralığı</label>
-                        <input class="form-control" value="@Model.PreferredTimeWindow" disabled />
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label">Üye notu</label>
-                        <textarea class="form-control" rows="4" disabled>@Model.GoalNote</textarea>
-                    </div>
+
+                    <p>
+                        @(string.IsNullOrWhiteSpace(Model.GoalNote)
+                            ? "Üye bu talep için ek bir not paylaşmadı."
+                            : Model.GoalNote)
+                    </p>
                 </div>
             </section>
 
-            <section class="admin-form-section">
+            <section class="admin-form-section admin-personal-planning-section">
                 <header>
                     <span>02</span>
+
                     <div>
                         <h2>Planlama</h2>
-                        <p>Talebi planlamak için kesin tarih/saat gir; kapatmak için uygun durumu seç.</p>
+
+                        <p>
+                            Talebi planlamak için kesin tarih ve saat gir;
+                            kapatmak için uygun durumu seç.
+                        </p>
                     </div>
                 </header>
 
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label asp-for="Status" class="form-label"></label>
-                        <select asp-for="Status" asp-items="Html.GetEnumSelectList<PersonalTrainingRequestStatus>()" class="form-select"></select>
-                        <span asp-validation-for="Status" class="text-danger"></span>
-                        <small class="admin-field-hint">Mevcut durum: @Model.CurrentStatusDisplayName</small>
+                <div class="admin-personal-planning-grid">
+                    <div class="admin-personal-field">
+                        <label asp-for="Status"
+                               class="form-label">
+                        </label>
+
+                        <select asp-for="Status"
+                                asp-items="Html.GetEnumSelectList<PersonalTrainingRequestStatus>()"
+                                class="form-select">
+                        </select>
+
+                        <span asp-validation-for="Status"
+                              class="text-danger">
+                        </span>
+
+                        <small class="admin-field-hint">
+                            Mevcut durum:
+                            <strong>@Model.CurrentStatusDisplayName</strong>
+                        </small>
                     </div>
-                    <div class="col-md-6">
-                        <label asp-for="ScheduledAtLocal" class="form-label"></label>
-                        <input asp-for="ScheduledAtLocal" type="datetime-local" class="form-control" />
-                        <span asp-validation-for="ScheduledAtLocal" class="text-danger"></span>
-                        <small class="admin-field-hint">Planlandı durumu için zorunludur.</small>
+
+                    <div class="admin-personal-field">
+                        <label asp-for="ScheduledAtLocal"
+                               class="form-label">
+                        </label>
+
+                        <input asp-for="ScheduledAtLocal"
+                               type="datetime-local"
+                               class="form-control" />
+
+                        <span asp-validation-for="ScheduledAtLocal"
+                              class="text-danger">
+                        </span>
+
+                        <small class="admin-field-hint">
+                            Planlandı durumu için zorunludur.
+                        </small>
                     </div>
-                    <div class="col-12">
-                        <label asp-for="AdminNote" class="form-label"></label>
-                        <textarea asp-for="AdminNote" rows="4" class="form-control"></textarea>
-                        <span asp-validation-for="AdminNote" class="text-danger"></span>
+
+                    <div class="admin-personal-field admin-personal-field-wide">
+                        <label asp-for="AdminNote"
+                               class="form-label">
+                        </label>
+
+                        <textarea asp-for="AdminNote"
+                                  rows="4"
+                                  class="form-control"
+                                  placeholder="Üyeye gösterilecek planlama veya durum notunu yaz.">
+                        </textarea>
+
+                        <span asp-validation-for="AdminNote"
+                              class="text-danger">
+                        </span>
                     </div>
                 </div>
 
                 @if (!Model.CanPlan)
                 {
-                    <div class="alert alert-warning mt-3 mb-0">
-                        Bu talebin eğitmeni pasif olduğu için yeni planlama yapılamaz.
+                    <div class="admin-personal-warning">
+                        <span aria-hidden="true">!</span>
+
+                        <div>
+                            <strong>Yeni planlama yapılamaz</strong>
+
+                            <p>
+                                Bu talebin eğitmeni pasif olduğu için yeni bir
+                                randevu planlanamaz.
+                            </p>
+                        </div>
                     </div>
                 }
             </section>
 
-            <div class="d-flex align-items-center flex-wrap gap-2 mt-4">
-                <span class="admin-field-hint">Oluşturulma: @createdAtLocal.ToString("dd.MM.yyyy HH:mm")</span>
+            <footer class="admin-personal-edit-footer">
+                <div class="admin-personal-created-info">
+                    <span>Oluşturulma</span>
+                    <strong>
+                        @createdAtLocal.ToString("dd.MM.yyyy · HH:mm")
+                    </strong>
+                </div>
 
-                <div class="d-flex gap-2 ms-auto">
-                    <a asp-action="Index" class="btn btn-outline-secondary">
+                <div class="admin-personal-edit-actions">
+                    <a asp-action="Index"
+                       class="admin-personal-cancel-action">
                         Vazgeç
                     </a>
 
-                    <button type="submit" class="btn btn-dark">
-                        Değişiklikleri Kaydet
+                    <button type="submit"
+                            class="admin-personal-save-action">
+                        <span>Değişiklikleri Kaydet</span>
+                        <strong aria-hidden="true">→</strong>
                     </button>
                 </div>
-            </div>
+            </footer>
         </form>
     </div>
 </section>
