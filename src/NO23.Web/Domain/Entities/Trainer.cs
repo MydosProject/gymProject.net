@@ -21,4 +21,6 @@ public class Trainer
     public DateTime? UpdatedAtUtc { get; set; }
 
     public ICollection<GroupClass> GroupClasses { get; set; } = [];
+
+    public ICollection<PersonalTrainingRequest> PersonalTrainingRequests { get; set; } = [];
 }

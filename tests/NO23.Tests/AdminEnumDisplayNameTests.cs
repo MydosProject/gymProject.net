@@ -31,7 +31,12 @@ public class AdminEnumDisplayNameTests
         [ClassDifficultyLevel.Beginner, "Başlangıç"],
         [ClassDifficultyLevel.Intermediate, "Orta"],
         [ClassDifficultyLevel.Advanced, "İleri"],
-        [ClassDifficultyLevel.AllLevels, "Tüm seviyeler"]
+        [ClassDifficultyLevel.AllLevels, "Tüm seviyeler"],
+        [PersonalTrainingRequestStatus.Pending, "Beklemede"],
+        [PersonalTrainingRequestStatus.Scheduled, "Planlandı"],
+        [PersonalTrainingRequestStatus.Rejected, "Reddedildi"],
+        [PersonalTrainingRequestStatus.Cancelled, "İptal edildi"],
+        [PersonalTrainingRequestStatus.Completed, "Tamamlandı"]
     ];
 
     [Theory]

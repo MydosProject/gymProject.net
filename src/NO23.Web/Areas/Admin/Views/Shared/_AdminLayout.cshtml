@@ -10,7 +10,8 @@
         currentController.Equals("KitchenSubscriptions", StringComparison.OrdinalIgnoreCase);
     var isClassSection =
         currentController.Equals("GroupClasses", StringComparison.OrdinalIgnoreCase) ||
-        currentController.Equals("ClassSessions", StringComparison.OrdinalIgnoreCase);
+        currentController.Equals("ClassSessions", StringComparison.OrdinalIgnoreCase) ||
+        currentController.Equals("PersonalTrainingRequests", StringComparison.OrdinalIgnoreCase);
     var isMembershipSection =
         currentController.Equals("Members", StringComparison.OrdinalIgnoreCase) ||
         currentController.Equals("MembershipPackages", StringComparison.OrdinalIgnoreCase);
@@ -158,7 +159,7 @@
                         <span class="admin-nav-index">09</span>
                         <span>Eğitmenler</span>
                     </a>
-                    <a class="admin-nav-link has-submenu @ActiveClass("GroupClasses", "ClassSessions")"
+                    <a class="admin-nav-link has-submenu @ActiveClass("GroupClasses", "ClassSessions", "PersonalTrainingRequests")"
                        asp-area="Admin"
                        asp-controller="GroupClasses"
                        asp-action="Index"
@@ -183,6 +184,12 @@
                            asp-controller="ClassSessions"
                            asp-action="Index">
                             Ders Programı
+                        </a>
+                        <a class="admin-nav-sublink @ActiveClass("PersonalTrainingRequests")"
+                           asp-area="Admin"
+                           asp-controller="PersonalTrainingRequests"
+                           asp-action="Index">
+                            Birebir Talepler
                         </a>
                     </div>
                 </div>

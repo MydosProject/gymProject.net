@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using NO23.Web.Data;
 using NO23.Web.Data.Seed;
 using NO23.Web.Domain.Enums;
+using NO23.Web.Extensions;
 using NO23.Web.Services;
 using NO23.Web.ViewModels.Member;
 
@@ -14,7 +15,8 @@ namespace NO23.Web.Areas.Member.Controllers;
 [Authorize(Roles = ApplicationRoles.Member)]
 public class ReservationsController(
     ApplicationDbContext dbContext,
-    ClassReservationService reservationService) : Controller
+    ClassReservationService reservationService,
+    PersonalTrainingRequestService personalTrainingRequestService) : Controller
 {
     public async Task<IActionResult> Index(int? trainerId = null)
     {
@@ -25,11 +27,17 @@ public class ReservationsController(
             return Challenge();
         }
 
-        var profileId = await dbContext.MemberProfiles
+        var memberContext = await dbContext.MemberProfiles
             .AsNoTracking()
+            .Include(member => member.MembershipPackage)
             .Where(member => member.ApplicationUserId == userId)
-            .Select(member => (int?)member.Id)
+            .Select(member => new
+            {
+                member.Id,
+                member.MembershipPackage.IncludesPersonalTrainingSupport
+            })
             .FirstOrDefaultAsync();
+        var profileId = memberContext?.Id;
 
         var upcomingReservations = profileId is null
             ? []
@@ -95,14 +103,63 @@ public class ReservationsController(
             })
             .ToListAsync();
 
+        var selectedTrainerId = trainers.Any(trainer => trainer.Id == trainerId)
+            ? trainerId
+            : trainers.FirstOrDefault()?.Id;
+
+        var personalTrainingRequests = new List<PersonalTrainingRequestListItemViewModel>();
+
+        if (profileId is not null)
+        {
+            var personalTrainingRequestRows = await dbContext.PersonalTrainingRequests
+                .AsNoTracking()
+                .Where(request => request.MemberProfileId == profileId)
+                .OrderByDescending(request =>
+                    request.Status == PersonalTrainingRequestStatus.Pending)
+                .ThenByDescending(request => request.CreatedAtUtc)
+                .Select(request => new
+                {
+                    request.Id,
+                    TrainerName = request.Trainer.FirstName + " " + request.Trainer.LastName,
+                    request.PreferredDate,
+                    request.PreferredTimeWindow,
+                    request.Status,
+                    request.ScheduledAtUtc,
+                    request.AdminNote
+                })
+                .ToListAsync();
+
+            personalTrainingRequests = personalTrainingRequestRows
+                .Select(request => new PersonalTrainingRequestListItemViewModel
+                {
+                    Id = request.Id,
+                    TrainerName = request.TrainerName,
+                    PreferredDate = request.PreferredDate,
+                    PreferredTimeWindow = request.PreferredTimeWindow,
+                    Status = request.Status.GetDisplayName(),
+                    ScheduledAtUtc = request.ScheduledAtUtc,
+                    AdminNote = request.AdminNote,
+                    CanCancel = request.Status == PersonalTrainingRequestStatus.Pending
+                })
+                .ToList();
+        }
+
         return View(new MemberReservationsIndexViewModel
         {
             UpcomingReservations = upcomingReservations,
             AvailableSessions = availableSessions,
             Trainers = trainers,
-            SelectedTrainerId = trainers.Any(trainer => trainer.Id == trainerId)
-                ? trainerId
-                : null
+            SelectedTrainerId = selectedTrainerId,
+            PersonalTrainingRequestInput = new PersonalTrainingRequestInputViewModel
+            {
+                TrainerId = selectedTrainerId ?? 0,
+                PreferredDate = DateOnly.FromDateTime(DateTime.Today.AddDays(1)),
+                PreferredTimeWindow = PersonalTrainingRequestService.PreferredTimeWindows[0]
+            },
+            PreferredTimeWindows = PersonalTrainingRequestService.PreferredTimeWindows,
+            PersonalTrainingRequests = personalTrainingRequests,
+            CanRequestPersonalTraining =
+                memberContext?.IncludesPersonalTrainingSupport == true
         });
     }
 
@@ -140,5 +197,60 @@ public class ReservationsController(
             result.Succeeded ? "Rezervasyon iptal edildi." : result.ErrorMessage;
 
         return LocalRedirect($"{Url.Action(nameof(Index))}#upcoming-reservations");
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RequestPersonalTraining(
+        PersonalTrainingRequestInputViewModel model)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Challenge();
+        }
+
+        if (!ModelState.IsValid)
+        {
+            TempData["ErrorMessage"] = "Birebir talep bilgilerini kontrol etmelisin.";
+            return RedirectToPersonalTraining(model.TrainerId);
+        }
+
+        var result = await personalTrainingRequestService.CreateAsync(userId, model);
+        TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] =
+            result.Succeeded
+                ? "Birebir antrenman talebin alındı."
+                : result.ErrorMessage;
+
+        return RedirectToPersonalTraining(model.TrainerId);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CancelPersonalTraining(int requestId)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Challenge();
+        }
+
+        var result = await personalTrainingRequestService.CancelByMemberAsync(
+            userId,
+            requestId);
+        TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] =
+            result.Succeeded
+                ? "Birebir antrenman talebin iptal edildi."
+                : result.ErrorMessage;
+
+        return LocalRedirect($"{Url.Action(nameof(Index))}#personal-training");
+    }
+
+    private IActionResult RedirectToPersonalTraining(int trainerId)
+    {
+        return LocalRedirect(
+            $"{Url.Action(nameof(Index), new { trainerId })}#personal-training");
     }
 }

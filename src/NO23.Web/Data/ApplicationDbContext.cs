@@ -19,6 +19,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<ClassReservation> ClassReservations => Set<ClassReservation>();
 
+    public DbSet<PersonalTrainingRequest> PersonalTrainingRequests =>
+        Set<PersonalTrainingRequest>();
+
     public DbSet<KitchenMenuItem> KitchenMenuItems => Set<KitchenMenuItem>();
 
     public DbSet<KitchenSubscription> KitchenSubscriptions => Set<KitchenSubscription>();

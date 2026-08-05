@@ -9,4 +9,13 @@ public class MemberReservationsIndexViewModel
     public IReadOnlyList<PersonalTrainerOptionViewModel> Trainers { get; init; } = [];
 
     public int? SelectedTrainerId { get; init; }
+
+    public PersonalTrainingRequestInputViewModel PersonalTrainingRequestInput { get; init; } =
+        new();
+
+    public IReadOnlyList<string> PreferredTimeWindows { get; init; } = [];
+
+    public IReadOnlyList<PersonalTrainingRequestListItemViewModel> PersonalTrainingRequests { get; init; } = [];
+
+    public bool CanRequestPersonalTraining { get; init; }
 }
