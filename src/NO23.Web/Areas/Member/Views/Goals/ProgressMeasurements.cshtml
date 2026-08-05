@@ -12,25 +12,74 @@
             : string.Empty;
     }
 
+    var selectedDateLabel = Model.Input.EntryDate == today
+        ? "Bugünün kaydı"
+        : Model.Input.EntryDate.ToString("dd MMMM yyyy",
+            CultureInfo.GetCultureInfo("tr-TR"));
 }
 
 <section class="member-account-page member-progress-tracking-page">
+    <div class="member-progress-grid-bg" aria-hidden="true"></div>
+    <div class="member-progress-glow" aria-hidden="true"></div>
+
     <div class="container position-relative">
-        <header class="member-account-hero">
-            <div>
-                <p class="member-account-kicker">NO23 / KALORİ TAKİBİ VE ÖLÇÜMLER</p>
-                <h1>Günlük kaydını gir.</h1>
+        <header class="member-progress-hero">
+            <div class="member-progress-hero-copy">
+                <p class="member-account-kicker">
+                    NO23 / İLERLEME TAKİBİ
+                </p>
+
+                <h1>
+                    Gelişimini<br />
+                    <span>verilerle takip et.</span>
+                </h1>
+
                 <p>
-                    Kalori ve tartı ölçümlerini tarih bazlı kaydet. İleri tarih hariç
-                    geçmiş kayıtlarını istediğin zaman güncelleyebilirsin.
+                    Günlük kalori tüketimini ve vücut ölçümlerini kaydet.
+                    Geçmiş tarihlerdeki verilerini görüntüle, güncelle ve
+                    ilerlemeni düzenli şekilde takip et.
                 </p>
             </div>
+
+            <aside class="member-progress-hero-card">
+                <div class="member-progress-hero-card-top">
+                    <span>Aktif kayıt</span>
+                    <strong>01</strong>
+                </div>
+
+                <div class="member-progress-hero-date">
+                    <span>@selectedDateLabel</span>
+                    <strong>
+                        @Model.Input.EntryDate.ToString("dd.MM.yyyy")
+                    </strong>
+                </div>
+
+                <div class="member-progress-hero-steps">
+                    <div>
+                        <span>01</span>
+                        <strong>Kalori</strong>
+                    </div>
+
+                    <div>
+                        <span>02</span>
+                        <strong>Ölçümler</strong>
+                    </div>
+
+                    <div>
+                        <span>03</span>
+                        <strong>Kaydet</strong>
+                    </div>
+                </div>
+            </aside>
         </header>
 
         @if (TempData["SuccessMessage"] is string successMessage)
         {
-            <div class="member-dashboard-alert member-dashboard-alert-success" role="status">
+            <div class="member-dashboard-alert
+                        member-dashboard-alert-success"
+                 role="status">
                 <span aria-hidden="true">✓</span>
+
                 <div>
                     <strong>Kayıt tamamlandı</strong>
                     <p>@successMessage</p>
@@ -40,8 +89,11 @@
 
         @if (TempData["ErrorMessage"] is string errorMessage)
         {
-            <div class="member-dashboard-alert member-dashboard-alert-error" role="alert">
+            <div class="member-dashboard-alert
+                        member-dashboard-alert-error"
+                 role="alert">
                 <span aria-hidden="true">!</span>
+
                 <div>
                     <strong>Kayıt tamamlanamadı</strong>
                     <p>@errorMessage</p>
@@ -49,164 +101,327 @@
             </div>
         }
 
-        <section class="member-account-card member-progress-entry-form">
-            <div class="member-account-card-head">
-                <span>01</span>
-                <div>
-                    <p>GÜNLÜK KAYIT</p>
-                    <h2>Kalori takibi</h2>
-                </div>
+        <form asp-area="Member"
+              asp-controller="Goals"
+              asp-action="ProgressMeasurements"
+              asp-antiforgery="true"
+              method="post"
+              class="member-progress-form">
+
+            <div asp-validation-summary="ModelOnly"
+                 class="text-danger member-progress-validation">
             </div>
 
-            <form asp-area="Member"
-                  asp-controller="Goals"
-                  asp-action="ProgressMeasurements"
-                  asp-antiforgery="true"
-                  method="post">
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label" for="EntryDate">Tarih</label>
-                        <input class="form-control"
-                               id="EntryDate"
-                               type="date"
-                               name="EntryDate"
-                               data-progress-date-picker
-                               value="@Model.Input.EntryDate.ToString("yyyy-MM-dd")"
-                               max="@today.ToString("yyyy-MM-dd")" />
-                        <small class="form-text">
-                            Bu tarihteki kaydı görüntülüyorsun.
-                        </small>
+            <section class="member-progress-section
+                            member-progress-calorie-section">
+                <header class="member-progress-section-head">
+                    <div class="member-progress-section-number">
+                        01
                     </div>
 
-                    <div class="col-md-4">
-                        <label class="form-label" for="CaloriesConsumed">Kalori</label>
-                        <input class="form-control"
-                               id="CaloriesConsumed"
-                               type="number"
-                               name="CaloriesConsumed"
-                               min="1"
-                               max="10000"
-                               value="@(Model.Input.CaloriesConsumed?.ToString(CultureInfo.InvariantCulture) ?? string.Empty)" />
-                    </div>
-                </div>
-
-                <hr />
-
-                <div class="member-account-card-head">
-                    <span>02</span>
                     <div>
-                        <p>TARTI ÖLÇÜMLERİ</p>
+                        <p>Günlük kayıt</p>
+                        <h2>Kalori takibi</h2>
+                        <span>
+                            Seçtiğin tarih için günlük tüketim bilgisini gir.
+                        </span>
+                    </div>
+                </header>
+
+                <div class="member-progress-calorie-layout">
+                    <label class="member-progress-field
+                                  member-progress-date-field"
+                           for="EntryDate">
+                        <span>Tarih</span>
+
+                        <div class="member-progress-input-shell">
+                            <strong aria-hidden="true">GÜN</strong>
+
+                            <input id="EntryDate"
+                                   type="date"
+                                   name="EntryDate"
+                                   data-progress-date-picker
+                                   value="@Model.Input.EntryDate.ToString("yyyy-MM-dd")"
+                                   max="@today.ToString("yyyy-MM-dd")" />
+                        </div>
+
+                        <small>
+                            Bu tarihteki kayıt görüntüleniyor.
+                        </small>
+                    </label>
+
+                    <label class="member-progress-field"
+                           for="CaloriesConsumed">
+                        <span>Kalori tüketimi</span>
+
+                        <div class="member-progress-input-shell">
+                            <strong aria-hidden="true">KCAL</strong>
+
+                            <input id="CaloriesConsumed"
+                                   type="number"
+                                   name="CaloriesConsumed"
+                                   min="1"
+                                   max="10000"
+                                   inputmode="numeric"
+                                   placeholder="Örn. 2200"
+                                   value="@(Model.Input.CaloriesConsumed?
+                                       .ToString(
+                                           CultureInfo.InvariantCulture)
+                                       ?? string.Empty)" />
+                        </div>
+
+                        <small>
+                            Gün boyunca tükettiğin toplam kaloriyi gir.
+                        </small>
+                    </label>
+
+                    <article class="member-progress-calorie-note">
+                        <span>Günlük takip</span>
+                        <strong>Düzenli kayıt, daha net ilerleme.</strong>
+                        <p>
+                            Her gün aynı saatte kayıt girmek karşılaştırmayı
+                            daha anlamlı hâle getirir.
+                        </p>
+                    </article>
+                </div>
+            </section>
+
+            <section class="member-progress-section
+                            member-progress-measurements-section">
+                <header class="member-progress-section-head">
+                    <div class="member-progress-section-number">
+                        02
+                    </div>
+
+                    <div>
+                        <p>Tartı ölçümleri</p>
                         <h2>Vücut ölçümleri</h2>
+                        <span>
+                            Mevcut ölçümlerin arasından bildiklerini
+                            doldurabilirsin.
+                        </span>
                     </div>
+                </header>
+
+                <div class="member-progress-measurement-groups">
+                    <section class="member-progress-measurement-group">
+                        <header>
+                            <span>01 / Temel değerler</span>
+                            <strong>Vücut kompozisyonu</strong>
+                        </header>
+
+                        <div class="member-progress-fields-grid">
+                            <label class="member-progress-field"
+                                   for="BodyWeightKg">
+                                <span>Vücut ağırlığı</span>
+
+                                <div class="member-progress-input-shell">
+                                    <strong aria-hidden="true">KG</strong>
+
+                                    <input id="BodyWeightKg"
+                                           type="number"
+                                           name="BodyWeightKg"
+                                           min="1"
+                                           max="500"
+                                           step="0.01"
+                                           inputmode="decimal"
+                                           placeholder="0.00"
+                                           value="@FormatDecimal(
+                                               Model.Input.BodyWeightKg)" />
+                                </div>
+                            </label>
+
+                            <label class="member-progress-field"
+                                   for="BodyFatKg">
+                                <span>Yağ ağırlığı</span>
+
+                                <div class="member-progress-input-shell">
+                                    <strong aria-hidden="true">KG</strong>
+
+                                    <input id="BodyFatKg"
+                                           type="number"
+                                           name="BodyFatKg"
+                                           min="0"
+                                           max="300"
+                                           step="0.01"
+                                           inputmode="decimal"
+                                           placeholder="0.00"
+                                           value="@FormatDecimal(
+                                               Model.Input.BodyFatKg)" />
+                                </div>
+                            </label>
+
+                            <label class="member-progress-field"
+                                   for="MuscleMassKg">
+                                <span>Kas kütlesi</span>
+
+                                <div class="member-progress-input-shell">
+                                    <strong aria-hidden="true">KG</strong>
+
+                                    <input id="MuscleMassKg"
+                                           type="number"
+                                           name="MuscleMassKg"
+                                           min="0"
+                                           max="300"
+                                           step="0.01"
+                                           inputmode="decimal"
+                                           placeholder="0.00"
+                                           value="@FormatDecimal(
+                                               Model.Input.MuscleMassKg)" />
+                                </div>
+                            </label>
+                        </div>
+                    </section>
+
+                    <section class="member-progress-measurement-group">
+                        <header>
+                            <span>02 / Oranlar</span>
+                            <strong>Yüzdesel değerler</strong>
+                        </header>
+
+                        <div class="member-progress-fields-grid">
+                            <label class="member-progress-field"
+                                   for="BodyFatPercent">
+                                <span>Yağ oranı</span>
+
+                                <div class="member-progress-input-shell">
+                                    <strong aria-hidden="true">%</strong>
+
+                                    <input id="BodyFatPercent"
+                                           type="number"
+                                           name="BodyFatPercent"
+                                           min="0"
+                                           max="100"
+                                           step="0.01"
+                                           inputmode="decimal"
+                                           placeholder="0.00"
+                                           value="@FormatDecimal(
+                                               Model.Input.BodyFatPercent)" />
+                                </div>
+                            </label>
+
+                            <label class="member-progress-field"
+                                   for="MuscleMassPercent">
+                                <span>Kas oranı</span>
+
+                                <div class="member-progress-input-shell">
+                                    <strong aria-hidden="true">%</strong>
+
+                                    <input id="MuscleMassPercent"
+                                           type="number"
+                                           name="MuscleMassPercent"
+                                           min="0"
+                                           max="100"
+                                           step="0.01"
+                                           inputmode="decimal"
+                                           placeholder="0.00"
+                                           value="@FormatDecimal(
+                                               Model.Input
+                                                   .MuscleMassPercent)" />
+                                </div>
+                            </label>
+
+                            <label class="member-progress-field"
+                                   for="BodyWaterPercent">
+                                <span>Vücut suyu oranı</span>
+
+                                <div class="member-progress-input-shell">
+                                    <strong aria-hidden="true">%</strong>
+
+                                    <input id="BodyWaterPercent"
+                                           type="number"
+                                           name="BodyWaterPercent"
+                                           min="0"
+                                           max="100"
+                                           step="0.01"
+                                           inputmode="decimal"
+                                           placeholder="0.00"
+                                           value="@FormatDecimal(
+                                               Model.Input
+                                                   .BodyWaterPercent)" />
+                                </div>
+                            </label>
+                        </div>
+                    </section>
+
+                    <section class="member-progress-measurement-group
+                                    member-progress-water-group">
+                        <header>
+                            <span>03 / Su dengesi</span>
+                            <strong>Vücut suyu miktarı</strong>
+                        </header>
+
+                        <div class="member-progress-water-layout">
+                            <label class="member-progress-field"
+                                   for="BodyWaterAmount">
+                                <span>Vücut suyu miktarı</span>
+
+                                <div class="member-progress-input-shell">
+                                    <strong aria-hidden="true">LT</strong>
+
+                                    <input id="BodyWaterAmount"
+                                           type="number"
+                                           name="BodyWaterAmount"
+                                           min="0"
+                                           max="300"
+                                           step="0.01"
+                                           inputmode="decimal"
+                                           placeholder="0.00"
+                                           value="@FormatDecimal(
+                                               Model.Input
+                                                   .BodyWaterAmount)" />
+                                </div>
+                            </label>
+
+                            <div class="member-progress-water-copy">
+                                <span>Ölçüm notu</span>
+
+                                <p>
+                                    Tartı cihazındaki değer hangi birimde
+                                    gösteriliyorsa aynı değeri gir.
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </section>
+
+            <footer class="member-progress-form-footer">
+                <div>
+                    <span>Kayıt tarihi</span>
+                    <strong>
+                        @Model.Input.EntryDate.ToString("dd.MM.yyyy")
+                    </strong>
                 </div>
 
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label" for="BodyWeightKg">Vücut ağırlığı (kg)</label>
-                        <input class="form-control"
-                               id="BodyWeightKg"
-                               type="number"
-                               name="BodyWeightKg"
-                               min="1"
-                               max="500"
-                               step="0.01"
-                               value="@FormatDecimal(Model.Input.BodyWeightKg)" />
-                    </div>
-
-                    <div class="col-md-4">
-                        <label class="form-label" for="BodyFatKg">Yağ ağırlığı (kg)</label>
-                        <input class="form-control"
-                               id="BodyFatKg"
-                               type="number"
-                               name="BodyFatKg"
-                               min="0"
-                               max="300"
-                               step="0.01"
-                               value="@FormatDecimal(Model.Input.BodyFatKg)" />
-                    </div>
-
-                    <div class="col-md-4">
-                        <label class="form-label" for="BodyFatPercent">Yağ oranı (%)</label>
-                        <input class="form-control"
-                               id="BodyFatPercent"
-                               type="number"
-                               name="BodyFatPercent"
-                               min="0"
-                               max="100"
-                               step="0.01"
-                               value="@FormatDecimal(Model.Input.BodyFatPercent)" />
-                    </div>
-
-                    <div class="col-md-4">
-                        <label class="form-label" for="MuscleMassKg">Kas kütlesi (kg)</label>
-                        <input class="form-control"
-                               id="MuscleMassKg"
-                               type="number"
-                               name="MuscleMassKg"
-                               min="0"
-                               max="300"
-                               step="0.01"
-                               value="@FormatDecimal(Model.Input.MuscleMassKg)" />
-                    </div>
-
-                    <div class="col-md-4">
-                        <label class="form-label" for="MuscleMassPercent">Kas oranı (%)</label>
-                        <input class="form-control"
-                               id="MuscleMassPercent"
-                               type="number"
-                               name="MuscleMassPercent"
-                               min="0"
-                               max="100"
-                               step="0.01"
-                               value="@FormatDecimal(Model.Input.MuscleMassPercent)" />
-                    </div>
-
-                    <div class="col-md-4">
-                        <label class="form-label" for="BodyWaterAmount">Vücut suyu miktarı</label>
-                        <input class="form-control"
-                               id="BodyWaterAmount"
-                               type="number"
-                               name="BodyWaterAmount"
-                               min="0"
-                               max="300"
-                               step="0.01"
-                               value="@FormatDecimal(Model.Input.BodyWaterAmount)" />
-                    </div>
-
-                    <div class="col-md-4">
-                        <label class="form-label" for="BodyWaterPercent">Vücut suyu oranı (%)</label>
-                        <input class="form-control"
-                               id="BodyWaterPercent"
-                               type="number"
-                               name="BodyWaterPercent"
-                               min="0"
-                               max="100"
-                               step="0.01"
-                               value="@FormatDecimal(Model.Input.BodyWaterPercent)" />
-                    </div>
-                </div>
-
-                <div class="mt-4">
-                    <button class="btn btn-primary" type="submit">Kaydet</button>
-                </div>
-            </form>
-        </section>
+                <button class="member-progress-submit"
+                        type="submit">
+                    <span>İlerlemeni Kaydet</span>
+                    <strong aria-hidden="true">→</strong>
+                </button>
+            </footer>
+        </form>
     </div>
 </section>
 
 @section Scripts {
     <script>
         (() => {
-            const dateInput = document.querySelector("[data-progress-date-picker]");
+            const dateInput = document.querySelector(
+                "[data-progress-date-picker]");
 
             dateInput?.addEventListener("change", () => {
                 if (!dateInput.value) {
                     return;
                 }
 
-                const url = new URL("@Url.Action("ProgressMeasurements", "Goals", new { area = "Member" })", window.location.origin);
+                const url = new URL(
+                    "@Url.Action(
+                        "ProgressMeasurements",
+                        "Goals",
+                        new { area = "Member" })",
+                    window.location.origin);
+
                 url.searchParams.set("date", dateInput.value);
                 window.location.href = url.toString();
             });
