@@ -5,6 +5,7 @@ using NO23.Web.Data;
 using NO23.Web.Data.Seed;
 using NO23.Web.Domain.Entities;
 using NO23.Web.Extensions;
+using NO23.Web.Services;
 using NO23.Web.ViewModels.Admin;
 using NO23.Web.Domain.Enums;
 
@@ -16,6 +17,7 @@ public class CommunityEventsController(ApplicationDbContext dbContext) : Control
 {
     public async Task<IActionResult> Index()
     {
+        var nowUtc = DateTime.UtcNow;
         var eventRows = await dbContext.CommunityEvents
             .AsNoTracking()
             .OrderBy(item => item.DisplayOrder)
@@ -27,6 +29,7 @@ public class CommunityEventsController(ApplicationDbContext dbContext) : Control
                 Type = item.Type.ToString(),
                 item.Status,
                 StartsAtUtc = item.StartsAtUtc,
+                EndsAtUtc = item.EndsAtUtc,
                 Location = item.Location,
                 Capacity = item.Capacity,
                 DisplayOrder = item.DisplayOrder
@@ -39,7 +42,9 @@ public class CommunityEventsController(ApplicationDbContext dbContext) : Control
                 Id = item.Id,
                 Title = item.Title,
                 Type = item.Type,
-                Status = item.Status.GetDisplayName(),
+                Status = CommunityEventLifecycle
+                    .GetEffectiveStatus(item.Status, item.StartsAtUtc, item.EndsAtUtc, nowUtc)
+                    .GetDisplayName(),
                 StartsAtUtc = item.StartsAtUtc,
                 Location = item.Location,
                 Capacity = item.Capacity,
@@ -59,6 +64,13 @@ public class CommunityEventsController(ApplicationDbContext dbContext) : Control
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(CommunityEventFormViewModel model)
     {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        ValidateEventDates(model);
+
         if (!ModelState.IsValid)
         {
             return View(model);
@@ -102,6 +114,13 @@ public class CommunityEventsController(ApplicationDbContext dbContext) : Control
             return View(model);
         }
 
+        ValidateEventDates(model);
+
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
         if (await SlugExistsAsync(model.Slug, id))
         {
             ModelState.AddModelError(nameof(model.Slug), "Bu URL kısa adı zaten kullanılıyor.");
@@ -132,7 +151,13 @@ public class CommunityEventsController(ApplicationDbContext dbContext) : Control
             return NotFound();
         }
 
-        if (item.Status != CommunityEventStatus.Scheduled)
+        var effectiveStatus = CommunityEventLifecycle.GetEffectiveStatus(
+            item.Status,
+            item.StartsAtUtc,
+            item.EndsAtUtc,
+            DateTime.UtcNow);
+
+        if (!CommunityEventLifecycle.IsPubliclyOpen(effectiveStatus))
         {
             ModelState.AddModelError(
                 string.Empty,
@@ -170,11 +195,15 @@ public class CommunityEventsController(ApplicationDbContext dbContext) : Control
         item.Summary = model.Summary.Trim();
         item.Description = model.Description.Trim();
         item.Type = model.Type;
-        item.Status = model.Status;
         item.StartsAtUtc = DateTime.SpecifyKind(model.StartsAtUtc, DateTimeKind.Utc);
         item.EndsAtUtc = model.EndsAtUtc.HasValue
             ? DateTime.SpecifyKind(model.EndsAtUtc.Value, DateTimeKind.Utc)
             : null;
+        item.Status = CommunityEventLifecycle.NormalizeStoredStatus(
+            model.Status,
+            item.StartsAtUtc,
+            item.EndsAtUtc,
+            DateTime.UtcNow);
         item.Location = model.Location.Trim();
         item.Capacity = model.Capacity;
         item.IsMembersOnly = model.IsMembersOnly;
@@ -202,5 +231,15 @@ public class CommunityEventsController(ApplicationDbContext dbContext) : Control
             ImageUrl = item.ImageUrl,
             DisplayOrder = item.DisplayOrder
         };
+    }
+
+    private void ValidateEventDates(CommunityEventFormViewModel model)
+    {
+        if (model.EndsAtUtc.HasValue && model.EndsAtUtc.Value < model.StartsAtUtc)
+        {
+            ModelState.AddModelError(
+                nameof(model.EndsAtUtc),
+                "Bitis tarihi baslangic tarihinden once olamaz.");
+        }
     }
 }

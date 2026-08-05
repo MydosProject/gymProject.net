@@ -22,12 +22,21 @@ public class CommunityChallengeProgressService(ApplicationDbContext dbContext)
         var challenge = await dbContext.CommunityChallenges
             .FirstOrDefaultAsync(item =>
                 item.Slug == challengeSlug.Trim() &&
-                (item.Status == CommunityChallengeStatus.Upcoming ||
-                 item.Status == CommunityChallengeStatus.Active));
+                item.Status != CommunityChallengeStatus.Cancelled);
 
         if (challenge is null)
         {
             return CommunityChallengeActionResult.Fail("Challenge katılıma açık değil.");
+        }
+
+        if (!CommunityChallengeLifecycle.IsJoinOpen(
+                CommunityChallengeLifecycle.GetEffectiveStatus(
+                    challenge.Status,
+                    challenge.StartsOn,
+                    challenge.EndsOn,
+                    DateOnly.FromDateTime(DateTime.Today))))
+        {
+            return CommunityChallengeActionResult.Fail("Challenge katilima acik degil.");
         }
 
         var profile = await GetCommunityMemberProfileAsync(userId);
@@ -113,7 +122,13 @@ public class CommunityChallengeProgressService(ApplicationDbContext dbContext)
 
         var challenge = participation.CommunityChallenge;
 
-        if (challenge.Status is CommunityChallengeStatus.Cancelled or CommunityChallengeStatus.Completed)
+        var effectiveStatus = CommunityChallengeLifecycle.GetEffectiveStatus(
+            challenge.Status,
+            challenge.StartsOn,
+            challenge.EndsOn,
+            DateOnly.FromDateTime(DateTime.Today));
+
+        if (!CommunityChallengeLifecycle.CanLogCalories(effectiveStatus))
         {
             return CommunityChallengeActionResult.Fail(
                 "Bu challenge için kalori girişi kapalı.");

@@ -242,16 +242,25 @@ public class GoalsController(
             .Where(item =>
                 item.MemberProfileId == memberProfileId &&
                 item.Status != CommunityChallengeParticipationStatus.Withdrawn &&
-                (item.CommunityChallenge.Status == CommunityChallengeStatus.Upcoming ||
-                 item.CommunityChallenge.Status == CommunityChallengeStatus.Active))
+                item.CommunityChallenge.Status != CommunityChallengeStatus.Cancelled)
             .OrderBy(item => item.CommunityChallenge.StartsOn)
             .ThenBy(item => item.CommunityChallenge.Title)
             .ToListAsync();
 
         return participations
+            .Select(participation => new
+            {
+                Participation = participation,
+                EffectiveStatus = CommunityChallengeLifecycle.GetEffectiveStatus(
+                    participation.CommunityChallenge.Status,
+                    participation.CommunityChallenge.StartsOn,
+                    participation.CommunityChallenge.EndsOn,
+                    today)
+            })
+            .Where(item => CommunityChallengeLifecycle.IsJoinOpen(item.EffectiveStatus))
             .Select(participation =>
             {
-                var challenge = participation.CommunityChallenge;
+                var challenge = participation.Participation.CommunityChallenge;
                 var range = CommunityChallengeProgressCalculator.GetCalorieRange(
                     challenge.TargetDailyCalories,
                     challenge.CalorieTolerancePercent);
@@ -259,16 +268,16 @@ public class GoalsController(
                     challenge.StartsOn,
                     challenge.EndsOn,
                     challenge.RequiredCompletionPercent,
-                    participation.ProgressEntries);
-                var todayEntry = participation.ProgressEntries
+                    participation.Participation.ProgressEntries);
+                var todayEntry = participation.Participation.ProgressEntries
                     .FirstOrDefault(entry => entry.EntryDate == today);
 
                 return new MemberChallengeProgressCardViewModel
                 {
-                    ParticipationId = participation.Id,
+                    ParticipationId = participation.Participation.Id,
                     Title = challenge.Title,
                     Slug = challenge.Slug,
-                    Status = challenge.Status.ToString(),
+                    Status = participation.EffectiveStatus.ToString(),
                     StartsOn = challenge.StartsOn,
                     EndsOn = challenge.EndsOn,
                     TargetDailyCalories = challenge.TargetDailyCalories,
@@ -279,11 +288,8 @@ public class GoalsController(
                     CompliantDays = stats.CompliantDays,
                     TotalDays = stats.TotalDays,
                     ProgressPercent = stats.ProgressPercent,
-                    IsCompleted = participation.Status == CommunityChallengeParticipationStatus.Completed,
-                    CanLogToday =
-                        challenge.Status == CommunityChallengeStatus.Active &&
-                        today >= challenge.StartsOn &&
-                        today <= challenge.EndsOn,
+                    IsCompleted = participation.Participation.Status == CommunityChallengeParticipationStatus.Completed,
+                    CanLogToday = CommunityChallengeLifecycle.CanLogCalories(participation.EffectiveStatus),
                     LogDate = today,
                     TodayCaloriesConsumed = todayEntry?.CaloriesConsumed,
                     TodayIsCompliant = todayEntry?.IsCompliant

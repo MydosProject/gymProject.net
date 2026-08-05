@@ -30,7 +30,11 @@ public class ClassReservationService(ApplicationDbContext dbContext)
             return ReservationResult.Fail("Ders programı bulunamadı.");
         }
 
-        if (session.Status != ClassSessionStatus.Scheduled || session.StartsAtUtc <= DateTime.UtcNow)
+        if (!ClassSessionLifecycle.IsReservationOpen(
+                session.Status,
+                session.StartsAtUtc,
+                DateTime.UtcNow,
+                session.GroupClass.IsActive))
         {
             return ReservationResult.Fail("Bu ders için rezervasyon alınamaz.");
         }

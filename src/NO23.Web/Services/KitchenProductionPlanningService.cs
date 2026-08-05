@@ -332,7 +332,10 @@ public class KitchenProductionPlanningService(ApplicationDbContext dbContext)
                 item.ItemType == CartItemType.KitchenMenuItem &&
                 item.KitchenMenuItemId != null &&
                 item.Order.DeliveryDate == planDate &&
-                item.Order.Status != OrderStatus.Cancelled)
+                item.Order.PaymentStatus == PaymentStatus.Paid &&
+                (item.Order.Status == OrderStatus.Confirmed ||
+                 item.Order.Status == OrderStatus.Preparing ||
+                 item.Order.Status == OrderStatus.OutForDelivery))
             .GroupBy(item => new
             {
                 KitchenMenuItemId = item.KitchenMenuItemId!.Value,

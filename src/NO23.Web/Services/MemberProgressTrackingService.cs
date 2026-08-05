@@ -87,7 +87,8 @@ public class MemberProgressTrackingService(ApplicationDbContext dbContext)
         DateOnly entryDate,
         int? caloriesConsumed)
     {
-        var participations = await dbContext.CommunityChallengeParticipations
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var participations = (await dbContext.CommunityChallengeParticipations
             .Include(item => item.CommunityChallenge)
             .Include(item => item.ProgressEntries)
             .Where(item =>
@@ -96,7 +97,14 @@ public class MemberProgressTrackingService(ApplicationDbContext dbContext)
                 item.CommunityChallenge.Status != CommunityChallengeStatus.Cancelled &&
                 item.CommunityChallenge.StartsOn <= entryDate &&
                 item.CommunityChallenge.EndsOn >= entryDate)
-            .ToListAsync();
+            .ToListAsync())
+            .Where(item => CommunityChallengeLifecycle.CanLogCalories(
+                CommunityChallengeLifecycle.GetEffectiveStatus(
+                    item.CommunityChallenge.Status,
+                    item.CommunityChallenge.StartsOn,
+                    item.CommunityChallenge.EndsOn,
+                    today)))
+            .ToList();
 
         foreach (var participation in participations)
         {

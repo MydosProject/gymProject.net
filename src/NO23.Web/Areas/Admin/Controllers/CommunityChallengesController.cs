@@ -16,25 +16,47 @@ public class CommunityChallengesController(ApplicationDbContext dbContext) : Con
 {
     public async Task<IActionResult> Index()
     {
-        var challenges = await dbContext.CommunityChallenges
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var challengeRows = await dbContext.CommunityChallenges
             .AsNoTracking()
             .OrderBy(item => item.DisplayOrder)
             .ThenBy(item => item.StartsOn)
+            .Select(item => new
+            {
+                item.Id,
+                item.Title,
+                item.Status,
+                item.StartsOn,
+                item.EndsOn,
+                item.Goal,
+                item.TargetDailyCalories,
+                item.CalorieTolerancePercent,
+                item.RequiredCompletionPercent,
+                ParticipantCount = item.Participations.Count,
+                item.DisplayOrder
+            })
+            .ToListAsync();
+        var challenges = challengeRows
             .Select(item => new CommunityChallengeListItemViewModel
             {
                 Id = item.Id,
                 Title = item.Title,
-                Status = item.Status.ToString(),
+                Status = CommunityChallengeLifecycle.GetEffectiveStatus(
+                        item.Status,
+                        item.StartsOn,
+                        item.EndsOn,
+                        today)
+                    .ToString(),
                 StartsOn = item.StartsOn,
                 EndsOn = item.EndsOn,
                 Goal = item.Goal,
                 TargetDailyCalories = item.TargetDailyCalories,
                 CalorieTolerancePercent = item.CalorieTolerancePercent,
                 RequiredCompletionPercent = item.RequiredCompletionPercent,
-                ParticipantCount = item.Participations.Count,
+                ParticipantCount = item.ParticipantCount,
                 DisplayOrder = item.DisplayOrder
             })
-            .ToListAsync();
+            .ToList();
 
         return View(challenges);
     }
@@ -138,7 +160,12 @@ public class CommunityChallengesController(ApplicationDbContext dbContext) : Con
         {
             Id = challenge.Id,
             Title = challenge.Title,
-            Status = challenge.Status.ToString(),
+            Status = CommunityChallengeLifecycle.GetEffectiveStatus(
+                    challenge.Status,
+                    challenge.StartsOn,
+                    challenge.EndsOn,
+                    DateOnly.FromDateTime(DateTime.Today))
+                .ToString(),
             StartsOn = challenge.StartsOn,
             EndsOn = challenge.EndsOn,
             Goal = challenge.Goal,
@@ -215,8 +242,13 @@ public class CommunityChallengesController(ApplicationDbContext dbContext) : Con
             return NotFound();
         }
 
-        if (item.Status != CommunityChallengeStatus.Upcoming &&
-            item.Status != CommunityChallengeStatus.Active)
+        var effectiveStatus = CommunityChallengeLifecycle.GetEffectiveStatus(
+            item.Status,
+            item.StartsOn,
+            item.EndsOn,
+            DateOnly.FromDateTime(DateTime.Today));
+
+        if (!CommunityChallengeLifecycle.IsJoinOpen(effectiveStatus))
         {
             return RedirectToAction(nameof(Index));
         }
@@ -257,7 +289,11 @@ public class CommunityChallengesController(ApplicationDbContext dbContext) : Con
         item.RequiredCompletionPercent = model.RequiredCompletionPercent;
         item.StartsOn = model.StartsOn;
         item.EndsOn = model.EndsOn;
-        item.Status = model.Status;
+        item.Status = CommunityChallengeLifecycle.NormalizeStoredStatus(
+            model.Status,
+            model.StartsOn,
+            model.EndsOn,
+            DateOnly.FromDateTime(DateTime.Today));
         item.ImageUrl = model.ImageUrl?.Trim();
         item.DisplayOrder = model.DisplayOrder;
         item.UpdatedAtUtc = DateTime.UtcNow;

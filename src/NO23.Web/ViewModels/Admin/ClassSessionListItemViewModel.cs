@@ -8,6 +8,8 @@ public class ClassSessionListItemViewModel
 
     public string TrainerName { get; init; } = string.Empty;
 
+    public bool IsGroupClassActive { get; init; }
+
     public DateTime StartsAtUtc { get; init; }
 
     public int Capacity { get; init; }
