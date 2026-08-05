@@ -27,7 +27,7 @@
                 <h1>Birlikte başla.<br /><span>Hedefine bağlan.</span></h1>
                 <p>
                     Toplu challenge'ları incele, sana uygun hedefe katıl ve günlük
-                    ilerlemeni Kalori Takibi ekranında kaydet.
+                    ilerlemeni Kalori Takibi ve Ölçümler ekranında kaydet.
                 </p>
             </div>
 
@@ -150,10 +150,11 @@
                                 @if (challenge.IsJoined)
                                 {
                                     <a class="is-primary"
-                                       asp-area="Member"
-                                       asp-controller="Goals"
-                                       asp-action="CalorieTracking">
-                                        Kalori Takibine Git
+                                   asp-area="Member"
+                                   asp-controller="Goals"
+                                   asp-action="ProgressMeasurements"
+                                   asp-route-date="@DateOnly.FromDateTime(DateTime.Today).ToString("yyyy-MM-dd")">
+                                        Kalori Kaydı Gir
                                     </a>
                                 }
                                 else if (Model.HasCommunityMembership)

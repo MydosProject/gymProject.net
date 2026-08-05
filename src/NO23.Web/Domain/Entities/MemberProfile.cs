@@ -26,6 +26,8 @@ public class MemberProfile
 
     public ICollection<CommunityChallengeParticipation> CommunityChallengeParticipations { get; set; } = [];
 
+    public ICollection<MemberProgressEntry> ProgressEntries { get; set; } = [];
+
     public ICollection<KitchenSubscription> KitchenSubscriptions { get; set; } = [];
 
     public ShoppingCart? ShoppingCart { get; set; }

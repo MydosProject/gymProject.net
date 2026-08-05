@@ -2,7 +2,7 @@
 @model MemberCalorieTrackingViewModel
 
 @{
-    ViewData["Title"] = "Kalori Takibi";
+    ViewData["Title"] = "İlerleme";
     var totalChallenges = Model.ChallengeProgressCards.Count;
     var totalCompliantDays = Model.ChallengeProgressCards.Sum(item => item.CompliantDays);
 
@@ -26,7 +26,7 @@
     <div class="container position-relative">
         <header class="member-account-hero member-calorie-tracking-hero">
             <div>
-                <p class="member-account-kicker">NO23 / KALORİ TAKİBİ</p>
+                <p class="member-account-kicker">NO23 / İLERLEME</p>
                 <h1>Gününü kaydet.<br /><span>İlerlemeni gör.</span></h1>
                 <p>
                     Community challenge'larına birlikte katıl; günlük kalori girişini,
@@ -148,6 +148,19 @@
 
                             @if (challenge.CanLogToday)
                             {
+                                @if (!challenge.TodayCaloriesConsumed.HasValue)
+                                {
+                                    <p class="member-challenge-note">
+                                        Bugünkü kayıt henüz yok.
+                                        <a asp-area="Member"
+                                           asp-controller="Goals"
+                                           asp-action="ProgressMeasurements"
+                                           asp-route-date="@challenge.LogDate.ToString("yyyy-MM-dd")">
+                                            Bugünün kaydını gir
+                                        </a>
+                                    </p>
+                                }
+
                                 <form asp-area="Member"
                                       asp-controller="Goals"
                                       asp-action="LogChallengeCalories"
