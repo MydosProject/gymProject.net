@@ -35,8 +35,7 @@ spec:
   ports:
   - port: 5432
     targetPort: 5432
-
-
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -56,9 +55,12 @@ spec:
         image: mehmetevg/gymproject:latest
         imagePullPolicy: Always
         env:
-        
         - name: ConnectionStrings__DefaultConnection
           value: "Host=postgres-svc;Port=5432;Database=no23db;Username=no23;Password=change_me"
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Development"
+        - name: ASPNETCORE_URLS
+          value: "http://+:80"
         ports:
         - containerPort: 80
 ---
