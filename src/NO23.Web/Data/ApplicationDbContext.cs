@@ -70,6 +70,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<ChallengeProgressEntry> ChallengeProgressEntries => Set<ChallengeProgressEntry>();
 
+    public DbSet<MemberProgressEntry> MemberProgressEntries => Set<MemberProgressEntry>();
+
     public DbSet<BlogPost> BlogPosts => Set<BlogPost>();
 
     public DbSet<SuccessStory> SuccessStories => Set<SuccessStory>();

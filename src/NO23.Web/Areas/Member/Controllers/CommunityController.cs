@@ -119,7 +119,14 @@ public class CommunityController(
 
         if (result.Succeeded)
         {
-            return RedirectToAction("CalorieTracking", "Goals", new { area = "Member" });
+            return RedirectToAction(
+                "ProgressMeasurements",
+                "Goals",
+                new
+                {
+                    area = "Member",
+                    date = DateOnly.FromDateTime(DateTime.Today).ToString("yyyy-MM-dd")
+                });
         }
 
         return RedirectToAction(nameof(Index));

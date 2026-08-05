@@ -1,0 +1,215 @@
+@using System.Globalization
+@model MemberProgressTrackingViewModel
+
+@{
+    ViewData["Title"] = "Kalori Takibi ve Ölçümler";
+    var today = DateOnly.FromDateTime(DateTime.Today);
+
+    string FormatDecimal(decimal? value)
+    {
+        return value.HasValue
+            ? value.Value.ToString("0.##", CultureInfo.InvariantCulture)
+            : string.Empty;
+    }
+
+}
+
+<section class="member-account-page member-progress-tracking-page">
+    <div class="container position-relative">
+        <header class="member-account-hero">
+            <div>
+                <p class="member-account-kicker">NO23 / KALORİ TAKİBİ VE ÖLÇÜMLER</p>
+                <h1>Günlük kaydını gir.</h1>
+                <p>
+                    Kalori ve tartı ölçümlerini tarih bazlı kaydet. İleri tarih hariç
+                    geçmiş kayıtlarını istediğin zaman güncelleyebilirsin.
+                </p>
+            </div>
+        </header>
+
+        @if (TempData["SuccessMessage"] is string successMessage)
+        {
+            <div class="member-dashboard-alert member-dashboard-alert-success" role="status">
+                <span aria-hidden="true">✓</span>
+                <div>
+                    <strong>Kayıt tamamlandı</strong>
+                    <p>@successMessage</p>
+                </div>
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] is string errorMessage)
+        {
+            <div class="member-dashboard-alert member-dashboard-alert-error" role="alert">
+                <span aria-hidden="true">!</span>
+                <div>
+                    <strong>Kayıt tamamlanamadı</strong>
+                    <p>@errorMessage</p>
+                </div>
+            </div>
+        }
+
+        <section class="member-account-card member-progress-entry-form">
+            <div class="member-account-card-head">
+                <span>01</span>
+                <div>
+                    <p>GÜNLÜK KAYIT</p>
+                    <h2>Kalori takibi</h2>
+                </div>
+            </div>
+
+            <form asp-area="Member"
+                  asp-controller="Goals"
+                  asp-action="ProgressMeasurements"
+                  asp-antiforgery="true"
+                  method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label" for="EntryDate">Tarih</label>
+                        <input class="form-control"
+                               id="EntryDate"
+                               type="date"
+                               name="EntryDate"
+                               data-progress-date-picker
+                               value="@Model.Input.EntryDate.ToString("yyyy-MM-dd")"
+                               max="@today.ToString("yyyy-MM-dd")" />
+                        <small class="form-text">
+                            Bu tarihteki kaydı görüntülüyorsun.
+                        </small>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label" for="CaloriesConsumed">Kalori</label>
+                        <input class="form-control"
+                               id="CaloriesConsumed"
+                               type="number"
+                               name="CaloriesConsumed"
+                               min="1"
+                               max="10000"
+                               value="@(Model.Input.CaloriesConsumed?.ToString(CultureInfo.InvariantCulture) ?? string.Empty)" />
+                    </div>
+                </div>
+
+                <hr />
+
+                <div class="member-account-card-head">
+                    <span>02</span>
+                    <div>
+                        <p>TARTI ÖLÇÜMLERİ</p>
+                        <h2>Vücut ölçümleri</h2>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label" for="BodyWeightKg">Vücut ağırlığı (kg)</label>
+                        <input class="form-control"
+                               id="BodyWeightKg"
+                               type="number"
+                               name="BodyWeightKg"
+                               min="1"
+                               max="500"
+                               step="0.01"
+                               value="@FormatDecimal(Model.Input.BodyWeightKg)" />
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label" for="BodyFatKg">Yağ ağırlığı (kg)</label>
+                        <input class="form-control"
+                               id="BodyFatKg"
+                               type="number"
+                               name="BodyFatKg"
+                               min="0"
+                               max="300"
+                               step="0.01"
+                               value="@FormatDecimal(Model.Input.BodyFatKg)" />
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label" for="BodyFatPercent">Yağ oranı (%)</label>
+                        <input class="form-control"
+                               id="BodyFatPercent"
+                               type="number"
+                               name="BodyFatPercent"
+                               min="0"
+                               max="100"
+                               step="0.01"
+                               value="@FormatDecimal(Model.Input.BodyFatPercent)" />
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label" for="MuscleMassKg">Kas kütlesi (kg)</label>
+                        <input class="form-control"
+                               id="MuscleMassKg"
+                               type="number"
+                               name="MuscleMassKg"
+                               min="0"
+                               max="300"
+                               step="0.01"
+                               value="@FormatDecimal(Model.Input.MuscleMassKg)" />
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label" for="MuscleMassPercent">Kas oranı (%)</label>
+                        <input class="form-control"
+                               id="MuscleMassPercent"
+                               type="number"
+                               name="MuscleMassPercent"
+                               min="0"
+                               max="100"
+                               step="0.01"
+                               value="@FormatDecimal(Model.Input.MuscleMassPercent)" />
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label" for="BodyWaterAmount">Vücut suyu miktarı</label>
+                        <input class="form-control"
+                               id="BodyWaterAmount"
+                               type="number"
+                               name="BodyWaterAmount"
+                               min="0"
+                               max="300"
+                               step="0.01"
+                               value="@FormatDecimal(Model.Input.BodyWaterAmount)" />
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label" for="BodyWaterPercent">Vücut suyu oranı (%)</label>
+                        <input class="form-control"
+                               id="BodyWaterPercent"
+                               type="number"
+                               name="BodyWaterPercent"
+                               min="0"
+                               max="100"
+                               step="0.01"
+                               value="@FormatDecimal(Model.Input.BodyWaterPercent)" />
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <button class="btn btn-primary" type="submit">Kaydet</button>
+                </div>
+            </form>
+        </section>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        (() => {
+            const dateInput = document.querySelector("[data-progress-date-picker]");
+
+            dateInput?.addEventListener("change", () => {
+                if (!dateInput.value) {
+                    return;
+                }
+
+                const url = new URL("@Url.Action("ProgressMeasurements", "Goals", new { area = "Member" })", window.location.origin);
+                url.searchParams.set("date", dateInput.value);
+                window.location.href = url.toString();
+            });
+        })();
+    </script>
+}

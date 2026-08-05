@@ -26,7 +26,8 @@
     var isNutritionOpen =
         currentController.Equals("Kitchen", StringComparison.OrdinalIgnoreCase) ||
         (currentController.Equals("Goals", StringComparison.OrdinalIgnoreCase) &&
-         currentAction.Equals("CalorieTracking", StringComparison.OrdinalIgnoreCase));
+         (currentAction.Equals("CalorieTracking", StringComparison.OrdinalIgnoreCase) ||
+          currentAction.Equals("ProgressMeasurements", StringComparison.OrdinalIgnoreCase)));
     var isShoppingOpen =
         currentController.Equals("Shop", StringComparison.OrdinalIgnoreCase) ||
         currentController.Equals("Orders", StringComparison.OrdinalIgnoreCase);
@@ -165,7 +166,15 @@
                            asp-controller="Goals"
                            asp-action="CalorieTracking">
                             <span class="member-sidebar-index">07</span>
-                            <span class="member-sidebar-label">Kalori Takibi</span>
+                            <span class="member-sidebar-label">İlerleme</span>
+                        </a>
+
+                        <a class="member-sidebar-link @ActiveRoute("Goals", "ProgressMeasurements")"
+                           asp-area="Member"
+                           asp-controller="Goals"
+                           asp-action="ProgressMeasurements">
+                            <span class="member-sidebar-index">08</span>
+                            <span class="member-sidebar-label">Kalori Takibi ve Ölçümler</span>
                         </a>
                     </div>
                 </div>
@@ -186,14 +195,14 @@
                            asp-area="Member"
                            asp-controller="Shop"
                            asp-action="Index">
-                            <span class="member-sidebar-index">08</span>
+                            <span class="member-sidebar-index">09</span>
                             <span class="member-sidebar-label">NO23 Shop</span>
                         </a>
 
                         <button class="member-sidebar-link member-sidebar-cart-link"
                                 type="button"
                                 data-member-cart-open>
-                            <span class="member-sidebar-index">09</span>
+                            <span class="member-sidebar-index">10</span>
                             <span class="member-sidebar-label">Sepetim</span>
                         </button>
 
@@ -201,7 +210,7 @@
                            asp-area="Member"
                            asp-controller="Orders"
                            asp-action="Index">
-                            <span class="member-sidebar-index">10</span>
+                            <span class="member-sidebar-index">11</span>
                             <span class="member-sidebar-label">Siparişlerim</span>
                         </a>
                     </div>
@@ -223,7 +232,7 @@
                            asp-area="Member"
                            asp-controller="Profile"
                            asp-action="Index">
-                            <span class="member-sidebar-index">11</span>
+                            <span class="member-sidebar-index">12</span>
                             <span class="member-sidebar-label">Profil</span>
                         </a>
 
@@ -231,7 +240,7 @@
                            asp-area="Member"
                            asp-controller="Goals"
                            asp-action="Index">
-                            <span class="member-sidebar-index">12</span>
+                            <span class="member-sidebar-index">13</span>
                             <span class="member-sidebar-label">Hedefler</span>
                         </a>
 
@@ -239,7 +248,7 @@
                            asp-area="Member"
                            asp-controller="Settings"
                            asp-action="Index">
-                            <span class="member-sidebar-index">13</span>
+                            <span class="member-sidebar-index">14</span>
                             <span class="member-sidebar-label">Hesap Ayarları</span>
                         </a>
                     </div>
@@ -247,13 +256,6 @@
 
                 <div class="member-sidebar-group">
                     <p class="member-sidebar-title">Yakında</p>
-
-                    <span class="member-sidebar-link is-disabled"
-                          aria-disabled="true">
-                        <span class="member-sidebar-index">14</span>
-                        <span class="member-sidebar-label">İlerleme &amp; Ölçümler</span>
-                        <small class="member-sidebar-badge">Yakında</small>
-                    </span>
 
                     <a class="member-sidebar-link @ActiveClass("Community")"
                        asp-area="Member"
