@@ -1,3 +1,5 @@
+using NO23.Web.Domain.Enums;
+
 namespace NO23.Web.ViewModels.Admin;
 
 public class OrderListItemViewModel
@@ -14,7 +16,15 @@ public class OrderListItemViewModel
 
     public string Status { get; init; } = string.Empty;
 
+    public OrderStatus RawStatus { get; init; }
+
     public string PaymentStatus { get; init; } = string.Empty;
+
+    public PaymentStatus RawPaymentStatus { get; init; }
+
+    public IReadOnlyList<OrderStatus> AvailableOrderStatuses { get; init; } = [];
+
+    public IReadOnlyList<PaymentStatus> AvailablePaymentStatuses { get; init; } = [];
 
     public DateOnly DeliveryDate { get; init; }
 

@@ -44,6 +44,8 @@ public class HomeController(
             .Where(reservation =>
                 reservation.MemberProfileId == profile.Id &&
                 reservation.Status == ClassReservationStatus.Reserved &&
+                reservation.ClassSession.Status == ClassSessionStatus.Scheduled &&
+                reservation.ClassSession.GroupClass.IsActive &&
                 reservation.ClassSession.StartsAtUtc >= DateTime.UtcNow)
             .OrderBy(reservation => reservation.ClassSession.StartsAtUtc)
             .Select(reservation => new MemberReservationViewModel

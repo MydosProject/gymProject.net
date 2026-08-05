@@ -114,6 +114,7 @@ builder.Services.AddScoped<KitchenProductionPlanningService>();
 builder.Services.AddScoped<CommunityChallengeProgressService>();
 builder.Services.AddScoped<MemberProgressTrackingService>();
 builder.Services.AddScoped<CommerceService>();
+builder.Services.AddScoped<OrderWorkflowService>();
 builder.Services.AddScoped<MemberCartQueryService>();
 
 var app = builder.Build();
@@ -189,7 +190,8 @@ if (app.Environment.IsDevelopment())
             .AsNoTracking()
             .Where(session =>
                 session.Status == ClassSessionStatus.Scheduled &&
-                session.StartsAtUtc >= DateTime.UtcNow)
+                session.StartsAtUtc >= DateTime.UtcNow &&
+                session.GroupClass.IsActive)
             .OrderBy(session => session.StartsAtUtc)
             .Select(session => new ClassSessionResponse
             {
@@ -261,55 +263,112 @@ if (app.Environment.IsDevelopment())
 
     api.MapGet("/community-events", async (ApplicationDbContext dbContext) =>
     {
-        return await dbContext.CommunityEvents
+        var nowUtc = DateTime.UtcNow;
+        var eventRows = await dbContext.CommunityEvents
             .AsNoTracking()
-            .Where(item => item.Status == CommunityEventStatus.Scheduled)
+            .Where(item => item.Status != CommunityEventStatus.Cancelled)
             .OrderBy(item => item.StartsAtUtc)
-            .Select(item => new CommunityEventResponse
+            .Select(item => new
             {
-                Id = item.Id,
-                Title = item.Title,
-                Slug = item.Slug,
-                Summary = item.Summary,
+                item.Id,
+                item.Title,
+                item.Slug,
+                item.Summary,
                 Type = item.Type.ToString(),
-                Status = item.Status.ToString(),
-                StartsAtUtc = item.StartsAtUtc,
-                EndsAtUtc = item.EndsAtUtc,
-                Location = item.Location,
-                Capacity = item.Capacity,
-                IsMembersOnly = item.IsMembersOnly,
-                ImageUrl = item.ImageUrl
+                item.Status,
+                item.StartsAtUtc,
+                item.EndsAtUtc,
+                item.Location,
+                item.Capacity,
+                item.IsMembersOnly,
+                item.ImageUrl
             })
             .ToListAsync();
+
+        return eventRows
+            .Select(item => new
+            {
+                Event = item,
+                EffectiveStatus = CommunityEventLifecycle.GetEffectiveStatus(
+                    item.Status,
+                    item.StartsAtUtc,
+                    item.EndsAtUtc,
+                    nowUtc)
+            })
+            .Where(item => CommunityEventLifecycle.IsPubliclyOpen(item.EffectiveStatus))
+            .Select(item => new CommunityEventResponse
+            {
+                Id = item.Event.Id,
+                Title = item.Event.Title,
+                Slug = item.Event.Slug,
+                Summary = item.Event.Summary,
+                Type = item.Event.Type,
+                Status = item.EffectiveStatus.ToString(),
+                StartsAtUtc = item.Event.StartsAtUtc,
+                EndsAtUtc = item.Event.EndsAtUtc,
+                Location = item.Event.Location,
+                Capacity = item.Event.Capacity,
+                IsMembersOnly = item.Event.IsMembersOnly,
+                ImageUrl = item.Event.ImageUrl
+            })
+            .ToList();
     })
     .WithName("GetCommunityEvents")
     .Produces<IReadOnlyList<CommunityEventResponse>>();
 
     api.MapGet("/community-challenges", async (ApplicationDbContext dbContext) =>
     {
-        return await dbContext.CommunityChallenges
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var challengeRows = await dbContext.CommunityChallenges
             .AsNoTracking()
-            .Where(item =>
-                item.Status == CommunityChallengeStatus.Upcoming ||
-                item.Status == CommunityChallengeStatus.Active)
+            .Where(item => item.Status != CommunityChallengeStatus.Cancelled)
             .OrderBy(item => item.StartsOn)
-            .Select(item => new CommunityChallengeResponse
+            .Select(item => new
             {
-                Id = item.Id,
-                Title = item.Title,
-                Slug = item.Slug,
-                Summary = item.Summary,
-                Goal = item.Goal,
-                Reward = item.Reward,
-                TargetDailyCalories = item.TargetDailyCalories,
-                CalorieTolerancePercent = item.CalorieTolerancePercent,
-                RequiredCompletionPercent = item.RequiredCompletionPercent,
-                StartsOn = item.StartsOn,
-                EndsOn = item.EndsOn,
-                Status = item.Status.ToString(),
-                ImageUrl = item.ImageUrl
+                item.Id,
+                item.Title,
+                item.Slug,
+                item.Summary,
+                item.Goal,
+                item.Reward,
+                item.TargetDailyCalories,
+                item.CalorieTolerancePercent,
+                item.RequiredCompletionPercent,
+                item.StartsOn,
+                item.EndsOn,
+                item.Status,
+                item.ImageUrl
             })
             .ToListAsync();
+
+        return challengeRows
+            .Select(item => new
+            {
+                Challenge = item,
+                EffectiveStatus = CommunityChallengeLifecycle.GetEffectiveStatus(
+                    item.Status,
+                    item.StartsOn,
+                    item.EndsOn,
+                    today)
+            })
+            .Where(item => CommunityChallengeLifecycle.IsJoinOpen(item.EffectiveStatus))
+            .Select(item => new CommunityChallengeResponse
+            {
+                Id = item.Challenge.Id,
+                Title = item.Challenge.Title,
+                Slug = item.Challenge.Slug,
+                Summary = item.Challenge.Summary,
+                Goal = item.Challenge.Goal,
+                Reward = item.Challenge.Reward,
+                TargetDailyCalories = item.Challenge.TargetDailyCalories,
+                CalorieTolerancePercent = item.Challenge.CalorieTolerancePercent,
+                RequiredCompletionPercent = item.Challenge.RequiredCompletionPercent,
+                StartsOn = item.Challenge.StartsOn,
+                EndsOn = item.Challenge.EndsOn,
+                Status = item.EffectiveStatus.ToString(),
+                ImageUrl = item.Challenge.ImageUrl
+            })
+            .ToList();
     })
     .WithName("GetCommunityChallenges")
     .Produces<IReadOnlyList<CommunityChallengeResponse>>();

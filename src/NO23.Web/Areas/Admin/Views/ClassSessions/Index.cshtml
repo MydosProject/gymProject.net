@@ -57,7 +57,13 @@
 
                             <tr>
                                 <td data-label="Sıra"><span class="admin-order-no">@((index + 1).ToString("00"))</span></td>
-                                <td data-label="Ders"><strong class="admin-class-name">@session.ClassName</strong></td>
+                                <td data-label="Ders">
+                                    <strong class="admin-class-name">@session.ClassName</strong>
+                                    @if (!session.IsGroupClassActive)
+                                    {
+                                        <small class="admin-cell-note">Pasif ders</small>
+                                    }
+                                </td>
                                 <td data-label="Eğitmen">@session.TrainerName</td>
                                 <td data-label="Tarih"><strong>@startsAtLocal.ToString("dd.MM.yyyy")</strong></td>
                                 <td data-label="Saat"><span class="admin-code">@startsAtLocal.ToString("HH:mm")</span></td>

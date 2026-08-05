@@ -17,45 +17,93 @@ public class CommunityController(
 {
     public async Task<IActionResult> Index()
     {
-        var events = await dbContext.CommunityEvents
+        var nowUtc = DateTime.UtcNow;
+        var eventRows = await dbContext.CommunityEvents
             .AsNoTracking()
-            .Where(item => item.Status == CommunityEventStatus.Scheduled)
+            .Where(item => item.Status != CommunityEventStatus.Cancelled)
             .OrderBy(item => item.StartsAtUtc)
+            .Select(item => new
+            {
+                item.Id,
+                item.Title,
+                item.Slug,
+                item.Summary,
+                Type = item.Type.ToString(),
+                item.Status,
+                item.StartsAtUtc,
+                item.EndsAtUtc,
+                item.Location,
+                item.Capacity,
+                item.IsMembersOnly,
+                item.ImageUrl
+            })
+            .ToListAsync();
+        var events = eventRows
+            .Where(item => CommunityEventLifecycle.IsPubliclyOpen(
+                CommunityEventLifecycle.GetEffectiveStatus(
+                    item.Status,
+                    item.StartsAtUtc,
+                    item.EndsAtUtc,
+                    nowUtc)))
             .Select(item => new CommunityEventCardViewModel
             {
                 Id = item.Id,
                 Title = item.Title,
                 Slug = item.Slug,
                 Summary = item.Summary,
-                Type = item.Type.ToString(),
+                Type = item.Type,
                 StartsAtUtc = item.StartsAtUtc,
                 Location = item.Location,
                 Capacity = item.Capacity,
                 IsMembersOnly = item.IsMembersOnly,
                 ImageUrl = item.ImageUrl
             })
-            .ToListAsync();
+            .ToList();
 
-        var challenges = await dbContext.CommunityChallenges
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var challengeRows = await dbContext.CommunityChallenges
             .AsNoTracking()
-            .Where(item =>
-                item.Status == CommunityChallengeStatus.Upcoming ||
-                item.Status == CommunityChallengeStatus.Active)
+            .Where(item => item.Status != CommunityChallengeStatus.Cancelled)
             .OrderBy(item => item.StartsOn)
-            .Select(item => new CommunityChallengeCardViewModel
+            .Select(item => new
             {
-                Id = item.Id,
-                Title = item.Title,
-                Slug = item.Slug,
-                Summary = item.Summary,
-                Goal = item.Goal,
-                Reward = item.Reward,
-                StartsOn = item.StartsOn,
-                EndsOn = item.EndsOn,
-                Status = item.Status.ToString(),
-                ImageUrl = item.ImageUrl
+                item.Id,
+                item.Title,
+                item.Slug,
+                item.Summary,
+                item.Goal,
+                item.Reward,
+                item.StartsOn,
+                item.EndsOn,
+                item.Status,
+                item.ImageUrl
             })
             .ToListAsync();
+        var challenges = challengeRows
+            .Select(item => new
+            {
+                item,
+                EffectiveStatus = CommunityChallengeLifecycle.GetEffectiveStatus(
+                    item.Status,
+                    item.StartsOn,
+                    item.EndsOn,
+                    today)
+            })
+            .Where(item => CommunityChallengeLifecycle.IsJoinOpen(item.EffectiveStatus))
+            .Select(item => new CommunityChallengeCardViewModel
+            {
+                Id = item.item.Id,
+                Title = item.item.Title,
+                Slug = item.item.Slug,
+                Summary = item.item.Summary,
+                Goal = item.item.Goal,
+                Reward = item.item.Reward,
+                StartsOn = item.item.StartsOn,
+                EndsOn = item.item.EndsOn,
+                Status = item.EffectiveStatus.ToString(),
+                ImageUrl = item.item.ImageUrl
+            })
+            .ToList();
 
         return View(new CommunityIndexViewModel
         {
@@ -76,7 +124,7 @@ public class CommunityController(
         var eventItem = await dbContext.CommunityEvents
             .AsNoTracking()
             .Where(item =>
-                item.Status == CommunityEventStatus.Scheduled &&
+                item.Status != CommunityEventStatus.Cancelled &&
                 item.Slug == normalizedSlug)
             .Select(item => new CommunityEventDetailViewModel
             {
@@ -100,6 +148,17 @@ public class CommunityController(
             return NotFound();
         }
 
+        var eventStatus = CommunityEventLifecycle.GetEffectiveStatus(
+            CommunityEventStatus.Scheduled,
+            eventItem.StartsAtUtc,
+            eventItem.EndsAtUtc,
+            DateTime.UtcNow);
+
+        if (!CommunityEventLifecycle.IsPubliclyOpen(eventStatus))
+        {
+            return NotFound();
+        }
+
         return View(eventItem);
     }
 
@@ -115,12 +174,21 @@ public class CommunityController(
         var challenge = await dbContext.CommunityChallenges
             .AsNoTracking()
             .Where(item =>
-                (item.Status == CommunityChallengeStatus.Upcoming ||
-                 item.Status == CommunityChallengeStatus.Active) &&
+                item.Status != CommunityChallengeStatus.Cancelled &&
                 item.Slug == normalizedSlug)
             .SingleOrDefaultAsync();
 
         if (challenge is null)
+        {
+            return NotFound();
+        }
+        var effectiveStatus = CommunityChallengeLifecycle.GetEffectiveStatus(
+            challenge.Status,
+            challenge.StartsOn,
+            challenge.EndsOn,
+            DateOnly.FromDateTime(DateTime.Today));
+
+        if (!CommunityChallengeLifecycle.IsJoinOpen(effectiveStatus))
         {
             return NotFound();
         }
@@ -155,6 +223,7 @@ public class CommunityController(
                 myParticipation.ProgressEntries);
         var canJoin =
             currentMember?.MembershipPackage.IncludesCommunityMembership == true &&
+            CommunityChallengeLifecycle.IsJoinOpen(effectiveStatus) &&
             myParticipation is null;
 
         return View(new CommunityChallengeDetailViewModel
@@ -173,7 +242,7 @@ public class CommunityController(
             RequiredCompletionPercent = challenge.RequiredCompletionPercent,
             StartsOn = challenge.StartsOn,
             EndsOn = challenge.EndsOn,
-            Status = challenge.Status.ToString(),
+            Status = effectiveStatus.ToString(),
             ImageUrl = challenge.ImageUrl,
             IsJoined = myParticipation is not null,
             CanJoin = canJoin,

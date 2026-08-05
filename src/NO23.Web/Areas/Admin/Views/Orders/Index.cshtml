@@ -3,6 +3,25 @@
     ViewData["Title"] = "Siparişler";
     var itemCount = Model.Sum(item => item.ItemCount);
     var totalRevenue = Model.Sum(item => item.Total);
+
+    static string GetOrderActionLabel(OrderStatus status) => status switch
+    {
+        OrderStatus.Confirmed => "Onayla",
+        OrderStatus.Preparing => "Hazırlığa al",
+        OrderStatus.OutForDelivery => "Teslimata çıkar",
+        OrderStatus.Delivered => "Teslim edildi",
+        OrderStatus.Cancelled => "İptal et",
+        _ => status.ToString()
+    };
+
+    static string GetPaymentActionLabel(PaymentStatus status) => status switch
+    {
+        PaymentStatus.Pending => "Ödeme bekliyor",
+        PaymentStatus.Paid => "Ödendi yap",
+        PaymentStatus.Failed => "Başarısız yap",
+        PaymentStatus.Refunded => "İade edildi yap",
+        _ => status.ToString()
+    };
 }
 
 <section class="admin-page">
@@ -21,6 +40,16 @@
             <article><span>Sipariş toplamı</span><strong>@totalRevenue.ToString("C0")</strong><small>Ödeme hacmi</small></article>
         </div>
 
+        @if (TempData["SuccessMessage"] is string successMessage)
+        {
+            <div class="alert alert-success" role="status">@successMessage</div>
+        }
+
+        @if (TempData["ErrorMessage"] is string errorMessage)
+        {
+            <div class="alert alert-danger" role="alert">@errorMessage</div>
+        }
+
         <div class="table-responsive admin-table-card">
             <table class="table align-middle mb-0">
                 <thead>
@@ -33,12 +62,13 @@
                         <th>Teslimat</th>
                         <th>Ürün</th>
                         <th>Toplam</th>
+                        <th class="text-end">İşlem</th>
                     </tr>
                 </thead>
                 <tbody>
                     @if (Model.Count == 0)
                     {
-                        <tr><td colspan="8"><div class="admin-empty-row">Henüz sipariş oluşturulmadı.</div></td></tr>
+                        <tr><td colspan="9"><div class="admin-empty-row">Henüz sipariş oluşturulmadı.</div></td></tr>
                     }
                     else
                     {
@@ -59,6 +89,39 @@
                                 <td data-label="Teslimat"><strong>@order.DeliveryDate.ToString("dd.MM.yyyy")</strong><small class="admin-cell-note">@order.DeliveryTimeSlot</small></td>
                                 <td data-label="Ürün">@order.ItemCount</td>
                                 <td data-label="Toplam"><strong>@order.Total.ToString("C0")</strong></td>
+                                <td class="text-end" data-label="İşlem">
+                                    @if (order.AvailablePaymentStatuses.Count == 0 &&
+                                         order.AvailableOrderStatuses.Count == 0)
+                                    {
+                                        <span class="text-muted small">İşlem yok</span>
+                                    }
+                                    else
+                                    {
+                                        <div class="d-flex flex-wrap justify-content-end gap-2">
+                                            @foreach (var paymentStatus in order.AvailablePaymentStatuses)
+                                            {
+                                                <form asp-action="UpdatePaymentStatus" method="post">
+                                                    <input type="hidden" name="id" value="@order.Id" />
+                                                    <input type="hidden" name="paymentStatus" value="@paymentStatus" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-dark">
+                                                        @GetPaymentActionLabel(paymentStatus)
+                                                    </button>
+                                                </form>
+                                            }
+
+                                            @foreach (var status in order.AvailableOrderStatuses)
+                                            {
+                                                <form asp-action="UpdateOrderStatus" method="post">
+                                                    <input type="hidden" name="id" value="@order.Id" />
+                                                    <input type="hidden" name="status" value="@status" />
+                                                    <button type="submit" class="btn btn-sm @(status == OrderStatus.Cancelled ? "btn-outline-danger" : "btn-dark")">
+                                                        @GetOrderActionLabel(status)
+                                                    </button>
+                                                </form>
+                                            }
+                                        </div>
+                                    }
+                                </td>
                             </tr>
                         }
                     }

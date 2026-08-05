@@ -7,6 +7,7 @@ using NO23.Web.Data.Seed;
 using NO23.Web.Domain.Entities;
 using NO23.Web.Domain.Enums;
 using NO23.Web.Extensions;
+using NO23.Web.Services;
 using NO23.Web.ViewModels.Admin;
 
 namespace NO23.Web.Areas.Admin.Controllers;
@@ -17,6 +18,7 @@ public class ClassSessionsController(ApplicationDbContext dbContext) : Controlle
 {
     public async Task<IActionResult> Index()
     {
+        var nowUtc = DateTime.UtcNow;
         var sessionRows = await dbContext.ClassSessions
             .AsNoTracking()
             .Include(session => session.GroupClass)
@@ -28,6 +30,7 @@ public class ClassSessionsController(ApplicationDbContext dbContext) : Controlle
                 Id = session.Id,
                 ClassName = session.GroupClass.Name,
                 TrainerName = session.GroupClass.Trainer.FirstName + " " + session.GroupClass.Trainer.LastName,
+                IsGroupClassActive = session.GroupClass.IsActive,
                 StartsAtUtc = session.StartsAtUtc,
                 Capacity = session.CapacityOverride ?? session.GroupClass.Capacity,
                 ReservedCount = session.Reservations.Count(reservation => reservation.Status == ClassReservationStatus.Reserved),
@@ -41,11 +44,18 @@ public class ClassSessionsController(ApplicationDbContext dbContext) : Controlle
                 Id = session.Id,
                 ClassName = session.ClassName,
                 TrainerName = session.TrainerName,
+                IsGroupClassActive = session.IsGroupClassActive,
                 StartsAtUtc = session.StartsAtUtc,
                 Capacity = session.Capacity,
                 ReservedCount = session.ReservedCount,
-                Status = session.Status.GetDisplayName(),
-                IsScheduled = session.Status == ClassSessionStatus.Scheduled
+                Status = ClassSessionLifecycle
+                    .GetEffectiveStatus(session.Status, session.StartsAtUtc, nowUtc)
+                    .GetDisplayName(),
+                IsScheduled = ClassSessionLifecycle.IsReservationOpen(
+                    session.Status,
+                    session.StartsAtUtc,
+                    nowUtc,
+                    session.IsGroupClassActive)
             })
             .ToList();
 
@@ -69,6 +79,8 @@ public class ClassSessionsController(ApplicationDbContext dbContext) : Controlle
         {
             ModelState.AddModelError(nameof(model.GroupClassId), "Geçerli bir grup dersi seçmelisin.");
         }
+
+        ValidateSessionTiming(model);
 
         if (!ModelState.IsValid)
         {
@@ -110,6 +122,8 @@ public class ClassSessionsController(ApplicationDbContext dbContext) : Controlle
                 nameof(model.GroupClassId),
                 "Geçerli bir grup dersi seçmelisin.");
         }
+
+        ValidateSessionTiming(model);
 
         if (!ModelState.IsValid)
         {
@@ -167,7 +181,11 @@ public class ClassSessionsController(ApplicationDbContext dbContext) : Controlle
             return NotFound();
         }
 
-        if (session.Status != ClassSessionStatus.Scheduled)
+        if (session.Status != ClassSessionStatus.Scheduled ||
+            ClassSessionLifecycle.GetEffectiveStatus(
+                session.Status,
+                session.StartsAtUtc,
+                DateTime.UtcNow) != ClassSessionStatus.Scheduled)
         {
             return RedirectToAction(nameof(Index));
         }
@@ -230,6 +248,18 @@ public class ClassSessionsController(ApplicationDbContext dbContext) : Controlle
     private async Task<bool> GroupClassExistsAsync(int groupClassId)
     {
         return await dbContext.GroupClasses.AnyAsync(groupClass => groupClass.Id == groupClassId && groupClass.IsActive);
+    }
+
+    private void ValidateSessionTiming(ClassSessionFormViewModel model)
+    {
+        var startsAtUtc = DateTime.SpecifyKind(model.StartsAtLocal, DateTimeKind.Local).ToUniversalTime();
+
+        if (model.Status == ClassSessionStatus.Scheduled && startsAtUtc <= DateTime.UtcNow)
+        {
+            ModelState.AddModelError(
+                nameof(model.StartsAtLocal),
+                "Planlanmis seans tarihi gelecekte olmali. Gecmis seans icin durumu tamamlandi secmelisin.");
+        }
     }
 
     private static ClassSession MapToEntity(ClassSessionFormViewModel model)

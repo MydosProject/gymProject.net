@@ -43,13 +43,11 @@ public class CommunityController(
             .ToListAsync();
 
         var joinedChallengeIdSet = joinedChallengeIds.ToHashSet();
-        var challenges = await dbContext.CommunityChallenges
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var challengeRows = await dbContext.CommunityChallenges
             .AsNoTracking()
-            .Where(item =>
-                item.Status == CommunityChallengeStatus.Upcoming ||
-                item.Status == CommunityChallengeStatus.Active)
-            .OrderBy(item => item.Status == CommunityChallengeStatus.Active ? 0 : 1)
-            .ThenBy(item => item.StartsOn)
+            .Where(item => item.Status != CommunityChallengeStatus.Cancelled)
+            .OrderBy(item => item.StartsOn)
             .ThenBy(item => item.DisplayOrder)
             .Select(item => new
             {
@@ -69,13 +67,29 @@ public class CommunityController(
                     participation.Status != CommunityChallengeParticipationStatus.Withdrawn)
             })
             .ToListAsync();
+        var challenges = challengeRows
+            .Select(challenge => new
+            {
+                Challenge = challenge,
+                EffectiveStatus = CommunityChallengeLifecycle.GetEffectiveStatus(
+                    challenge.Status,
+                    challenge.StartsOn,
+                    challenge.EndsOn,
+                    today)
+            })
+            .Where(challenge => CommunityChallengeLifecycle.IsJoinOpen(challenge.EffectiveStatus))
+            .OrderBy(challenge => challenge.EffectiveStatus == CommunityChallengeStatus.Active ? 0 : 1)
+            .ThenBy(challenge => challenge.Challenge.StartsOn)
+            .ThenBy(challenge => challenge.Challenge.Title)
+            .ToList();
 
         return View(new MemberCommunityIndexViewModel
         {
             HasCommunityMembership = profile.MembershipPackage.IncludesCommunityMembership,
             Challenges = challenges
-                .Select(challenge =>
+                .Select(row =>
                 {
+                    var challenge = row.Challenge;
                     var range = CommunityChallengeProgressCalculator.GetCalorieRange(
                         challenge.TargetDailyCalories,
                         challenge.CalorieTolerancePercent);
@@ -88,7 +102,7 @@ public class CommunityController(
                         Summary = challenge.Summary,
                         Goal = challenge.Goal,
                         Reward = challenge.Reward,
-                        Status = challenge.Status.ToString(),
+                        Status = row.EffectiveStatus.ToString(),
                         StartsOn = challenge.StartsOn,
                         EndsOn = challenge.EndsOn,
                         TargetDailyCalories = challenge.TargetDailyCalories,

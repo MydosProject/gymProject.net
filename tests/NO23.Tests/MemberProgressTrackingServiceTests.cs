@@ -194,6 +194,34 @@ public class MemberProgressTrackingServiceTests
         Assert.True(progressEntry.IsCompliant);
     }
 
+    [Fact]
+    public async Task UpsertAsync_DoesNotSyncCaloriesToCompletedChallenge()
+    {
+        await using var dbContext = CreateDbContext();
+        var profile = await SeedMemberAsync(dbContext);
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var entryDate = today.AddDays(-2);
+        await SeedChallengeParticipationAsync(
+            dbContext,
+            profile,
+            entryDate,
+            startsOn: entryDate.AddDays(-3),
+            endsOn: today.AddDays(-1),
+            status: CommunityChallengeStatus.Active);
+        var service = new MemberProgressTrackingService(dbContext);
+
+        var result = await service.UpsertAsync(
+            profile.ApplicationUserId,
+            new MemberProgressEntryInputViewModel
+            {
+                EntryDate = entryDate,
+                CaloriesConsumed = 2000
+            });
+
+        Assert.True(result.Succeeded);
+        Assert.Empty(dbContext.ChallengeProgressEntries);
+    }
+
     private static ApplicationDbContext CreateDbContext()
     {
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
@@ -235,7 +263,10 @@ public class MemberProgressTrackingServiceTests
     private static async Task<CommunityChallengeParticipation> SeedChallengeParticipationAsync(
         ApplicationDbContext dbContext,
         MemberProfile profile,
-        DateOnly entryDate)
+        DateOnly entryDate,
+        DateOnly? startsOn = null,
+        DateOnly? endsOn = null,
+        CommunityChallengeStatus status = CommunityChallengeStatus.Active)
     {
         var challenge = new CommunityChallenge
         {
@@ -247,9 +278,9 @@ public class MemberProgressTrackingServiceTests
             TargetDailyCalories = 2000,
             CalorieTolerancePercent = 10,
             RequiredCompletionPercent = 80,
-            StartsOn = entryDate.AddDays(-2),
-            EndsOn = entryDate.AddDays(2),
-            Status = CommunityChallengeStatus.Active
+            StartsOn = startsOn ?? entryDate.AddDays(-2),
+            EndsOn = endsOn ?? entryDate.AddDays(2),
+            Status = status
         };
         var participation = new CommunityChallengeParticipation
         {
