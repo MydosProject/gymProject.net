@@ -22,6 +22,8 @@ public class MemberProfile
 
     public ICollection<ClassReservation> ClassReservations { get; set; } = [];
 
+    public ICollection<PersonalTrainingRequest> PersonalTrainingRequests { get; set; } = [];
+
     public ICollection<CommunityChallengeParticipation> CommunityChallengeParticipations { get; set; } = [];
 
     public ICollection<KitchenSubscription> KitchenSubscriptions { get; set; } = [];

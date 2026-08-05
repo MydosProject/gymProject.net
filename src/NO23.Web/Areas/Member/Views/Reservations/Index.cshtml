@@ -220,7 +220,7 @@
                     <p class="member-section-kicker">02 / Birebir antrenman</p>
                     <h2>Eğitmeninle birebir çalış</h2>
                 </div>
-                <span class="member-coming-pill">Yakında</span>
+                <span class="member-coming-pill">Talep oluştur</span>
             </div>
 
             <div class="member-personal-layout">
@@ -230,6 +230,7 @@
                         <a class="member-trainer-option
                                   @(Model.SelectedTrainerId == trainer.Id ? "is-selected" : string.Empty)"
                            data-trainer-option
+                           data-trainer-id="@trainer.Id"
                            data-trainer-name="@trainer.FullName"
                            asp-area="Member"
                            asp-controller="Reservations"
@@ -252,47 +253,148 @@
                     }
                 </div>
 
-                <div class="member-personal-form" aria-disabled="true">
+                <div class="member-personal-form">
                     <div class="member-personal-form-heading">
                         <span>Başvuru formu</span>
-                        <strong>Altyapı hazırlanıyor</strong>
+                        <strong>Birebir talep oluştur</strong>
                     </div>
 
-                    <label>
-                        <span>Seçilen eğitmen</span>
-                        <input id="selected-personal-trainer"
-                               value="@(Model.Trainers
-                            .FirstOrDefault(trainer => trainer.Id == Model.SelectedTrainerId)
-                            ?.FullName ?? "Önce eğitmenini seç")"
-                               disabled />
-                    </label>
+                    @if (!Model.CanRequestPersonalTraining)
+                    {
+                        <div class="member-empty-state">
+                            <span class="member-empty-number">!</span>
+                            <div>
+                                <h3>Paketin birebir destek içermiyor.</h3>
+                                <p>Birebir antrenman talebi oluşturmak için paketinde Personal Training desteği bulunmalı.</p>
+                            </div>
+                        </div>
+                    }
+                    else if (Model.Trainers.Count == 0)
+                    {
+                        <div class="member-empty-state">
+                            <span class="member-empty-number">—</span>
+                            <div>
+                                <h3>Aktif eğitmen bulunmuyor.</h3>
+                                <p>Yeni eğitmenler yayınlandığında birebir talep oluşturabilirsin.</p>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <form asp-area="Member"
+                              asp-controller="Reservations"
+                              asp-action="RequestPersonalTraining"
+                              asp-antiforgery="true"
+                              method="post">
+                            <input id="personal-trainer-id"
+                                   type="hidden"
+                                   name="TrainerId"
+                                   value="@Model.PersonalTrainingRequestInput.TrainerId" />
 
-                    <div class="member-personal-form-grid">
-                        <label>
-                            <span>Tercih edilen gün</span>
-                            <input type="date" disabled />
-                        </label>
-                        <label>
-                            <span>Saat aralığı</span>
-                            <select disabled>
-                                <option>09:00 – 12:00</option>
-                                <option>12:00 – 16:00</option>
-                                <option>16:00 – 20:00</option>
-                            </select>
-                        </label>
-                    </div>
+                            <label>
+                                <span>Seçilen eğitmen</span>
+                                <input id="selected-personal-trainer"
+                                       value="@(Model.Trainers
+                                    .FirstOrDefault(trainer => trainer.Id == Model.SelectedTrainerId)
+                                    ?.FullName ?? "Önce eğitmenini seç")"
+                                       disabled />
+                            </label>
 
-                    <label>
-                        <span>Hedefin ve notun</span>
-                        <textarea rows="4"
-                                  placeholder="Birebir antrenmandan beklentilerini yaz."
-                                  disabled></textarea>
-                    </label>
+                            <div class="member-personal-form-grid">
+                                <label>
+                                    <span>Tercih edilen gün</span>
+                                    <input type="date"
+                                           name="PreferredDate"
+                                           min="@DateOnly.FromDateTime(DateTime.Today).ToString("yyyy-MM-dd")"
+                                           value="@Model.PersonalTrainingRequestInput.PreferredDate.ToString("yyyy-MM-dd")"
+                                           required />
+                                </label>
+                                <label>
+                                    <span>Saat aralığı</span>
+                                    <select name="PreferredTimeWindow" required>
+                                        @foreach (var timeWindow in Model.PreferredTimeWindows)
+                                        {
+                                            <option value="@timeWindow"
+                                                    selected="@(timeWindow == Model.PersonalTrainingRequestInput.PreferredTimeWindow)">
+                                                @timeWindow
+                                            </option>
+                                        }
+                                    </select>
+                                </label>
+                            </div>
 
-                    <button type="button" disabled>
-                        Başvuru Altyapısı Yakında
-                    </button>
+                            <label>
+                                <span>Hedefin ve notun</span>
+                                <textarea name="GoalNote"
+                                          rows="4"
+                                          maxlength="1200"
+                                          placeholder="Birebir antrenmandan beklentilerini yaz."></textarea>
+                            </label>
+
+                            <button type="submit">
+                                Birebir Talep Oluştur
+                            </button>
+                        </form>
+                    }
                 </div>
+            </div>
+
+            <div class="member-reservation-list mt-4">
+                @if (Model.PersonalTrainingRequests.Count == 0)
+                {
+                    <div class="member-empty-state">
+                        <span class="member-empty-number">00</span>
+                        <div>
+                            <h3>Henüz birebir talebin yok.</h3>
+                            <p>Eğitmenini ve uygun olduğun saat aralığını seçerek ilk talebini oluşturabilirsin.</p>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    @foreach (var request in Model.PersonalTrainingRequests)
+                    {
+                        var scheduledAtLocal = request.ScheduledAtUtc?.ToLocalTime();
+
+                        <article class="member-reservation-card">
+                            <div class="member-reservation-date">
+                                <strong>@request.PreferredDate.ToString("dd")</strong>
+                                <span>@request.PreferredDate.ToString("MMM", turkishCulture)</span>
+                            </div>
+
+                            <div class="member-reservation-info">
+                                <p>@request.PreferredDate.ToString("dddd", turkishCulture) · @request.PreferredTimeWindow</p>
+                                <h3>@request.TrainerName</h3>
+                                <span>Durum: @request.Status</span>
+                                @if (scheduledAtLocal.HasValue)
+                                {
+                                    <span>Kesin randevu: @scheduledAtLocal.Value.ToString("dd.MM.yyyy HH:mm", turkishCulture)</span>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(request.AdminNote))
+                                {
+                                    <span>Not: @request.AdminNote</span>
+                                }
+                            </div>
+
+                            @if (request.CanCancel)
+                            {
+                                <form asp-area="Member"
+                                      asp-controller="Reservations"
+                                      asp-action="CancelPersonalTraining"
+                                      asp-antiforgery="true"
+                                      method="post"
+                                      class="member-reservation-action">
+                                    <input type="hidden"
+                                           name="requestId"
+                                           value="@request.Id" />
+                                    <button type="submit" class="member-cancel-button">
+                                        İptal Et
+                                    </button>
+                                </form>
+                            }
+                        </article>
+                    }
+                }
             </div>
         </section>
     </div>
@@ -305,6 +407,8 @@
                 document.querySelectorAll("[data-trainer-option]"));
             const selectedTrainerInput = document.getElementById(
                 "selected-personal-trainer");
+            const selectedTrainerIdInput = document.getElementById(
+                "personal-trainer-id");
 
             trainerOptions.forEach(option => {
                 option.addEventListener("click", event => {
@@ -332,6 +436,11 @@
                     if (selectedTrainerInput) {
                         selectedTrainerInput.value =
                             option.dataset.trainerName ?? "Önce eğitmenini seç";
+                    }
+
+                    if (selectedTrainerIdInput) {
+                        selectedTrainerIdInput.value =
+                            option.dataset.trainerId ?? "";
                     }
 
                     window.history.replaceState(

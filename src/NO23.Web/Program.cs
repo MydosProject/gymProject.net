@@ -107,6 +107,7 @@ builder.Services.AddControllersWithViews(options =>
         "Bu alan zorunludur.");
 });
 builder.Services.AddScoped<ClassReservationService>();
+builder.Services.AddScoped<PersonalTrainingRequestService>();
 builder.Services.AddScoped<CalorieCalculatorService>();
 builder.Services.AddScoped<KitchenPlanMatchingService>();
 builder.Services.AddScoped<KitchenProductionPlanningService>();
