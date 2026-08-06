@@ -1,19 +1,220 @@
+@model AdminDashboardViewModel
+
 @{
     ViewData["Title"] = "Genel Bakış";
 }
 
-<section class="admin-welcome" aria-labelledby="adminWelcomeTitle">
-    <div class="admin-welcome-copy">
-        <p class="admin-welcome-kicker">NO23 / CONTROL ROOM</p>
-        <h1 id="adminWelcomeTitle">Yönetim paneline<br /><span>hoş geldin.</span></h1>
-        <p class="admin-welcome-description">
-            NO23 operasyonlarını sol menüdeki ilgili bölümlerden yönetebilirsin.
-        </p>
-    </div>
+<section class="admin-dashboard-page"
+         aria-labelledby="adminDashboardTitle">
 
-    <div class="admin-welcome-art" aria-hidden="true">
-        <span class="admin-welcome-art-label">NO23 / ADMIN</span>
-        <strong>23</strong>
-        <span class="admin-welcome-art-copy">CONTROL<br />ROOM</span>
-    </div>
+    <header class="admin-dashboard-hero">
+        <div class="admin-dashboard-hero-copy">
+            <p class="admin-eyebrow">NO23 CLUB / CONTROL ROOM</p>
+
+            <h1 id="adminDashboardTitle">
+                Kulübün durumunu<br />
+                <span>tek ekrandan takip et.</span>
+            </h1>
+
+            <p>
+                Üyelerden ders programına, siparişlerden birebir antrenman
+                taleplerine kadar günlük operasyonların özetini görüntüle.
+            </p>
+        </div>
+
+        <div class="admin-dashboard-hero-panel">
+            <div>
+                <span>Bugün</span>
+                <strong>@DateTime.Today.ToString("dd.MM.yyyy")</strong>
+            </div>
+
+            <p>
+                İşlem bekleyen alanları kontrol ederek operasyon akışını
+                hızlıca yönetebilirsin.
+            </p>
+        </div>
+    </header>
+
+    <section class="admin-dashboard-metrics"
+             aria-label="Kulüp genel durumu">
+
+        <a class="admin-dashboard-metric-card"
+           asp-area="Admin"
+           asp-controller="Members"
+           asp-action="Index">
+
+            <div class="admin-dashboard-metric-top">
+                <span>01</span>
+                <small>Üyeler</small>
+            </div>
+
+            <strong>@Model.TotalMembers.ToString("00")</strong>
+
+            <div class="admin-dashboard-metric-footer">
+                <span>Toplam üye</span>
+                <b aria-hidden="true">→</b>
+            </div>
+        </a>
+
+        <a class="admin-dashboard-metric-card"
+           asp-area="Admin"
+           asp-controller="Trainers"
+           asp-action="Index">
+
+            <div class="admin-dashboard-metric-top">
+                <span>02</span>
+                <small>Eğitmenler</small>
+            </div>
+
+            <strong>@Model.ActiveTrainers.ToString("00")</strong>
+
+            <div class="admin-dashboard-metric-footer">
+                <span>Aktif eğitmen</span>
+                <b aria-hidden="true">→</b>
+            </div>
+        </a>
+
+        <a class="admin-dashboard-metric-card"
+           asp-area="Admin"
+           asp-controller="ClassSessions"
+           asp-action="Index">
+
+            <div class="admin-dashboard-metric-top">
+                <span>03</span>
+                <small>Ders programı</small>
+            </div>
+
+            <strong>@Model.TodayClassSessions.ToString("00")</strong>
+
+            <div class="admin-dashboard-metric-footer">
+                <span>Bugünkü ders</span>
+                <b aria-hidden="true">→</b>
+            </div>
+        </a>
+
+        <a class="admin-dashboard-metric-card"
+           asp-area="Admin"
+           asp-controller="CommunityEvents"
+           asp-action="Index">
+
+            <div class="admin-dashboard-metric-top">
+                <span>04</span>
+                <small>Topluluk</small>
+            </div>
+
+            <strong>@Model.UpcomingCommunityEvents.ToString("00")</strong>
+
+            <div class="admin-dashboard-metric-footer">
+                <span>Yaklaşan etkinlik</span>
+                <b aria-hidden="true">→</b>
+            </div>
+        </a>
+    </section>
+
+    <section class="admin-dashboard-operation-section">
+        <header class="admin-dashboard-section-head">
+            <div>
+                <span>Operasyon özeti</span>
+                <h2>İşlem bekleyen alanlar</h2>
+            </div>
+
+            <p>
+                Öncelikli yönetim işlemlerine doğrudan eriş.
+            </p>
+        </header>
+
+        <div class="admin-dashboard-operation-grid">
+            <a class="admin-dashboard-operation-card
+                      admin-dashboard-operation-card-accent"
+               asp-area="Admin"
+               asp-controller="PersonalTrainingRequests"
+               asp-action="Index">
+
+                <div class="admin-dashboard-operation-card-head">
+                    <span>Birebir antrenman</span>
+                    <strong>
+                        @Model.PendingPersonalTrainingRequests.ToString("00")
+                    </strong>
+                </div>
+
+                <h3>Bekleyen birebir talepler</h3>
+
+                <p>
+                    Üyelerden gelen ve henüz değerlendirilmemiş talepleri
+                    planla veya uygun durumla kapat.
+                </p>
+
+                <div class="admin-dashboard-operation-link">
+                    <span>Talepleri yönet</span>
+                    <strong aria-hidden="true">→</strong>
+                </div>
+            </a>
+
+            <a class="admin-dashboard-operation-card"
+               asp-area="Admin"
+               asp-controller="Orders"
+               asp-action="Index">
+
+                <div class="admin-dashboard-operation-card-head">
+                    <span>Siparişler</span>
+                    <strong>@Model.PendingOrders.ToString("00")</strong>
+                </div>
+
+                <h3>İşlem bekleyen siparişler</h3>
+
+                <p>
+                    Bekleyen, onaylanan veya hazırlık sürecindeki siparişleri
+                    görüntüle ve operasyon durumunu güncelle.
+                </p>
+
+                <div class="admin-dashboard-operation-link">
+                    <span>Siparişleri yönet</span>
+                    <strong aria-hidden="true">→</strong>
+                </div>
+            </a>
+        </div>
+    </section>
+
+    <section class="admin-dashboard-shortcuts-section">
+        <header class="admin-dashboard-section-head">
+            <div>
+                <span>Hızlı işlemler</span>
+                <h2>Sık kullanılan yönetim ekranları</h2>
+            </div>
+        </header>
+
+        <div class="admin-dashboard-shortcuts">
+            <a asp-area="Admin"
+               asp-controller="ClassSessions"
+               asp-action="Create">
+                <span>01</span>
+                <strong>Yeni ders oluştur</strong>
+                <b aria-hidden="true">→</b>
+            </a>
+
+            <a asp-area="Admin"
+               asp-controller="CommunityEvents"
+               asp-action="Create">
+                <span>02</span>
+                <strong>Yeni etkinlik oluştur</strong>
+                <b aria-hidden="true">→</b>
+            </a>
+
+            <a asp-area="Admin"
+               asp-controller="BlogPosts"
+               asp-action="Create">
+                <span>03</span>
+                <strong>Yeni blog yazısı oluştur</strong>
+                <b aria-hidden="true">→</b>
+            </a>
+
+            <a asp-area="Admin"
+               asp-controller="KitchenMenuItems"
+               asp-action="Create">
+                <span>04</span>
+                <strong>Yeni Kitchen ürünü oluştur</strong>
+                <b aria-hidden="true">→</b>
+            </a>
+        </div>
+    </section>
 </section>
