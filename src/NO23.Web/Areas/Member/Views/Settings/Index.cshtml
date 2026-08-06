@@ -104,7 +104,7 @@
                     </div>
                 </div>
 
-                <div asp-validation-summary="ModelOnly"
+                <div asp-validation-summary="All"
                      class="member-account-validation"
                      role="alert"></div>
 
@@ -115,21 +115,24 @@
                             <span>Mevcut şifre</span>
                             <input asp-for="ChangePassword.CurrentPassword"
                                    autocomplete="current-password" />
-                            <small asp-validation-for="ChangePassword.CurrentPassword"></small>
+                            <small asp-validation-for="ChangePassword.CurrentPassword"
+                                   class="text-danger"></small>
                         </label>
 
                         <label>
                             <span>Yeni şifre</span>
                             <input asp-for="ChangePassword.NewPassword"
                                    autocomplete="new-password" />
-                            <small asp-validation-for="ChangePassword.NewPassword"></small>
+                            <small asp-validation-for="ChangePassword.NewPassword"
+                                   class="text-danger"></small>
                         </label>
 
                         <label>
                             <span>Yeni şifre tekrar</span>
                             <input asp-for="ChangePassword.ConfirmPassword"
                                    autocomplete="new-password" />
-                            <small asp-validation-for="ChangePassword.ConfirmPassword"></small>
+                            <small asp-validation-for="ChangePassword.ConfirmPassword"
+                                   class="text-danger"></small>
                         </label>
                     </div>
 
