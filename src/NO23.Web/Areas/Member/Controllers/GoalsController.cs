@@ -48,7 +48,8 @@ public class GoalsController(
 
         return View(new MemberCalorieTrackingViewModel
         {
-            ChallengeProgressCards = await BuildChallengeProgressCardsAsync(memberProfileId.Value)
+            ChallengeProgressCards =
+                await BuildChallengeProgressCardsAsync(memberProfileId.Value)
         });
     }
 
@@ -63,6 +64,7 @@ public class GoalsController(
         }
 
         var selectedDate = date ?? DateOnly.FromDateTime(DateTime.Today);
+
         var memberProfileId = await dbContext.MemberProfiles
             .AsNoTracking()
             .Where(member => member.ApplicationUserId == userId)
@@ -79,6 +81,24 @@ public class GoalsController(
             .FirstOrDefaultAsync(entry =>
                 entry.MemberProfileId == memberProfileId.Value &&
                 entry.EntryDate == selectedDate);
+
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var chartStartDate = today.AddDays(-13);
+
+        var calorieChartItems = await dbContext.MemberProgressEntries
+            .AsNoTracking()
+            .Where(entry =>
+                entry.MemberProfileId == memberProfileId.Value &&
+                entry.EntryDate >= chartStartDate &&
+                entry.EntryDate <= today &&
+                entry.CaloriesConsumed.HasValue)
+            .OrderBy(entry => entry.EntryDate)
+            .Select(entry => new MemberCalorieChartItemViewModel
+            {
+                EntryDate = entry.EntryDate,
+                CaloriesConsumed = entry.CaloriesConsumed!.Value
+            })
+            .ToListAsync();
 
         return View(new MemberProgressTrackingViewModel
         {
@@ -98,7 +118,22 @@ public class GoalsController(
                     MuscleMassPercent = selectedEntry.MuscleMassPercent,
                     BodyWaterAmount = selectedEntry.BodyWaterAmount,
                     BodyWaterPercent = selectedEntry.BodyWaterPercent
-                }
+                },
+
+            CalorieChartItems = calorieChartItems,
+
+            AverageCalories = calorieChartItems.Count == 0
+                ? 0
+                : (int)Math.Round(
+                    calorieChartItems.Average(item =>
+                        item.CaloriesConsumed)),
+
+            HighestCalories = calorieChartItems.Count == 0
+                ? 0
+                : calorieChartItems.Max(item =>
+                    item.CaloriesConsumed),
+
+            LoggedDayCount = calorieChartItems.Count
         });
     }
 
@@ -115,7 +150,8 @@ public class GoalsController(
 
         var profile = await dbContext.MemberProfiles
             .Include(member => member.MembershipPackage)
-            .FirstOrDefaultAsync(member => member.ApplicationUserId == userId);
+            .FirstOrDefaultAsync(member =>
+                member.ApplicationUserId == userId);
 
         if (profile is null)
         {
@@ -131,17 +167,21 @@ public class GoalsController(
         profile.FitnessGoal = string.IsNullOrWhiteSpace(model.FitnessGoal)
             ? null
             : model.FitnessGoal.Trim();
+
         profile.UpdatedAtUtc = DateTime.UtcNow;
 
         await dbContext.SaveChangesAsync();
 
-        TempData["SuccessMessage"] = "Antrenman hedefin güncellendi.";
+        TempData["SuccessMessage"] =
+            "Antrenman hedefin güncellendi.";
+
         return RedirectToAction(nameof(Index));
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> LogChallengeCalories(ChallengeCalorieLogInputViewModel input)
+    public async Task<IActionResult> LogChallengeCalories(
+        ChallengeCalorieLogInputViewModel input)
     {
         if (!ModelState.IsValid)
         {
@@ -149,13 +189,15 @@ public class GoalsController(
                 .Where(item => item.Value?.Errors.Count > 0)
                 .SelectMany(item => item.Value!.Errors)
                 .Select(error => error.ErrorMessage)
-                .FirstOrDefault(error => !string.IsNullOrWhiteSpace(error)) ??
+                .FirstOrDefault(error =>
+                    !string.IsNullOrWhiteSpace(error)) ??
                 "Kalori girişini kontrol et.";
 
             return RedirectToAction(nameof(CalorieTracking));
         }
 
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId =
+            User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         if (string.IsNullOrWhiteSpace(userId))
         {
@@ -170,13 +212,19 @@ public class GoalsController(
                 CaloriesConsumed = input.CaloriesConsumed
             });
 
-        TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] = result.Message;
+        TempData[
+            result.Succeeded
+                ? "SuccessMessage"
+                : "ErrorMessage"
+        ] = result.Message;
+
         return RedirectToAction(nameof(CalorieTracking));
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> ProgressMeasurements(MemberProgressEntryInputViewModel input)
+    public async Task<IActionResult> ProgressMeasurements(
+        MemberProgressEntryInputViewModel input)
     {
         if (!ModelState.IsValid)
         {
@@ -184,28 +232,48 @@ public class GoalsController(
                 .Where(item => item.Value?.Errors.Count > 0)
                 .SelectMany(item => item.Value!.Errors)
                 .Select(error => error.ErrorMessage)
-                .FirstOrDefault(error => !string.IsNullOrWhiteSpace(error)) ??
+                .FirstOrDefault(error =>
+                    !string.IsNullOrWhiteSpace(error)) ??
                 "Kayıt bilgilerini kontrol et.";
 
-            return RedirectToAction(nameof(ProgressMeasurements), new { date = input.EntryDate });
+            return RedirectToAction(
+                nameof(ProgressMeasurements),
+                new
+                {
+                    date = input.EntryDate
+                });
         }
 
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId =
+            User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         if (string.IsNullOrWhiteSpace(userId))
         {
             return Challenge();
         }
 
-        var result = await progressTrackingService.UpsertAsync(userId, input);
+        var result = await progressTrackingService
+            .UpsertAsync(userId, input);
 
-        TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] = result.Message;
-        return RedirectToAction(nameof(ProgressMeasurements), new { date = input.EntryDate });
+        TempData[
+            result.Succeeded
+                ? "SuccessMessage"
+                : "ErrorMessage"
+        ] = result.Message;
+
+        return RedirectToAction(
+            nameof(ProgressMeasurements),
+            new
+            {
+                date = input.EntryDate
+            });
     }
 
-    private async Task<MemberGoalsIndexViewModel?> BuildViewModelAsync()
+    private async Task<MemberGoalsIndexViewModel?>
+        BuildViewModelAsync()
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId =
+            User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         if (string.IsNullOrWhiteSpace(userId))
         {
@@ -215,7 +283,8 @@ public class GoalsController(
         var profile = await dbContext.MemberProfiles
             .AsNoTracking()
             .Include(member => member.MembershipPackage)
-            .FirstOrDefaultAsync(member => member.ApplicationUserId == userId);
+            .FirstOrDefaultAsync(member =>
+                member.ApplicationUserId == userId);
 
         if (profile is null)
         {
@@ -228,71 +297,115 @@ public class GoalsController(
         };
 
         PopulateMembershipFields(model, profile);
+
         return model;
     }
 
-    private async Task<IReadOnlyList<MemberChallengeProgressCardViewModel>> BuildChallengeProgressCardsAsync(
-        int memberProfileId)
+    private async Task<
+        IReadOnlyList<MemberChallengeProgressCardViewModel>>
+        BuildChallengeProgressCardsAsync(int memberProfileId)
     {
         var today = DateOnly.FromDateTime(DateTime.Today);
-        var participations = await dbContext.CommunityChallengeParticipations
-            .AsNoTracking()
-            .Include(item => item.CommunityChallenge)
-            .Include(item => item.ProgressEntries)
-            .Where(item =>
-                item.MemberProfileId == memberProfileId &&
-                item.Status != CommunityChallengeParticipationStatus.Withdrawn &&
-                item.CommunityChallenge.Status != CommunityChallengeStatus.Cancelled)
-            .OrderBy(item => item.CommunityChallenge.StartsOn)
-            .ThenBy(item => item.CommunityChallenge.Title)
-            .ToListAsync();
+
+        var participations =
+            await dbContext.CommunityChallengeParticipations
+                .AsNoTracking()
+                .Include(item => item.CommunityChallenge)
+                .Include(item => item.ProgressEntries)
+                .Where(item =>
+                    item.MemberProfileId == memberProfileId &&
+                    item.Status !=
+                        CommunityChallengeParticipationStatus.Withdrawn &&
+                    item.CommunityChallenge.Status !=
+                        CommunityChallengeStatus.Cancelled)
+                .OrderBy(item =>
+                    item.CommunityChallenge.StartsOn)
+                .ThenBy(item =>
+                    item.CommunityChallenge.Title)
+                .ToListAsync();
 
         return participations
             .Select(participation => new
             {
                 Participation = participation,
-                EffectiveStatus = CommunityChallengeLifecycle.GetEffectiveStatus(
-                    participation.CommunityChallenge.Status,
-                    participation.CommunityChallenge.StartsOn,
-                    participation.CommunityChallenge.EndsOn,
-                    today)
+
+                EffectiveStatus =
+                    CommunityChallengeLifecycle.GetEffectiveStatus(
+                        participation.CommunityChallenge.Status,
+                        participation.CommunityChallenge.StartsOn,
+                        participation.CommunityChallenge.EndsOn,
+                        today)
             })
-            .Where(item => CommunityChallengeLifecycle.IsJoinOpen(item.EffectiveStatus))
+            .Where(item =>
+                CommunityChallengeLifecycle.IsJoinOpen(
+                    item.EffectiveStatus))
             .Select(participation =>
             {
-                var challenge = participation.Participation.CommunityChallenge;
-                var range = CommunityChallengeProgressCalculator.GetCalorieRange(
-                    challenge.TargetDailyCalories,
-                    challenge.CalorieTolerancePercent);
-                var stats = CommunityChallengeProgressCalculator.GetProgressStats(
-                    challenge.StartsOn,
-                    challenge.EndsOn,
-                    challenge.RequiredCompletionPercent,
-                    participation.Participation.ProgressEntries);
-                var todayEntry = participation.Participation.ProgressEntries
-                    .FirstOrDefault(entry => entry.EntryDate == today);
+                var challenge =
+                    participation.Participation.CommunityChallenge;
+
+                var range =
+                    CommunityChallengeProgressCalculator
+                        .GetCalorieRange(
+                            challenge.TargetDailyCalories,
+                            challenge.CalorieTolerancePercent);
+
+                var stats =
+                    CommunityChallengeProgressCalculator
+                        .GetProgressStats(
+                            challenge.StartsOn,
+                            challenge.EndsOn,
+                            challenge.RequiredCompletionPercent,
+                            participation.Participation.ProgressEntries);
+
+                var todayEntry =
+                    participation.Participation.ProgressEntries
+                        .FirstOrDefault(entry =>
+                            entry.EntryDate == today);
 
                 return new MemberChallengeProgressCardViewModel
                 {
-                    ParticipationId = participation.Participation.Id,
+                    ParticipationId =
+                        participation.Participation.Id,
+
                     Title = challenge.Title,
                     Slug = challenge.Slug,
-                    Status = participation.EffectiveStatus.ToString(),
+
+                    Status =
+                        participation.EffectiveStatus.ToString(),
+
                     StartsOn = challenge.StartsOn,
                     EndsOn = challenge.EndsOn,
-                    TargetDailyCalories = challenge.TargetDailyCalories,
+
+                    TargetDailyCalories =
+                        challenge.TargetDailyCalories,
+
                     MinDailyCalories = range.MinCalories,
                     MaxDailyCalories = range.MaxCalories,
-                    RequiredCompletionPercent = challenge.RequiredCompletionPercent,
+
+                    RequiredCompletionPercent =
+                        challenge.RequiredCompletionPercent,
+
                     LoggedDays = stats.LoggedDays,
                     CompliantDays = stats.CompliantDays,
                     TotalDays = stats.TotalDays,
                     ProgressPercent = stats.ProgressPercent,
-                    IsCompleted = participation.Participation.Status == CommunityChallengeParticipationStatus.Completed,
-                    CanLogToday = CommunityChallengeLifecycle.CanLogCalories(participation.EffectiveStatus),
+
+                    IsCompleted =
+                        participation.Participation.Status ==
+                        CommunityChallengeParticipationStatus.Completed,
+
+                    CanLogToday =
+                        CommunityChallengeLifecycle.CanLogCalories(
+                            participation.EffectiveStatus),
+
                     LogDate = today,
-                    TodayCaloriesConsumed = todayEntry?.CaloriesConsumed,
-                    TodayIsCompliant = todayEntry?.IsCompliant
+
+                    TodayCaloriesConsumed =
+                        todayEntry?.CaloriesConsumed,
+
+                    TodayIsCompliant =
+                        todayEntry?.IsCompliant
                 };
             })
             .ToList();
@@ -307,26 +420,60 @@ public class GoalsController(
         model.MembershipPackageName = package.Name;
         model.MembershipPackageAudience = package.Audience;
         model.MembershipPackageDescription = package.Description;
-        model.RemainingClassCredits = profile.RemainingClassCredits;
-        model.HasUnlimitedClasses = package.WeeklyClassLimit is null;
-        model.IncludedBenefits = BuildIncludedBenefits(package);
+        model.RemainingClassCredits =
+            profile.RemainingClassCredits;
+
+        model.HasUnlimitedClasses =
+            package.WeeklyClassLimit is null;
+
+        model.IncludedBenefits =
+            BuildIncludedBenefits(package);
     }
 
-    private static IReadOnlyList<string> BuildIncludedBenefits(
-        MembershipPackage package)
+    private static IReadOnlyList<string>
+        BuildIncludedBenefits(MembershipPackage package)
     {
         var benefits = new List<string>();
 
-        AddIf(package.IncludesMeasurement, "Ölçüm takibi");
-        AddIf(package.IncludesBodyAnalysis, "Vücut analizi");
-        AddIf(package.IncludesNutritionSupport, "Beslenme desteği");
-        AddIf(package.IncludesDetailedTracking, "Detaylı gelişim takibi");
-        AddIf(package.IncludesMonthlyAnalysis, "Aylık performans analizi");
-        AddIf(package.IncludesPriorityReservation, "Öncelikli rezervasyon");
-        AddIf(package.IncludesPersonalTrainingSupport, "Birebir antrenman desteği");
-        AddIf(package.IncludesKitchenBenefits, "NO23 Kitchen avantajları");
-        AddIf(package.IncludesPrivateEvents, "Özel etkinlik erişimi");
-        AddIf(package.IncludesCommunityMembership, "Community üyeliği");
+        AddIf(
+            package.IncludesMeasurement,
+            "Ölçüm takibi");
+
+        AddIf(
+            package.IncludesBodyAnalysis,
+            "Vücut analizi");
+
+        AddIf(
+            package.IncludesNutritionSupport,
+            "Beslenme desteği");
+
+        AddIf(
+            package.IncludesDetailedTracking,
+            "Detaylı gelişim takibi");
+
+        AddIf(
+            package.IncludesMonthlyAnalysis,
+            "Aylık performans analizi");
+
+        AddIf(
+            package.IncludesPriorityReservation,
+            "Öncelikli rezervasyon");
+
+        AddIf(
+            package.IncludesPersonalTrainingSupport,
+            "Birebir antrenman desteği");
+
+        AddIf(
+            package.IncludesKitchenBenefits,
+            "NO23 Kitchen avantajları");
+
+        AddIf(
+            package.IncludesPrivateEvents,
+            "Özel etkinlik erişimi");
+
+        AddIf(
+            package.IncludesCommunityMembership,
+            "Community üyeliği");
 
         return benefits;
 

@@ -401,10 +401,42 @@
                 </button>
             </footer>
         </form>
+
+        <section class="member-progress-chart-section">
+            <header class="member-progress-chart-head">
+                <div>
+                    <p>03 / Kalori Trendi</p>
+                    <h2>Son 14 Gün</h2>
+                </div>
+
+                <div class="member-progress-chart-stats">
+                    <article>
+                        <span>Ortalama</span>
+                        <strong>@Model.AverageCalories kcal</strong>
+                    </article>
+
+                    <article>
+                        <span>En Yüksek</span>
+                        <strong>@Model.HighestCalories kcal</strong>
+                    </article>
+
+                    <article>
+                        <span>Kayıt Günü</span>
+                        <strong>@Model.LoggedDayCount</strong>
+                    </article>
+                </div>
+            </header>
+
+            <div class="member-progress-chart-card">
+                <canvas id="calorieChart"></canvas>
+            </div>
+        </section>
     </div>
 </section>
 
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script>
         (() => {
             const dateInput = document.querySelector(
@@ -424,6 +456,144 @@
 
                 url.searchParams.set("date", dateInput.value);
                 window.location.href = url.toString();
+            });
+
+            const chartCanvas = document.getElementById("calorieChart");
+
+            if (!chartCanvas || typeof Chart === "undefined") {
+                return;
+            }
+
+            const calorieChartItems = @Html.Raw(
+                System.Text.Json.JsonSerializer.Serialize(
+                    Model.CalorieChartItems.Select(item => new
+                    {
+                        date = item.EntryDate.ToString(
+                            "dd MMM",
+                            CultureInfo.GetCultureInfo("tr-TR")),
+                        calories = item.CaloriesConsumed
+                    })
+                )
+            );
+
+            const labels = calorieChartItems.map(item => item.date);
+            const calorieValues = calorieChartItems.map(
+                item => item.calories);
+
+            const chartContext = chartCanvas.getContext("2d");
+
+            const chartGradient = chartContext.createLinearGradient(
+                0,
+                0,
+                0,
+                320
+            );
+
+            chartGradient.addColorStop(
+                0,
+                "rgba(197, 255, 32, 0.32)"
+            );
+
+            chartGradient.addColorStop(
+                1,
+                "rgba(197, 255, 32, 0.01)"
+            );
+
+            new Chart(chartContext, {
+                type: "line",
+
+                data: {
+                    labels,
+
+                    datasets: [
+                        {
+                            label: "Günlük kalori",
+                            data: calorieValues,
+                            borderColor: "#c5ff20",
+                            backgroundColor: chartGradient,
+                            borderWidth: 3,
+                            pointRadius: 4,
+                            pointHoverRadius: 7,
+                            pointBackgroundColor: "#c5ff20",
+                            pointBorderColor: "#111510",
+                            pointBorderWidth: 2,
+                            fill: true,
+                            tension: 0.35,
+                            spanGaps: false
+                        }
+                    ]
+                },
+
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+
+                    interaction: {
+                        intersect: false,
+                        mode: "index"
+                    },
+
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+
+                        tooltip: {
+                            displayColors: false,
+
+                            callbacks: {
+                                title(items) {
+                                    return items[0]?.label ?? "";
+                                },
+
+                                label(context) {
+                                    return `${context.parsed.y} kcal`;
+                                }
+                            }
+                        }
+                    },
+
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+
+                            border: {
+                                display: false
+                            },
+
+                            ticks: {
+                                color: "rgba(255, 255, 255, 0.52)",
+                                font: {
+                                    size: 11,
+                                    weight: "600"
+                                },
+                                maxRotation: 0
+                            }
+                        },
+
+                        y: {
+                            beginAtZero: false,
+
+                            grid: {
+                                color: "rgba(255, 255, 255, 0.07)"
+                            },
+
+                            border: {
+                                display: false
+                            },
+
+                            ticks: {
+                                color: "rgba(255, 255, 255, 0.52)",
+
+                                callback(value) {
+                                    return `${value} kcal`;
+                                }
+                            }
+                        }
+                    }
+                }
             });
         })();
     </script>
