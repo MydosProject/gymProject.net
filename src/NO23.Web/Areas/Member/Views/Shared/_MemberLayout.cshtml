@@ -653,7 +653,15 @@
                         }
                         return;
                     }
+                    if (payload.redirectUrl) {
+                        showCartToast(
+                            payload.message ?? "Ödeme sayfasına yönlendiriliyorsun."
+                        );
 
+                        window.location.assign(payload.redirectUrl);
+                        return;
+                    }
+                    
                     updateCartCount(payload.itemCount ?? 0);
                     showCartToast(payload.message);
 

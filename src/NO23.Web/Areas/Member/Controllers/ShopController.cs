@@ -6,6 +6,7 @@ using NO23.Web.Data;
 using NO23.Web.Data.Seed;
 using NO23.Web.Services;
 using NO23.Web.ViewModels.Member;
+using NO23.Web.Services.Payments;
 
 namespace NO23.Web.Areas.Member.Controllers;
 
@@ -14,7 +15,8 @@ namespace NO23.Web.Areas.Member.Controllers;
 public class ShopController(
     ApplicationDbContext dbContext,
     CommerceService commerceService,
-    MemberCartQueryService cartQueryService) : Controller
+    MemberCartQueryService cartQueryService,
+    IyzicoPaymentService iyzicoPaymentService) : Controller
 {
     public async Task<IActionResult> Index()
     {
@@ -109,24 +111,73 @@ public class ShopController(
         {
             return Challenge();
         }
+        var result = await commerceService.CreateOneTimeOrderFromCartAsync(
+    userId,
+    new DeliveryDetails
+    {
+        FullName = input.FullName,
+        PhoneNumber = input.PhoneNumber,
+        AddressLine = input.AddressLine,
+        District = input.District,
+        City = input.City,
+        PostalCode = input.PostalCode,
+        DeliveryDate = input.DeliveryDate,
+        DeliveryTimeSlot = input.DeliveryTimeSlot,
+        Notes = input.Notes
+    });
 
-        var result = await commerceService.CreateOneTimeOrderFromCartAsync(userId, new DeliveryDetails
-        {
-            FullName = input.FullName,
-            PhoneNumber = input.PhoneNumber,
-            AddressLine = input.AddressLine,
-            District = input.District,
-            City = input.City,
-            PostalCode = input.PostalCode,
-            DeliveryDate = input.DeliveryDate,
-            DeliveryTimeSlot = input.DeliveryTimeSlot,
-            Notes = input.Notes
-        });
-
+    if (!result.Succeeded || result.EntityId is null)
+    {
         return await RespondToCartMutationAsync(
             result,
             userId,
-            "Siparişin başarıyla oluşturuldu.");
+            string.Empty);
+    }
+
+    var returnUrl = Url.Action(
+    "Index",
+    "Orders",
+    new
+    {
+        area = "Member"
+    },
+    Request.Scheme,
+    Request.Host.Value);
+
+
+    var paymentResult =
+    await iyzicoPaymentService.InitializeAsync(
+        result.EntityId.Value,
+        HttpContext.Connection.RemoteIpAddress?.ToString(),
+        returnUrl);
+
+    if (!paymentResult.Succeeded ||
+        string.IsNullOrWhiteSpace(paymentResult.RedirectUrl))
+    {
+        var failedResult =
+            CommerceResult.Fail(
+                paymentResult.ErrorMessage
+                ?? "Ödeme başlatılamadı. Lütfen tekrar dene.");
+
+        return await RespondToCartMutationAsync(
+            failedResult,
+            userId,
+            string.Empty);
+    }
+
+    if (IsAjaxRequest())
+    {
+        return Json(new
+        {
+            succeeded = true,
+            message = "iyzico ödeme sayfasına yönlendiriliyorsun.",
+            itemCount =
+                await cartQueryService.GetItemCountAsync(userId),
+            redirectUrl = paymentResult.RedirectUrl
+        });
+    }
+
+    return Redirect(paymentResult.RedirectUrl);
     }
 
     private async Task<ShopDashboardViewModel> BuildDashboardAsync(CheckoutInputViewModel checkoutInput)

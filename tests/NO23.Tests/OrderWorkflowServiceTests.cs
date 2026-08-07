@@ -172,6 +172,57 @@ public class OrderWorkflowServiceTests
         Assert.Equal(OrderStatus.Cancelled, order.Status);
     }
 
+    [Fact]
+    public async Task UpdatePaymentStatus_FailedPaymentCancelsOrderAndRestoresStockOnlyOnce()
+        {
+        await using var dbContext = CreateDbContext();
+
+        var product = new ShopProduct
+        {
+            Name = "Training Band",
+            Sku = "BAND-001",
+            Category = "Equipment",
+            UnitPrice = 75,
+            StockQuantity = 5
+        };
+
+        var order = BuildOrder(
+            OrderStatus.Pending,
+            PaymentStatus.Pending);
+
+        order.Items.Add(new OrderItem
+        {
+            ItemType = CartItemType.ShopProduct,
+            ShopProduct = product,
+            ProductName = product.Name,
+            UnitPrice = product.UnitPrice,
+            Quantity = 2,
+            LineTotal = 150
+        });
+
+        dbContext.Orders.Add(order);
+        await dbContext.SaveChangesAsync();
+
+        var service = new OrderWorkflowService(dbContext);
+
+        var firstResult = await service.UpdatePaymentStatusAsync(
+            order.Id,
+            PaymentStatus.Failed);
+
+        var duplicateResult = await service.UpdatePaymentStatusAsync(
+            order.Id,
+            PaymentStatus.Failed);
+
+        Assert.True(firstResult.Succeeded);
+        Assert.True(duplicateResult.Succeeded);
+
+        Assert.Equal(PaymentStatus.Failed, order.PaymentStatus);
+        Assert.Equal(OrderStatus.Cancelled, order.Status);
+
+        Assert.Equal(7, product.StockQuantity);
+        Assert.NotNull(order.StockRestoredAtUtc);
+    }
+
     private static ApplicationDbContext CreateDbContext()
     {
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
@@ -209,4 +260,6 @@ public class OrderWorkflowServiceTests
             Total = 100
         };
     }
+
+
 }

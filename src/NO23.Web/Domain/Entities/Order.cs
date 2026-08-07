@@ -52,5 +52,9 @@ public class Order
 
     public DateTime? UpdatedAtUtc { get; set; }
 
+    public DateTime? StockRestoredAtUtc { get; set; }
+
     public ICollection<OrderItem> Items { get; set; } = [];
+
+    public ICollection<PaymentTransaction> PaymentTransactions { get; set; } = [];
 }

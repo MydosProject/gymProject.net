@@ -189,8 +189,6 @@ public class CommerceService(ApplicationDbContext dbContext)
         }
 
         dbContext.Orders.Add(order);
-        dbContext.CartItems.RemoveRange(cart.Items);
-        dbContext.ShoppingCarts.Remove(cart);
         await dbContext.SaveChangesAsync();
 
         return CommerceResult.Ok(order.Id);

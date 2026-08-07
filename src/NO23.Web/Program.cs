@@ -9,6 +9,7 @@ using NO23.Web.Infrastructure.Validation;
 using NO23.Web.Services;
 using NO23.Web.Services.Email;
 using NO23.Web.ViewModels.Api;
+using NO23.Web.Services.Payments;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +24,53 @@ builder.Services.Configure<SmtpEmailOptions>(
     builder.Configuration.GetSection("Email:Smtp"));
 builder.Services.Configure<PasswordResetOptions>(
     builder.Configuration.GetSection("Email:PasswordReset"));
+
+builder.Services
+    .AddOptions<IyzicoOptions>()
+    .Bind(builder.Configuration.GetSection(IyzicoOptions.SectionName))
+    .Validate(
+        options =>
+            !options.Enabled ||
+            (Uri.TryCreate(
+                options.BaseUrl,
+                UriKind.Absolute,
+                out var baseUri) &&
+             baseUri.Scheme == Uri.UriSchemeHttps),
+        "Iyzico BaseUrl geçerli bir HTTPS adresi olmalıdır.")
+    .Validate(
+        options =>
+            !options.Enabled ||
+            !string.IsNullOrWhiteSpace(options.ApiKey),
+        "Iyzico ApiKey tanımlanmalıdır.")
+    .Validate(
+        options =>
+            !options.Enabled ||
+            !string.IsNullOrWhiteSpace(options.SecretKey),
+        "Iyzico SecretKey tanımlanmalıdır.")
+    .Validate(
+        options =>
+            !options.Enabled ||
+            (Uri.TryCreate(
+                options.CallbackUrl,
+                UriKind.Absolute,
+                out var callbackUri) &&
+             callbackUri.Scheme == Uri.UriSchemeHttps),
+        "Iyzico CallbackUrl dışarıdan erişilebilir bir HTTPS adresi olmalıdır.")
+    .Validate(
+        options =>
+            !options.Enabled ||
+            string.Equals(
+                options.Currency,
+                "TRY",
+                StringComparison.OrdinalIgnoreCase),
+        "İlk sürümde yalnızca TRY desteklenmektedir.")
+    .Validate(
+        options =>
+            !options.Enabled ||
+            options.EnabledInstallments is [1],
+        "İlk sürümde yalnızca tek çekim desteklenmektedir.")
+    .ValidateOnStart();
+
 builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
 {
     var tokenLifespanMinutes =
@@ -116,6 +164,8 @@ builder.Services.AddScoped<MemberProgressTrackingService>();
 builder.Services.AddScoped<CommerceService>();
 builder.Services.AddScoped<OrderWorkflowService>();
 builder.Services.AddScoped<MemberCartQueryService>();
+builder.Services.AddScoped<IIyzicoCheckoutClient, IyzicoCheckoutClient>();
+builder.Services.AddScoped<IyzicoPaymentService>();
 
 var app = builder.Build();
 
