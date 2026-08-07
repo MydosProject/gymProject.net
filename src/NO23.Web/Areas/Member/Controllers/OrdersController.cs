@@ -12,14 +12,27 @@ namespace NO23.Web.Areas.Member.Controllers;
 [Authorize(Roles = ApplicationRoles.Member)]
 public class OrdersController(ApplicationDbContext dbContext) : Controller
 {
-    public async Task<IActionResult> Index()
-    {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-        if (string.IsNullOrWhiteSpace(userId))
+public async Task<IActionResult> Index(
+    string? payment = null)
+{
+    ViewData["PaymentNotice"] =
+        payment?.ToLowerInvariant() switch
         {
-            return Challenge();
-        }
+            "success" => "success",
+            "failed" => "failed",
+            _ => null
+        };
+
+    var userId =
+        User.FindFirstValue(
+            ClaimTypes.NameIdentifier);
+
+    if (string.IsNullOrWhiteSpace(userId))
+    {
+        return Challenge();
+    }
+
+
 
         var orders = await dbContext.Orders
             .AsNoTracking()

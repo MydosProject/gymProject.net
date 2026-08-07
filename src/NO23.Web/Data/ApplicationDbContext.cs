@@ -61,6 +61,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
 
+    public DbSet<PaymentTransaction> PaymentTransactions => Set<PaymentTransaction>();
+
     public DbSet<CommunityEvent> CommunityEvents => Set<CommunityEvent>();
 
     public DbSet<CommunityChallenge> CommunityChallenges => Set<CommunityChallenge>();

@@ -30,19 +30,23 @@ public class OrderWorkflowService(ApplicationDbContext dbContext)
     }
 
     public static IReadOnlyList<PaymentStatus> GetAvailablePaymentStatuses(
-        OrderStatus orderStatus,
-        PaymentStatus currentPaymentStatus)
+    OrderStatus orderStatus,
+    PaymentStatus currentPaymentStatus)
     {
-        if (IsTerminal(orderStatus) || currentPaymentStatus == PaymentStatus.Refunded)
+        if (IsTerminal(orderStatus) ||
+            currentPaymentStatus == PaymentStatus.Refunded)
         {
             return [];
         }
 
         return currentPaymentStatus switch
         {
-            PaymentStatus.Pending => [PaymentStatus.Paid, PaymentStatus.Failed],
-            PaymentStatus.Failed => [PaymentStatus.Pending, PaymentStatus.Paid],
-            PaymentStatus.Paid when orderStatus != OrderStatus.Delivered => [PaymentStatus.Refunded],
+            PaymentStatus.Pending =>
+                [PaymentStatus.Paid, PaymentStatus.Failed],
+
+            PaymentStatus.Paid when orderStatus != OrderStatus.Delivered =>
+                [PaymentStatus.Refunded],
+
             _ => []
         };
     }
@@ -75,7 +79,7 @@ public class OrderWorkflowService(ApplicationDbContext dbContext)
 
         if (requestedStatus == OrderStatus.Cancelled)
         {
-            RestoreShopProductStock(order);
+            RestoreShopProductStockOnce(order);
         }
 
         await dbContext.SaveChangesAsync();
@@ -111,10 +115,10 @@ public class OrderWorkflowService(ApplicationDbContext dbContext)
         order.PaymentStatus = requestedPaymentStatus;
         order.UpdatedAtUtc = DateTime.UtcNow;
 
-        if (requestedPaymentStatus == PaymentStatus.Refunded)
+        if (requestedPaymentStatus is PaymentStatus.Failed or PaymentStatus.Refunded)
         {
             order.Status = OrderStatus.Cancelled;
-            RestoreShopProductStock(order);
+            RestoreShopProductStockOnce(order);
         }
 
         await dbContext.SaveChangesAsync();
@@ -130,15 +134,25 @@ public class OrderWorkflowService(ApplicationDbContext dbContext)
             .FirstOrDefaultAsync(order => order.Id == orderId);
     }
 
-    private static void RestoreShopProductStock(Order order)
+    public static void RestoreShopProductStockOnce(Order order)
+{
+    if (order.StockRestoredAtUtc.HasValue)
     {
-        foreach (var item in order.Items.Where(item =>
-            item.ItemType == CartItemType.ShopProduct &&
-            item.ShopProduct is not null))
-        {
-            item.ShopProduct!.StockQuantity += item.Quantity;
-            item.ShopProduct.UpdatedAtUtc = DateTime.UtcNow;
-        }
+        return;
+    }
+
+    var restoredAtUtc = DateTime.UtcNow;
+
+    foreach (var item in order.Items.Where(item =>
+        item.ItemType == CartItemType.ShopProduct &&
+        item.ShopProduct is not null))
+    {
+        item.ShopProduct!.StockQuantity += item.Quantity;
+        item.ShopProduct.UpdatedAtUtc = restoredAtUtc;
+    }
+
+    order.StockRestoredAtUtc = restoredAtUtc;
+    order.UpdatedAtUtc = restoredAtUtc;
     }
 
     private static bool IsTerminal(OrderStatus status)
