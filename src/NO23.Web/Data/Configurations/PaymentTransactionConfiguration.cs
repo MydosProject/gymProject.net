@@ -80,5 +80,12 @@ public class PaymentTransactionConfiguration
             .WithMany(order => order.PaymentTransactions)
             .HasForeignKey(payment => payment.OrderId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(payment => new
+        {
+            payment.Provider,
+            payment.PaymentStatus,
+            payment.CheckoutExpiresAtUtc
+        });
     }
 }

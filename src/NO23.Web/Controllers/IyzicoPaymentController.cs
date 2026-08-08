@@ -67,22 +67,32 @@ public sealed class IyzicoPaymentController(
             return false;
         }
 
-        // Sadece Siparişlerim sayfasına dönüşe izin veriyoruz.
-        if (!uri.AbsolutePath.Equals(
-                "/Member/Orders",
-                StringComparison.OrdinalIgnoreCase))
+        var allowedPaths = new[]
+        {
+            "/Member/Orders",
+            "/Shop/Confirmation",
+            "/Kitchen/Confirmation"
+        };
+
+        var isAllowedPath =
+            allowedPaths.Any(path =>
+                uri.AbsolutePath.Equals(
+                    path,
+                    StringComparison.OrdinalIgnoreCase));
+
+        if (!isAllowedPath)
         {
             return false;
         }
 
-        // Ngrok üzerinden başlanmışsa callback host'u ile aynı olur.
+        // Uygulamanın çalıştığı aynı host'a dönüşe izin ver.
         var sameHost =
             string.Equals(
                 uri.Host,
                 Request.Host.Host,
                 StringComparison.OrdinalIgnoreCase);
 
-        // Development sırasında localhost'a dönüşe de izin ver.
+        // Development sırasında localhost/loopback dönüşlerine de izin ver.
         var localDevelopment =
             environment.IsDevelopment() &&
             uri.IsLoopback;

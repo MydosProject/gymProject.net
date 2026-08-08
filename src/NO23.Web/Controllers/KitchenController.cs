@@ -5,13 +5,15 @@ using NO23.Web.Data;
 using NO23.Web.Domain.Enums;
 using NO23.Web.Services;
 using NO23.Web.ViewModels.GuestOrders;
+using NO23.Web.Services.Payments;
 
 namespace NO23.Web.Controllers;
 
 [AllowAnonymous]
 public class KitchenController(
     ApplicationDbContext dbContext,
-    CommerceService commerceService) : Controller
+    CommerceService commerceService,
+    IyzicoPaymentService iyzicoPaymentService) : Controller
 {
     public async Task<IActionResult> Index()
     {
@@ -69,36 +71,66 @@ public class KitchenController(
         int menuItemId,
         [Bind(Prefix = "input")] GuestOrderInputViewModel input)
     {
-        var model = await BuildKitchenOrderPageAsync(menuItemId, input);
+    var model = await BuildKitchenOrderPageAsync(menuItemId, input);
 
-        if (model is null)
+    if (model is null)
+    {
+        return NotFound();
+    }
+
+    if (!ModelState.IsValid)
+    {
+        return View("Order", model);
+    }
+
+    var result = await commerceService.CreateGuestKitchenOrderAsync(
+        menuItemId,
+        input.Quantity,
+        input);
+
+    if (!result.Succeeded || result.EntityId is null)
+    {
+        ModelState.AddModelError(
+            string.Empty,
+            result.ErrorMessage ?? "Sipariş oluşturulamadı.");
+
+        return View("Order", model);
+    }
+
+    var orderNumber = await dbContext.Orders
+        .AsNoTracking()
+        .Where(order => order.Id == result.EntityId)
+        .Select(order => order.OrderNumber)
+        .FirstAsync();
+
+    var returnUrl = Url.Action(
+        nameof(KitchenController.Confirmation),
+        "Kitchen",
+        new
         {
-            return NotFound();
-        }
+            orderNumber
+        },
+        Request.Scheme,
+        Request.Host.Value);
 
-        if (!ModelState.IsValid)
-        {
-            return View("Order", model);
-        }
+    var paymentResult =
+        await iyzicoPaymentService.InitializeAsync(
+            result.EntityId.Value,
+            HttpContext.Connection.RemoteIpAddress?.ToString(),
+            returnUrl);
 
-        var result = await commerceService.CreateGuestKitchenOrderAsync(
-            menuItemId,
-            input.Quantity,
-            input);
+    if (!paymentResult.Succeeded ||
+        string.IsNullOrWhiteSpace(paymentResult.RedirectUrl))
+    {
+        ModelState.AddModelError(
+            string.Empty,
+            paymentResult.ErrorMessage
+            ?? "Ödeme başlatılamadı. Lütfen tekrar dene.");
 
-        if (!result.Succeeded || result.EntityId is null)
-        {
-            ModelState.AddModelError(string.Empty, result.ErrorMessage ?? "Sipariş oluşturulamadı.");
-            return View("Order", model);
-        }
+        return View("Order", model);
+    }
 
-        var orderNumber = await dbContext.Orders
-            .AsNoTracking()
-            .Where(order => order.Id == result.EntityId)
-            .Select(order => order.OrderNumber)
-            .FirstAsync();
-
-        return RedirectToAction(nameof(Confirmation), new { orderNumber });
+    return Redirect(paymentResult.RedirectUrl);
     }
 
     public async Task<IActionResult> Confirmation(string orderNumber)
@@ -137,6 +169,7 @@ public class KitchenController(
             Total = order.Total,
             DeliveryDate = order.DeliveryDate,
             DeliveryTimeSlot = order.DeliveryTimeSlot,
+            PaymentStatus = order.PaymentStatus,
             PaymentStatusText = GetPaymentStatusLabel(order.PaymentStatus)
         });
     }
@@ -198,13 +231,14 @@ public class KitchenController(
 
     private static string GetPaymentStatusLabel(PaymentStatus status)
     {
-        return status switch
+         return status switch
         {
-            PaymentStatus.Pending => "Ödeme Bekliyor",
-            PaymentStatus.Paid => "Ödendi",
-            PaymentStatus.Failed => "Ödeme Başarısız",
-            PaymentStatus.Refunded => "İade Edildi",
-            _ => status.ToString()
+        PaymentStatus.Pending => "Ödeme Bekliyor",
+        PaymentStatus.Paid => "Ödendi",
+        PaymentStatus.Failed => "Ödeme Başarısız",
+        PaymentStatus.Refunded => "İade Edildi",
+        PaymentStatus.Expired => "Ödeme Süresi Doldu",
+        _ => status.ToString()
         };
     }
 }
