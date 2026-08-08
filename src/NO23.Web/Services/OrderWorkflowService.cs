@@ -20,7 +20,10 @@ public class OrderWorkflowService(ApplicationDbContext dbContext)
         {
             OrderStatus.Pending when paymentStatus == PaymentStatus.Paid =>
                 [OrderStatus.Confirmed],
-            OrderStatus.Pending when paymentStatus is PaymentStatus.Pending or PaymentStatus.Failed =>
+            OrderStatus.Pending when paymentStatus is
+            PaymentStatus.Pending or
+            PaymentStatus.Failed or
+            PaymentStatus.Expired =>
                 [OrderStatus.Cancelled],
             OrderStatus.Confirmed => [OrderStatus.Preparing],
             OrderStatus.Preparing => [OrderStatus.OutForDelivery],

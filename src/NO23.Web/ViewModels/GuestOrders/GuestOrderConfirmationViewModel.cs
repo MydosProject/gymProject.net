@@ -1,3 +1,5 @@
+using NO23.Web.Domain.Enums;
+
 namespace NO23.Web.ViewModels.GuestOrders;
 
 public class GuestOrderConfirmationViewModel
@@ -13,6 +15,8 @@ public class GuestOrderConfirmationViewModel
     public DateOnly DeliveryDate { get; init; }
 
     public string DeliveryTimeSlot { get; init; } = string.Empty;
+
+    public PaymentStatus PaymentStatus { get; init; }
 
     public string PaymentStatusText { get; init; } = "Ödeme Bekliyor";
 }

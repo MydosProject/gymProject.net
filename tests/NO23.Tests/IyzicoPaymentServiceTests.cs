@@ -5,6 +5,7 @@ using NO23.Web.Data;
 using NO23.Web.Domain.Entities;
 using NO23.Web.Domain.Enums;
 using NO23.Web.Services.Payments;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace NO23.Tests;
 
@@ -118,6 +119,95 @@ public class IyzicoPaymentServiceTests
     }
 
     [Fact]
+    public async Task InitializeAsync_MemberReturnUrl_PassesCallbackUrlWithMemberOrdersToCheckoutClient()
+    {
+        await using var dbContext =
+            CreateDbContext();
+
+        var scenario =
+            await SeedMemberPaymentScenarioAsync(
+                dbContext);
+
+        var fakeClient =
+            new FakeIyzicoCheckoutClient(
+                new IyzicoCheckoutInitializeResult
+                {
+                    Succeeded = true,
+                    StatusCode = 200,
+                    ConversationId =
+                        "conversation-member-return-url",
+                    RawStatus = "success",
+                    Token =
+                        "checkout-token-member-return-url",
+                    PaymentPageUrl =
+                        "https://sandbox-payment.example/member-return-url",
+                    RawResponseJson =
+                        "{\"status\":\"success\"}"
+                });
+
+        var service =
+            CreateService(
+                dbContext,
+                fakeClient);
+
+        const string memberReturnUrl =
+            "https://localhost:7220/Member/Orders";
+
+        var result =
+            await service.InitializeAsync(
+                scenario.Order.Id,
+                "127.0.0.1",
+                memberReturnUrl);
+
+        Assert.True(result.Succeeded);
+
+        Assert.NotNull(
+            fakeClient.LastInitializeRequest);
+
+        var initializeRequest =
+            fakeClient.LastInitializeRequest!;
+
+        // Member ödeme bilgileri değişmemeli.
+        Assert.True(
+            scenario.Order.MemberProfileId.HasValue);
+
+        Assert.Equal(
+            $"MEMBER-{scenario.Order.MemberProfileId.Value}",
+            initializeRequest.Buyer.Id);
+
+        Assert.Equal(
+            "member@no23.test",
+            initializeRequest.Buyer.Email);
+
+        // iyzico'ya gönderilen callback URL boş olmamalı.
+        Assert.False(
+            string.IsNullOrWhiteSpace(
+                initializeRequest.CallbackUrl));
+
+        var callbackUri =
+            new Uri(
+                initializeRequest.CallbackUrl);
+
+        Assert.Equal(
+            "/payment/iyzico/callback",
+            callbackUri.AbsolutePath);
+
+        // Callback içinde Member/Orders dönüş adresi korunmalı.
+        var query =
+            QueryHelpers.ParseQuery(
+                callbackUri.Query);
+
+        Assert.True(
+            query.TryGetValue(
+                "returnUrl",
+                out var returnUrl));
+
+        Assert.Equal(
+            memberReturnUrl,
+            returnUrl.ToString());
+    }
+
+    [Fact]
     public async Task InitializeAsync_MemberPaymentFailure_CancelsOrder_MarksPaymentFailed_RestoresStock_AndKeepsCart()
     {
         await using var dbContext = CreateDbContext();
@@ -225,19 +315,483 @@ public class IyzicoPaymentServiceTests
             cart.Items.Single().ShopProductId);
     }
 
+    [Fact]
+public async Task InitializeAsync_GuestPaymentSuccess_UsesGuestBuyerAndCreatesPaymentTransaction()
+{
+    await using var dbContext =
+        CreateDbContext();
+
+    var product =
+        new ShopProduct
+        {
+            Name =
+                "NO23 Guest Test Product",
+
+            Sku =
+                "GUEST-TEST-001",
+
+            Category =
+                "Equipment",
+
+            UnitPrice =
+                150m,
+
+            StockQuantity =
+                4
+        };
+
+    var order =
+        new Order
+        {
+            OrderNumber =
+                $"NO23-GUEST-{Guid.NewGuid():N}",
+
+            // Guest sipariş:
+            // MemberProfile bağlı DEĞİL.
+            MemberProfileId =
+                null,
+
+            GuestEmail =
+                "guest@no23.test",
+
+            Type =
+                OrderType.OneTime,
+
+            Status =
+                OrderStatus.Pending,
+
+            PaymentStatus =
+                PaymentStatus.Pending,
+
+            DeliveryFullName =
+                "Guest Customer",
+
+            DeliveryPhoneNumber =
+                "05551112233",
+
+            DeliveryAddressLine =
+                "Guest Sokak No:23",
+
+            DeliveryDistrict =
+                "Kadikoy",
+
+            DeliveryCity =
+                "Istanbul",
+
+            DeliveryPostalCode =
+                "34710",
+
+            DeliveryDate =
+                DateOnly.FromDateTime(
+                    DateTime.Today.AddDays(1)),
+
+            DeliveryTimeSlot =
+                "10:00-12:00",
+
+            Subtotal =
+                300m,
+
+            DeliveryFee =
+                0m,
+
+            Total =
+                300m,
+
+            Items =
+            [
+                new OrderItem
+                {
+                    ItemType =
+                        CartItemType.ShopProduct,
+
+                    ShopProduct =
+                        product,
+
+                    ProductName =
+                        product.Name,
+
+                    UnitPrice =
+                        product.UnitPrice,
+
+                    Quantity =
+                        2,
+
+                    LineTotal =
+                        300m
+                }
+            ]
+        };
+
+    dbContext.AddRange(
+        product,
+        order);
+
+    await dbContext.SaveChangesAsync();
+
+    var fakeClient =
+        new FakeIyzicoCheckoutClient(
+            new IyzicoCheckoutInitializeResult
+            {
+                Succeeded =
+                    true,
+
+                StatusCode =
+                    200,
+
+                ConversationId =
+                    "conversation-guest-success",
+
+                RawStatus =
+                    "success",
+
+                Token =
+                    "checkout-token-guest",
+
+                PaymentPageUrl =
+                    "https://sandbox-payment.example/guest",
+
+                RawResponseJson =
+                    "{\"status\":\"success\"}"
+            });
+
+            var service =
+                CreateService(
+                    dbContext,
+                    fakeClient);
+
+            var result =
+                await service.InitializeAsync(
+                    order.Id,
+                    "127.0.0.1");
+
+            // Guest ödeme initialize başarılı olmalı.
+            Assert.True(
+                result.Succeeded);
+
+            Assert.Equal(
+                order.Id,
+                result.OrderId);
+
+            Assert.Equal(
+                "https://sandbox-payment.example/guest",
+                result.RedirectUrl);
+
+            // iyzico request gerçekten oluşturulmuş mu?
+            Assert.NotNull(
+                fakeClient.LastInitializeRequest);
+
+            var request =
+                fakeClient.LastInitializeRequest!;
+
+            // Guest sipariş member'a bağlı olmamalı.
+            Assert.Null(
+                order.MemberProfileId);
+
+            // iyzico Buyer.Id MEMBER değil GUEST olmalı.
+            Assert.Equal(
+                $"GUEST-{order.Id}",
+                request.Buyer.Id);
+
+            // E-posta ApplicationUser'dan değil
+            // Order.GuestEmail'den gelmeli.
+            Assert.Equal(
+                "guest@no23.test",
+                request.Buyer.Email);
+
+            // iyzico basket bilgileri siparişle eşleşmeli.
+            Assert.Equal(
+                order.OrderNumber,
+                request.BasketId);
+
+            Assert.Equal(
+                order.Subtotal,
+                request.Price);
+
+            Assert.Equal(
+                order.Total,
+                request.PaidPrice);
+
+            // Guest ödeme için PaymentTransaction oluşmalı.
+            var payment =
+                await dbContext.PaymentTransactions
+                    .SingleAsync();
+
+            Assert.Equal(
+                order.Id,
+                payment.OrderId);
+
+            Assert.Equal(
+                "iyzico",
+                payment.Provider);
+
+            Assert.Equal(
+                PaymentStatus.Pending,
+                payment.PaymentStatus);
+
+            Assert.Equal(
+                order.Total,
+                payment.Amount);
+
+            Assert.Equal(
+                "TRY",
+                payment.Currency);
+
+            Assert.Equal(
+                "checkout-token-guest",
+                payment.Token);
+
+            Assert.Equal(
+                "https://sandbox-payment.example/guest",
+                payment.PaymentPageUrl);
+        }
+
+    [Fact]
+    public async Task InitializeAsync_GuestShopPaymentFailure_CancelsOrder_MarksPaymentFailed_AndRestoresStock()
+    {
+    await using var dbContext =
+        CreateDbContext();
+
+    // Gerçekte ürün stoğunun başlangıçta 10 olduğunu varsayıyoruz.
+    // Guest sipariş oluşturulduğunda 2 adet rezerve edilmiş:
+    // 10 -> 8
+    var product =
+        new ShopProduct
+        {
+            Name =
+                "NO23 Guest Training Gloves",
+
+            Sku =
+                "GUEST-STOCK-TEST-001",
+
+            Category =
+                "Equipment",
+
+            UnitPrice =
+                100m,
+
+            StockQuantity =
+                8
+        };
+
+    var order =
+        new Order
+        {
+            OrderNumber =
+                $"NO23-GUEST-STOCK-{Guid.NewGuid():N}",
+
+            // Bu bir GUEST sipariş.
+            MemberProfileId =
+                null,
+
+            GuestEmail =
+                "guest-stock@no23.test",
+
+            Type =
+                OrderType.OneTime,
+
+            Status =
+                OrderStatus.Pending,
+
+            PaymentStatus =
+                PaymentStatus.Pending,
+
+            DeliveryFullName =
+                "Guest Customer",
+
+            DeliveryPhoneNumber =
+                "05551112233",
+
+            DeliveryAddressLine =
+                "Test Sokak No:23",
+
+            DeliveryDistrict =
+                "Kadikoy",
+
+            DeliveryCity =
+                "Istanbul",
+
+            DeliveryPostalCode =
+                "34710",
+
+            DeliveryDate =
+                DateOnly.FromDateTime(
+                    DateTime.Today.AddDays(1)),
+
+            DeliveryTimeSlot =
+                "10:00-12:00",
+
+            Subtotal =
+                200m,
+
+            DeliveryFee =
+                0m,
+
+            Total =
+                200m,
+
+            Items =
+            [
+                new OrderItem
+                {
+                    ItemType =
+                        CartItemType.ShopProduct,
+
+                    ShopProduct =
+                        product,
+
+                    ProductName =
+                        product.Name,
+
+                    UnitPrice =
+                        product.UnitPrice,
+
+                    Quantity =
+                        2,
+
+                    LineTotal =
+                        200m
+                }
+            ]
+        };
+
+    dbContext.AddRange(
+        product,
+        order);
+
+    await dbContext.SaveChangesAsync();
+
+    // iyzico initialize işlemini bilinçli olarak başarısız yapıyoruz.
+    var fakeClient =
+        new FakeIyzicoCheckoutClient(
+            new IyzicoCheckoutInitializeResult
+            {
+                Succeeded =
+                    false,
+
+                StatusCode =
+                    400,
+
+                ConversationId =
+                    "conversation-guest-stock-failure",
+
+                RawStatus =
+                    "failure",
+
+                ErrorCode =
+                    "10051",
+
+                ErrorMessage =
+                    "Ödeme formu başlatılamadı.",
+
+                ErrorGroup =
+                    "validation",
+
+                RawResponseJson =
+                    "{\"status\":\"failure\"}"
+            });
+
+    var service =
+        CreateService(
+            dbContext,
+            fakeClient);
+
+    var result =
+        await service.InitializeAsync(
+            order.Id,
+            "127.0.0.1");
+
+    // 1 - Ödeme initialize başarısız olmalı.
+    Assert.False(
+        result.Succeeded);
+
+    Assert.Equal(
+        order.Id,
+        result.OrderId);
+
+    // 2 - Sipariş iptal edilmiş olmalı.
+    var savedOrder =
+        await dbContext.Orders
+            .Include(item => item.Items)
+                .ThenInclude(item => item.ShopProduct)
+            .SingleAsync();
+
+    Assert.Equal(
+        OrderStatus.Cancelled,
+        savedOrder.Status);
+
+    // 3 - Sipariş payment durumu Failed olmalı.
+    Assert.Equal(
+        PaymentStatus.Failed,
+        savedOrder.PaymentStatus);
+
+    // 4 - Stok iadesinin yapıldığı işaretlenmeli.
+    Assert.NotNull(
+        savedOrder.StockRestoredAtUtc);
+
+    // 5 - PaymentTransaction oluşmuş ve Failed olmuş olmalı.
+    var payment =
+        await dbContext.PaymentTransactions
+            .SingleAsync();
+
+    Assert.Equal(
+        order.Id,
+        payment.OrderId);
+
+    Assert.Equal(
+        PaymentStatus.Failed,
+        payment.PaymentStatus);
+
+    Assert.Equal(
+        "failure",
+        payment.RawStatus);
+
+    Assert.NotNull(
+        payment.FailedAtUtc);
+
+    Assert.Contains(
+        "10051",
+        payment.LastError);
+
+    // 6 - EN KRİTİK KONTROL:
+    //
+    // Sipariş oluşturulduğunda:
+    // 10 -> 8
+    //
+    // iyzico initialize başarısız olduğunda:
+    // 8 -> 10
+    var savedProduct =
+        await dbContext.ShopProducts
+            .SingleAsync();
+
+    Assert.Equal(
+        10,
+        savedProduct.StockQuantity);
+
+    // 7 - Guest siparişte member sepeti olmamalı.
+    Assert.False(
+        await dbContext.ShoppingCarts.AnyAsync());
+
+    Assert.False(
+        await dbContext.CartItems.AnyAsync());
+    }
+
     private static IyzicoPaymentService CreateService(
         ApplicationDbContext dbContext,
         IIyzicoCheckoutClient checkoutClient)
     {
         var options =
-            Options.Create(
-                new IyzicoOptions
-                {
-                    Currency = "TRY",
+        Options.Create(
+        new IyzicoOptions
+        {
+            Currency = "TRY",
 
-                    SandboxBuyerIdentityNumber =
-                        "74300864791"
-                });
+            CallbackUrl =
+                "https://localhost:7220/payment/iyzico/callback",
+
+            SandboxBuyerIdentityNumber =
+                "74300864791"
+        });
+
 
         return new IyzicoPaymentService(
             dbContext,

@@ -1,20 +1,113 @@
+@using NO23.Web.Domain.Enums
 @model NO23.Web.ViewModels.GuestOrders.GuestOrderConfirmationViewModel
+
 @{
-    ViewData["Title"] = "Sipariş Alındı";
+    var isPaid = Model.PaymentStatus == PaymentStatus.Paid;
+    var isFailed = Model.PaymentStatus == PaymentStatus.Failed;
+    var isRefunded = Model.PaymentStatus == PaymentStatus.Refunded;
+    var isExpired = Model.PaymentStatus == PaymentStatus.Expired;
+
+    ViewData["Title"] = isPaid
+        ? "Ödeme Başarılı"
+        : isFailed
+            ? "Ödeme Başarısız"
+            : isRefunded
+                ? "Ödeme İade Edildi"
+                : isExpired
+                    ? "Ödeme Süresi Doldu"
+                    : "Ödeme Bekliyor";
 }
 
 <div class="public-confirmation-page public-confirmation-shop">
     <div class="public-order-grid-bg" aria-hidden="true"></div>
+
     <div class="container position-relative">
         <section class="public-confirmation-layout">
+
             <div class="public-confirmation-copy">
-                <p class="public-order-kicker">NO23 / Order Confirmed</p>
-                <span class="public-confirmation-status">Sipariş Alındı</span>
-                <h1>Ekipmanın<br /><em>yola hazırlanıyor.</em></h1>
-                <p>
-                    NO23 Shop siparişin sisteme kaydedildi.
-                    Teslimat takibi için sipariş numaranı saklayabilirsin.
-                </p>
+
+                @if (isPaid)
+                {
+                    <p class="public-order-kicker">
+                        NO23 / Payment Successful
+                    </p>
+
+                    <span class="public-confirmation-status">
+                        Ödeme Başarılı
+                    </span>
+
+                    <h1>
+                        Ekipmanın<br />
+                        <em>yola hazırlanıyor.</em>
+                    </h1>
+
+                    <p>
+                        Ödemen başarıyla alındı ve NO23 Shop siparişin onaylandı.
+                        Teslimat takibi için sipariş numaranı saklayabilirsin.
+                    </p>
+                }
+                else if (isFailed)
+                {
+                    <p class="public-order-kicker">
+                        NO23 / Payment Failed
+                    </p>
+
+                    <span class="public-confirmation-status">
+                        Ödeme Başarısız
+                    </span>
+
+                    <h1>
+                        Ödeme<br />
+                        <em>tamamlanamadı.</em>
+                    </h1>
+
+                    <p>
+                        Ödeme işlemi tamamlanamadığı için siparişin onaylanmadı.
+                        Shop'a dönerek yeniden sipariş oluşturabilirsin.
+                    </p>
+                }
+                else if (isRefunded)
+                {
+                    <p class="public-order-kicker">
+                        NO23 / Payment Refunded
+                    </p>
+
+                    <span class="public-confirmation-status">
+                        Ödeme İade Edildi
+                    </span>
+
+                    <h1>
+                        Ödemen<br />
+                        <em>iade edildi.</em>
+                    </h1>
+
+                    <p>
+                        Bu sipariş için ödeme iade durumunda.
+                        Sipariş numaranı referans olarak saklayabilirsin.
+                    </p>
+                }
+                else if (isExpired)
+                {
+                    <p class="public-order-kicker">
+                        NO23 / Payment Expired
+                    </p>
+
+                    <span class="public-confirmation-status">
+                        Ödeme Süresi Doldu
+                    </span>
+
+                    <h1>
+                        Ödeme süresi<br />
+                        <em>doldu.</em>
+                    </h1>
+
+                    <p>
+                        Ödeme belirtilen süre içinde tamamlanmadığı için
+                        sipariş iptal edildi. Yeniden sipariş oluşturabilirsin.
+                    </p>
+                }
+
+
                 <a class="public-order-back"
                    asp-area=""
                    asp-controller="Shop"
@@ -28,15 +121,46 @@
                     <span>Sipariş Numarası</span>
                     <strong>@Model.OrderNumber</strong>
                 </div>
+
                 <dl>
-                    <div><dt>Ürün</dt><dd>@Model.ProductName</dd></div>
-                    <div><dt>Adet</dt><dd>@Model.Quantity</dd></div>
-                    <div><dt>Toplam</dt><dd class="public-confirmation-total">@Model.Total.ToString("C0")</dd></div>
-                    <div><dt>Teslimat</dt><dd>@Model.DeliveryDate.ToString("dd.MM.yyyy") / @Model.DeliveryTimeSlot</dd></div>
-                    <div><dt>Ödeme</dt><dd>@Model.PaymentStatusText</dd></div>
+                    <div>
+                        <dt>Ürün</dt>
+                        <dd>@Model.ProductName</dd>
+                    </div>
+
+                    <div>
+                        <dt>Adet</dt>
+                        <dd>@Model.Quantity</dd>
+                    </div>
+
+                    <div>
+                        <dt>Toplam</dt>
+                        <dd class="public-confirmation-total">
+                            @Model.Total.ToString("C0")
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt>Teslimat</dt>
+                        <dd>
+                            @Model.DeliveryDate.ToString("dd.MM.yyyy")
+                            /
+                            @Model.DeliveryTimeSlot
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt>Ödeme</dt>
+                        <dd>@Model.PaymentStatusText</dd>
+                    </div>
                 </dl>
-                <footer><span>NO23 Shop</span><strong>23</strong></footer>
+
+                <footer>
+                    <span>NO23 Shop</span>
+                    <strong>23</strong>
+                </footer>
             </article>
+
         </section>
     </div>
 </div>

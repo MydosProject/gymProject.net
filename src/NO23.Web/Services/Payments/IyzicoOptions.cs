@@ -23,4 +23,6 @@ public sealed class IyzicoOptions
 
     public string SandboxBuyerIdentityNumber { get; set; } =
         "74300864791";
+
+    public int CheckoutFallbackExpirationMinutes { get; set; } = 30;
 }

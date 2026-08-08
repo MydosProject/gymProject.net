@@ -20,6 +20,8 @@ public class PaymentTransaction
 
     public string? PaymentPageUrl { get; set; }
 
+    public DateTime? CheckoutExpiresAtUtc { get; set; }
+
     public string? PaymentId { get; set; }
 
     public string? RawStatus { get; set; }
@@ -51,4 +53,6 @@ public class PaymentTransaction
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
 
     public DateTime? UpdatedAtUtc { get; set; }
+
+    public DateTime? ExpiredAtUtc { get; set; }
 }

@@ -152,15 +152,33 @@ public sealed class IyzicoPaymentService(
                 cancellationToken);
         }
 
-        paymentTransaction.Token = initializeResult.Token;
+        paymentTransaction.Token =
+            initializeResult.Token;
+
         paymentTransaction.PaymentPageUrl =
             initializeResult.PaymentPageUrl;
+
+        var checkoutInitializedAtUtc =
+            DateTime.UtcNow;
+
+        paymentTransaction.CheckoutExpiresAtUtc =
+            initializeResult.TokenExpireTime is > 0
+                ? checkoutInitializedAtUtc.AddSeconds(
+                    initializeResult.TokenExpireTime.Value)
+                : checkoutInitializedAtUtc.AddMinutes(
+                    settings.CheckoutFallbackExpirationMinutes);
+
         paymentTransaction.RawStatus =
             initializeResult.RawStatus;
+
         paymentTransaction.RawInitializeResponseJson =
             initializeResult.RawResponseJson;
-        paymentTransaction.LastError = null;
-        paymentTransaction.UpdatedAtUtc = DateTime.UtcNow;
+
+        paymentTransaction.LastError =
+            null;
+
+        paymentTransaction.UpdatedAtUtc =
+            checkoutInitializedAtUtc;
 
         await ClearMemberCartAsync(
             order.MemberProfileId,
@@ -464,6 +482,7 @@ public sealed class IyzicoPaymentService(
             Price = order.Subtotal,
             PaidPrice = order.Total,
             Buyer = buyer,
+            CallbackUrl = callbackUrl,
             ShippingAddress = address,
             BillingAddress = address,
             Items = basketItems

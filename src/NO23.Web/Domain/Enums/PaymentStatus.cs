@@ -14,5 +14,8 @@ public enum PaymentStatus
     Failed = 3,
 
     [Display(Name = "İade edildi")]
-    Refunded = 4
+    Refunded = 4,
+
+    [Display(Name = "Ödeme süresi doldu")]
+    Expired = 5
 }
