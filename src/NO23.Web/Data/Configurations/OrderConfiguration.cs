@@ -54,8 +54,7 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
             .HasMaxLength(20);
 
         builder.Property(order => order.DeliveryTimeSlot)
-            .HasMaxLength(40)
-            .IsRequired();
+            .HasMaxLength(40);
 
         builder.Property(order => order.Notes)
             .HasMaxLength(500);

@@ -4,6 +4,7 @@ using NO23.Web.Data;
 using NO23.Web.Domain.Entities;
 using NO23.Web.Domain.Enums;
 using NO23.Web.Services.Payments;
+using NO23.Web.Services;
 
 namespace NO23.Tests;
 
@@ -141,6 +142,7 @@ public class IyzicoPendingPaymentServiceTests
             new IyzicoPendingPaymentService(
                 dbContext,
                 fakeClient,
+                new KitchenPlanMatchingService(dbContext),
                 NullLogger<IyzicoPendingPaymentService>.Instance);
 
         var processed =
@@ -202,7 +204,259 @@ public class IyzicoPendingPaymentServiceTests
                 .Options;
 
         return new ApplicationDbContext(options);
+
+        
     }
+
+    private static async Task<(
+    KitchenSubscription Subscription,
+    Order Order,
+    PaymentTransaction Payment)>
+    CreatePendingKitchenPaymentAsync(
+        ApplicationDbContext dbContext)
+{
+    var startsOn =
+        DateOnly.FromDateTime(
+            DateTime.Today.AddDays(1));
+
+    var subscription =
+        new KitchenSubscription
+        {
+            MemberProfileId = 1,
+
+            KitchenSubscriptionPackageId = 1,
+
+            Plan =
+                KitchenSubscriptionPlan.FiveDays,
+
+            Status =
+                KitchenSubscriptionStatus.PendingPayment,
+
+            PackageNameSnapshot =
+                "5 Günlük Kitchen Paketi",
+
+            PackagePriceSnapshot =
+                4250m,
+
+            PackageDaysSnapshot = 5,
+
+            Goal =
+                NutritionGoal.WeightMaintenance,
+
+            SourceHeightCm = 170,
+
+            SourceWeightKg = 65m,
+
+            SourceAge = 23,
+
+            SourceGender =
+                Gender.Female,
+
+            SourceActivityLevel =
+                ActivityLevel.ModeratelyActive,
+
+            DailyCalories = 2000,
+
+            ProteinGrams = 120,
+
+            CarbohydrateGrams = 220,
+
+            FatGrams = 65,
+
+            StartsOn = startsOn,
+
+            EndsOn =
+                startsOn.AddDays(4)
+        };
+
+    dbContext.KitchenSubscriptions.Add(
+        subscription);
+
+    await dbContext.SaveChangesAsync();
+
+    var order =
+        new Order
+        {
+            OrderNumber =
+                $"NO23-KITCHEN-PENDING-{Guid.NewGuid():N}",
+
+            Type =
+                OrderType.KitchenSubscription,
+
+            Status =
+                OrderStatus.Pending,
+
+            PaymentStatus =
+                PaymentStatus.Pending,
+
+            KitchenSubscriptionId =
+                subscription.Id,
+
+            DeliveryFullName =
+                "Kitchen Test User",
+
+            DeliveryPhoneNumber =
+                "05551112233",
+
+            DeliveryAddressLine =
+                "Test Sokak No:23",
+
+            DeliveryDistrict =
+                "Kadikoy",
+
+            DeliveryCity =
+                "Istanbul",
+
+            Subtotal = 4250m,
+
+            DeliveryFee = 0m,
+
+            Total = 4250m,
+
+            Items =
+            [
+                new OrderItem
+                {
+                    ItemType =
+                        CartItemType.KitchenSubscriptionPackage,
+
+                    ProductName =
+                        subscription.PackageNameSnapshot,
+
+                    UnitPrice =
+                        subscription.PackagePriceSnapshot,
+
+                    Quantity = 1,
+
+                    LineTotal =
+                        subscription.PackagePriceSnapshot
+                }
+            ]
+        };
+
+    var payment =
+        new PaymentTransaction
+        {
+            Order = order,
+
+            Provider =
+                "iyzico",
+
+            ConversationId =
+                $"kitchen-pending-{Guid.NewGuid():N}",
+
+            BasketId =
+                order.OrderNumber,
+
+            Token =
+                $"kitchen-token-{Guid.NewGuid():N}",
+
+            PaymentStatus =
+                PaymentStatus.Pending,
+
+            Amount =
+                order.Total,
+
+            Currency =
+                "TRY",
+
+            CheckoutExpiresAtUtc =
+                DateTime.UtcNow.AddMinutes(-5)
+        };
+
+    dbContext.AddRange(
+        order,
+        payment);
+
+    await dbContext.SaveChangesAsync();
+
+    return (
+        subscription,
+        order,
+        payment);
+}
+
+private static async Task SeedKitchenPlanItemsAsync(
+    ApplicationDbContext dbContext)
+{
+    dbContext.KitchenMenuItems.AddRange(
+        new KitchenMenuItem
+        {
+            Name = "Test Breakfast",
+            Category =
+                MenuItemCategory.Breakfast,
+            Calories = 400,
+            ProteinGrams = 25,
+            CarbohydrateGrams = 45,
+            FatGrams = 12,
+            UnitPrice = 200m,
+            IsActive = true,
+            IsPlanEligible = true,
+            DisplayOrder = 1
+        },
+
+        new KitchenMenuItem
+        {
+            Name = "Test Snack A",
+            Category =
+                MenuItemCategory.Snack,
+            Calories = 200,
+            ProteinGrams = 15,
+            CarbohydrateGrams = 20,
+            FatGrams = 7,
+            UnitPrice = 150m,
+            IsActive = true,
+            IsPlanEligible = true,
+            DisplayOrder = 2
+        },
+
+        new KitchenMenuItem
+        {
+            Name = "Test Snack B",
+            Category =
+                MenuItemCategory.Snack,
+            Calories = 220,
+            ProteinGrams = 17,
+            CarbohydrateGrams = 22,
+            FatGrams = 8,
+            UnitPrice = 160m,
+            IsActive = true,
+            IsPlanEligible = true,
+            DisplayOrder = 3
+        },
+
+        new KitchenMenuItem
+        {
+            Name = "Test Main Meal A",
+            Category =
+                MenuItemCategory.MainMeal,
+            Calories = 550,
+            ProteinGrams = 40,
+            CarbohydrateGrams = 55,
+            FatGrams = 15,
+            UnitPrice = 300m,
+            IsActive = true,
+            IsPlanEligible = true,
+            DisplayOrder = 4
+        },
+
+        new KitchenMenuItem
+        {
+            Name = "Test Main Meal B",
+            Category =
+                MenuItemCategory.MainMeal,
+            Calories = 600,
+            ProteinGrams = 45,
+            CarbohydrateGrams = 60,
+            FatGrams = 17,
+            UnitPrice = 320m,
+            IsActive = true,
+            IsPlanEligible = true,
+            DisplayOrder = 5
+        });
+
+    await dbContext.SaveChangesAsync();
+}
 
 
     [Fact]
@@ -353,6 +607,7 @@ public async Task ProcessExpiredPaymentsAsync_WhenGuestShopCheckoutExpired_Cance
         new IyzicoPendingPaymentService(
             dbContext,
             fakeClient,
+            new KitchenPlanMatchingService(dbContext),
             NullLogger<IyzicoPendingPaymentService>.Instance);
 
     var processed =
@@ -554,6 +809,7 @@ public async Task ProcessExpiredPaymentsAsync_WhenGuestKitchenCheckoutExpired_Ca
         new IyzicoPendingPaymentService(
             dbContext,
             fakeClient,
+            new KitchenPlanMatchingService(dbContext),
             NullLogger<IyzicoPendingPaymentService>.Instance);
 
     var processed =
@@ -780,6 +1036,7 @@ public async Task ProcessExpiredPaymentsAsync_WhenMemberMixedCartCheckoutExpired
         new IyzicoPendingPaymentService(
             dbContext,
             fakeClient,
+            new KitchenPlanMatchingService(dbContext),
             NullLogger<IyzicoPendingPaymentService>.Instance);
 
     var processed =
@@ -984,6 +1241,7 @@ public async Task ProcessExpiredPaymentsAsync_WhenRetrieveFails_KeepsOrderPendin
         new IyzicoPendingPaymentService(
             dbContext,
             fakeClient,
+            new KitchenPlanMatchingService(dbContext),
             NullLogger<IyzicoPendingPaymentService>.Instance);
 
     var processed =
@@ -1202,6 +1460,7 @@ public async Task ProcessExpiredPaymentsAsync_WhenRetrieveReturnsPaymentFailure_
         new IyzicoPendingPaymentService(
             dbContext,
             fakeClient,
+            new KitchenPlanMatchingService(dbContext),
             NullLogger<IyzicoPendingPaymentService>.Instance);
 
     var processed =
@@ -1257,5 +1516,306 @@ public async Task ProcessExpiredPaymentsAsync_WhenRetrieveReturnsPaymentFailure_
     Assert.Equal(
         10,
         savedProduct.StockQuantity);
+}
+
+[Fact]
+public async Task ProcessExpiredPaymentsAsync_WhenKitchenPaymentActuallySucceeded_ActivatesSubscriptionAndCreatesMealPlan()
+{
+    await using var dbContext =
+        CreateDbContext();
+
+    await SeedKitchenPlanItemsAsync(
+        dbContext);
+
+    var scenario =
+        await CreatePendingKitchenPaymentAsync(
+            dbContext);
+
+    var fakeClient =
+        new FakeIyzicoCheckoutClient(
+            new IyzicoCheckoutRetrieveResult
+            {
+                Succeeded = true,
+                StatusCode = 200,
+
+                ConversationId =
+                    scenario.Payment.ConversationId,
+
+                RawStatus = "success",
+
+                Token =
+                    scenario.Payment.Token,
+
+                PaymentId =
+                    "kitchen-pending-success-payment",
+
+                PaymentStatus =
+                    "SUCCESS",
+
+                BasketId =
+                    scenario.Order.OrderNumber,
+
+                Currency = "TRY",
+
+                RawResponseJson =
+                    "{\"status\":\"success\",\"paymentStatus\":\"SUCCESS\"}"
+            });
+
+    var service =
+        new IyzicoPendingPaymentService(
+            dbContext,
+            fakeClient,
+            new KitchenPlanMatchingService(
+                dbContext),
+            NullLogger<IyzicoPendingPaymentService>.Instance);
+
+    var processed =
+        await service.ProcessExpiredPaymentsAsync();
+
+    Assert.Equal(
+        1,
+        processed);
+
+    var savedOrder =
+        await dbContext.Orders
+            .SingleAsync();
+
+    Assert.Equal(
+        OrderStatus.Confirmed,
+        savedOrder.Status);
+
+    Assert.Equal(
+        PaymentStatus.Paid,
+        savedOrder.PaymentStatus);
+
+    var savedPayment =
+        await dbContext.PaymentTransactions
+            .SingleAsync();
+
+    Assert.Equal(
+        PaymentStatus.Paid,
+        savedPayment.PaymentStatus);
+
+    Assert.NotNull(
+        savedPayment.CompletedAtUtc);
+
+    var savedSubscription =
+        await dbContext.KitchenSubscriptions
+            .SingleAsync();
+
+    Assert.Equal(
+        KitchenSubscriptionStatus.Active,
+        savedSubscription.Status);
+
+    var expectedStart =
+        DateOnly.FromDateTime(
+            DateTime.Today.AddDays(1));
+
+    Assert.Equal(
+        expectedStart,
+        savedSubscription.StartsOn);
+
+    Assert.Equal(
+        expectedStart.AddDays(4),
+        savedSubscription.EndsOn);
+
+    var mealPlan =
+        await dbContext.KitchenMealPlans
+            .SingleAsync();
+
+    Assert.Equal(
+        savedSubscription.Id,
+        mealPlan.KitchenSubscriptionId);
+
+    Assert.Equal(
+        KitchenMealPlanStatus.Generated,
+        mealPlan.Status);
+}
+
+[Fact]
+public async Task ProcessExpiredPaymentsAsync_WhenKitchenPaymentFailed_MarksSubscriptionPaymentFailed()
+{
+    await using var dbContext =
+        CreateDbContext();
+
+    var scenario =
+        await CreatePendingKitchenPaymentAsync(
+            dbContext);
+
+    var fakeClient =
+        new FakeIyzicoCheckoutClient(
+            new IyzicoCheckoutRetrieveResult
+            {
+                Succeeded = false,
+                StatusCode = 200,
+
+                ConversationId =
+                    scenario.Payment.ConversationId,
+
+                RawStatus = "failure",
+
+                Token =
+                    scenario.Payment.Token,
+
+                PaymentId =
+                    "kitchen-pending-failed-payment",
+
+                PaymentStatus =
+                    "FAILURE",
+
+                BasketId =
+                    scenario.Order.OrderNumber,
+
+                ErrorCode =
+                    "10051",
+
+                ErrorGroup =
+                    "NOT_SUFFICIENT_FUNDS",
+
+                ErrorMessage =
+                    "Kart limiti yetersiz, yetersiz bakiye",
+
+                RawResponseJson =
+                    "{\"status\":\"failure\",\"errorCode\":\"10051\",\"paymentStatus\":\"FAILURE\"}"
+            });
+
+    var service =
+        new IyzicoPendingPaymentService(
+            dbContext,
+            fakeClient,
+            new KitchenPlanMatchingService(
+                dbContext),
+            NullLogger<IyzicoPendingPaymentService>.Instance);
+
+    var processed =
+        await service.ProcessExpiredPaymentsAsync();
+
+    Assert.Equal(
+        1,
+        processed);
+
+    var savedOrder =
+        await dbContext.Orders
+            .SingleAsync();
+
+    Assert.Equal(
+        OrderStatus.Cancelled,
+        savedOrder.Status);
+
+    Assert.Equal(
+        PaymentStatus.Failed,
+        savedOrder.PaymentStatus);
+
+    var savedPayment =
+        await dbContext.PaymentTransactions
+            .SingleAsync();
+
+    Assert.Equal(
+        PaymentStatus.Failed,
+        savedPayment.PaymentStatus);
+
+    Assert.NotNull(
+        savedPayment.FailedAtUtc);
+
+    var savedSubscription =
+        await dbContext.KitchenSubscriptions
+            .SingleAsync();
+
+    Assert.Equal(
+        KitchenSubscriptionStatus.PaymentFailed,
+        savedSubscription.Status);
+
+    Assert.False(
+        await dbContext.KitchenMealPlans
+            .AnyAsync());
+}
+
+[Fact]
+public async Task ProcessExpiredPaymentsAsync_WhenKitchenCheckoutExpired_CancelsSubscriptionWithoutMealPlan()
+{
+    await using var dbContext =
+        CreateDbContext();
+
+    var scenario =
+        await CreatePendingKitchenPaymentAsync(
+            dbContext);
+
+    var fakeClient =
+        new FakeIyzicoCheckoutClient(
+            new IyzicoCheckoutRetrieveResult
+            {
+                Succeeded = true,
+                StatusCode = 200,
+
+                ConversationId =
+                    scenario.Payment.ConversationId,
+
+                RawStatus = "success",
+
+                Token =
+                    scenario.Payment.Token,
+
+                BasketId =
+                    scenario.Order.OrderNumber,
+
+                PaymentStatus =
+                    "PENDING",
+
+                Currency =
+                    "TRY",
+
+                RawResponseJson =
+                    "{\"status\":\"success\",\"paymentStatus\":\"PENDING\"}"
+            });
+
+    var service =
+        new IyzicoPendingPaymentService(
+            dbContext,
+            fakeClient,
+            new KitchenPlanMatchingService(
+                dbContext),
+            NullLogger<IyzicoPendingPaymentService>.Instance);
+
+    var processed =
+        await service.ProcessExpiredPaymentsAsync();
+
+    Assert.Equal(
+        1,
+        processed);
+
+    var savedOrder =
+        await dbContext.Orders
+            .SingleAsync();
+
+    Assert.Equal(
+        OrderStatus.Cancelled,
+        savedOrder.Status);
+
+    Assert.Equal(
+        PaymentStatus.Expired,
+        savedOrder.PaymentStatus);
+
+    var savedPayment =
+        await dbContext.PaymentTransactions
+            .SingleAsync();
+
+    Assert.Equal(
+        PaymentStatus.Expired,
+        savedPayment.PaymentStatus);
+
+    Assert.NotNull(
+        savedPayment.ExpiredAtUtc);
+
+    var savedSubscription =
+        await dbContext.KitchenSubscriptions
+            .SingleAsync();
+
+    Assert.Equal(
+        KitchenSubscriptionStatus.Cancelled,
+        savedSubscription.Status);
+
+    Assert.False(
+        await dbContext.KitchenMealPlans
+            .AnyAsync());
 }
 }

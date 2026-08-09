@@ -8,6 +8,7 @@ namespace NO23.Web.Services.Payments;
 public sealed class IyzicoPendingPaymentService(
     ApplicationDbContext dbContext,
     IIyzicoCheckoutClient checkoutClient,
+    KitchenPlanMatchingService kitchenPlanMatchingService,
     ILogger<IyzicoPendingPaymentService> logger)
 {
     private const string ProviderName = "iyzico";
@@ -171,7 +172,7 @@ public sealed class IyzicoPendingPaymentService(
             return false;
         }
 
-        if (string.Equals(
+            if (string.Equals(
                 retrieveResult.PaymentStatus,
                 "SUCCESS",
                 StringComparison.OrdinalIgnoreCase))
@@ -184,10 +185,26 @@ public sealed class IyzicoPendingPaymentService(
             await dbContext.SaveChangesAsync(
                 cancellationToken);
 
+            if (order.Type == OrderType.KitchenSubscription)
+            {
+                var activated =
+                    await ActivateKitchenPackageAsync(
+                        order,
+                        cancellationToken);
+
+                if (!activated)
+                {
+                    logger.LogError(
+                        "Pending iyzico ödemesi başarılı bulundu ancak Kitchen paketi aktifleştirilemedi. OrderId: {OrderId}, KitchenSubscriptionId: {KitchenSubscriptionId}",
+                        order.Id,
+                        order.KitchenSubscriptionId);
+                }
+            }
+
             return true;
         }
 
-        if (string.Equals(
+            if (string.Equals(
                 retrieveResult.PaymentStatus,
                 "FAILURE",
                 StringComparison.OrdinalIgnoreCase))
@@ -196,6 +213,14 @@ public sealed class IyzicoPendingPaymentService(
                 paymentTransaction,
                 order,
                 checkedAtUtc);
+
+            if (order.Type == OrderType.KitchenSubscription)
+            {
+                await MarkKitchenPaymentFailedAsync(
+                    order,
+                    checkedAtUtc,
+                    cancellationToken);
+            }
 
             await dbContext.SaveChangesAsync(
                 cancellationToken);
@@ -233,11 +258,215 @@ public sealed class IyzicoPendingPaymentService(
             checkedAtUtc,
             retrieveResult.PaymentStatus);
 
+        if (order.Type == OrderType.KitchenSubscription)
+        {
+            await MarkKitchenCheckoutExpiredAsync(
+                order,
+                checkedAtUtc,
+                cancellationToken);
+        }
+
         await dbContext.SaveChangesAsync(
             cancellationToken);
 
         return true;
     }
+
+    private async Task<bool> ActivateKitchenPackageAsync(
+    Domain.Entities.Order order,
+    CancellationToken cancellationToken)
+    {
+        if (!order.KitchenSubscriptionId.HasValue)
+        {
+            return false;
+        }
+
+        var subscription =
+            await dbContext.KitchenSubscriptions
+                .Include(item => item.MealPlan)
+                .FirstOrDefaultAsync(
+                    item =>
+                        item.Id ==
+                        order.KitchenSubscriptionId.Value,
+                    cancellationToken);
+
+        if (subscription is null)
+        {
+            return false;
+        }
+
+        if (subscription.Status ==
+                KitchenSubscriptionStatus.Active &&
+            subscription.MealPlan is not null)
+        {
+            return true;
+        }
+
+        if (!subscription.SourceHeightCm.HasValue ||
+            !subscription.SourceWeightKg.HasValue ||
+            !subscription.SourceAge.HasValue ||
+            !subscription.SourceGender.HasValue ||
+            !subscription.SourceActivityLevel.HasValue)
+        {
+            logger.LogError(
+                "Kitchen paketi için kalori kaynak bilgileri eksik. KitchenSubscriptionId: {KitchenSubscriptionId}",
+                subscription.Id);
+
+            return false;
+        }
+
+        if (subscription.PackageDaysSnapshot <= 0)
+        {
+            logger.LogError(
+                "Kitchen paket gün sayısı geçersiz. KitchenSubscriptionId: {KitchenSubscriptionId}",
+                subscription.Id);
+
+            return false;
+        }
+
+        var startsOn =
+            DateOnly.FromDateTime(
+                DateTime.Today.AddDays(1));
+
+        subscription.StartsOn =
+            startsOn;
+
+        subscription.EndsOn =
+            startsOn.AddDays(
+                subscription.PackageDaysSnapshot - 1);
+
+        subscription.UpdatedAtUtc =
+            DateTime.UtcNow;
+
+        await dbContext.SaveChangesAsync(
+            cancellationToken);
+
+        var calculationRequest =
+            new CalorieCalculationRequest
+            {
+                HeightCm =
+                    subscription.SourceHeightCm.Value,
+
+                WeightKg =
+                    subscription.SourceWeightKg.Value,
+
+                Age =
+                    subscription.SourceAge.Value,
+
+                Gender =
+                    subscription.SourceGender.Value,
+
+                ActivityLevel =
+                    subscription.SourceActivityLevel.Value,
+
+                Goal =
+                    subscription.Goal
+            };
+
+        var planResult =
+            await kitchenPlanMatchingService.GenerateAsync(
+                subscription.Id,
+                calculationRequest);
+
+        if (!planResult.Succeeded)
+        {
+            subscription.Status =
+                KitchenSubscriptionStatus.Paused;
+
+            subscription.UpdatedAtUtc =
+                DateTime.UtcNow;
+
+            await dbContext.SaveChangesAsync(
+                cancellationToken);
+
+            logger.LogError(
+                "Pending ödeme başarılı bulundu ancak Kitchen planı üretilemedi. KitchenSubscriptionId: {KitchenSubscriptionId}, Error: {Error}",
+                subscription.Id,
+                planResult.Message);
+
+            return false;
+        }
+
+        subscription.Status =
+            KitchenSubscriptionStatus.Active;
+
+        subscription.UpdatedAtUtc =
+            DateTime.UtcNow;
+
+        await dbContext.SaveChangesAsync(
+            cancellationToken);
+
+        return true;
+    }    
+
+    private async Task MarkKitchenPaymentFailedAsync(
+    Domain.Entities.Order order,
+    DateTime utcNow,
+    CancellationToken cancellationToken)
+    {
+        if (!order.KitchenSubscriptionId.HasValue)
+        {
+            return;
+        }
+
+        var subscription =
+            await dbContext.KitchenSubscriptions
+                .FirstOrDefaultAsync(
+                    item =>
+                        item.Id ==
+                        order.KitchenSubscriptionId.Value,
+                    cancellationToken);
+
+        if (subscription is null)
+        {
+            return;
+        }
+
+        if (subscription.Status ==
+            KitchenSubscriptionStatus.PendingPayment)
+        {
+            subscription.Status =
+                KitchenSubscriptionStatus.PaymentFailed;
+
+            subscription.UpdatedAtUtc =
+                utcNow;
+        }
+    }
+
+    private async Task MarkKitchenCheckoutExpiredAsync(
+    Domain.Entities.Order order,
+    DateTime utcNow,
+    CancellationToken cancellationToken)
+    {
+        if (!order.KitchenSubscriptionId.HasValue)
+        {
+            return;
+        }
+
+        var subscription =
+            await dbContext.KitchenSubscriptions
+                .FirstOrDefaultAsync(
+                    item =>
+                        item.Id ==
+                        order.KitchenSubscriptionId.Value,
+                    cancellationToken);
+
+        if (subscription is null)
+        {
+            return;
+        }
+
+        if (subscription.Status ==
+            KitchenSubscriptionStatus.PendingPayment)
+        {
+            subscription.Status =
+                KitchenSubscriptionStatus.Cancelled;
+
+            subscription.UpdatedAtUtc =
+                utcNow;
+        }
+    }
+
 
     private static void MarkAsPaid(
         Domain.Entities.PaymentTransaction paymentTransaction,

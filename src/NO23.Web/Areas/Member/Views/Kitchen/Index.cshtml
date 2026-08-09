@@ -323,6 +323,78 @@
                                         </div>
                                     </dl>
 
+                                    <div class="kitchen-meal-day-actions">
+
+                                    <div>
+                                        <small>Teslimat tercihi</small>
+
+                                        <strong>
+                                            @day.DeliveryMethodDisplayName
+                                        </strong>
+                                    </div>
+
+                                    @if (!day.IsFullySkipped && day.CanSkip)
+                                    {
+                                        <form asp-area="Member"
+                                            asp-controller="Kitchen"
+                                            asp-action="SetGymPickup"
+                                            method="post">
+
+                                            <input type="hidden"
+                                                name="mealPlanDayId"
+                                                value="@day.Id" />
+
+                                            <button type="submit"
+                                                    class="kitchen-inline-action">
+                                                NO23'ten Teslim Al
+                                            </button>
+
+                                        </form>
+
+                                        <form asp-area="Member"
+                                            asp-controller="Kitchen"
+                                            asp-action="SetHomeDelivery"
+                                            method="post">
+
+                                            <input type="hidden"
+                                                name="mealPlanDayId"
+                                                value="@day.Id" />
+
+                                            <button type="submit"
+                                                    class="kitchen-inline-action">
+                                                Adresime Teslim
+                                            </button>
+
+                                        </form>
+                                    }
+
+                                </div>
+
+                                    @if (day.DeliveryMethod == "HomeDelivery" &&
+                                        !string.IsNullOrWhiteSpace(day.DeliveryAddressLine))
+                                    {
+                                        <div class="kitchen-meal-day-totals">
+                                            <div>
+                                                <dt>Teslim alacak kişi</dt>
+                                                <dd>@day.DeliveryFullName</dd>
+                                            </div>
+
+                                            <div>
+                                                <dt>Telefon</dt>
+                                                <dd>@day.DeliveryPhoneNumber</dd>
+                                            </div>
+
+                                            <div>
+                                                <dt>Adres</dt>
+                                                <dd>
+                                                    @day.DeliveryAddressLine
+                                                    <br />
+                                                    @day.DeliveryDistrict / @day.DeliveryCity
+                                                </dd>
+                                            </div>
+                                        </div>
+                                    }
+
                                     @if (day.CanSkip)
                                     {
                                         <div class="kitchen-meal-day-actions">
@@ -503,7 +575,7 @@
                                 <h4>@plan.Name</h4>
                                 <p>@plan.Description</p>
                                 <button type="submit">
-                                    Aboneliği Başlat
+                                    Paketi Satın Al
                                     <span aria-hidden="true">→</span>
                                 </button>
                             </form>

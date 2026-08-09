@@ -19,6 +19,17 @@ public class KitchenSubscriptionConfiguration : IEntityTypeConfiguration<Kitchen
         builder.Property(subscription => subscription.Goal)
             .HasConversion<string>()
             .HasMaxLength(40);
+            
+        builder.Property(subscription => subscription.SourceWeightKg)
+            .HasPrecision(6, 2);
+
+        builder.Property(subscription => subscription.SourceGender)
+            .HasConversion<string>()
+            .HasMaxLength(40);
+
+        builder.Property(subscription => subscription.SourceActivityLevel)
+            .HasConversion<string>()
+            .HasMaxLength(40);
 
         builder.Property(subscription => subscription.PackageNameSnapshot)
             .HasMaxLength(80)

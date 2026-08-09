@@ -8,6 +8,28 @@ public class KitchenMealPlanDayConfiguration : IEntityTypeConfiguration<KitchenM
 {
     public void Configure(EntityTypeBuilder<KitchenMealPlanDay> builder)
     {
+
+        builder.Property(day => day.DeliveryMethod)
+            .HasConversion<string>()
+            .HasMaxLength(40);
+
+        builder.Property(day => day.DeliveryFullName)
+            .HasMaxLength(160);
+
+        builder.Property(day => day.DeliveryPhoneNumber)
+            .HasMaxLength(40);
+
+        builder.Property(day => day.DeliveryAddressLine)
+            .HasMaxLength(500);
+
+        builder.Property(day => day.DeliveryDistrict)
+            .HasMaxLength(100);
+
+        builder.Property(day => day.DeliveryCity)
+            .HasMaxLength(100);
+
+        builder.Property(day => day.DeliveryPostalCode)
+            .HasMaxLength(20);
         builder.Property(day => day.TotalProteinGrams)
             .HasPrecision(7, 2);
 

@@ -36,9 +36,9 @@ public class Order
 
     public string? DeliveryPostalCode { get; set; }
 
-    public DateOnly DeliveryDate { get; set; }
+    public DateOnly? DeliveryDate { get; set; }
 
-    public string DeliveryTimeSlot { get; set; } = string.Empty;
+    public string? DeliveryTimeSlot { get; set; }
 
     public string? Notes { get; set; }
 

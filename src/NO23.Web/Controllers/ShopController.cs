@@ -140,13 +140,18 @@ public class ShopController(
             return NotFound();
         }
 
+        if (order.DeliveryDate is null ||string.IsNullOrWhiteSpace(order.DeliveryTimeSlot))
+        {
+            return NotFound();
+        }
+
         return View(new GuestOrderConfirmationViewModel
         {
             OrderNumber = order.OrderNumber,
             ProductName = orderItem.ProductName,
             Quantity = orderItem.Quantity,
             Total = order.Total,
-            DeliveryDate = order.DeliveryDate,
+            DeliveryDate = order.DeliveryDate.Value,
             DeliveryTimeSlot = order.DeliveryTimeSlot,
             PaymentStatus = order.PaymentStatus,
             PaymentStatusText = GetPaymentStatusLabel(order.PaymentStatus)

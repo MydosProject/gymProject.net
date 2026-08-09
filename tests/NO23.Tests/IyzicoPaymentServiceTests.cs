@@ -6,6 +6,7 @@ using NO23.Web.Domain.Entities;
 using NO23.Web.Domain.Enums;
 using NO23.Web.Services.Payments;
 using Microsoft.AspNetCore.WebUtilities;
+using NO23.Web.Services;
 
 namespace NO23.Tests;
 
@@ -776,29 +777,34 @@ public async Task InitializeAsync_GuestPaymentSuccess_UsesGuestBuyerAndCreatesPa
     }
 
     private static IyzicoPaymentService CreateService(
-        ApplicationDbContext dbContext,
-        IIyzicoCheckoutClient checkoutClient)
+    ApplicationDbContext dbContext,
+    IIyzicoCheckoutClient checkoutClient)
     {
         var options =
-        Options.Create(
-        new IyzicoOptions
-        {
-            Currency = "TRY",
+            Options.Create(
+                new IyzicoOptions
+                {
+                    Currency = "TRY",
 
-            CallbackUrl =
-                "https://localhost:7220/payment/iyzico/callback",
+                    CallbackUrl =
+                        "https://localhost:7220/payment/iyzico/callback",
 
-            SandboxBuyerIdentityNumber =
-                "74300864791"
-        });
+                    SandboxBuyerIdentityNumber =
+                        "74300864791"
+                });
 
+        var kitchenPlanMatchingService =
+            new KitchenPlanMatchingService(dbContext);
 
         return new IyzicoPaymentService(
             dbContext,
             checkoutClient,
+            kitchenPlanMatchingService,
             options,
             NullLogger<IyzicoPaymentService>.Instance);
     }
+
+    
 
     private static ApplicationDbContext CreateDbContext()
     {
@@ -1368,5 +1374,409 @@ public async Task HandleCallbackAsync_PaymentFailure_MarksPaymentFailed_CancelsO
     Assert.Equal(
         token,
         fakeClient.LastRetrieveToken);
+
 }
+
+    [Fact]
+public async Task HandleCallbackAsync_KitchenPaymentFailure_MarksSubscriptionPaymentFailed()
+{
+    await using var dbContext =
+        CreateDbContext();
+
+    var subscription =
+        new KitchenSubscription
+        {
+            MemberProfileId = 1,
+            KitchenSubscriptionPackageId = 1,
+
+            Plan =
+                KitchenSubscriptionPlan.FiveDays,
+
+            Status =
+                KitchenSubscriptionStatus.PendingPayment,
+
+            PackageNameSnapshot =
+                "5 Günlük Kitchen Paketi",
+
+            PackagePriceSnapshot = 4250m,
+
+            PackageDaysSnapshot = 5,
+
+            Goal =
+                NutritionGoal.WeightMaintenance,
+
+            DailyCalories = 2000,
+
+            ProteinGrams = 120,
+
+            CarbohydrateGrams = 220,
+
+            FatGrams = 65,
+
+            StartsOn =
+                DateOnly.FromDateTime(
+                    DateTime.Today.AddDays(1)),
+
+            EndsOn =
+                DateOnly.FromDateTime(
+                    DateTime.Today.AddDays(5))
+        };
+
+    dbContext.KitchenSubscriptions.Add(
+        subscription);
+
+    await dbContext.SaveChangesAsync();
+
+    var order =
+        new Order
+        {
+            OrderNumber =
+                "NO23-KITCHEN-FAIL-001",
+
+            Type =
+                OrderType.KitchenSubscription,
+
+            Status =
+                OrderStatus.Pending,
+
+            PaymentStatus =
+                PaymentStatus.Pending,
+
+            KitchenSubscriptionId =
+                subscription.Id,
+
+            Subtotal = 4250m,
+
+            DeliveryFee = 0m,
+
+            Total = 4250m
+        };
+
+    dbContext.Orders.Add(order);
+
+    await dbContext.SaveChangesAsync();
+
+    const string token =
+        "kitchen-failure-token";
+
+    const string conversationId =
+        "kitchen-failure-conversation";
+
+    var paymentTransaction =
+        new PaymentTransaction
+        {
+            OrderId =
+                order.Id,
+
+            Provider =
+                "iyzico",
+
+            ConversationId =
+                conversationId,
+
+            BasketId =
+                order.OrderNumber,
+
+            Token =
+                token,
+
+            PaymentStatus =
+                PaymentStatus.Pending,
+
+            Amount =
+                order.Total,
+
+            Currency =
+                "TRY"
+        };
+
+    dbContext.PaymentTransactions.Add(
+        paymentTransaction);
+
+    await dbContext.SaveChangesAsync();
+
+    var fakeClient =
+        new FakeIyzicoCheckoutClient(
+            new IyzicoCheckoutRetrieveResult
+            {
+                Succeeded = true,
+
+                StatusCode = 200,
+
+                ConversationId =
+                    conversationId,
+
+                RawStatus =
+                    "success",
+
+                Token =
+                    token,
+
+                PaymentId =
+                    "kitchen-failed-payment",
+
+                PaymentStatus =
+                    "FAILURE",
+
+                FraudStatus = -1,
+
+                BasketId =
+                    order.OrderNumber,
+
+                Price =
+                    "4250.00",
+
+                PaidPrice =
+                    "4250.00",
+
+                Currency =
+                    "TRY",
+
+                RawResponseJson =
+                    "{\"status\":\"success\",\"paymentStatus\":\"FAILURE\"}"
+            });
+
+    var service =
+        CreateService(
+            dbContext,
+            fakeClient);
+
+    var result =
+        await service.HandleCallbackAsync(
+            token);
+
+    Assert.False(
+        result.Succeeded);
+
+    var savedOrder =
+        await dbContext.Orders
+            .SingleAsync();
+
+    Assert.Equal(
+        PaymentStatus.Failed,
+        savedOrder.PaymentStatus);
+
+    Assert.Equal(
+        OrderStatus.Cancelled,
+        savedOrder.Status);
+
+    var savedPayment =
+        await dbContext.PaymentTransactions
+            .SingleAsync();
+
+    Assert.Equal(
+        PaymentStatus.Failed,
+        savedPayment.PaymentStatus);
+
+    Assert.NotNull(
+        savedPayment.FailedAtUtc);
+
+    var savedSubscription =
+        await dbContext.KitchenSubscriptions
+            .SingleAsync();
+
+    Assert.Equal(
+        KitchenSubscriptionStatus.PaymentFailed,
+        savedSubscription.Status);
+
+    Assert.False(
+        await dbContext.KitchenMealPlans
+            .AnyAsync());
+}
+
+[Fact]
+public async Task HandleCallbackAsync_KitchenPaidCallbackRepeated_DoesNotCreateSecondMealPlan()
+{
+    await using var dbContext =
+        CreateDbContext();
+
+    var subscription =
+        new KitchenSubscription
+        {
+            MemberProfileId = 1,
+            KitchenSubscriptionPackageId = 1,
+
+            Plan =
+                KitchenSubscriptionPlan.FiveDays,
+
+            Status =
+                KitchenSubscriptionStatus.Active,
+
+            PackageNameSnapshot =
+                "5 Günlük Kitchen Paketi",
+
+            PackagePriceSnapshot = 4250m,
+
+            PackageDaysSnapshot = 5,
+
+            Goal =
+                NutritionGoal.WeightMaintenance,
+
+            DailyCalories = 2000,
+
+            ProteinGrams = 120,
+
+            CarbohydrateGrams = 220,
+
+            FatGrams = 65,
+
+            StartsOn =
+                DateOnly.FromDateTime(
+                    DateTime.Today.AddDays(1)),
+
+            EndsOn =
+                DateOnly.FromDateTime(
+                    DateTime.Today.AddDays(5))
+        };
+
+    dbContext.KitchenSubscriptions.Add(
+        subscription);
+
+    await dbContext.SaveChangesAsync();
+
+    var mealPlan =
+        new KitchenMealPlan
+        {
+            KitchenSubscriptionId =
+                subscription.Id,
+
+            Status =
+                KitchenMealPlanStatus.Generated,
+
+            CalculationVersion = "v1",
+
+            SourceHeightCm = 170,
+
+            SourceWeightKg = 65m,
+
+            SourceAge = 23,
+
+            SourceGender =
+                Gender.Female,
+
+            SourceActivityLevel =
+                ActivityLevel.ModeratelyActive,
+
+            SourceGoal =
+                NutritionGoal.WeightMaintenance,
+
+            TargetDailyCalories = 2000,
+
+            TargetProteinGrams = 120,
+
+            TargetCarbohydrateGrams = 220,
+
+            TargetFatGrams = 65
+        };
+
+    dbContext.KitchenMealPlans.Add(
+        mealPlan);
+
+    var order =
+        new Order
+        {
+            OrderNumber =
+                "NO23-KITCHEN-PAID-001",
+
+            Type =
+                OrderType.KitchenSubscription,
+
+            Status =
+                OrderStatus.Confirmed,
+
+            PaymentStatus =
+                PaymentStatus.Paid,
+
+            KitchenSubscriptionId =
+                subscription.Id,
+
+            Subtotal = 4250m,
+
+            DeliveryFee = 0m,
+
+            Total = 4250m
+        };
+
+    dbContext.Orders.Add(order);
+
+    await dbContext.SaveChangesAsync();
+
+    const string token =
+        "kitchen-repeat-token";
+
+    var paymentTransaction =
+        new PaymentTransaction
+        {
+            OrderId =
+                order.Id,
+
+            Provider =
+                "iyzico",
+
+            ConversationId =
+                "kitchen-repeat-conversation",
+
+            BasketId =
+                order.OrderNumber,
+
+            Token =
+                token,
+
+            PaymentId =
+                "kitchen-paid-payment",
+
+            PaymentStatus =
+                PaymentStatus.Paid,
+
+            Amount =
+                order.Total,
+
+            Currency =
+                "TRY",
+
+            CompletedAtUtc =
+                DateTime.UtcNow
+        };
+
+    dbContext.PaymentTransactions.Add(
+        paymentTransaction);
+
+    await dbContext.SaveChangesAsync();
+
+    var fakeClient =
+        new FakeIyzicoCheckoutClient(
+            new IyzicoCheckoutRetrieveResult
+            {
+                Succeeded = true
+            });
+
+    var service =
+        CreateService(
+            dbContext,
+            fakeClient);
+
+    var firstResult =
+        await service.HandleCallbackAsync(
+            token);
+
+    var secondResult =
+        await service.HandleCallbackAsync(
+            token);
+
+    Assert.True(
+        firstResult.Succeeded);
+
+    Assert.True(
+        secondResult.Succeeded);
+
+    Assert.Equal(
+        1,
+        await dbContext.KitchenMealPlans
+            .CountAsync());
+
+    Assert.Null(
+        fakeClient.LastRetrieveToken);
+}
+
+
 }

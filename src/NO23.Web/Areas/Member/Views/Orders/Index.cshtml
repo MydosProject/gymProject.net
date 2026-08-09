@@ -13,7 +13,7 @@
         return type switch
         {
             "OneTime" => "Tek Seferlik Sipariş",
-            "KitchenSubscription" => "Kitchen Abonelik Siparişi",
+            "KitchenSubscription" => "Kitchen Paketi",
             _ => type
         };
     }
@@ -73,6 +73,7 @@
         {
             "ShopProduct" => "NO23 Shop",
             "KitchenMenuItem" => "NO23 Kitchen",
+            "KitchenSubscriptionPackage" => "NO23 Kitchen Paketi",
             _ => itemType
         };
     }
@@ -196,14 +197,27 @@
                             </header>
 
                             <dl class="member-order-summary">
-                                <div>
-                                    <dt>Teslimat günü</dt>
-                                    <dd>@order.DeliveryDate.ToString("dd.MM.yyyy")</dd>
-                                </div>
-                                <div>
-                                    <dt>Saat aralığı</dt>
-                                    <dd>@order.DeliveryTimeSlot</dd>
-                                </div>
+                                    @if (order.Type == "KitchenSubscription")
+                                    {
+                                        <div>
+                                            <dt>Teslimat tercihi</dt>
+                                            <dd>Beslenme planından belirlenecek</dd>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div>
+                                            <dt>Teslimat günü</dt>
+                                            <dd>
+                                                @(order.DeliveryDate?.ToString("dd.MM.yyyy") ?? "-")
+                                            </dd>
+                                        </div>
+
+                                        <div>
+                                            <dt>Saat aralığı</dt>
+                                            <dd>@(order.DeliveryTimeSlot ?? "-")</dd>
+                                        </div>
+                                    }
                                 <div>
                                     <dt>Ürün adedi</dt>
                                     <dd>@order.ItemCount</dd>

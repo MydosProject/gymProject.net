@@ -4,12 +4,14 @@ using NO23.Web.Data;
 using NO23.Web.Domain.Entities;
 using NO23.Web.Domain.Enums;
 using Microsoft.AspNetCore.WebUtilities;
+using NO23.Web.Services;
 
 namespace NO23.Web.Services.Payments;
 
 public sealed class IyzicoPaymentService(
     ApplicationDbContext dbContext,
     IIyzicoCheckoutClient checkoutClient,
+    KitchenPlanMatchingService kitchenPlanMatchingService,
     IOptions<IyzicoOptions> options,
     ILogger<IyzicoPaymentService> logger)
 {
@@ -180,11 +182,16 @@ public sealed class IyzicoPaymentService(
         paymentTransaction.UpdatedAtUtc =
             checkoutInitializedAtUtc;
 
-        await ClearMemberCartAsync(
-            order.MemberProfileId,
-            cancellationToken);
+        if (order.Type !=
+            OrderType.KitchenSubscription)
+        {
+            await ClearMemberCartAsync(
+                order.MemberProfileId,
+                cancellationToken);
+        }
 
-        await dbContext.SaveChangesAsync(cancellationToken);
+        await dbContext.SaveChangesAsync(
+            cancellationToken);
 
         return IyzicoPaymentStartResult.Success(
             order.Id,
@@ -225,6 +232,13 @@ public sealed class IyzicoPaymentService(
     if (paymentTransaction.PaymentStatus == PaymentStatus.Paid &&
         order.PaymentStatus == PaymentStatus.Paid)
     {
+        if (order.Type == OrderType.KitchenSubscription)
+        {
+            await ActivateKitchenPackageAsync(
+                order,
+                cancellationToken);
+        }
+
         return IyzicoPaymentCallbackResult.Success(
             order.Id,
             paymentTransaction.Id);
@@ -384,6 +398,22 @@ public sealed class IyzicoPaymentService(
         await dbContext.SaveChangesAsync(
             cancellationToken);
 
+        if (order.Type == OrderType.KitchenSubscription)
+            {
+                var kitchenActivated =
+                    await ActivateKitchenPackageAsync(
+                        order,
+                        cancellationToken);
+
+                if (!kitchenActivated)
+                {
+                    logger.LogError(
+                        "Kitchen paketi ödemesi başarılı olmasına rağmen beslenme planı oluşturulamadı. OrderId: {OrderId}, KitchenSubscriptionId: {KitchenSubscriptionId}",
+                        order.Id,
+                        order.KitchenSubscriptionId);
+                }
+            }
+
         return IyzicoPaymentCallbackResult.Success(
             order.Id,
             paymentTransaction.Id);
@@ -414,6 +444,29 @@ public sealed class IyzicoPaymentService(
     order.UpdatedAtUtc =
         failedAtUtc;
 
+    if (order.Type == OrderType.KitchenSubscription &&
+    order.KitchenSubscriptionId.HasValue)
+        {
+            var subscription =
+                await dbContext.KitchenSubscriptions
+                    .FirstOrDefaultAsync(
+                        item =>
+                            item.Id ==
+                            order.KitchenSubscriptionId.Value,
+                        cancellationToken);
+
+            if (subscription is not null &&
+                subscription.Status ==
+                    KitchenSubscriptionStatus.PendingPayment)
+            {
+                subscription.Status =
+                    KitchenSubscriptionStatus.PaymentFailed;
+
+                subscription.UpdatedAtUtc =
+                    failedAtUtc;
+            }
+        }
+
     OrderWorkflowService.RestoreShopProductStockOnce(
         order);
 
@@ -424,6 +477,132 @@ public sealed class IyzicoPaymentService(
         "Ödeme işlemi başarısız.",
         order.Id,
         paymentTransaction.Id);
+    }
+
+    private async Task<bool> ActivateKitchenPackageAsync(
+    Order order,
+    CancellationToken cancellationToken)
+    {
+        if (order.Type != OrderType.KitchenSubscription ||
+            !order.KitchenSubscriptionId.HasValue)
+        {
+            return false;
+        }
+
+        var subscription =
+            await dbContext.KitchenSubscriptions
+                .Include(item => item.MealPlan)
+                .FirstOrDefaultAsync(
+                    item =>
+                        item.Id ==
+                        order.KitchenSubscriptionId.Value,
+                    cancellationToken);
+
+        if (subscription is null)
+        {
+            return false;
+        }
+
+        // Callback tekrar geldiyse aynı planı yeniden oluşturma.
+        if (subscription.Status ==
+                KitchenSubscriptionStatus.Active &&
+            subscription.MealPlan is not null)
+        {
+            return true;
+        }
+
+        if (!subscription.SourceHeightCm.HasValue ||
+            !subscription.SourceWeightKg.HasValue ||
+            !subscription.SourceAge.HasValue ||
+            !subscription.SourceGender.HasValue ||
+            !subscription.SourceActivityLevel.HasValue)
+        {
+            logger.LogError(
+                "Kitchen paketi için kalori hesaplama kaynak bilgileri bulunamadı. KitchenSubscriptionId: {KitchenSubscriptionId}",
+                subscription.Id);
+
+            return false;
+        }
+
+        if (subscription.PackageDaysSnapshot <= 0)
+        {
+            logger.LogError(
+                "Kitchen paket gün sayısı geçersiz. KitchenSubscriptionId: {KitchenSubscriptionId}",
+                subscription.Id);
+
+            return false;
+        }
+
+        var startsOn =
+            DateOnly.FromDateTime(
+                DateTime.Today.AddDays(1));
+
+        subscription.StartsOn =
+            startsOn;
+
+        subscription.EndsOn =
+            startsOn.AddDays(
+                subscription.PackageDaysSnapshot - 1);
+
+        subscription.UpdatedAtUtc =
+            DateTime.UtcNow;
+
+        var calculationRequest =
+            new CalorieCalculationRequest
+            {
+                HeightCm =
+                    subscription.SourceHeightCm.Value,
+
+                WeightKg =
+                    subscription.SourceWeightKg.Value,
+
+                Age =
+                    subscription.SourceAge.Value,
+
+                Gender =
+                    subscription.SourceGender.Value,
+
+                ActivityLevel =
+                    subscription.SourceActivityLevel.Value,
+
+                Goal =
+                    subscription.Goal
+            };
+
+        var planResult =
+            await kitchenPlanMatchingService.GenerateAsync(
+                subscription.Id,
+                calculationRequest);
+
+        if (!planResult.Succeeded)
+        {
+            subscription.Status =
+                KitchenSubscriptionStatus.Paused;
+
+            subscription.UpdatedAtUtc =
+                DateTime.UtcNow;
+
+            await dbContext.SaveChangesAsync(
+                cancellationToken);
+
+            logger.LogError(
+                "Ödeme başarılı ancak Kitchen planı üretilemedi. KitchenSubscriptionId: {KitchenSubscriptionId}, Error: {Error}",
+                subscription.Id,
+                planResult.Message);
+
+            return false;
+        }
+
+        subscription.Status =
+            KitchenSubscriptionStatus.Active;
+
+        subscription.UpdatedAtUtc =
+            DateTime.UtcNow;
+
+        await dbContext.SaveChangesAsync(
+            cancellationToken);
+
+        return true;
     }
 
 
@@ -471,7 +650,11 @@ public sealed class IyzicoPaymentService(
                 Category1 = GetItemCategory1(item),
                 Category2 = GetItemCategory2(item),
                 Price = item.LineTotal,
-                ItemType = IyzicoCheckoutItemType.Physical
+                ItemType =
+                    item.ItemType ==
+                        CartItemType.KitchenSubscriptionPackage
+                            ? IyzicoCheckoutItemType.Virtual
+                            : IyzicoCheckoutItemType.Physical
             })
             .ToList();
 
@@ -635,9 +818,17 @@ public sealed class IyzicoPaymentService(
     {
         return item.ItemType switch
         {
-            CartItemType.ShopProduct => "Shop",
-            CartItemType.KitchenMenuItem => "Kitchen",
-            _ => "NO23"
+            CartItemType.ShopProduct =>
+                "Shop",
+
+            CartItemType.KitchenMenuItem =>
+                "Kitchen",
+
+            CartItemType.KitchenSubscriptionPackage =>
+                "Kitchen Package",
+
+            _ =>
+                "NO23"
         };
     }
 
@@ -652,7 +843,11 @@ public sealed class IyzicoPaymentService(
             CartItemType.KitchenMenuItem =>
                 item.KitchenMenuItem?.Category.ToString(),
 
-            _ => null
+            CartItemType.KitchenSubscriptionPackage =>
+                "Package",
+
+            _ =>
+                null
         };
     }
 
