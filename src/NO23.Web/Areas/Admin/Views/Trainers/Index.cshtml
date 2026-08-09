@@ -12,6 +12,12 @@
             </div>
 
             <a class="btn btn-dark" asp-action="Create">Yeni Eğitmen</a>
+            @if (TempData["StatusMessage"] is string statusMessage)
+            {
+                <div class="alert alert-success">
+                    @statusMessage
+                </div>
+            }
         </div>
 
         <div class="table-responsive bg-white border rounded-3">
@@ -23,6 +29,7 @@
                         <th>Sertifikalar</th>
                         <th>Ders</th>
                         <th>Durum</th>
+                        <th>Panel</th>
                         <th class="text-end">İşlem</th>
                     </tr>
                 </thead>
@@ -38,6 +45,22 @@
                                 <span class="badge @(trainer.IsActive ? "text-bg-success" : "text-bg-secondary")">
                                     @(trainer.IsActive ? "Aktif" : "Pasif")
                                 </span>
+                            </td>
+                            <td data-label="Panel">
+                                @if (trainer.HasPanelAccount)
+                                {
+                                    <span class="badge text-bg-success">
+                                        Hesap bağlı
+                                    </span>
+                                }
+                                else
+                                {
+                                    <a class="btn btn-sm btn-outline-primary"
+                                    asp-action="CreatePanelAccount"
+                                    asp-route-id="@trainer.Id">
+                                        Panel hesabı oluştur
+                                    </a>
+                                }
                             </td>
                             <td class="text-end" data-label="İşlem">
                                 <a class="btn btn-sm btn-outline-dark" asp-action="Edit" asp-route-id="@trainer.Id">Düzenle</a>

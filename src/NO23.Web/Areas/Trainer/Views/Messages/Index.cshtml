@@ -1,0 +1,287 @@
+@model TrainerMessagesViewModel
+
+@{
+    ViewData["Title"] = "Mesajlar";
+}
+
+<section>
+
+    <div class="mb-4">
+
+        <p class="text-uppercase
+                  text-muted
+                  small mb-1">
+            İletişim
+        </p>
+
+        <h1 class="h3 mb-2">
+            Mesajlar
+        </h1>
+
+        <p class="text-muted mb-0">
+            Birebir çalışma sürecindeki
+            üyelerinle iletişim kur.
+        </p>
+
+    </div>
+
+    @if (
+        TempData["TrainerMessageError"]
+        is string error)
+    {
+        <div class="alert alert-danger">
+            @error
+        </div>
+    }
+
+    @if (Model.Conversations.Count == 0)
+    {
+        <div class="card border-0 shadow-sm">
+
+            <div class="card-body
+                        py-5
+                        text-center">
+
+                <h2 class="h5">
+                    Henüz bir üye görüşmen yok.
+                </h2>
+
+                <p class="text-muted mb-0">
+                    Bir üye sana birebir çalışma
+                    talebi gönderdiğinde
+                    konuşma burada görüntülenir.
+                </p>
+
+            </div>
+
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+
+            <div class="col-lg-4">
+
+                <div class="card
+                        border-0
+                        shadow-sm">
+
+                    <div class="list-group
+                                list-group-flush">
+
+                        @foreach (
+                            var conversation in
+                            Model.Conversations)
+                        {
+                            var isActive =
+                                Model.ActiveConversation?.Id ==
+                                conversation.Id;
+
+                            <a asp-action="Index"
+                               asp-route-conversationId="@conversation.Id"
+                               class="list-group-item
+                                      list-group-item-action
+                                      py-3
+                                      @(isActive
+                                          ? "active"
+                                          : string.Empty)">
+
+                                <div class="fw-semibold">
+                                    @conversation.MemberName
+                                </div>
+
+                                <div class="small
+                                            @(isActive
+                                                ? ""
+                                                : "text-muted")">
+                                    @conversation.MemberEmail
+                                </div>
+
+                                @if (
+                                    !string.IsNullOrWhiteSpace(
+                                        conversation.LastMessage))
+                                {
+                                    <div class="small
+                                                mt-2
+                                                text-truncate">
+                                        @conversation.LastMessage
+                                    </div>
+                                }
+
+                                <div class="small mt-1">
+                                    @(conversation
+                                        .LastActivityAtUtc
+                                        .ToLocalTime()
+                                        .ToString(
+                                            "dd.MM.yyyy HH:mm"))
+                                </div>
+
+                            </a>
+                        }
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-8">
+
+                @if (Model.ActiveConversation is not null)
+    {
+                        <div class="card
+                                    border-0
+                                    shadow-sm"
+                            data-trainer-chat
+                            data-conversation-id="@Model.ActiveConversation.Id"
+                            data-current-user-id="@(
+                                User.FindFirst(
+                                    System.Security.Claims.ClaimTypes.NameIdentifier
+                                )?.Value)">
+
+                        <div class="card-header
+                                    bg-white
+                                    py-3">
+
+                            <strong>
+                                @(Model.ActiveConversation
+                                    .MemberName)
+                            </strong>
+
+                            <div class="small text-muted">
+                                @(Model.ActiveConversation
+                                    .MemberEmail)
+                            </div>
+
+                        </div>
+
+                     <div class="card-body"
+                        data-chat-messages
+                        style="min-height: 420px;
+                                max-height: 520px;
+                                overflow-y: auto;">
+
+                           @if (Model.ActiveConversation.Messages.Count == 0)
+                            {
+                                <div class="text-center
+                                            text-muted
+                                            py-5"
+                                    data-chat-empty>
+
+                                    Henüz mesaj yok.
+
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="d-flex
+                                            flex-column
+                                            gap-3">
+
+                                    @foreach (var message in Model.ActiveConversation.Messages)
+{
+                                        <div class="d-flex
+                                                    @(message.IsMine
+                                                        ? "justify-content-end"
+                                                        : "justify-content-start")"
+                                            data-message-id="@message.Id">
+
+                                            <div class="border
+                                                        rounded-3
+                                                        px-3
+                                                        py-2"
+                                                 style="max-width: 75%;">
+
+                                                <div>
+                                                    @message.Body
+                                                </div>
+
+                                                <div class="small
+                                                            text-muted
+                                                            mt-1">
+
+                                                    @(message
+                                                        .SentAtUtc
+                                                        .ToLocalTime()
+                                                        .ToString(
+                                                            "dd.MM.yyyy HH:mm"))
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+                                    }
+
+                                </div>
+                            }
+
+                        </div>
+
+                        <div class="card-footer
+                                    bg-white
+                                    p-3">
+
+                            @if (Model.ActiveConversation.CanWrite)
+                            {
+                                <form asp-action="Send"
+                                    method="post"
+                                    data-chat-send-form>
+
+                                    <input type="hidden"
+                                        name="conversationId"
+                                        value="@Model.ActiveConversation.Id" />
+
+                                    <div class="text-danger small mb-2"
+                                        data-chat-error>
+                                    </div>
+
+                                    <div class="input-group">
+
+                                        <textarea name="body"
+                                                rows="2"
+                                                maxlength="2000"
+                                                required
+                                                class="form-control"
+                                                placeholder="Mesajını yaz..."></textarea>
+
+                                        <button type="submit"
+                                                class="btn btn-dark">
+                                            Gönder
+                                        </button>
+
+                                    </div>
+
+                                </form>
+                            }
+                            else
+                            {
+                                <div class="text-muted small">
+
+                                    Bu konuşma şu anda salt okunur.
+                                    Mesajlaşma birebir talep ve randevu süresince,
+                                    ayrıca tamamlanan randevudan sonraki
+                                    48 saat boyunca açık kalır.
+
+                                </div>
+                            }
+
+                        </div>
+
+                    </div>
+                }
+
+            </div>
+
+        </div>
+    }
+
+</section>
+
+@section Scripts {
+    <script src="~/lib/signalr/signalr.min.js"></script>
+
+    <script src="~/js/trainer-chat.js"
+            asp-append-version="true">
+    </script>
+}

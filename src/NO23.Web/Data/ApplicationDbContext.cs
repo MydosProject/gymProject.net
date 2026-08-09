@@ -22,6 +22,12 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<PersonalTrainingRequest> PersonalTrainingRequests =>
         Set<PersonalTrainingRequest>();
 
+    public DbSet<TrainerConversation> TrainerConversations =>
+        Set<TrainerConversation>();
+
+    public DbSet<TrainerMessage> TrainerMessages =>
+        Set<TrainerMessage>();
+
     public DbSet<KitchenMenuItem> KitchenMenuItems => Set<KitchenMenuItem>();
 
     public DbSet<KitchenSubscription> KitchenSubscriptions => Set<KitchenSubscription>();

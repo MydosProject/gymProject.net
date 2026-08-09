@@ -10,6 +10,7 @@ using NO23.Web.Services;
 using NO23.Web.Services.Email;
 using NO23.Web.ViewModels.Api;
 using NO23.Web.Services.Payments;
+using NO23.Web.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -154,8 +155,10 @@ builder.Services.AddControllersWithViews(options =>
     messages.SetValueMustNotBeNullAccessor(_ =>
         "Bu alan zorunludur.");
 });
+builder.Services.AddSignalR();
 builder.Services.AddScoped<ClassReservationService>();
 builder.Services.AddScoped<PersonalTrainingRequestService>();
+builder.Services.AddScoped<TrainerMessagingService>();
 builder.Services.AddScoped<CalorieCalculatorService>();
 builder.Services.AddScoped<KitchenPlanMatchingService>();
 builder.Services.AddScoped<KitchenProductionPlanningService>();
@@ -498,6 +501,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapStaticAssets();
+
+app.MapHub<TrainerChatHub>(
+    "/hubs/trainer-chat");
 
 app.MapControllerRoute(
     name: "areas",

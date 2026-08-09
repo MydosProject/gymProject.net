@@ -13,4 +13,8 @@ public class ApplicationUser : IdentityUser
     public DateTime? LastLoginAtUtc { get; set; }
 
     public MemberProfile? MemberProfile { get; set; }
+
+    public Trainer? TrainerProfile { get; set; }
+
+    public ICollection<TrainerMessage> SentTrainerMessages { get; set; } = [];
 }

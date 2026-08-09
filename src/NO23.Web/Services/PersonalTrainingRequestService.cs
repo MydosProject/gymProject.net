@@ -52,17 +52,36 @@ public class PersonalTrainingRequestService(ApplicationDbContext dbContext)
             return PersonalTrainingRequestResult.Fail("Geçerli bir eğitmen seçmelisin.");
         }
 
-        var hasDuplicatePendingRequest = await dbContext.PersonalTrainingRequests
+        var hasActiveRequest = await dbContext.PersonalTrainingRequests
             .AnyAsync(request =>
                 request.MemberProfileId == profile.Id &&
                 request.TrainerId == model.TrainerId &&
-                request.PreferredDate == model.PreferredDate &&
-                request.Status == PersonalTrainingRequestStatus.Pending);
+                (
+                    request.Status == PersonalTrainingRequestStatus.Pending ||
+                    request.Status == PersonalTrainingRequestStatus.Scheduled
+                ));
 
-        if (hasDuplicatePendingRequest)
+        if (hasActiveRequest)
         {
             return PersonalTrainingRequestResult.Fail(
-                "Bu eğitmen için aynı tarihte bekleyen bir birebir talebin var.");
+                "Bu eğitmenle zaten devam eden bir birebir sürecin var. " +
+                "Yeni talep oluşturmadan önce mevcut sürecin tamamlanmalı veya iptal edilmelidir.");
+        }
+
+        var conversationExists =
+        await dbContext.TrainerConversations
+            .AnyAsync(conversation =>
+                conversation.MemberProfileId == profile.Id &&
+                conversation.TrainerId == model.TrainerId);
+
+        if (!conversationExists)
+        {
+            dbContext.TrainerConversations.Add(
+                new TrainerConversation
+                {
+                    MemberProfileId = profile.Id,
+                    TrainerId = model.TrainerId
+                });
         }
 
         dbContext.PersonalTrainingRequests.Add(new PersonalTrainingRequest
@@ -93,17 +112,113 @@ public class PersonalTrainingRequestService(ApplicationDbContext dbContext)
             return PersonalTrainingRequestResult.Fail("Birebir talep bulunamadı.");
         }
 
+        var nowUtc = DateTime.UtcNow;
+
+        if (request.Status == PersonalTrainingRequestStatus.Pending)
+        {
+            // Bekleyen talep iptal edilebilir.
+        }
+        else if (request.Status == PersonalTrainingRequestStatus.Scheduled)
+        {
+            if (request.ScheduledAtUtc is null)
+            {
+                return PersonalTrainingRequestResult.Fail(
+                    "Planlanmış randevunun tarih bilgisi bulunamadı.");
+            }
+
+            if (request.ScheduledAtUtc <= nowUtc)
+            {
+                return PersonalTrainingRequestResult.Fail(
+                    "Başlamış veya zamanı geçmiş birebir randevu iptal edilemez.");
+            }
+        }
+        else
+        {
+            return PersonalTrainingRequestResult.Fail(
+                "Bu birebir talep artık iptal edilemez.");
+        }
+
+            request.Status = PersonalTrainingRequestStatus.Cancelled;
+            request.CancelledAtUtc = nowUtc;
+            request.UpdatedAtUtc = nowUtc;
+
+            await dbContext.SaveChangesAsync();
+            return PersonalTrainingRequestResult.Ok();
+    }
+
+    public async Task<PersonalTrainingRequestResult> UpdateByTrainerAsync(
+    string trainerUserId,
+    int requestId,
+    PersonalTrainingRequestStatus status,
+    DateTime? scheduledAtLocal,
+    string? trainerNote)
+    {
+        if (status is not PersonalTrainingRequestStatus.Scheduled
+            and not PersonalTrainingRequestStatus.Rejected)
+        {
+            return PersonalTrainingRequestResult.Fail(
+                "Eğitmen yalnızca talebi planlayabilir veya reddedebilir.");
+        }
+
+        var request = await dbContext.PersonalTrainingRequests
+            .Include(item => item.Trainer)
+            .FirstOrDefaultAsync(item =>
+                item.Id == requestId &&
+                item.Trainer.ApplicationUserId == trainerUserId);
+
+        if (request is null)
+        {
+            return PersonalTrainingRequestResult.Fail(
+                "Birebir talep bulunamadı.");
+        }
+
         if (request.Status != PersonalTrainingRequestStatus.Pending)
         {
             return PersonalTrainingRequestResult.Fail(
-                "Yalnızca bekleyen birebir talepler iptal edilebilir.");
+                "Yalnızca bekleyen birebir talepler yönetilebilir.");
         }
 
-        request.Status = PersonalTrainingRequestStatus.Cancelled;
-        request.CancelledAtUtc = DateTime.UtcNow;
-        request.UpdatedAtUtc = DateTime.UtcNow;
+        var nowUtc = DateTime.UtcNow;
+
+        if (status == PersonalTrainingRequestStatus.Scheduled)
+        {
+            if (!request.Trainer.IsActive)
+            {
+                return PersonalTrainingRequestResult.Fail(
+                    "Pasif eğitmen için yeni birebir randevu planlanamaz.");
+            }
+
+            if (scheduledAtLocal is null)
+            {
+                return PersonalTrainingRequestResult.Fail(
+                    "Randevuyu planlamak için kesin tarih ve saat girmelisin.");
+            }
+
+            var scheduledAtUtc = DateTime
+                .SpecifyKind(
+                    scheduledAtLocal.Value,
+                    DateTimeKind.Local)
+                .ToUniversalTime();
+
+            if (scheduledAtUtc <= nowUtc)
+            {
+                return PersonalTrainingRequestResult.Fail(
+                    "Kesin randevu tarihi geçmişte olamaz.");
+            }
+
+            request.ScheduledAtUtc = scheduledAtUtc;
+        }
+        else
+        {
+            request.ScheduledAtUtc = null;
+        }
+
+        request.Status = status;
+        request.TrainerNote = trainerNote?.Trim();
+        request.UpdatedAtUtc = nowUtc;
 
         await dbContext.SaveChangesAsync();
+
         return PersonalTrainingRequestResult.Ok();
     }
 
@@ -157,6 +272,7 @@ public class PersonalTrainingRequestService(ApplicationDbContext dbContext)
 
                 request.ScheduledAtUtc = scheduledAtUtc;
                 request.CancelledAtUtc = null;
+                request.CompletedAtUtc = null;
                 break;
 
             case PersonalTrainingRequestStatus.Rejected:
@@ -167,6 +283,8 @@ public class PersonalTrainingRequestService(ApplicationDbContext dbContext)
                 }
 
                 request.ScheduledAtUtc = null;
+                request.CancelledAtUtc = null;
+                request.CompletedAtUtc = null;
                 break;
 
             case PersonalTrainingRequestStatus.Cancelled:
@@ -179,6 +297,7 @@ public class PersonalTrainingRequestService(ApplicationDbContext dbContext)
                 }
 
                 request.CancelledAtUtc ??= nowUtc;
+                request.CompletedAtUtc = null;
                 break;
 
             case PersonalTrainingRequestStatus.Completed:
@@ -188,6 +307,7 @@ public class PersonalTrainingRequestService(ApplicationDbContext dbContext)
                         "Yalnızca planlanmış birebir randevular tamamlanabilir.");
                 }
 
+                request.CompletedAtUtc = nowUtc;
                 break;
 
             case PersonalTrainingRequestStatus.Pending:
@@ -199,6 +319,7 @@ public class PersonalTrainingRequestService(ApplicationDbContext dbContext)
 
                 request.ScheduledAtUtc = null;
                 request.CancelledAtUtc = null;
+                request.CompletedAtUtc = null;
                 break;
 
             default:

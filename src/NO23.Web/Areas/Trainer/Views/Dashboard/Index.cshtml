@@ -1,0 +1,371 @@
+@model TrainerDashboardViewModel
+
+@{
+    ViewData["Title"] = "Genel Bakış";
+}
+
+<section class="admin-dashboard-page">
+
+    <header class="admin-dashboard-hero">
+
+        <div class="admin-dashboard-hero-copy">
+
+            <p class="admin-eyebrow">
+                NO23 / TRAINER ROOM
+            </p>
+
+            <h1>
+                Hoş geldin,
+                <br />
+                <span>@Model.TrainerName</span>
+            </h1>
+
+            <p>
+                Birebir antrenman taleplerini,
+                yaklaşan randevularını ve
+                grup derslerini tek ekrandan
+                takip edebilirsin.
+            </p>
+
+        </div>
+
+        <div class="admin-dashboard-hero-panel">
+
+            <div>
+                <span>Uzmanlık</span>
+                <strong>
+                    @Model.Specialty
+                </strong>
+            </div>
+
+            <p>
+                Bu aşamada panel yalnızca
+                görüntüleme amaçlıdır.
+            </p>
+
+        </div>
+
+    </header>
+
+    <section class="admin-dashboard-metrics">
+
+        <a class="admin-dashboard-metric-card"
+           asp-area="Trainer"
+           asp-controller="PersonalTrainingRequests"
+           asp-action="Index">
+
+            <div class="admin-dashboard-metric-top">
+                <span>01</span>
+                <small>Birebir</small>
+            </div>
+
+            <strong>
+                @(Model.PendingRequestCount.ToString("00"))
+            </strong>
+
+            <div class="admin-dashboard-metric-footer">
+                <span>Bekleyen talep</span>
+                <b>→</b>
+            </div>
+
+        </a>
+
+        <a class="admin-dashboard-metric-card"
+           asp-area="Trainer"
+           asp-controller="PersonalTrainingRequests"
+           asp-action="Index">
+
+            <div class="admin-dashboard-metric-top">
+                <span>02</span>
+                <small>Randevular</small>
+            </div>
+
+            <strong>
+                @(Model.UpcomingPersonalTrainingCount.ToString("00"))
+            </strong>
+
+            <div class="admin-dashboard-metric-footer">
+                <span>Yaklaşan birebir</span>
+                <b>→</b>
+            </div>
+
+        </a>
+
+        <a class="admin-dashboard-metric-card"
+           asp-area="Trainer"
+           asp-controller="Classes"
+           asp-action="Index">
+
+            <div class="admin-dashboard-metric-top">
+                <span>03</span>
+                <small>Dersler</small>
+            </div>
+
+            <strong>
+                @(Model.ActiveGroupClassCount.ToString("00"))
+            </strong>
+
+            <div class="admin-dashboard-metric-footer">
+                <span>Aktif grup dersi</span>
+                <b>→</b>
+            </div>
+
+        </a>
+
+        <a class="admin-dashboard-metric-card"
+           asp-area="Trainer"
+           asp-controller="Classes"
+           asp-action="Index">
+
+            <div class="admin-dashboard-metric-top">
+                <span>04</span>
+                <small>Program</small>
+            </div>
+
+            <strong>
+               @(Model.UpcomingClassSessionCount.ToString("00"))
+            </strong>
+
+            <div class="admin-dashboard-metric-footer">
+                <span>Yaklaşan seans</span>
+                <b>→</b>
+            </div>
+
+        </a>
+
+    </section>
+
+    <section class="mt-5">
+
+        <div class="d-flex justify-content-between
+                    align-items-center mb-3">
+
+            <div>
+                <small class="text-uppercase
+                              text-muted">
+                    Birebir antrenman
+                </small>
+
+                <h2 class="h4 mb-0">
+                    Son talepler
+                </h2>
+            </div>
+
+            <a class="btn btn-sm
+                      btn-outline-dark"
+               asp-area="Trainer"
+               asp-controller="PersonalTrainingRequests"
+               asp-action="Index">
+                Tümünü gör
+            </a>
+
+        </div>
+
+        <div class="card border-0 shadow-sm">
+
+            @if (
+                Model.RecentPersonalTrainingRequests
+                    .Count == 0)
+            {
+                <div class="card-body py-5
+                            text-center
+                            text-muted">
+
+                    Henüz sana gönderilmiş
+                    bir birebir antrenman talebi yok.
+
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+
+                    <table class="table
+                                  align-middle
+                                  mb-0">
+
+                        <thead>
+                            <tr>
+                                <th>Üye</th>
+                                <th>Tercih</th>
+                                <th>Durum</th>
+                                <th>Kesin randevu</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                        @foreach (
+                            var request in
+                            Model.RecentPersonalTrainingRequests)
+                        {
+                            <tr>
+
+                                <td>
+                                    <strong>
+                                        @request.MemberName
+                                    </strong>
+
+                                    <div class="small text-muted">
+                                        @request.MemberEmail
+                                    </div>
+                                </td>
+
+                                <td>
+                                    @request.PreferredDate
+                                        .ToString("dd.MM.yyyy")
+
+                                    <div class="small text-muted">
+                                        @request.PreferredTimeWindow
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <span class="badge
+                                        @(request.Status ==
+                                            PersonalTrainingRequestStatus.Pending
+                                            ? "text-bg-warning"
+                                            : request.Status ==
+                                              PersonalTrainingRequestStatus.Scheduled
+                                                ? "text-bg-success"
+                                                : "text-bg-secondary")">
+
+                                        @request.StatusDisplayName
+
+                                    </span>
+                                </td>
+
+                                <td>
+                                    @if (
+                                        request.ScheduledAtUtc
+                                            is not null)
+                                    {
+                                      @(request.ScheduledAtUtc.Value
+                                        .ToLocalTime()
+                                        .ToString("dd.MM.yyyy HH:mm"))
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">
+                                            —
+                                        </span>
+                                    }
+                                </td>
+
+                            </tr>
+                        }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+            }
+
+        </div>
+
+    </section>
+
+    <section class="mt-5">
+
+        <div class="d-flex justify-content-between
+                    align-items-center mb-3">
+
+            <div>
+                <small class="text-uppercase
+                              text-muted">
+                    Ders programı
+                </small>
+
+                <h2 class="h4 mb-0">
+                    Yaklaşan derslerin
+                </h2>
+            </div>
+
+            <a class="btn btn-sm
+                      btn-outline-dark"
+               asp-area="Trainer"
+               asp-controller="Classes"
+               asp-action="Index">
+                Derslerimi gör
+            </a>
+
+        </div>
+
+        <div class="card border-0 shadow-sm">
+
+            @if (
+                Model.UpcomingClassSessions.Count == 0)
+            {
+                <div class="card-body py-5
+                            text-center
+                            text-muted">
+
+                    Yaklaşan grup dersi
+                    bulunmuyor.
+
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+
+                    <table class="table
+                                  align-middle
+                                  mb-0">
+
+                        <thead>
+                            <tr>
+                                <th>Ders</th>
+                                <th>Tarih</th>
+                                <th>Süre</th>
+                                <th>Rezervasyon</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                        @foreach (
+                            var session in
+                            Model.UpcomingClassSessions)
+                        {
+                            <tr>
+
+                                <td>
+                                    <strong>
+                                        @session.ClassName
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    @session.StartsAtUtc
+                                        .ToLocalTime()
+                                        .ToString(
+                                            "dd.MM.yyyy HH:mm")
+                                </td>
+
+                                <td>
+                                    @session.DurationMinutes dk
+                                </td>
+
+                                <td>
+                                    @session.ReservedCount
+                                    /
+                                    @session.Capacity
+                                </td>
+
+                            </tr>
+                        }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+            }
+
+        </div>
+
+    </section>
+
+</section>

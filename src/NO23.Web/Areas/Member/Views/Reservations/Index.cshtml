@@ -230,7 +230,8 @@
                         <p>Kişisel antrenman süreci</p>
                         <h3>Eğitmenini seç, uygun zamanını bildir.</h3>
                         <span>
-                            Talebin kulüp ekibi tarafından değerlendirildikten sonra
+                            Talebin seçtiğin eğitmene iletilir.
+                            Eğitmenin değerlendirmesinden sonra
                             kesin randevu bilgisi hesabında görüntülenir.
                         </span>
                     </div>
@@ -239,7 +240,7 @@
                 <div class="member-personal-steps">
                     <div><strong>01</strong><span>Eğitmenini seç</span></div>
                     <div><strong>02</strong><span>Uygun zamanını belirt</span></div>
-                    <div><strong>03</strong><span>Onayını takip et</span></div>
+                    <div><strong>03</strong><span>Eğitmen yanıtını takip et</span></div>
                 </div>
             </div>
 
@@ -377,7 +378,10 @@
                             </label>
 
                             <div class="member-personal-form-footer">
-                                <p>Talebin gönderildikten sonra kulüp ekibi tarafından değerlendirilir.</p>
+                                <p>
+                                Talebin doğrudan seçtiğin eğitmene iletilir.
+                                Eğitmen uygun tarih ve saati belirlediğinde burada görüntülenir.
+                                </p>
                                 <button id="personal-training-submit"
                                         type="submit"
                                         class="member-personal-submit">
@@ -441,6 +445,14 @@
                                             </div>
                                         }
 
+                                        @if (!string.IsNullOrWhiteSpace(request.TrainerNote))
+                                        {
+                                            <div>
+                                                <span>Eğitmen notu</span>
+                                                <strong>@request.TrainerNote</strong>
+                                            </div>
+                                        }
+
                                         @if (!string.IsNullOrWhiteSpace(request.AdminNote))
                                         {
                                             <div>
@@ -463,7 +475,9 @@
                                                name="requestId"
                                                value="@request.Id" />
                                         <button type="submit" class="member-cancel-button">
-                                            İptal Et
+                                            @(request.ScheduledAtUtc.HasValue
+                                                ? "Randevuyu İptal Et"
+                                                : "Talebi İptal Et")
                                         </button>
                                     </form>
                                 }

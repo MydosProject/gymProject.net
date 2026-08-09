@@ -19,6 +19,9 @@ public class PersonalTrainingRequestConfiguration
         builder.Property(request => request.AdminNote)
             .HasMaxLength(1200);
 
+        builder.Property(request => request.TrainerNote)
+            .HasMaxLength(1200);
+
         builder.Property(request => request.Status)
             .HasConversion<string>()
             .HasMaxLength(40);

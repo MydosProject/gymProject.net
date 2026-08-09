@@ -20,7 +20,13 @@ public class Trainer
 
     public DateTime? UpdatedAtUtc { get; set; }
 
+    public string? ApplicationUserId { get; set; }
+
+    public ApplicationUser? ApplicationUser { get; set; }
+
     public ICollection<GroupClass> GroupClasses { get; set; } = [];
 
     public ICollection<PersonalTrainingRequest> PersonalTrainingRequests { get; set; } = [];
+
+    public ICollection<TrainerConversation> TrainerConversations { get; set; } = [];
 }
