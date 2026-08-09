@@ -272,12 +272,21 @@
                         <small class="member-sidebar-badge">Yakında</small>
                     </span>
 
-                    <span class="member-sidebar-link is-disabled"
-                          aria-disabled="true">
-                        <span class="member-sidebar-index">17</span>
-                        <span class="member-sidebar-label">Mesajlar</span>
-                        <small class="member-sidebar-badge">Yakında</small>
+                   <a class="member-sidebar-link
+                    @ActiveClass("Messages")"
+                    asp-area="Member"
+                    asp-controller="Messages"
+                    asp-action="Index">
+
+                    <span class="member-sidebar-index">
+                        17
                     </span>
+
+                    <span class="member-sidebar-label">
+                        Mesajlar
+                    </span>
+
+                    </a>
                 </div>
             </nav>
 

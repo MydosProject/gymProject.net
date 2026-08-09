@@ -8,6 +8,13 @@ public class TrainerConfiguration : IEntityTypeConfiguration<Trainer>
 {
     public void Configure(EntityTypeBuilder<Trainer> builder)
     {
+
+        builder.HasIndex(trainer => trainer.ApplicationUserId)
+            .IsUnique();
+
+        builder.Property(trainer => trainer.ApplicationUserId)
+            .HasMaxLength(450);
+
         builder.Property(trainer => trainer.FirstName)
             .HasMaxLength(80)
             .IsRequired();
@@ -28,5 +35,10 @@ public class TrainerConfiguration : IEntityTypeConfiguration<Trainer>
 
         builder.Property(trainer => trainer.CreatedAtUtc)
             .HasDefaultValueSql("NOW()");
+
+        builder.HasOne(trainer => trainer.ApplicationUser)
+            .WithOne(user => user.TrainerProfile)
+            .HasForeignKey<Trainer>(trainer => trainer.ApplicationUserId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

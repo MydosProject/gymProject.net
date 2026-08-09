@@ -27,9 +27,13 @@ public class PersonalTrainingRequest
 
     public string? AdminNote { get; set; }
 
+    public string? TrainerNote { get; set; }
+
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
 
     public DateTime? UpdatedAtUtc { get; set; }
 
     public DateTime? CancelledAtUtc { get; set; }
+
+    public DateTime? CompletedAtUtc { get; set; }
 }

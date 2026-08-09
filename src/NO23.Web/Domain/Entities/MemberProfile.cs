@@ -24,6 +24,8 @@ public class MemberProfile
 
     public ICollection<PersonalTrainingRequest> PersonalTrainingRequests { get; set; } = [];
 
+    public ICollection<TrainerConversation> TrainerConversations { get; set; } = [];
+
     public ICollection<CommunityChallengeParticipation> CommunityChallengeParticipations { get; set; } = [];
 
     public ICollection<MemberProgressEntry> ProgressEntries { get; set; } = [];

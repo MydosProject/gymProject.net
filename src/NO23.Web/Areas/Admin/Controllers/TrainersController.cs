@@ -5,12 +5,16 @@ using NO23.Web.Data;
 using NO23.Web.Data.Seed;
 using NO23.Web.Domain.Entities;
 using NO23.Web.ViewModels.Admin;
+using Microsoft.AspNetCore.Identity;
+using TrainerEntity = NO23.Web.Domain.Entities.Trainer;
 
 namespace NO23.Web.Areas.Admin.Controllers;
 
 [Area("Admin")]
 [Authorize(Roles = ApplicationRoles.Admin)]
-public class TrainersController(ApplicationDbContext dbContext) : Controller
+public class TrainersController(
+    ApplicationDbContext dbContext,
+    UserManager<ApplicationUser> userManager) : Controller
 {
     public async Task<IActionResult> Index()
     {
@@ -25,7 +29,8 @@ public class TrainersController(ApplicationDbContext dbContext) : Controller
                 Specialty = trainer.Specialty,
                 Certifications = trainer.Certifications,
                 ClassCount = trainer.GroupClasses.Count,
-                IsActive = trainer.IsActive
+                IsActive = trainer.IsActive,
+                HasPanelAccount = trainer.ApplicationUserId != null
             })
             .ToListAsync();
 
@@ -93,14 +98,143 @@ public class TrainersController(ApplicationDbContext dbContext) : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    private static Trainer MapToEntity(TrainerFormViewModel model)
+    [HttpGet]
+public async Task<IActionResult> CreatePanelAccount(int id)
+{
+    var trainer = await dbContext.Trainers
+        .AsNoTracking()
+        .FirstOrDefaultAsync(item => item.Id == id);
+
+    if (trainer is null)
     {
-        var trainer = new Trainer();
+        return NotFound();
+    }
+
+    if (!string.IsNullOrWhiteSpace(trainer.ApplicationUserId))
+    {
+        TempData["StatusMessage"] =
+            "Bu eğitmenin zaten bir panel hesabı var.";
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    return View(new TrainerPanelAccountViewModel
+    {
+        TrainerId = trainer.Id,
+        TrainerName = trainer.FirstName + " " + trainer.LastName
+    });
+}
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreatePanelAccount(
+        TrainerPanelAccountViewModel model)
+    {
+        var trainer = await dbContext.Trainers
+            .FirstOrDefaultAsync(item => item.Id == model.TrainerId);
+
+        if (trainer is null)
+        {
+            return NotFound();
+        }
+
+        model.TrainerName =
+            trainer.FirstName + " " + trainer.LastName;
+
+        if (!string.IsNullOrWhiteSpace(trainer.ApplicationUserId))
+        {
+            ModelState.AddModelError(
+                string.Empty,
+                "Bu eğitmenin zaten bir panel hesabı var.");
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        var email = model.Email.Trim();
+
+        var existingUser =
+            await userManager.FindByEmailAsync(email);
+
+        if (existingUser is not null)
+        {
+            ModelState.AddModelError(
+                nameof(model.Email),
+                "Bu e-posta adresi zaten kullanılıyor.");
+
+            return View(model);
+        }
+
+        await using var transaction =
+            await dbContext.Database.BeginTransactionAsync();
+
+        var applicationUser = new ApplicationUser
+        {
+            UserName = email,
+            Email = email,
+            EmailConfirmed = true,
+            FirstName = trainer.FirstName,
+            LastName = trainer.LastName
+        };
+
+        var createResult =
+            await userManager.CreateAsync(
+                applicationUser,
+                model.Password);
+
+        if (!createResult.Succeeded)
+        {
+            AddIdentityErrors(createResult);
+            return View(model);
+        }
+
+        var roleResult =
+            await userManager.AddToRoleAsync(
+                applicationUser,
+                ApplicationRoles.Trainer);
+
+        if (!roleResult.Succeeded)
+        {
+            AddIdentityErrors(roleResult);
+            return View(model);
+        }
+
+        trainer.ApplicationUserId = applicationUser.Id;
+        trainer.UpdatedAtUtc = DateTime.UtcNow;
+
+        await dbContext.SaveChangesAsync();
+        await transaction.CommitAsync();
+
+        TempData["StatusMessage"] =
+            $"{model.TrainerName} için trainer panel hesabı oluşturuldu.";
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    private void AddIdentityErrors(IdentityResult result)
+    {
+        foreach (var error in result.Errors)
+        {
+            ModelState.AddModelError(
+                string.Empty,
+                error.Description);
+        }
+    }
+
+    private static TrainerEntity MapToEntity(TrainerFormViewModel model)
+    {
+        var trainer = new TrainerEntity();
+
         ApplyFormModel(trainer, model);
+
         return trainer;
     }
 
-    private static void ApplyFormModel(Trainer trainer, TrainerFormViewModel model)
+    private static void ApplyFormModel(
+        TrainerEntity trainer,
+        TrainerFormViewModel model)
     {
         trainer.FirstName = model.FirstName.Trim();
         trainer.LastName = model.LastName.Trim();
@@ -111,7 +245,8 @@ public class TrainersController(ApplicationDbContext dbContext) : Controller
         trainer.UpdatedAtUtc = DateTime.UtcNow;
     }
 
-    private static TrainerFormViewModel MapToFormModel(Trainer trainer)
+    private static TrainerFormViewModel MapToFormModel(
+        TrainerEntity trainer)
     {
         return new TrainerFormViewModel
         {
@@ -124,4 +259,6 @@ public class TrainersController(ApplicationDbContext dbContext) : Controller
             IsActive = trainer.IsActive
         };
     }
+
+
 }

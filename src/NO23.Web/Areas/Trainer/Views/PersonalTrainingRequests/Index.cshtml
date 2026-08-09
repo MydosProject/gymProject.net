@@ -1,0 +1,179 @@
+@model IReadOnlyList<
+    TrainerPersonalTrainingRequestListItemViewModel>
+
+@{
+    ViewData["Title"] = "Birebir Talepler";
+}
+
+<section>
+
+    @if (TempData["TrainerStatusMessage"] is string statusMessage)
+{
+    <div class="alert alert-success mb-4">
+        @statusMessage
+    </div>
+}
+
+    <div class="mb-4">
+
+        <p class="text-uppercase
+                  text-muted
+                  small mb-1">
+            Birebir antrenman
+        </p>
+
+        <h1 class="h3 mb-2">
+            Birebir Talepler
+        </h1>
+
+        <p class="text-muted mb-0">
+            Sana gönderilen birebir antrenman
+            taleplerini ve planlanmış
+            randevularını görüntüle.
+        </p>
+
+    </div>
+
+    <div class="card border-0 shadow-sm">
+
+        @if (Model.Count == 0)
+        {
+            <div class="card-body py-5
+                        text-center
+                        text-muted">
+
+                Henüz sana gönderilmiş
+                bir birebir talep yok.
+
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+
+                <table class="table
+                              align-middle
+                              mb-0">
+
+                    <thead>
+                        <tr>
+                            <th>Üye</th>
+                            <th>Tercih</th>
+                            <th>Hedef / Not</th>
+                            <th>Durum</th>
+                            <th>Kesin Randevu</th>
+                            <th class="text-end">İşlem</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                    @foreach (var request in Model)
+                    {
+                        <tr>
+
+                            <td>
+                                <strong>
+                                    @request.MemberName
+                                </strong>
+
+                                <div class="small text-muted">
+                                    @request.MemberEmail
+                                </div>
+                            </td>
+
+                            <td>
+                                @(request.PreferredDate.ToString("dd.MM.yyyy"))
+
+                                <div class="small text-muted">
+                                    @request.PreferredTimeWindow
+                                </div>
+                            </td>
+
+                            <td style="max-width: 320px;">
+
+                                @if (
+                                    string.IsNullOrWhiteSpace(
+                                        request.GoalNote))
+                                {
+                                    <span class="text-muted">
+                                        Not belirtilmedi.
+                                    </span>
+                                }
+                                else
+                                {
+                                    @request.GoalNote
+                                }
+
+                            </td>
+
+                            <td>
+
+                                <span class="badge
+                                    @(request.Status ==
+                                        PersonalTrainingRequestStatus.Pending
+                                        ? "text-bg-warning"
+                                        : request.Status ==
+                                          PersonalTrainingRequestStatus.Scheduled
+                                            ? "text-bg-success"
+                                            : "text-bg-secondary")">
+
+                                    @request.StatusDisplayName
+
+                                </span>
+
+                            </td>
+
+                            <td>
+
+                                @if (
+                                    request.ScheduledAtUtc
+                                        is not null)
+                                {
+                                    @(request.ScheduledAtUtc.Value
+                                        .ToLocalTime()
+                                        .ToString("dd.MM.yyyy HH:mm"))
+                                }
+                                else
+                                {
+                                    <span class="text-muted">
+                                        —
+                                    </span>
+                                }
+
+                            </td>
+
+                            <td class="text-end">
+
+                            @if (request.Status ==
+                                PersonalTrainingRequestStatus.Pending)
+                            {
+                                <a class="btn btn-sm btn-dark"
+                                asp-action="Manage"
+                                asp-route-id="@request.Id">
+                                    Yönet
+                                </a>
+                            }
+                            else
+                            {
+                                <a class="btn btn-sm btn-outline-secondary"
+                                asp-action="Manage"
+                                asp-route-id="@request.Id">
+                                    Detay
+                                </a>
+                            }
+
+                        </td>
+                        </tr>
+                    }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+        }
+
+    </div>
+
+</section>

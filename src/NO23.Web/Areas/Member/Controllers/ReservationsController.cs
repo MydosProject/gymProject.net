@@ -125,6 +125,7 @@ public class ReservationsController(
                     request.PreferredDate,
                     request.PreferredTimeWindow,
                     request.Status,
+                    request.TrainerNote,
                     request.ScheduledAtUtc,
                     request.AdminNote
                 })
@@ -139,8 +140,15 @@ public class ReservationsController(
                     PreferredTimeWindow = request.PreferredTimeWindow,
                     Status = request.Status.GetDisplayName(),
                     ScheduledAtUtc = request.ScheduledAtUtc,
+                    TrainerNote = request.TrainerNote,
                     AdminNote = request.AdminNote,
-                    CanCancel = request.Status == PersonalTrainingRequestStatus.Pending
+                    CanCancel =
+                    request.Status == PersonalTrainingRequestStatus.Pending ||
+                    (
+                        request.Status == PersonalTrainingRequestStatus.Scheduled &&
+                        request.ScheduledAtUtc.HasValue &&
+                        request.ScheduledAtUtc.Value > DateTime.UtcNow
+                    )
                 })
                 .ToList();
         }
@@ -221,7 +229,7 @@ public class ReservationsController(
         var result = await personalTrainingRequestService.CreateAsync(userId, model);
         TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] =
             result.Succeeded
-                ? "Birebir antrenman talebin alındı."
+                ? "Birebir antrenman talebin eğitmene iletildi."
                 : result.ErrorMessage;
 
         return RedirectToPersonalTraining(model.TrainerId);
@@ -243,7 +251,7 @@ public class ReservationsController(
             requestId);
         TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] =
             result.Succeeded
-                ? "Birebir antrenman talebin iptal edildi."
+                ? "Birebir antrenman süreci iptal edildi."
                 : result.ErrorMessage;
 
         return LocalRedirect($"{Url.Action(nameof(Index))}#personal-training");

@@ -131,8 +131,21 @@
                         @(string.IsNullOrWhiteSpace(Model.GoalNote)
                             ? "Üye bu talep için ek bir not paylaşmadı."
                             : Model.GoalNote)
+                </p>
+                </div>
+                <div class="admin-personal-member-note">
+                    <div>
+                        <span>Eğitmen notu</span>
+                        <strong>Eğitmenin üyeye ilettiği bilgi</strong>
+                    </div>
+
+                    <p>
+                        @(string.IsNullOrWhiteSpace(Model.TrainerNote)
+                            ? "Eğitmen bu talep için henüz bir not eklemedi."
+                            : Model.TrainerNote)
                     </p>
                 </div>
+
             </section>
 
             <section class="admin-form-section admin-personal-planning-section">

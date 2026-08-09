@@ -1,0 +1,296 @@
+@model TrainerPersonalTrainingRequestManageViewModel
+
+@{
+    ViewData["Title"] = "Birebir Talep";
+
+    var createdAtLocal =
+        Model.CreatedAtUtc.ToLocalTime();
+}
+
+<section>
+
+    <div class="mb-4">
+
+        <a asp-action="Index"
+           class="text-decoration-none text-muted">
+            ← Birebir taleplere dön
+        </a>
+
+        <p class="text-uppercase text-muted small mb-1 mt-3">
+            Birebir antrenman
+        </p>
+
+        <h1 class="h3 mb-2">
+            Talep #@Model.Id.ToString("0000")
+        </h1>
+
+        <p class="text-muted mb-0">
+            Üyenin birebir çalışma talebini
+            incele ve uygun işlemi gerçekleştir.
+        </p>
+
+    </div>
+
+    <div asp-validation-summary="ModelOnly"
+         class="alert alert-danger"
+         role="alert">
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-lg-7">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body p-4">
+
+                    <div class="mb-4">
+
+                        <span class="small text-uppercase text-muted">
+                            Üye
+                        </span>
+
+                        <h2 class="h4 mt-1 mb-1">
+                            @Model.MemberName
+                        </h2>
+
+                        <p class="text-muted mb-0">
+                            @Model.MemberEmail
+                        </p>
+
+                    </div>
+
+                    <hr />
+
+                    <div class="row g-4 mt-1">
+
+                        <div class="col-md-6">
+
+                            <span class="small text-uppercase text-muted">
+                                Tercih edilen gün
+                            </span>
+
+                            <div class="fw-semibold mt-1">
+                                @(Model.PreferredDate.ToString("dd.MM.yyyy"))
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <span class="small text-uppercase text-muted">
+                                Saat aralığı
+                            </span>
+
+                            <div class="fw-semibold mt-1">
+                                @Model.PreferredTimeWindow
+                            </div>
+
+                        </div>
+
+                        <div class="col-12">
+
+                            <span class="small text-uppercase text-muted">
+                                Üyenin hedefi / notu
+                            </span>
+
+                            <div class="mt-2">
+
+                                @if (string.IsNullOrWhiteSpace(
+                                    Model.GoalNote))
+                                {
+                                    <span class="text-muted">
+                                        Üye ek bir not paylaşmadı.
+                                    </span>
+                                }
+                                else
+                                {
+                                    @Model.GoalNote
+                                }
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-5">
+
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-body p-4">
+
+                    <div class="d-flex
+                                justify-content-between
+                                align-items-center
+                                mb-4">
+
+                        <div>
+
+                            <span class="small text-uppercase text-muted">
+                                Durum
+                            </span>
+
+                            <div class="fw-semibold mt-1">
+                                @Model.CurrentStatusDisplayName
+                            </div>
+
+                        </div>
+
+                        <span class="badge
+                            @(Model.CurrentStatus ==
+                                PersonalTrainingRequestStatus.Pending
+                                    ? "text-bg-warning"
+                                    : Model.CurrentStatus ==
+                                      PersonalTrainingRequestStatus.Scheduled
+                                        ? "text-bg-success"
+                                        : "text-bg-secondary")">
+
+                            @Model.CurrentStatusDisplayName
+
+                        </span>
+
+                    </div>
+
+                    @if (Model.CanManage)
+                    {
+                        <form method="post">
+
+                            <input type="hidden"
+                                   asp-for="Id" />
+
+                            <div class="mb-3">
+
+                                <label asp-for="ScheduledAtLocal"
+                                       class="form-label">
+                                </label>
+
+                                <input asp-for="ScheduledAtLocal"
+                                       asp-format="{0:yyyy-MM-ddTHH:mm}"
+                                       type="datetime-local"
+                                       class="form-control" />
+
+                                <span asp-validation-for="ScheduledAtLocal"
+                                      class="text-danger">
+                                </span>
+
+                                <div class="form-text">
+                                    Talebi planlarken zorunludur.
+                                </div>
+
+                            </div>
+
+                            <div class="mb-4">
+
+                                <label asp-for="TrainerNote"
+                                       class="form-label">
+                                </label>
+
+                                <textarea asp-for="TrainerNote"
+                                          rows="4"
+                                          class="form-control"
+                                          placeholder="Üyeye iletilecek kısa bir not yazabilirsin.">
+                                </textarea>
+
+                                <span asp-validation-for="TrainerNote"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+                            <div class="d-grid gap-2">
+
+                                <button type="submit"
+                                        asp-action="Schedule"
+                                        asp-route-id="@Model.Id"
+                                        class="btn btn-dark">
+                                    Randevuyu Planla
+                                </button>
+
+                                <button type="submit"
+                                        asp-action="Reject"
+                                        asp-route-id="@Model.Id"
+                                        class="btn btn-outline-danger">
+                                    Talebi Reddet
+                                </button>
+
+                            </div>
+
+                        </form>
+                    }
+                    else
+                    {
+                        <div class="mb-4">
+
+                            <span class="small text-uppercase text-muted">
+                                Kesin randevu
+                            </span>
+
+                            <div class="fw-semibold mt-1">
+
+                                @if (Model.ScheduledAtLocal is not null)
+                                {
+                                    @(Model.ScheduledAtLocal.Value
+                                        .ToString(
+                                            "dd.MM.yyyy HH:mm"))
+                                }
+                                else
+                                {
+                                    <span class="text-muted">
+                                        —
+                                    </span>
+                                }
+
+                            </div>
+
+                        </div>
+
+                        <div>
+
+                            <span class="small text-uppercase text-muted">
+                                Eğitmen notu
+                            </span>
+
+                            <div class="mt-2">
+
+                                @if (string.IsNullOrWhiteSpace(
+                                    Model.TrainerNote))
+                                {
+                                    <span class="text-muted">
+                                        Not eklenmedi.
+                                    </span>
+                                }
+                                else
+                                {
+                                    @Model.TrainerNote
+                                }
+
+                            </div>
+
+                        </div>
+                    }
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="small text-muted mt-4">
+        Talep oluşturulma:
+        @createdAtLocal.ToString("dd.MM.yyyy HH:mm")
+    </div>
+
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

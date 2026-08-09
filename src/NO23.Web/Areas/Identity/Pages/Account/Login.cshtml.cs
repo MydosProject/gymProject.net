@@ -55,6 +55,20 @@ public class LoginModel(
             }
 
             if (signedInUser is not null &&
+                await signInManager.UserManager.IsInRoleAsync(
+                    signedInUser,
+                    ApplicationRoles.Trainer))
+            {
+                if (!string.IsNullOrWhiteSpace(ReturnUrl) &&
+                    Url.IsLocalUrl(ReturnUrl))
+                {
+                    return LocalRedirect(ReturnUrl);
+                }
+
+                return LocalRedirect("~/Trainer/Dashboard");
+            }
+
+            if (signedInUser is not null &&
                 await signInManager.UserManager.IsInRoleAsync(signedInUser, ApplicationRoles.Member))
             {
                 if (!string.IsNullOrWhiteSpace(ReturnUrl) &&

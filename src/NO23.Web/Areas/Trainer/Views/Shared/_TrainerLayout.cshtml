@@ -1,0 +1,352 @@
+@{
+    var currentController =
+        ViewContext.RouteData.Values["controller"]?
+            .ToString() ?? string.Empty;
+
+    var pageTitle =
+        ViewData["Title"]?.ToString()
+        ?? "Eğitmen Paneli";
+
+    var userName =
+        User.Identity?.Name ?? "NO23 Eğitmen";
+
+    var userInitial =
+        string.IsNullOrWhiteSpace(userName)
+            ? "N"
+            : userName.Trim()[0]
+                .ToString()
+                .ToUpperInvariant();
+
+    string ActiveClass(
+        params string[] controllers) =>
+        controllers.Contains(
+            currentController,
+            StringComparer.OrdinalIgnoreCase)
+            ? "is-active"
+            : string.Empty;
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+
+    <meta name="viewport"
+          content="width=device-width,
+                   initial-scale=1.0" />
+
+    <meta name="theme-color"
+          content="#090b09" />
+
+    <title>
+        @pageTitle | NO23 Eğitmen Paneli
+    </title>
+
+    <link rel="stylesheet"
+          href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <link rel="stylesheet"
+          href="~/css/admin.css"
+          asp-append-version="true" />
+
+    <link rel="stylesheet"
+          href="~/NO23.Web.styles.css"
+          asp-append-version="true" />
+
+    @await RenderSectionAsync(
+        "Styles",
+        required: false)
+</head>
+
+<body class="no23-admin-body">
+
+    <div class="admin-shell">
+
+        <aside class="admin-sidebar"
+               id="trainerSidebar"
+               aria-label="Eğitmen paneli navigasyonu">
+
+            <div class="admin-sidebar-head">
+
+                <a class="admin-brand"
+                   asp-area="Trainer"
+                   asp-controller="Dashboard"
+                   asp-action="Index">
+
+                    <span class="admin-brand-mark">
+                        NO23
+                    </span>
+
+                    <span class="admin-brand-copy">
+                        Trainer Room
+                    </span>
+                </a>
+
+                <button class="admin-sidebar-close"
+                        type="button"
+                        data-trainer-sidebar-close
+                        aria-label="Menüyü kapat">
+                    ×
+                </button>
+
+            </div>
+
+            <nav class="admin-nav">
+
+                <div class="admin-nav-group">
+
+                    <p class="admin-nav-title">
+                        Genel
+                    </p>
+
+                    <a class="admin-nav-link
+                              @ActiveClass("Dashboard")"
+                       asp-area="Trainer"
+                       asp-controller="Dashboard"
+                       asp-action="Index">
+
+                        <span class="admin-nav-index">
+                            00
+                        </span>
+
+                        <span>
+                            Genel Bakış
+                        </span>
+
+                    </a>
+
+                </div>
+
+                <div class="admin-nav-group">
+
+                    <p class="admin-nav-title">
+                        Antrenman
+                    </p>
+
+                    <a class="admin-nav-link
+                              @ActiveClass("PersonalTrainingRequests")"
+                       asp-area="Trainer"
+                       asp-controller="PersonalTrainingRequests"
+                       asp-action="Index">
+
+                        <span class="admin-nav-index">
+                            01
+                        </span>
+
+                        <span>
+                            Birebir Talepler
+                        </span>
+
+                    </a>
+
+                    <a class="admin-nav-link
+                              @ActiveClass("Classes")"
+                       asp-area="Trainer"
+                       asp-controller="Classes"
+                       asp-action="Index">
+
+                        <span class="admin-nav-index">
+                            02
+                        </span>
+
+                        <span>
+                            Derslerim
+                        </span>
+
+                    </a>
+
+                </div>
+
+                <div class="admin-nav-group">
+
+                    <p class="admin-nav-title">
+                        İletişim
+                    </p>
+
+                <a class="admin-nav-link
+                    @ActiveClass("Messages")"
+                    asp-area="Trainer"
+                    asp-controller="Messages"
+                    asp-action="Index">
+
+                        <span class="admin-nav-index">
+                            03
+                        </span>
+
+                        <span>
+                            Mesajlar
+                        </span>
+
+                    </a>
+
+                </div>
+
+            </nav>
+
+            <div class="admin-sidebar-foot">
+
+                <form asp-area="Identity"
+                      asp-page="/Account/Logout"
+                      asp-route-returnUrl="@Url.Action(
+                          "Index",
+                          "Home",
+                          new { area = "" })"
+                      method="post">
+
+                    <button class="admin-logout"
+                            type="submit">
+
+                        <span class="admin-logout-icon"
+                              aria-hidden="true">
+                        </span>
+
+                        <span>
+                            Çıkış
+                        </span>
+
+                    </button>
+
+                </form>
+
+            </div>
+
+        </aside>
+
+        <div class="admin-sidebar-overlay"
+             data-trainer-sidebar-close>
+        </div>
+
+        <main class="admin-main">
+
+            <header class="admin-topbar">
+
+                <div class="admin-topbar-start">
+
+                    <button class="admin-menu-button"
+                            type="button"
+                            data-trainer-sidebar-open
+                            aria-controls="trainerSidebar"
+                            aria-expanded="false"
+                            aria-label="Menüyü aç">
+
+                        <span></span>
+                        <span></span>
+
+                    </button>
+
+                    <div>
+
+                        <p class="admin-topbar-kicker">
+                            NO23 / TRAINER
+                        </p>
+
+                        <strong class="admin-topbar-title">
+                            @pageTitle
+                        </strong>
+
+                    </div>
+
+                </div>
+
+                <div class="admin-topbar-end">
+
+                    <span class="admin-date">
+                        @DateTime.Now.ToString(
+                            "dd.MM.yyyy")
+                    </span>
+
+                    <div class="admin-user">
+
+                        <span class="admin-user-avatar">
+                            @userInitial
+                        </span>
+
+                        <span class="admin-user-copy">
+
+                            <strong>
+                                @userName
+                            </strong>
+
+                            <small>
+                                Eğitmen
+                            </small>
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </header>
+
+            <div class="admin-content">
+                @RenderBody()
+            </div>
+
+        </main>
+
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js">
+    </script>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js">
+    </script>
+
+    <script>
+        (() => {
+            const body = document.body;
+
+            const openButton =
+                document.querySelector(
+                    '[data-trainer-sidebar-open]');
+
+            const closeMenu = () => {
+                body.classList.remove(
+                    'admin-menu-open');
+
+                openButton?.setAttribute(
+                    'aria-expanded',
+                    'false');
+            };
+
+            openButton?.addEventListener(
+                'click',
+                () => {
+                    body.classList.add(
+                        'admin-menu-open');
+
+                    openButton.setAttribute(
+                        'aria-expanded',
+                        'true');
+                });
+
+            document.querySelectorAll(
+                '[data-trainer-sidebar-close]')
+                .forEach(element => {
+                    element.addEventListener(
+                        'click',
+                        closeMenu);
+                });
+
+            document.addEventListener(
+                'keydown',
+                event => {
+                    if (
+                        event.key === 'Escape' &&
+                        body.classList.contains(
+                            'admin-menu-open')
+                    ) {
+                        closeMenu();
+                        openButton?.focus();
+                    }
+                });
+        })();
+    </script>
+
+    @await RenderSectionAsync(
+        "Scripts",
+        required: false)
+
+</body>
+</html>

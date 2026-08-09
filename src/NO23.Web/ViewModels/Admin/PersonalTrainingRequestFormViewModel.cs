@@ -31,6 +31,8 @@ public class PersonalTrainingRequestFormViewModel
     [Display(Name = "Kesin randevu tarihi")]
     public DateTime? ScheduledAtLocal { get; set; }
 
+    public string? TrainerNote { get; init; }
+
     [StringLength(1200)]
     [Display(Name = "Yönetici notu")]
     public string? AdminNote { get; set; }

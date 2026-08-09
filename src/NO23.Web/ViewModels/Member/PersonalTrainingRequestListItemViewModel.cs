@@ -14,6 +14,8 @@ public class PersonalTrainingRequestListItemViewModel
 
     public DateTime? ScheduledAtUtc { get; init; }
 
+    public string? TrainerNote { get; init; }
+
     public string? AdminNote { get; init; }
 
     public bool CanCancel { get; init; }

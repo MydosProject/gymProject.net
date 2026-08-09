@@ -1915,6 +1915,9 @@ namespace NO23.Web.Data.Migrations
                     b.Property<DateTime?>("CancelledAtUtc")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTime?>("CompletedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<DateTime>("CreatedAtUtc")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -1945,6 +1948,10 @@ namespace NO23.Web.Data.Migrations
 
                     b.Property<int>("TrainerId")
                         .HasColumnType("integer");
+
+                    b.Property<string>("TrainerNote")
+                        .HasMaxLength(1200)
+                        .HasColumnType("character varying(1200)");
 
                     b.Property<DateTime?>("UpdatedAtUtc")
                         .HasColumnType("timestamp with time zone");
@@ -2134,6 +2141,10 @@ namespace NO23.Web.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("ApplicationUserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
                     b.Property<string>("Bio")
                         .HasMaxLength(1200)
                         .HasColumnType("character varying(1200)");
@@ -2170,7 +2181,84 @@ namespace NO23.Web.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ApplicationUserId")
+                        .IsUnique();
+
                     b.ToTable("Trainers");
+                });
+
+            modelBuilder.Entity("NO23.Web.Domain.Entities.TrainerConversation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<DateTime?>("LastMessageAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("MemberProfileId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TrainerId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LastMessageAtUtc");
+
+                    b.HasIndex("TrainerId");
+
+                    b.HasIndex("MemberProfileId", "TrainerId")
+                        .IsUnique();
+
+                    b.ToTable("TrainerConversations");
+                });
+
+            modelBuilder.Entity("NO23.Web.Domain.Entities.TrainerMessage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<DateTime?>("ReadAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("SenderApplicationUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<DateTime>("SentAtUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<int>("TrainerConversationId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SenderApplicationUserId");
+
+                    b.HasIndex("TrainerConversationId", "ReadAtUtc");
+
+                    b.HasIndex("TrainerConversationId", "SentAtUtc");
+
+                    b.ToTable("TrainerMessages");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -2568,9 +2656,61 @@ namespace NO23.Web.Data.Migrations
                     b.Navigation("MemberProfile");
                 });
 
+            modelBuilder.Entity("NO23.Web.Domain.Entities.Trainer", b =>
+                {
+                    b.HasOne("NO23.Web.Domain.Entities.ApplicationUser", "ApplicationUser")
+                        .WithOne("TrainerProfile")
+                        .HasForeignKey("NO23.Web.Domain.Entities.Trainer", "ApplicationUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("ApplicationUser");
+                });
+
+            modelBuilder.Entity("NO23.Web.Domain.Entities.TrainerConversation", b =>
+                {
+                    b.HasOne("NO23.Web.Domain.Entities.MemberProfile", "MemberProfile")
+                        .WithMany("TrainerConversations")
+                        .HasForeignKey("MemberProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("NO23.Web.Domain.Entities.Trainer", "Trainer")
+                        .WithMany("TrainerConversations")
+                        .HasForeignKey("TrainerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("MemberProfile");
+
+                    b.Navigation("Trainer");
+                });
+
+            modelBuilder.Entity("NO23.Web.Domain.Entities.TrainerMessage", b =>
+                {
+                    b.HasOne("NO23.Web.Domain.Entities.ApplicationUser", "SenderApplicationUser")
+                        .WithMany("SentTrainerMessages")
+                        .HasForeignKey("SenderApplicationUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NO23.Web.Domain.Entities.TrainerConversation", "TrainerConversation")
+                        .WithMany("Messages")
+                        .HasForeignKey("TrainerConversationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("SenderApplicationUser");
+
+                    b.Navigation("TrainerConversation");
+                });
+
             modelBuilder.Entity("NO23.Web.Domain.Entities.ApplicationUser", b =>
                 {
                     b.Navigation("MemberProfile");
+
+                    b.Navigation("SentTrainerMessages");
+
+                    b.Navigation("TrainerProfile");
                 });
 
             modelBuilder.Entity("NO23.Web.Domain.Entities.ClassSession", b =>
@@ -2661,6 +2801,8 @@ namespace NO23.Web.Data.Migrations
                     b.Navigation("ProgressEntries");
 
                     b.Navigation("ShoppingCart");
+
+                    b.Navigation("TrainerConversations");
                 });
 
             modelBuilder.Entity("NO23.Web.Domain.Entities.MembershipPackage", b =>
@@ -2692,6 +2834,13 @@ namespace NO23.Web.Data.Migrations
                     b.Navigation("GroupClasses");
 
                     b.Navigation("PersonalTrainingRequests");
+
+                    b.Navigation("TrainerConversations");
+                });
+
+            modelBuilder.Entity("NO23.Web.Domain.Entities.TrainerConversation", b =>
+                {
+                    b.Navigation("Messages");
                 });
 #pragma warning restore 612, 618
         }
