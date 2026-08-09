@@ -3,72 +3,253 @@
     ViewData["Title"] = "Eğitmenler";
 }
 
-<section class="py-5">
-    <div class="container">
-        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-            <div>
-                <p class="text-uppercase text-muted small mb-1">Admin</p>
-                <h1 class="h3 mb-0">Eğitmenler</h1>
-            </div>
+<section class="admin-trainers-page">
 
-            <a class="btn btn-dark" asp-action="Create">Yeni Eğitmen</a>
-            @if (TempData["StatusMessage"] is string statusMessage)
-            {
-                <div class="alert alert-success">
-                    @statusMessage
-                </div>
-            }
+    <header class="admin-trainers-head">
+
+        <div>
+
+            <p class="admin-trainers-eyebrow">
+                Antrenman / Ekip
+            </p>
+
+            <h1>
+                Eğitmenler
+            </h1>
+
+            <p class="admin-trainers-description">
+                Eğitmenleri, uzmanlık alanlarını ve
+                panel hesaplarını tek ekrandan yönet.
+            </p>
+
         </div>
 
-        <div class="table-responsive bg-white border rounded-3">
-            <table class="table align-middle mb-0">
-                <thead>
-                    <tr>
-                        <th>Eğitmen</th>
-                        <th>Uzmanlık</th>
-                        <th>Sertifikalar</th>
-                        <th>Ders</th>
-                        <th>Durum</th>
-                        <th>Panel</th>
-                        <th class="text-end">İşlem</th>
-                    </tr>
-                </thead>
-                <tbody>
+        <div class="admin-trainers-head-actions">
+
+            <div class="admin-trainers-count">
+
+                <span>
+                    Toplam
+                </span>
+
+                <strong>
+                    @Model.Count.ToString("00")
+                </strong>
+
+                <small>
+                    eğitmen
+                </small>
+
+            </div>
+
+            <a class="admin-trainers-create"
+               asp-action="Create">
+
+                <span>
+                    Yeni Eğitmen
+                </span>
+
+                <strong aria-hidden="true">
+                    +
+                </strong>
+
+            </a>
+
+        </div>
+
+    </header>
+
+
+    @if (TempData["StatusMessage"] is string statusMessage)
+    {
+        <div class="admin-trainers-status-message"
+             role="status">
+
+            <span aria-hidden="true">
+                ✓
+            </span>
+
+            <div>
+
+                <strong>
+                    İşlem tamamlandı
+                </strong>
+
+                <p>
+                    @statusMessage
+                </p>
+
+            </div>
+
+        </div>
+    }
+
+
+    <div class="admin-trainers-panel">
+
+        @if (Model.Count == 0)
+        {
+            <div class="admin-trainers-empty">
+
+                <span aria-hidden="true">
+                    00
+                </span>
+
+                <div>
+
+                    <strong>
+                        Henüz eğitmen bulunmuyor.
+                    </strong>
+
+                    <p>
+                        Yeni bir eğitmen eklediğinde
+                        burada görüntülenecek.
+                    </p>
+
+                </div>
+
+            </div>
+        }
+        else
+        {
+            <div class="admin-trainers-table-wrap">
+
+                <table class="admin-trainers-table">
+
+                    <thead>
+                        <tr>
+                            <th>Eğitmen</th>
+                            <th>Uzmanlık</th>
+                            <th>Sertifikalar</th>
+                            <th>Ders</th>
+                            <th>Durum</th>
+                            <th>Panel</th>
+                            <th>İşlem</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
                     @foreach (var trainer in Model)
                     {
                         <tr>
-                            <td data-label="Eğitmen"><strong>@trainer.FullName</strong></td>
-                            <td data-label="Uzmanlık">@trainer.Specialty</td>
-                            <td data-label="Sertifikalar">@(trainer.Certifications ?? "-")</td>
-                            <td data-label="Ders">@trainer.ClassCount</td>
-                            <td data-label="Durum">
-                                <span class="badge @(trainer.IsActive ? "text-bg-success" : "text-bg-secondary")">
-                                    @(trainer.IsActive ? "Aktif" : "Pasif")
-                                </span>
+
+                            <td data-label="Eğitmen">
+
+                                <strong class="admin-trainer-name">
+                                    @trainer.FullName
+                                </strong>
+
                             </td>
-                            <td data-label="Panel">
-                                @if (trainer.HasPanelAccount)
+
+
+                            <td data-label="Uzmanlık">
+
+                                <span class="admin-trainer-value">
+                                    @trainer.Specialty
+                                </span>
+
+                            </td>
+
+
+                            <td data-label="Sertifikalar">
+
+                                <span class="admin-trainer-certifications">
+
+                                    @(trainer.Certifications ?? "-")
+
+                                </span>
+
+                            </td>
+
+
+                            <td data-label="Ders">
+
+                                <span class="admin-trainer-class-count">
+                                    @trainer.ClassCount
+                                </span>
+
+                            </td>
+
+
+                            <td data-label="Durum">
+
+                                @if (trainer.IsActive)
                                 {
-                                    <span class="badge text-bg-success">
-                                        Hesap bağlı
+                                    <span class="admin-trainer-badge is-active">
+                                        Aktif
                                     </span>
                                 }
                                 else
                                 {
-                                    <a class="btn btn-sm btn-outline-primary"
-                                    asp-action="CreatePanelAccount"
-                                    asp-route-id="@trainer.Id">
-                                        Panel hesabı oluştur
+                                    <span class="admin-trainer-badge is-passive">
+                                        Pasif
+                                    </span>
+                                }
+
+                            </td>
+
+
+                            <td data-label="Panel">
+
+                                @if (trainer.HasPanelAccount)
+                                {
+                                    <span class="admin-trainer-panel-status is-linked">
+
+                                        <span aria-hidden="true">
+                                            ✓
+                                        </span>
+
+                                        Hesap bağlı
+
+                                    </span>
+                                }
+                                else
+                                {
+                                    <a class="admin-trainer-panel-action"
+                                       asp-action="CreatePanelAccount"
+                                       asp-route-id="@trainer.Id">
+
+                                        <span>
+                                            Panel hesabı oluştur
+                                        </span>
+
+                                        <strong aria-hidden="true">
+                                            →
+                                        </strong>
+
                                     </a>
                                 }
+
                             </td>
-                            <td class="text-end" data-label="İşlem">
-                                <a class="btn btn-sm btn-outline-dark" asp-action="Edit" asp-route-id="@trainer.Id">Düzenle</a>
+
+
+                            <td data-label="İşlem">
+
+                                <a class="admin-trainer-edit"
+                                   asp-action="Edit"
+                                   asp-route-id="@trainer.Id">
+
+                                    Düzenle
+
+                                    <span aria-hidden="true">
+                                        →
+                                    </span>
+
+                                </a>
+
                             </td>
+
                         </tr>
                     }
-                </tbody>
-            </table>
-        </div>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+        }
+
     </div>
+
 </section>

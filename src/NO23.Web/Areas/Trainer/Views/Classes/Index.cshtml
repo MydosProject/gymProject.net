@@ -5,47 +5,77 @@
     ViewData["Title"] = "Derslerim";
 }
 
-<section>
+<section class="trainer-classes-page">
 
-    <div class="mb-4">
+    <header class="trainer-page-head">
 
-        <p class="text-uppercase
-                  text-muted
-                  small mb-1">
-            Grup dersleri
-        </p>
+        <div>
 
-        <h1 class="h3 mb-2">
-            Derslerim
-        </h1>
+            <p class="trainer-page-eyebrow">
+                Grup dersleri
+            </p>
 
-        <p class="text-muted mb-0">
-            Sana atanmış grup derslerini ve
-            yaklaşan seans bilgilerini görüntüle.
-        </p>
+            <h1>
+                Derslerim
+            </h1>
 
-    </div>
+            <p class="trainer-page-description">
+                Sana atanmış grup derslerini ve
+                yaklaşan seans bilgilerini görüntüle.
+            </p>
 
-    <div class="card border-0 shadow-sm">
+        </div>
+
+        <div class="trainer-page-count">
+
+            <span>
+                Toplam
+            </span>
+
+            <strong>
+                @(Model.Count.ToString("00"))
+            </strong>
+
+            <small>
+                ders
+            </small>
+
+        </div>
+
+    </header>
+
+
+    <div class="trainer-class-panel">
 
         @if (Model.Count == 0)
         {
-            <div class="card-body py-5
-                        text-center
-                        text-muted">
+            <div class="trainer-class-empty">
 
-                Sana atanmış bir grup dersi
-                bulunmuyor.
+                <span aria-hidden="true">
+                    01
+                </span>
+
+                <div>
+
+                    <strong>
+                        Henüz atanmış ders yok.
+                    </strong>
+
+                    <p>
+                        Sana atanacak grup dersleri ve
+                        yaklaşan seans bilgileri burada
+                        görüntülenecek.
+                    </p>
+
+                </div>
 
             </div>
         }
         else
         {
-            <div class="table-responsive">
+            <div class="trainer-class-table-wrap">
 
-                <table class="table
-                              align-middle
-                              mb-0">
+                <table class="trainer-class-table">
 
                     <thead>
                         <tr>
@@ -65,66 +95,93 @@
                     {
                         <tr>
 
-                            <td>
-                                <strong>
+                            <td data-label="Ders">
+
+                                <strong class="trainer-class-name">
                                     @groupClass.Name
                                 </strong>
 
-                                <div class="small text-muted">
+                                <small class="trainer-class-muted">
                                     Ortalama
                                     @groupClass.AverageCaloriesBurned
                                     kcal
-                                </div>
+                                </small>
+
                             </td>
 
-                            <td>
-                                @groupClass.DifficultyLevel
+
+                            <td data-label="Seviye">
+
+                                <span class="trainer-class-value">
+                                    @groupClass.DifficultyLevel
+                                </span>
+
                             </td>
 
-                            <td>
-                                @groupClass.DurationMinutes dk
+
+                            <td data-label="Süre">
+
+                                <span class="trainer-class-value">
+                                    @groupClass.DurationMinutes dk
+                                </span>
+
                             </td>
 
-                            <td>
-                                @groupClass.Capacity
+
+                            <td data-label="Kontenjan">
+
+                                <span class="trainer-class-value">
+                                    @groupClass.Capacity
+                                </span>
+
                             </td>
 
-                            <td>
-                                @groupClass.UpcomingSessionCount
+
+                            <td data-label="Yaklaşan Seans">
+
+                                <span class="trainer-class-session-count">
+                                    @groupClass.UpcomingSessionCount
+                                </span>
+
                             </td>
 
-                            <td>
+
+                            <td data-label="Sonraki Ders">
 
                                 @if (
                                     groupClass.NextSessionAtUtc
                                         is not null)
                                 {
-                                   @(groupClass.NextSessionAtUtc.Value
-                                    .ToLocalTime()
-                                    .ToString("dd.MM.yyyy HH:mm"))
+                                    <strong class="trainer-class-next-date">
+                                        @(groupClass
+                                            .NextSessionAtUtc
+                                            .Value
+                                            .ToLocalTime()
+                                            .ToString(
+                                                "dd.MM.yyyy HH:mm"))
+                                    </strong>
                                 }
                                 else
                                 {
-                                    <span class="text-muted">
+                                    <span class="trainer-class-muted">
                                         —
                                     </span>
                                 }
 
                             </td>
 
-                            <td>
+
+                            <td data-label="Durum">
 
                                 @if (groupClass.IsActive)
                                 {
-                                    <span class="badge
-                                                 text-bg-success">
+                                    <span class="trainer-status-badge is-scheduled">
                                         Aktif
                                     </span>
                                 }
                                 else
                                 {
-                                    <span class="badge
-                                                 text-bg-secondary">
+                                    <span class="trainer-status-badge is-neutral">
                                         Pasif
                                     </span>
                                 }

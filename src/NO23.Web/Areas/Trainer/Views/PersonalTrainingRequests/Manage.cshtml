@@ -7,110 +7,145 @@
         Model.CreatedAtUtc.ToLocalTime();
 }
 
-<section>
+<section class="trainer-request-manage-page">
 
-    <div class="mb-4">
+    <header class="trainer-request-manage-head">
 
-        <a asp-action="Index"
-           class="text-decoration-none text-muted">
-            ← Birebir taleplere dön
-        </a>
+        <div>
 
-        <p class="text-uppercase text-muted small mb-1 mt-3">
-            Birebir antrenman
-        </p>
+            <a asp-action="Index"
+               class="trainer-back-link">
+                ← Birebir taleplere dön
+            </a>
 
-        <h1 class="h3 mb-2">
-            Talep #@Model.Id.ToString("0000")
-        </h1>
+            <p class="trainer-page-eyebrow">
+                Birebir antrenman
+            </p>
 
-        <p class="text-muted mb-0">
-            Üyenin birebir çalışma talebini
-            incele ve uygun işlemi gerçekleştir.
-        </p>
+            <h1>
+                Talep #@Model.Id.ToString("0000")
+            </h1>
 
-    </div>
+            <p class="trainer-page-description">
+                Üyenin birebir çalışma talebini
+                incele ve uygun işlemi gerçekleştir.
+            </p>
+
+        </div>
+
+        <div class="trainer-request-manage-status">
+
+            <span>
+                Durum
+            </span>
+
+            <strong>
+                @Model.CurrentStatusDisplayName
+            </strong>
+
+            <span class="trainer-status-badge
+                @(Model.CurrentStatus ==
+                    PersonalTrainingRequestStatus.Pending
+                        ? "is-pending"
+                        : Model.CurrentStatus ==
+                          PersonalTrainingRequestStatus.Scheduled
+                            ? "is-scheduled"
+                            : "is-neutral")">
+
+                @Model.CurrentStatusDisplayName
+
+            </span>
+
+        </div>
+
+    </header>
+
 
     <div asp-validation-summary="ModelOnly"
-         class="alert alert-danger"
+         class="trainer-form-validation"
          role="alert">
     </div>
 
-    <div class="row g-4">
 
-        <div class="col-lg-7">
+    <div class="trainer-request-manage-grid">
 
-            <div class="card border-0 shadow-sm h-100">
+        <section class="trainer-request-member-card">
 
-                <div class="card-body p-4">
+            <div class="trainer-request-card-head">
 
-                    <div class="mb-4">
+                <div>
 
-                        <span class="small text-uppercase text-muted">
-                            Üye
-                        </span>
+                    <span>
+                        Üye
+                    </span>
 
-                        <h2 class="h4 mt-1 mb-1">
-                            @Model.MemberName
-                        </h2>
+                    <h2>
+                        @Model.MemberName
+                    </h2>
 
-                        <p class="text-muted mb-0">
-                            @Model.MemberEmail
-                        </p>
+                    <p>
+                        @Model.MemberEmail
+                    </p>
 
-                    </div>
+                </div>
 
-                    <hr />
+                <span class="trainer-request-card-number"
+                      aria-hidden="true">
+                    01
+                </span>
 
-                    <div class="row g-4 mt-1">
+            </div>
 
-                        <div class="col-md-6">
 
-                            <span class="small text-uppercase text-muted">
-                                Tercih edilen gün
+            <div class="trainer-request-info-grid">
+
+                <div class="trainer-request-info-item">
+
+                    <span>
+                        Tercih edilen gün
+                    </span>
+
+                    <strong>
+                        @(Model.PreferredDate
+                            .ToString("dd.MM.yyyy"))
+                    </strong>
+
+                </div>
+
+
+                <div class="trainer-request-info-item">
+
+                    <span>
+                        Saat aralığı
+                    </span>
+
+                    <strong>
+                        @Model.PreferredTimeWindow
+                    </strong>
+
+                </div>
+
+
+                <div class="trainer-request-info-item is-wide">
+
+                    <span>
+                        Üyenin hedefi / notu
+                    </span>
+
+                    <div class="trainer-request-goal-note">
+
+                        @if (
+                            string.IsNullOrWhiteSpace(
+                                Model.GoalNote))
+                        {
+                            <span class="trainer-request-muted">
+                                Üye ek bir not paylaşmadı.
                             </span>
-
-                            <div class="fw-semibold mt-1">
-                                @(Model.PreferredDate.ToString("dd.MM.yyyy"))
-                            </div>
-
-                        </div>
-
-                        <div class="col-md-6">
-
-                            <span class="small text-uppercase text-muted">
-                                Saat aralığı
-                            </span>
-
-                            <div class="fw-semibold mt-1">
-                                @Model.PreferredTimeWindow
-                            </div>
-
-                        </div>
-
-                        <div class="col-12">
-
-                            <span class="small text-uppercase text-muted">
-                                Üyenin hedefi / notu
-                            </span>
-
-                            <div class="mt-2">
-
-                                @if (string.IsNullOrWhiteSpace(
-                                    Model.GoalNote))
-                                {
-                                    <span class="text-muted">
-                                        Üye ek bir not paylaşmadı.
-                                    </span>
-                                }
-                                else
-                                {
-                                    @Model.GoalNote
-                                }
-
-                            </div>
-
-                        </div>
+                        }
+                        else
+                        {
+                            @Model.GoalNote
+                        }
 
                     </div>
 
@@ -118,179 +153,198 @@
 
             </div>
 
-        </div>
+        </section>
 
-        <div class="col-lg-5">
 
-            <div class="card border-0 shadow-sm">
+        <section class="trainer-request-action-card">
 
-                <div class="card-body p-4">
+            <div class="trainer-request-card-head">
 
-                    <div class="d-flex
-                                justify-content-between
-                                align-items-center
-                                mb-4">
+                <div>
 
-                        <div>
+                    <span>
+                        Talep yönetimi
+                    </span>
 
-                            <span class="small text-uppercase text-muted">
-                                Durum
-                            </span>
+                    <h2>
+                        Randevu işlemleri
+                    </h2>
 
-                            <div class="fw-semibold mt-1">
-                                @Model.CurrentStatusDisplayName
-                            </div>
+                    <p>
+                        Talebi planla veya mevcut
+                        durum bilgisini görüntüle.
+                    </p>
 
-                        </div>
+                </div>
 
-                        <span class="badge
-                            @(Model.CurrentStatus ==
-                                PersonalTrainingRequestStatus.Pending
-                                    ? "text-bg-warning"
-                                    : Model.CurrentStatus ==
-                                      PersonalTrainingRequestStatus.Scheduled
-                                        ? "text-bg-success"
-                                        : "text-bg-secondary")">
+                <span class="trainer-request-card-number"
+                      aria-hidden="true">
+                    02
+                </span>
 
-                            @Model.CurrentStatusDisplayName
+            </div>
 
+
+            @if (Model.CanManage)
+            {
+                <form method="post"
+                      class="trainer-request-manage-form">
+
+                    <input type="hidden"
+                           asp-for="Id" />
+
+
+                    <div class="trainer-request-form-field">
+
+                        <label asp-for="ScheduledAtLocal">
+                        </label>
+
+                        <input asp-for="ScheduledAtLocal"
+                               asp-format="{0:yyyy-MM-ddTHH:mm}"
+                               type="datetime-local" />
+
+                        <span asp-validation-for="ScheduledAtLocal"
+                              class="trainer-field-validation">
+                        </span>
+
+                        <small>
+                            Talebi planlarken tarih ve saat
+                            seçimi zorunludur.
+                        </small>
+
+                    </div>
+
+
+                    <div class="trainer-request-form-field">
+
+                        <label asp-for="TrainerNote">
+                        </label>
+
+                        <textarea asp-for="TrainerNote"
+                                  rows="4"
+                                  placeholder="Üyeye iletilecek kısa bir not yazabilirsin.">
+                        </textarea>
+
+                        <span asp-validation-for="TrainerNote"
+                              class="trainer-field-validation">
                         </span>
 
                     </div>
 
-                    @if (Model.CanManage)
-                    {
-                        <form method="post">
 
-                            <input type="hidden"
-                                   asp-for="Id" />
+                    <div class="trainer-request-actions">
 
-                            <div class="mb-3">
+                        <button type="submit"
+                                asp-action="Schedule"
+                                asp-route-id="@Model.Id"
+                                class="trainer-request-submit">
 
-                                <label asp-for="ScheduledAtLocal"
-                                       class="form-label">
-                                </label>
-
-                                <input asp-for="ScheduledAtLocal"
-                                       asp-format="{0:yyyy-MM-ddTHH:mm}"
-                                       type="datetime-local"
-                                       class="form-control" />
-
-                                <span asp-validation-for="ScheduledAtLocal"
-                                      class="text-danger">
-                                </span>
-
-                                <div class="form-text">
-                                    Talebi planlarken zorunludur.
-                                </div>
-
-                            </div>
-
-                            <div class="mb-4">
-
-                                <label asp-for="TrainerNote"
-                                       class="form-label">
-                                </label>
-
-                                <textarea asp-for="TrainerNote"
-                                          rows="4"
-                                          class="form-control"
-                                          placeholder="Üyeye iletilecek kısa bir not yazabilirsin.">
-                                </textarea>
-
-                                <span asp-validation-for="TrainerNote"
-                                      class="text-danger">
-                                </span>
-
-                            </div>
-
-                            <div class="d-grid gap-2">
-
-                                <button type="submit"
-                                        asp-action="Schedule"
-                                        asp-route-id="@Model.Id"
-                                        class="btn btn-dark">
-                                    Randevuyu Planla
-                                </button>
-
-                                <button type="submit"
-                                        asp-action="Reject"
-                                        asp-route-id="@Model.Id"
-                                        class="btn btn-outline-danger">
-                                    Talebi Reddet
-                                </button>
-
-                            </div>
-
-                        </form>
-                    }
-                    else
-                    {
-                        <div class="mb-4">
-
-                            <span class="small text-uppercase text-muted">
-                                Kesin randevu
+                            <span>
+                                Randevuyu Planla
                             </span>
 
-                            <div class="fw-semibold mt-1">
+                            <span aria-hidden="true">
+                                →
+                            </span>
 
-                                @if (Model.ScheduledAtLocal is not null)
-                                {
-                                    @(Model.ScheduledAtLocal.Value
-                                        .ToString(
-                                            "dd.MM.yyyy HH:mm"))
-                                }
-                                else
-                                {
-                                    <span class="text-muted">
-                                        —
-                                    </span>
-                                }
+                        </button>
 
-                            </div>
 
-                        </div>
+                        <button type="submit"
+                                asp-action="Reject"
+                                asp-route-id="@Model.Id"
+                                class="trainer-request-reject">
+
+                            Talebi Reddet
+
+                        </button>
+
+                    </div>
+
+                </form>
+            }
+            else
+            {
+                <div class="trainer-request-readonly">
+
+                    <div>
+
+                        <span>
+                            Kesin randevu
+                        </span>
+
+                        <strong>
+
+                            @if (
+                                Model.ScheduledAtLocal
+                                    is not null)
+                            {
+                                @(Model
+                                    .ScheduledAtLocal
+                                    .Value
+                                    .ToString(
+                                        "dd.MM.yyyy HH:mm"))
+                            }
+                            else
+                            {
+                                <span class="trainer-request-muted">
+                                    —
+                                </span>
+                            }
+
+                        </strong>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            Eğitmen notu
+                        </span>
 
                         <div>
 
-                            <span class="small text-uppercase text-muted">
-                                Eğitmen notu
-                            </span>
-
-                            <div class="mt-2">
-
-                                @if (string.IsNullOrWhiteSpace(
+                            @if (
+                                string.IsNullOrWhiteSpace(
                                     Model.TrainerNote))
-                                {
-                                    <span class="text-muted">
-                                        Not eklenmedi.
-                                    </span>
-                                }
-                                else
-                                {
-                                    @Model.TrainerNote
-                                }
-
-                            </div>
+                            {
+                                <span class="trainer-request-muted">
+                                    Not eklenmedi.
+                                </span>
+                            }
+                            else
+                            {
+                                @Model.TrainerNote
+                            }
 
                         </div>
-                    }
+
+                    </div>
 
                 </div>
+            }
 
-            </div>
-
-        </div>
+        </section>
 
     </div>
 
-    <div class="small text-muted mt-4">
-        Talep oluşturulma:
-        @createdAtLocal.ToString("dd.MM.yyyy HH:mm")
-    </div>
+
+    <footer class="trainer-request-manage-footer">
+
+        <span>
+            Talep oluşturulma
+        </span>
+
+        <strong>
+            @createdAtLocal.ToString(
+                "dd.MM.yyyy HH:mm")
+        </strong>
+
+    </footer>
 
 </section>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+
 }

@@ -5,55 +5,87 @@
     ViewData["Title"] = "Birebir Talepler";
 }
 
-<section>
+<section class="trainer-requests-page">
 
-    @if (TempData["TrainerStatusMessage"] is string statusMessage)
-{
-    <div class="alert alert-success mb-4">
-        @statusMessage
-    </div>
-}
+    @if (
+        TempData["TrainerStatusMessage"]
+            is string statusMessage)
+    {
+        <div class="trainer-status-message">
+            @statusMessage
+        </div>
+    }
 
-    <div class="mb-4">
+    <header class="trainer-page-head">
 
-        <p class="text-uppercase
-                  text-muted
-                  small mb-1">
-            Birebir antrenman
-        </p>
+        <div>
 
-        <h1 class="h3 mb-2">
-            Birebir Talepler
-        </h1>
+            <p class="trainer-page-eyebrow">
+                Birebir antrenman
+            </p>
 
-        <p class="text-muted mb-0">
-            Sana gönderilen birebir antrenman
-            taleplerini ve planlanmış
-            randevularını görüntüle.
-        </p>
+            <h1>
+                Birebir Talepler
+            </h1>
 
-    </div>
+            <p class="trainer-page-description">
+                Sana gönderilen birebir antrenman
+                taleplerini ve planlanmış
+                randevularını görüntüle.
+            </p>
 
-    <div class="card border-0 shadow-sm">
+        </div>
+
+        <div class="trainer-page-count">
+
+            <span>
+                Toplam
+            </span>
+
+            <strong>
+                @(Model.Count.ToString("00"))
+            </strong>
+
+            <small>
+                talep
+            </small>
+
+        </div>
+
+    </header>
+
+
+    <div class="trainer-request-panel">
 
         @if (Model.Count == 0)
         {
-            <div class="card-body py-5
-                        text-center
-                        text-muted">
+            <div class="trainer-request-empty">
 
-                Henüz sana gönderilmiş
-                bir birebir talep yok.
+                <span aria-hidden="true">
+                    01
+                </span>
+
+                <div>
+
+                    <strong>
+                        Henüz birebir talep yok.
+                    </strong>
+
+                    <p>
+                        Sana gönderilen yeni birebir
+                        antrenman talepleri burada
+                        görüntülenecek.
+                    </p>
+
+                </div>
 
             </div>
         }
         else
         {
-            <div class="table-responsive">
+            <div class="trainer-request-table-wrap">
 
-                <table class="table
-                              align-middle
-                              mb-0">
+                <table class="trainer-request-table">
 
                     <thead>
                         <tr>
@@ -62,7 +94,7 @@
                             <th>Hedef / Not</th>
                             <th>Durum</th>
                             <th>Kesin Randevu</th>
-                            <th class="text-end">İşlem</th>
+                            <th>İşlem</th>
                         </tr>
                     </thead>
 
@@ -72,51 +104,65 @@
                     {
                         <tr>
 
-                            <td>
-                                <strong>
+                            <td data-label="Üye">
+
+                                <strong class="trainer-request-name">
                                     @request.MemberName
                                 </strong>
 
-                                <div class="small text-muted">
+                                <small class="trainer-request-muted">
                                     @request.MemberEmail
-                                </div>
+                                </small>
+
                             </td>
 
-                            <td>
-                                @(request.PreferredDate.ToString("dd.MM.yyyy"))
 
-                                <div class="small text-muted">
+                            <td data-label="Tercih">
+
+                                <strong>
+                                    @(request.PreferredDate
+                                        .ToString("dd.MM.yyyy"))
+                                </strong>
+
+                                <small class="trainer-request-muted">
                                     @request.PreferredTimeWindow
+                                </small>
+
+                            </td>
+
+
+                            <td data-label="Hedef / Not">
+
+                                <div class="trainer-request-note">
+
+                                    @if (
+                                        string.IsNullOrWhiteSpace(
+                                            request.GoalNote))
+                                    {
+                                        <span class="trainer-request-muted">
+                                            Not belirtilmedi.
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        @request.GoalNote
+                                    }
+
                                 </div>
-                            </td>
-
-                            <td style="max-width: 320px;">
-
-                                @if (
-                                    string.IsNullOrWhiteSpace(
-                                        request.GoalNote))
-                                {
-                                    <span class="text-muted">
-                                        Not belirtilmedi.
-                                    </span>
-                                }
-                                else
-                                {
-                                    @request.GoalNote
-                                }
 
                             </td>
 
-                            <td>
 
-                                <span class="badge
+                            <td data-label="Durum">
+
+                                <span class="trainer-status-badge
                                     @(request.Status ==
                                         PersonalTrainingRequestStatus.Pending
-                                        ? "text-bg-warning"
-                                        : request.Status ==
-                                          PersonalTrainingRequestStatus.Scheduled
-                                            ? "text-bg-success"
-                                            : "text-bg-secondary")">
+                                            ? "is-pending"
+                                            : request.Status ==
+                                              PersonalTrainingRequestStatus.Scheduled
+                                                ? "is-scheduled"
+                                                : "is-neutral")">
 
                                     @request.StatusDisplayName
 
@@ -124,46 +170,67 @@
 
                             </td>
 
-                            <td>
+
+                            <td data-label="Kesin Randevu">
 
                                 @if (
                                     request.ScheduledAtUtc
                                         is not null)
                                 {
-                                    @(request.ScheduledAtUtc.Value
-                                        .ToLocalTime()
-                                        .ToString("dd.MM.yyyy HH:mm"))
+                                    <strong>
+                                        @(request
+                                            .ScheduledAtUtc
+                                            .Value
+                                            .ToLocalTime()
+                                            .ToString(
+                                                "dd.MM.yyyy HH:mm"))
+                                    </strong>
                                 }
                                 else
                                 {
-                                    <span class="text-muted">
+                                    <span class="trainer-request-muted">
                                         —
                                     </span>
                                 }
 
                             </td>
 
-                            <td class="text-end">
 
-                            @if (request.Status ==
-                                PersonalTrainingRequestStatus.Pending)
-                            {
-                                <a class="btn btn-sm btn-dark"
-                                asp-action="Manage"
-                                asp-route-id="@request.Id">
-                                    Yönet
-                                </a>
-                            }
-                            else
-                            {
-                                <a class="btn btn-sm btn-outline-secondary"
-                                asp-action="Manage"
-                                asp-route-id="@request.Id">
-                                    Detay
-                                </a>
-                            }
+                            <td data-label="İşlem">
 
-                        </td>
+                                @if (
+                                    request.Status ==
+                                    PersonalTrainingRequestStatus.Pending)
+                                {
+                                    <a class="trainer-request-action is-primary"
+                                       asp-action="Manage"
+                                       asp-route-id="@request.Id">
+
+                                        Yönet
+
+                                        <span aria-hidden="true">
+                                            →
+                                        </span>
+
+                                    </a>
+                                }
+                                else
+                                {
+                                    <a class="trainer-request-action"
+                                       asp-action="Manage"
+                                       asp-route-id="@request.Id">
+
+                                        Detay
+
+                                        <span aria-hidden="true">
+                                            →
+                                        </span>
+
+                                    </a>
+                                }
+
+                            </td>
+
                         </tr>
                     }
 

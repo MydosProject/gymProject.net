@@ -1,7 +1,7 @@
 @{
     var currentController =
         ViewContext.RouteData.Values["controller"]?
-            .ToString() ?? string.Empty;
+        .ToString() ?? string.Empty;
 
     var pageTitle =
         ViewData["Title"]?.ToString()
@@ -32,8 +32,7 @@
     <meta charset="utf-8" />
 
     <meta name="viewport"
-          content="width=device-width,
-                   initial-scale=1.0" />
+          content="width=device-width, initial-scale=1.0" />
 
     <meta name="theme-color"
           content="#090b09" />
@@ -58,31 +57,33 @@
         required: false)
 </head>
 
-<body class="no23-admin-body">
+<body class="trainer-panel-body">
 
-    <div class="admin-shell">
+    <div class="admin-shell trainer-shell">
 
-        <aside class="admin-sidebar"
+        <aside class="admin-sidebar trainer-sidebar"
                id="trainerSidebar"
                aria-label="Eğitmen paneli navigasyonu">
 
-            <div class="admin-sidebar-head">
+            <div class="admin-sidebar-head trainer-sidebar-head">
 
-                <a class="admin-brand"
+                <a class="admin-brand trainer-brand"
                    asp-area="Trainer"
                    asp-controller="Dashboard"
                    asp-action="Index">
 
-                    <span class="admin-brand-mark">
+                    <span class="admin-brand-mark trainer-brand-mark">
                         NO23
                     </span>
 
-                    <span class="admin-brand-copy">
-                        Trainer Room
+                    <span class="trainer-brand-text">
+                        <strong>Trainer</strong>
+                        <small>Performance Room</small>
                     </span>
+
                 </a>
 
-                <button class="admin-sidebar-close"
+                <button class="admin-sidebar-close trainer-sidebar-close"
                         type="button"
                         data-trainer-sidebar-close
                         aria-label="Menüyü kapat">
@@ -91,7 +92,15 @@
 
             </div>
 
-            <nav class="admin-nav">
+            <div class="trainer-sidebar-intro">
+                <span>EĞİTMEN PANELİ</span>
+                <p>
+                    Derslerini, birebir taleplerini ve üyelerinle
+                    iletişimini tek yerden yönet.
+                </p>
+            </div>
+
+            <nav class="admin-nav trainer-nav">
 
                 <div class="admin-nav-group">
 
@@ -99,18 +108,24 @@
                         Genel
                     </p>
 
-                    <a class="admin-nav-link
+                    <a class="admin-nav-link trainer-nav-link
                               @ActiveClass("Dashboard")"
                        asp-area="Trainer"
                        asp-controller="Dashboard"
                        asp-action="Index">
 
-                        <span class="admin-nav-index">
+                        <span class="admin-nav-index trainer-nav-index">
                             00
                         </span>
 
-                        <span>
-                            Genel Bakış
+                        <span class="trainer-nav-copy">
+                            <strong>Genel Bakış</strong>
+                            <small>Günün özeti</small>
+                        </span>
+
+                        <span class="trainer-nav-arrow"
+                              aria-hidden="true">
+                            →
                         </span>
 
                     </a>
@@ -123,34 +138,46 @@
                         Antrenman
                     </p>
 
-                    <a class="admin-nav-link
+                    <a class="admin-nav-link trainer-nav-link
                               @ActiveClass("PersonalTrainingRequests")"
                        asp-area="Trainer"
                        asp-controller="PersonalTrainingRequests"
                        asp-action="Index">
 
-                        <span class="admin-nav-index">
+                        <span class="admin-nav-index trainer-nav-index">
                             01
                         </span>
 
-                        <span>
-                            Birebir Talepler
+                        <span class="trainer-nav-copy">
+                            <strong>Birebir Talepler</strong>
+                            <small>PT istekleri</small>
+                        </span>
+
+                        <span class="trainer-nav-arrow"
+                              aria-hidden="true">
+                            →
                         </span>
 
                     </a>
 
-                    <a class="admin-nav-link
+                    <a class="admin-nav-link trainer-nav-link
                               @ActiveClass("Classes")"
                        asp-area="Trainer"
                        asp-controller="Classes"
                        asp-action="Index">
 
-                        <span class="admin-nav-index">
+                        <span class="admin-nav-index trainer-nav-index">
                             02
                         </span>
 
-                        <span>
-                            Derslerim
+                        <span class="trainer-nav-copy">
+                            <strong>Derslerim</strong>
+                            <small>Program ve seanslar</small>
+                        </span>
+
+                        <span class="trainer-nav-arrow"
+                              aria-hidden="true">
+                            →
                         </span>
 
                     </a>
@@ -163,18 +190,24 @@
                         İletişim
                     </p>
 
-                <a class="admin-nav-link
-                    @ActiveClass("Messages")"
-                    asp-area="Trainer"
-                    asp-controller="Messages"
-                    asp-action="Index">
+                    <a class="admin-nav-link trainer-nav-link
+                              @ActiveClass("Messages")"
+                       asp-area="Trainer"
+                       asp-controller="Messages"
+                       asp-action="Index">
 
-                        <span class="admin-nav-index">
+                        <span class="admin-nav-index trainer-nav-index">
                             03
                         </span>
 
-                        <span>
-                            Mesajlar
+                        <span class="trainer-nav-copy">
+                            <strong>Mesajlar</strong>
+                            <small>Üye iletişimi</small>
+                        </span>
+
+                        <span class="trainer-nav-arrow"
+                              aria-hidden="true">
+                            →
                         </span>
 
                     </a>
@@ -183,7 +216,18 @@
 
             </nav>
 
-            <div class="admin-sidebar-foot">
+            <div class="admin-sidebar-foot trainer-sidebar-foot">
+
+                <div class="trainer-sidebar-user">
+                    <span class="trainer-sidebar-avatar">
+                        @userInitial
+                    </span>
+
+                    <div>
+                        <strong>@userName</strong>
+                        <small>NO23 Eğitmen</small>
+                    </div>
+                </div>
 
                 <form asp-area="Identity"
                       asp-page="/Account/Logout"
@@ -193,15 +237,15 @@
                           new { area = "" })"
                       method="post">
 
-                    <button class="admin-logout"
+                    <button class="admin-logout trainer-logout"
                             type="submit">
-
-                        <span class="admin-logout-icon"
-                              aria-hidden="true">
-                        </span>
 
                         <span>
                             Çıkış
+                        </span>
+
+                        <span aria-hidden="true">
+                            ↗
                         </span>
 
                     </button>
@@ -212,17 +256,17 @@
 
         </aside>
 
-        <div class="admin-sidebar-overlay"
+        <div class="admin-sidebar-overlay trainer-sidebar-overlay"
              data-trainer-sidebar-close>
         </div>
 
-        <main class="admin-main">
+        <main class="admin-main trainer-main">
 
-            <header class="admin-topbar">
+            <header class="admin-topbar trainer-topbar">
 
                 <div class="admin-topbar-start">
 
-                    <button class="admin-menu-button"
+                    <button class="admin-menu-button trainer-menu-button"
                             type="button"
                             data-trainer-sidebar-open
                             aria-controls="trainerSidebar"
@@ -234,13 +278,13 @@
 
                     </button>
 
-                    <div>
+                    <div class="trainer-page-heading">
 
-                        <p class="admin-topbar-kicker">
-                            NO23 / TRAINER
+                        <p class="admin-topbar-kicker trainer-topbar-kicker">
+                            NO23 / TRAINER ROOM
                         </p>
 
-                        <strong class="admin-topbar-title">
+                        <strong class="admin-topbar-title trainer-topbar-title">
                             @pageTitle
                         </strong>
 
@@ -248,20 +292,19 @@
 
                 </div>
 
-                <div class="admin-topbar-end">
+                <div class="admin-topbar-end trainer-topbar-end">
 
-                    <span class="admin-date">
-                        @DateTime.Now.ToString(
-                            "dd.MM.yyyy")
+                    <span class="admin-date trainer-date">
+                        @DateTime.Now.ToString("dd.MM.yyyy")
                     </span>
 
-                    <div class="admin-user">
+                    <div class="admin-user trainer-user">
 
-                        <span class="admin-user-avatar">
+                        <span class="admin-user-avatar trainer-user-avatar">
                             @userInitial
                         </span>
 
-                        <span class="admin-user-copy">
+                        <span class="admin-user-copy trainer-user-copy">
 
                             <strong>
                                 @userName
@@ -279,7 +322,7 @@
 
             </header>
 
-            <div class="admin-content">
+            <div class="admin-content trainer-content">
                 @RenderBody()
             </div>
 

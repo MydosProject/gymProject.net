@@ -4,9 +4,9 @@
     ViewData["Title"] = "Genel Bakış";
 }
 
-<section class="admin-dashboard-page">
+<section class="admin-dashboard-page trainer-dashboard-page">
 
-    <header class="admin-dashboard-hero">
+    <header class="admin-dashboard-hero trainer-dashboard-hero">
 
         <div class="admin-dashboard-hero-copy">
 
@@ -33,21 +33,24 @@
 
             <div>
                 <span>Uzmanlık</span>
+
                 <strong>
                     @Model.Specialty
                 </strong>
             </div>
 
             <p>
-                Bu aşamada panel yalnızca
-                görüntüleme amaçlıdır.
+                Günlük programını, birebir taleplerini
+                ve yaklaşan derslerini buradan takip
+                edebilirsin.
             </p>
 
         </div>
 
     </header>
 
-    <section class="admin-dashboard-metrics">
+
+    <section class="admin-dashboard-metrics trainer-dashboard-metrics">
 
         <a class="admin-dashboard-metric-card"
            asp-area="Trainer"
@@ -70,6 +73,7 @@
 
         </a>
 
+
         <a class="admin-dashboard-metric-card"
            asp-area="Trainer"
            asp-controller="PersonalTrainingRequests"
@@ -90,6 +94,7 @@
             </div>
 
         </a>
+
 
         <a class="admin-dashboard-metric-card"
            asp-area="Trainer"
@@ -112,6 +117,7 @@
 
         </a>
 
+
         <a class="admin-dashboard-metric-card"
            asp-area="Trainer"
            asp-controller="Classes"
@@ -123,7 +129,7 @@
             </div>
 
             <strong>
-               @(Model.UpcomingClassSessionCount.ToString("00"))
+                @(Model.UpcomingClassSessionCount.ToString("00"))
             </strong>
 
             <div class="admin-dashboard-metric-footer">
@@ -135,54 +141,68 @@
 
     </section>
 
-    <section class="mt-5">
 
-        <div class="d-flex justify-content-between
-                    align-items-center mb-3">
+    <section class="trainer-dashboard-section">
+
+        <div class="trainer-dashboard-section-head">
 
             <div>
-                <small class="text-uppercase
-                              text-muted">
+                <small>
                     Birebir antrenman
                 </small>
 
-                <h2 class="h4 mb-0">
+                <h2>
                     Son talepler
                 </h2>
             </div>
 
-            <a class="btn btn-sm
-                      btn-outline-dark"
+            <a class="trainer-dashboard-link"
                asp-area="Trainer"
                asp-controller="PersonalTrainingRequests"
                asp-action="Index">
+
                 Tümünü gör
+
+                <span aria-hidden="true">
+                    →
+                </span>
+
             </a>
 
         </div>
 
-        <div class="card border-0 shadow-sm">
+
+        <div class="trainer-dashboard-panel">
 
             @if (
                 Model.RecentPersonalTrainingRequests
                     .Count == 0)
             {
-                <div class="card-body py-5
-                            text-center
-                            text-muted">
+                <div class="trainer-dashboard-empty">
 
-                    Henüz sana gönderilmiş
-                    bir birebir antrenman talebi yok.
+                    <span aria-hidden="true">
+                        01
+                    </span>
+
+                    <div>
+                        <strong>
+                            Henüz talep yok.
+                        </strong>
+
+                        <p>
+                            Sana gönderilen birebir
+                            antrenman talepleri burada
+                            görünecek.
+                        </p>
+                    </div>
 
                 </div>
             }
             else
             {
-                <div class="table-responsive">
+                <div class="trainer-dashboard-table-wrap">
 
-                    <table class="table
-                                  align-middle
-                                  mb-0">
+                    <table class="trainer-dashboard-table">
 
                         <thead>
                             <tr>
@@ -201,55 +221,73 @@
                         {
                             <tr>
 
-                                <td>
+                                <td data-label="Üye">
+
                                     <strong>
                                         @request.MemberName
                                     </strong>
 
-                                    <div class="small text-muted">
+                                    <small>
                                         @request.MemberEmail
-                                    </div>
+                                    </small>
+
                                 </td>
 
-                                <td>
-                                    @request.PreferredDate
-                                        .ToString("dd.MM.yyyy")
 
-                                    <div class="small text-muted">
+                                <td data-label="Tercih">
+
+                                    <strong>
+                                        @request.PreferredDate.ToString(
+                                            "dd.MM.yyyy")
+                                    </strong>
+
+                                    <small>
                                         @request.PreferredTimeWindow
-                                    </div>
+                                    </small>
+
                                 </td>
 
-                                <td>
-                                    <span class="badge
+
+                                <td data-label="Durum">
+
+                                    <span class="trainer-status-badge
                                         @(request.Status ==
                                             PersonalTrainingRequestStatus.Pending
-                                            ? "text-bg-warning"
-                                            : request.Status ==
-                                              PersonalTrainingRequestStatus.Scheduled
-                                                ? "text-bg-success"
-                                                : "text-bg-secondary")">
+                                                ? "is-pending"
+                                                : request.Status ==
+                                                  PersonalTrainingRequestStatus.Scheduled
+                                                    ? "is-scheduled"
+                                                    : "is-neutral")">
 
                                         @request.StatusDisplayName
 
                                     </span>
+
                                 </td>
 
-                                <td>
+
+                                <td data-label="Kesin randevu">
+
                                     @if (
                                         request.ScheduledAtUtc
                                             is not null)
                                     {
-                                      @(request.ScheduledAtUtc.Value
-                                        .ToLocalTime()
-                                        .ToString("dd.MM.yyyy HH:mm"))
+                                        <strong>
+                                            @(request
+                                                .ScheduledAtUtc
+                                                .Value
+                                                .ToLocalTime()
+                                                .ToString(
+                                                    "dd.MM.yyyy HH:mm"))
+                                        </strong>
                                     }
                                     else
                                     {
-                                        <span class="text-muted">
+                                        <span class="trainer-dashboard-muted">
                                             —
                                         </span>
                                     }
+
                                 </td>
 
                             </tr>
@@ -266,53 +304,70 @@
 
     </section>
 
-    <section class="mt-5">
 
-        <div class="d-flex justify-content-between
-                    align-items-center mb-3">
+    <section class="trainer-dashboard-section">
+
+        <div class="trainer-dashboard-section-head">
 
             <div>
-                <small class="text-uppercase
-                              text-muted">
+
+                <small>
                     Ders programı
                 </small>
 
-                <h2 class="h4 mb-0">
+                <h2>
                     Yaklaşan derslerin
                 </h2>
+
             </div>
 
-            <a class="btn btn-sm
-                      btn-outline-dark"
+            <a class="trainer-dashboard-link"
                asp-area="Trainer"
                asp-controller="Classes"
                asp-action="Index">
+
                 Derslerimi gör
+
+                <span aria-hidden="true">
+                    →
+                </span>
+
             </a>
 
         </div>
 
-        <div class="card border-0 shadow-sm">
+
+        <div class="trainer-dashboard-panel">
 
             @if (
                 Model.UpcomingClassSessions.Count == 0)
             {
-                <div class="card-body py-5
-                            text-center
-                            text-muted">
+                <div class="trainer-dashboard-empty">
 
-                    Yaklaşan grup dersi
-                    bulunmuyor.
+                    <span aria-hidden="true">
+                        02
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            Yaklaşan ders bulunmuyor.
+                        </strong>
+
+                        <p>
+                            Planlanan grup dersleri
+                            burada görüntülenecek.
+                        </p>
+
+                    </div>
 
                 </div>
             }
             else
             {
-                <div class="table-responsive">
+                <div class="trainer-dashboard-table-wrap">
 
-                    <table class="table
-                                  align-middle
-                                  mb-0">
+                    <table class="trainer-dashboard-table">
 
                         <thead>
                             <tr>
@@ -331,27 +386,41 @@
                         {
                             <tr>
 
-                                <td>
+                                <td data-label="Ders">
+
                                     <strong>
                                         @session.ClassName
                                     </strong>
+
                                 </td>
 
-                                <td>
-                                    @session.StartsAtUtc
-                                        .ToLocalTime()
-                                        .ToString(
-                                            "dd.MM.yyyy HH:mm")
+
+                                <td data-label="Tarih">
+
+                                    <strong>
+                                        @session
+                                            .StartsAtUtc
+                                            .ToLocalTime()
+                                            .ToString(
+                                                "dd.MM.yyyy HH:mm")
+                                    </strong>
+
                                 </td>
 
-                                <td>
+
+                                <td data-label="Süre">
+
                                     @session.DurationMinutes dk
+
                                 </td>
 
-                                <td>
+
+                                <td data-label="Rezervasyon">
+
                                     @session.ReservedCount
                                     /
                                     @session.Capacity
+
                                 </td>
 
                             </tr>
