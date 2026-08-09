@@ -1,4 +1,7 @@
+using NO23.Web.Domain.Enums;
+
 namespace NO23.Web.Domain.Entities;
+
 
 public class KitchenMealPlanDay
 {
@@ -11,6 +14,23 @@ public class KitchenMealPlanDay
     public int DayNumber { get; set; }
 
     public DateOnly PlanDate { get; set; }
+
+    public KitchenDeliveryMethod DeliveryMethod { get; set; }
+    = KitchenDeliveryMethod.NotSelected;
+
+    public string? DeliveryFullName { get; set; }
+
+    public string? DeliveryPhoneNumber { get; set; }
+
+    public string? DeliveryAddressLine { get; set; }
+
+    public string? DeliveryDistrict { get; set; }
+
+    public string? DeliveryCity { get; set; }
+
+    public string? DeliveryPostalCode { get; set; }
+
+    public DateTime? DeliveryPreferenceUpdatedAtUtc { get; set; }
 
     public int TotalCalories { get; set; }
 

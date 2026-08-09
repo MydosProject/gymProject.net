@@ -19,6 +19,22 @@ public class KitchenMealPlanDayViewModel
 
     public DateOnly PlanDate { get; init; }
 
+    public string DeliveryMethod { get; init; } = string.Empty;
+
+    public string DeliveryMethodDisplayName { get; init; } = string.Empty;
+
+    public string? DeliveryFullName { get; init; }
+
+    public string? DeliveryPhoneNumber { get; init; }
+
+    public string? DeliveryAddressLine { get; init; }
+
+    public string? DeliveryDistrict { get; init; }
+
+    public string? DeliveryCity { get; init; }
+
+    public string? DeliveryPostalCode { get; init; }
+
     public int TotalCalories { get; init; }
 
     public decimal TotalProteinGrams { get; init; }

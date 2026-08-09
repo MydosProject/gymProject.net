@@ -10,6 +10,7 @@ using NO23.Web.Domain.Entities;
 using NO23.Web.Domain.Enums;
 using NO23.Web.Services;
 using NO23.Web.ViewModels.Member;
+using NO23.Web.Services.Payments;
 
 namespace NO23.Web.Areas.Member.Controllers;
 
@@ -18,7 +19,8 @@ namespace NO23.Web.Areas.Member.Controllers;
 public class KitchenController(
     ApplicationDbContext dbContext,
     CalorieCalculatorService calorieCalculator,
-    KitchenPlanMatchingService kitchenPlanMatchingService) : Controller
+    CommerceService commerceService,
+    IyzicoPaymentService iyzicoPaymentService) : Controller
 {
     private const string CalculatorInputSessionKey = "NO23.Kitchen.CalculatorInput";
     private const string CalculatorResultSessionKey = "NO23.Kitchen.CalculatorResult";
@@ -101,7 +103,9 @@ public class KitchenController(
         KitchenSubscriptionPlan plan,
         CalorieCalculatorInputViewModel input)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId =
+            User.FindFirstValue(
+                ClaimTypes.NameIdentifier);
 
         if (string.IsNullOrWhiteSpace(userId))
         {
@@ -110,106 +114,356 @@ public class KitchenController(
 
         if (!ModelState.IsValid)
         {
-            TempData["ErrorMessage"] = "Abonelik için önce geçerli kalori bilgilerini girmelisin.";
-            return View("Index", await BuildDashboardAsync(input, null));
+            TempData["ErrorMessage"] =
+                "Paket satın almak için önce geçerli kalori bilgilerini girmelisin.";
+
+            return View(
+                "Index",
+                await BuildDashboardAsync(input, null));
         }
 
         var profile = await dbContext.MemberProfiles
-            .FirstOrDefaultAsync(member => member.ApplicationUserId == userId);
+            .FirstOrDefaultAsync(member =>
+                member.ApplicationUserId == userId);
 
         if (profile is null)
         {
-            TempData["ErrorMessage"] = "Üye profili bulunamadı.";
+            TempData["ErrorMessage"] =
+                "Üye profili bulunamadı.";
+
             return RedirectToAction(nameof(Index));
         }
 
-        var calculationRequest = new CalorieCalculationRequest
-        {
-            HeightCm = input.HeightCm,
-            WeightKg = input.WeightKg,
-            Age = input.Age,
-            Gender = input.Gender,
-            ActivityLevel = input.ActivityLevel,
-            Goal = input.Goal
-        };
+        var calculationRequest =
+            new CalorieCalculationRequest
+            {
+                HeightCm = input.HeightCm,
+                WeightKg = input.WeightKg,
+                Age = input.Age,
+                Gender = input.Gender,
+                ActivityLevel = input.ActivityLevel,
+                Goal = input.Goal
+            };
 
-        var result = calorieCalculator.Calculate(calculationRequest);
-        var subscriptionPackage = await dbContext.KitchenSubscriptionPackages
-            .AsNoTracking()
-            .FirstOrDefaultAsync(package =>
-                package.Plan == plan &&
-                package.IsActive);
+        var result =
+            calorieCalculator.Calculate(
+                calculationRequest);
+
+        var subscriptionPackage =
+            await dbContext
+                .KitchenSubscriptionPackages
+                .AsNoTracking()
+                .FirstOrDefaultAsync(package =>
+                    package.Plan == plan &&
+                    package.IsActive);
 
         if (subscriptionPackage is null)
         {
-            TempData["ErrorMessage"] = "Seçilen Kitchen paketi şu anda aktif değil.";
+            TempData["ErrorMessage"] =
+                "Seçilen Kitchen paketi şu anda aktif değil.";
+
             return RedirectToAction(nameof(Index));
         }
 
         if (subscriptionPackage.Days <= 0)
         {
-            TempData["ErrorMessage"] = "Seçilen Kitchen paketinin gün sayısı geçerli değil.";
+            TempData["ErrorMessage"] =
+                "Seçilen Kitchen paketinin gün sayısı geçerli değil.";
+
             return RedirectToAction(nameof(Index));
         }
 
-        var today = DateOnly.FromDateTime(DateTime.Today);
-        var hasActiveSubscription = await dbContext.KitchenSubscriptions
-            .AnyAsync(subscription =>
-                subscription.MemberProfileId == profile.Id &&
-                subscription.Status == KitchenSubscriptionStatus.Active &&
-                subscription.EndsOn >= today);
+        var today =
+            DateOnly.FromDateTime(
+                DateTime.Today);
+
+        var hasActiveSubscription =
+            await dbContext.KitchenSubscriptions
+                .AnyAsync(subscription =>
+                    subscription.MemberProfileId ==
+                        profile.Id &&
+                    subscription.Status ==
+                        KitchenSubscriptionStatus.Active &&
+                    subscription.EndsOn >= today);
 
         if (hasActiveSubscription)
         {
-            TempData["ErrorMessage"] = "Aktif Kitchen aboneliğin devam ediyor. Yeni abonelik oluşturmadan önce mevcut aboneliğini tamamlamalısın.";
+            TempData["ErrorMessage"] =
+                "Aktif Kitchen paketin devam ediyor. " +
+                "Yeni paket almadan önce mevcut paketini tamamlamalısın.";
+
             return RedirectToAction(nameof(Index));
         }
 
-        var startsOn = DateOnly.FromDateTime(DateTime.Today.AddDays(1));
+       
+        var startsOn =
+            DateOnly.FromDateTime(
+                DateTime.Today.AddDays(1));
 
-        await using var transaction = await dbContext.Database.BeginTransactionAsync();
+        var subscription =
+            new KitchenSubscription
+            {
+                MemberProfileId =
+                    profile.Id,
 
-        var subscription = new KitchenSubscription
-        {
-            MemberProfileId = profile.Id,
-            KitchenSubscriptionPackageId = subscriptionPackage.Id,
-            Plan = subscriptionPackage.Plan,
-            PackageNameSnapshot = subscriptionPackage.Name,
-            PackagePriceSnapshot = subscriptionPackage.UnitPrice,
-            PackageDaysSnapshot = subscriptionPackage.Days,
-            Goal = input.Goal,
-            DailyCalories = result.DailyCalories,
-            ProteinGrams = result.ProteinGrams,
-            CarbohydrateGrams = result.CarbohydrateGrams,
-            FatGrams = result.FatGrams,
-            StartsOn = startsOn,
-            EndsOn = startsOn.AddDays(subscriptionPackage.Days - 1)
-        };
+                KitchenSubscriptionPackageId =
+                    subscriptionPackage.Id,
 
-        dbContext.KitchenSubscriptions.Add(subscription);
+                Plan =
+                    subscriptionPackage.Plan,
+
+                Status =
+                    KitchenSubscriptionStatus.PendingPayment,
+
+                PackageNameSnapshot =
+                    subscriptionPackage.Name,
+
+                PackagePriceSnapshot =
+                    subscriptionPackage.UnitPrice,
+
+                PackageDaysSnapshot =
+                    subscriptionPackage.Days,
+
+                Goal =
+                    input.Goal,
+
+                SourceHeightCm =
+                    input.HeightCm,
+
+                SourceWeightKg =
+                    input.WeightKg,
+
+                SourceAge =
+                    input.Age,
+
+                SourceGender =
+                    input.Gender,
+
+                SourceActivityLevel =
+                    input.ActivityLevel,
+
+                DailyCalories =
+                    result.DailyCalories,
+
+                ProteinGrams =
+                    result.ProteinGrams,
+
+                CarbohydrateGrams =
+                    result.CarbohydrateGrams,
+
+                FatGrams =
+                    result.FatGrams,
+
+                StartsOn =
+                    startsOn,
+
+                EndsOn =
+                    startsOn.AddDays(
+                        subscriptionPackage.Days - 1)
+            };
+
+        dbContext.KitchenSubscriptions.Add(
+            subscription);
+
         await dbContext.SaveChangesAsync();
 
-        var planResult = await kitchenPlanMatchingService.GenerateAsync(
-            subscription.Id,
-            calculationRequest);
+        return RedirectToAction(
+            nameof(Checkout),
+            new
+            {
+                subscriptionId =
+                    subscription.Id
+            });
+    }
 
-        if (!planResult.Succeeded)
+    [HttpGet]
+    public async Task<IActionResult> Checkout(
+        int subscriptionId)
+    {
+        var userId =
+            User.FindFirstValue(
+                ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrWhiteSpace(userId))
         {
-            await transaction.RollbackAsync();
+            return Challenge();
+        }
 
+        var subscription =
+            await dbContext.KitchenSubscriptions
+                .AsNoTracking()
+                .Include(item =>
+                    item.MemberProfile)
+                .ThenInclude(profile =>
+                    profile.ApplicationUser)
+                .FirstOrDefaultAsync(item =>
+                    item.Id == subscriptionId &&
+                    item.MemberProfile.ApplicationUserId ==
+                        userId);
+
+        if (subscription is null)
+        {
+            return NotFound();
+        }
+
+        if (subscription.Status !=
+            KitchenSubscriptionStatus.PendingPayment)
+        {
             TempData["ErrorMessage"] =
-                planResult.Message ??
-                "Kitchen beslenme planı oluşturulamadı.";
+                "Bu Kitchen paketi ödeme beklemiyor.";
 
             return RedirectToAction(nameof(Index));
         }
 
-        await transaction.CommitAsync();
+        var applicationUser =
+            subscription
+                .MemberProfile
+                .ApplicationUser;
 
-        TempData["SuccessMessage"] =
-            "Kitchen aboneliğin ve 5 öğünlük beslenme planın oluşturuldu.";
+        var fullName =
+            $"{applicationUser.FirstName} " +
+            $"{applicationUser.LastName}";
 
-        return RedirectToAction(nameof(Index));
+        return View(
+            new KitchenCheckoutViewModel
+            {
+                KitchenSubscriptionId =
+                    subscription.Id,
+
+                PackageName =
+                    subscription.PackageNameSnapshot,
+
+                PackageDays =
+                    subscription.PackageDaysSnapshot,
+
+                PackagePrice =
+                    subscription.PackagePriceSnapshot,
+
+                FullName =
+                    fullName.Trim(),
+
+                PhoneNumber =
+                    applicationUser.PhoneNumber
+                    ?? string.Empty
+            });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Checkout(
+        KitchenCheckoutViewModel model)
+    {
+        var userId =
+            User.FindFirstValue(
+                ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Challenge();
+        }
+
+        var subscription =
+            await dbContext.KitchenSubscriptions
+                .AsNoTracking()
+                .FirstOrDefaultAsync(item =>
+                    item.Id ==
+                        model.KitchenSubscriptionId &&
+                    item.MemberProfile
+                        .ApplicationUserId ==
+                        userId);
+
+        if (subscription is null)
+        {
+            return NotFound();
+        }
+
+        model.PackageName =
+            subscription.PackageNameSnapshot;
+
+        model.PackageDays =
+            subscription.PackageDaysSnapshot;
+
+        model.PackagePrice =
+            subscription.PackagePriceSnapshot;
+
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        var result =
+            await commerceService
+                .CreateKitchenPackageOrderAsync(
+                    userId,
+                    subscription.Id,
+                    new DeliveryDetails
+                    {
+                        FullName =
+                            model.FullName,
+
+                        PhoneNumber =
+                            model.PhoneNumber,
+
+                        AddressLine =
+                            model.AddressLine,
+
+                        District =
+                            model.District,
+
+                        City =
+                            model.City,
+
+                        PostalCode =
+                            model.PostalCode,
+
+                        DeliveryDate =
+                            null,
+
+                        DeliveryTimeSlot =
+                            null
+                    });
+
+        if (!result.Succeeded ||
+            result.EntityId is null)
+        {
+            ModelState.AddModelError(
+                string.Empty,
+                result.ErrorMessage
+                ?? "Kitchen siparişi oluşturulamadı.");
+
+            return View(model);
+        }
+
+        var returnUrl = Url.Action(
+            "Index",
+            "Orders",
+            new
+            {
+                area = "Member"
+            },
+            Request.Scheme,
+            Request.Host.Value);
+
+        var paymentResult =
+            await iyzicoPaymentService.InitializeAsync(
+                result.EntityId.Value,
+                HttpContext.Connection.RemoteIpAddress?.ToString(),
+                returnUrl);
+
+        if (!paymentResult.Succeeded ||
+            string.IsNullOrWhiteSpace(
+                paymentResult.RedirectUrl))
+        {
+            ModelState.AddModelError(
+                string.Empty,
+                paymentResult.ErrorMessage
+                ?? "Ödeme başlatılamadı. Lütfen tekrar dene.");
+
+            return View(model);
+        }
+
+        return Redirect(
+            paymentResult.RedirectUrl);
     }
 
     [HttpPost]
@@ -252,6 +506,24 @@ public class KitchenController(
             successMessage: "Gün yeniden plana alındı. Üretim planını güncellemek için admin tarafında Planı Yenile kullanılmalı.");
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SetGymPickup(int mealPlanDayId)
+    {
+        return await SetDeliveryMethodAsync(
+            mealPlanDayId,
+            KitchenDeliveryMethod.GymPickup);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SetHomeDelivery(int mealPlanDayId)
+    {
+        return await SetDeliveryMethodAsync(
+            mealPlanDayId,
+            KitchenDeliveryMethod.HomeDelivery);
+    }
+
     private async Task<IActionResult> SetMealSkippedAsync(
         int mealPlanItemId,
         bool isSkipped,
@@ -266,9 +538,11 @@ public class KitchenController(
 
         var meal = await dbContext.KitchenMealPlanItems
             .Include(item => item.KitchenMealPlanDay)
-            .ThenInclude(day => day.KitchenMealPlan)
-            .ThenInclude(plan => plan.KitchenSubscription)
-            .ThenInclude(subscription => subscription.MemberProfile)
+                .ThenInclude(day => day.Items)
+            .Include(item => item.KitchenMealPlanDay)
+                .ThenInclude(day => day.KitchenMealPlan)
+                .ThenInclude(plan => plan.KitchenSubscription)
+                .ThenInclude(subscription => subscription.MemberProfile)
             .FirstOrDefaultAsync(item => item.Id == mealPlanItemId);
 
         if (meal is null ||
@@ -288,8 +562,23 @@ public class KitchenController(
 
         if (meal.IsSkipped != isSkipped)
         {
+            var changedAtUtc = DateTime.UtcNow;
+
             meal.IsSkipped = isSkipped;
-            meal.SkippedAtUtc = isSkipped ? DateTime.UtcNow : null;
+            meal.SkippedAtUtc =
+                isSkipped
+                    ? changedAtUtc
+                    : null;
+
+            if (isSkipped &&
+                meal.KitchenMealPlanDay.Items.All(
+                    item => item.IsSkipped))
+            {
+                ClearDeliveryPreference(
+                    meal.KitchenMealPlanDay,
+                    changedAtUtc);
+            }
+
             await dbContext.SaveChangesAsync();
         }
 
@@ -337,11 +626,21 @@ public class KitchenController(
         {
             if (meal.IsSkipped == isSkipped)
             {
-                continue;
+        continue;
             }
 
-            meal.IsSkipped = isSkipped;
-            meal.SkippedAtUtc = isSkipped ? changedAtUtc : null;
+        meal.IsSkipped = isSkipped;
+        meal.SkippedAtUtc =
+            isSkipped
+                ? changedAtUtc
+                : null;
+        }
+
+        if (isSkipped)
+        {
+            ClearDeliveryPreference(
+                day,
+                changedAtUtc);
         }
 
         await dbContext.SaveChangesAsync();
@@ -349,6 +648,189 @@ public class KitchenController(
         TempData["SuccessMessage"] = successMessage;
 
         return RedirectToAction(nameof(Index), null, "nutrition-plan");
+    }
+
+    private async Task<IActionResult> SetDeliveryMethodAsync(
+    int mealPlanDayId,
+    KitchenDeliveryMethod deliveryMethod)
+    {
+        var userId =
+            User.FindFirstValue(
+                ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Challenge();
+        }
+
+        var day =
+            await dbContext.KitchenMealPlanDays
+                .Include(item => item.Items)
+                .Include(item => item.KitchenMealPlan)
+                    .ThenInclude(plan => plan.KitchenSubscription)
+                        .ThenInclude(subscription => subscription.MemberProfile)
+                .FirstOrDefaultAsync(
+                    item => item.Id == mealPlanDayId);
+
+        if (day is null ||
+            day.KitchenMealPlan
+                .KitchenSubscription
+                .MemberProfile
+                .ApplicationUserId != userId)
+        {
+            return NotFound();
+        }
+
+        var validationResult =
+            ValidateMealPlanChange(day);
+
+        if (!validationResult.Succeeded)
+        {
+            TempData["ErrorMessage"] =
+                validationResult.Message;
+
+            return RedirectToAction(
+                nameof(Index),
+                null,
+                "nutrition-plan");
+        }
+
+        var hasActiveMeal =
+            day.Items.Any(item => !item.IsSkipped);
+
+        if (!hasActiveMeal)
+        {
+            TempData["ErrorMessage"] =
+                "Bu günün tüm öğünleri pas geçildiği için teslimat tercihi yapılamaz.";
+
+            return RedirectToAction(
+                nameof(Index),
+                null,
+                "nutrition-plan");
+        }
+
+        if (deliveryMethod ==
+            KitchenDeliveryMethod.GymPickup)
+        {
+            day.DeliveryMethod =
+                KitchenDeliveryMethod.GymPickup;
+
+            day.DeliveryFullName = null;
+            day.DeliveryPhoneNumber = null;
+            day.DeliveryAddressLine = null;
+            day.DeliveryDistrict = null;
+            day.DeliveryCity = null;
+            day.DeliveryPostalCode = null;
+
+            day.DeliveryPreferenceUpdatedAtUtc =
+                DateTime.UtcNow;
+
+            await dbContext.SaveChangesAsync();
+
+            TempData["SuccessMessage"] =
+                $"{day.PlanDate:dd.MM.yyyy} tarihli öğünlerini NO23 Sports Club'dan teslim alacaksın.";
+
+            return RedirectToAction(
+                nameof(Index),
+                null,
+                "nutrition-plan");
+        }
+
+        var subscriptionId =
+            day.KitchenMealPlan.KitchenSubscription.Id;
+
+        var paidKitchenOrder =
+            await dbContext.Orders
+                .AsNoTracking()
+                .Where(order =>
+                    order.KitchenSubscriptionId ==
+                        subscriptionId &&
+                    order.Type ==
+                        OrderType.KitchenSubscription &&
+                    order.PaymentStatus ==
+                        PaymentStatus.Paid)
+                .OrderByDescending(order =>
+                    order.CreatedAtUtc)
+                .FirstOrDefaultAsync();
+
+        if (paidKitchenOrder is null)
+        {
+            TempData["ErrorMessage"] =
+                "Kitchen paketine ait ödeme ve adres bilgileri bulunamadı.";
+
+            return RedirectToAction(
+                nameof(Index),
+                null,
+                "nutrition-plan");
+        }
+
+        if (string.IsNullOrWhiteSpace(
+                paidKitchenOrder.DeliveryAddressLine) ||
+            string.IsNullOrWhiteSpace(
+                paidKitchenOrder.DeliveryCity) ||
+            string.IsNullOrWhiteSpace(
+                paidKitchenOrder.DeliveryDistrict))
+        {
+            TempData["ErrorMessage"] =
+                "Eve teslim için kayıtlı adres bilgileri eksik.";
+
+            return RedirectToAction(
+                nameof(Index),
+                null,
+                "nutrition-plan");
+        }
+
+        day.DeliveryMethod =
+            KitchenDeliveryMethod.HomeDelivery;
+
+        day.DeliveryFullName =
+            paidKitchenOrder.DeliveryFullName;
+
+        day.DeliveryPhoneNumber =
+            paidKitchenOrder.DeliveryPhoneNumber;
+
+        day.DeliveryAddressLine =
+            paidKitchenOrder.DeliveryAddressLine;
+
+        day.DeliveryDistrict =
+            paidKitchenOrder.DeliveryDistrict;
+
+        day.DeliveryCity =
+            paidKitchenOrder.DeliveryCity;
+
+        day.DeliveryPostalCode =
+            paidKitchenOrder.DeliveryPostalCode;
+
+        day.DeliveryPreferenceUpdatedAtUtc =
+            DateTime.UtcNow;
+
+        await dbContext.SaveChangesAsync();
+
+        TempData["SuccessMessage"] =
+            $"{day.PlanDate:dd.MM.yyyy} tarihli öğünlerin kayıtlı adresine teslim edilecek.";
+
+        return RedirectToAction(
+            nameof(Index),
+            null,
+            "nutrition-plan");
+    }
+
+    private static void ClearDeliveryPreference(
+    KitchenMealPlanDay day,
+    DateTime changedAtUtc)
+    {
+        day.DeliveryMethod =
+            KitchenDeliveryMethod.NotSelected;
+
+        day.DeliveryFullName = null;
+        day.DeliveryPhoneNumber = null;
+        day.DeliveryAddressLine = null;
+        day.DeliveryDistrict = null;
+        day.DeliveryCity = null;
+        day.DeliveryPostalCode = null;
+
+        day.DeliveryPreferenceUpdatedAtUtc =
+            changedAtUtc;
     }
 
     private static KitchenMealPlanChangeResult ValidateMealPlanChange(KitchenMealPlanDay day)
@@ -484,15 +966,24 @@ public class KitchenController(
             .Where(day => day.KitchenMealPlanId == mealPlan.Id)
             .OrderBy(day => day.DayNumber)
             .Select(day => new
-            {
-                day.Id,
-                day.DayNumber,
-                day.PlanDate,
-                day.TotalCalories,
-                day.TotalProteinGrams,
-                day.TotalCarbohydrateGrams,
-                day.TotalFatGrams
-            })
+        {
+            day.Id,
+            day.DayNumber,
+            day.PlanDate,
+
+            day.DeliveryMethod,
+            day.DeliveryFullName,
+            day.DeliveryPhoneNumber,
+            day.DeliveryAddressLine,
+            day.DeliveryDistrict,
+            day.DeliveryCity,
+            day.DeliveryPostalCode,
+
+            day.TotalCalories,
+            day.TotalProteinGrams,
+            day.TotalCarbohydrateGrams,
+            day.TotalFatGrams
+        })
             .ToListAsync();
 
         var dayIds = days
@@ -566,6 +1057,30 @@ public class KitchenController(
                         Id = day.Id,
                         DayNumber = day.DayNumber,
                         PlanDate = day.PlanDate,
+                        DeliveryMethod =
+                            day.DeliveryMethod.ToString(),
+
+                        DeliveryMethodDisplayName =
+                            GetDeliveryMethodDisplayName(
+                                day.DeliveryMethod),
+
+                        DeliveryFullName =
+                            day.DeliveryFullName,
+
+                        DeliveryPhoneNumber =
+                            day.DeliveryPhoneNumber,
+
+                        DeliveryAddressLine =
+                            day.DeliveryAddressLine,
+
+                        DeliveryDistrict =
+                            day.DeliveryDistrict,
+
+                        DeliveryCity =
+                            day.DeliveryCity,
+
+                        DeliveryPostalCode =
+                            day.DeliveryPostalCode,
                         TotalCalories = activeMeals.Sum(meal => meal.Calories),
                         TotalProteinGrams = activeMeals.Sum(meal => meal.ProteinGrams),
                         TotalCarbohydrateGrams = activeMeals.Sum(meal => meal.CarbohydrateGrams),
@@ -576,6 +1091,22 @@ public class KitchenController(
                     };
                 })
                 .ToList()
+        };
+    }
+
+    private static string GetDeliveryMethodDisplayName(
+    KitchenDeliveryMethod deliveryMethod)
+    {
+        return deliveryMethod switch
+        {
+            KitchenDeliveryMethod.GymPickup =>
+                "NO23 Sports Club'dan teslim al",
+
+            KitchenDeliveryMethod.HomeDelivery =>
+                "Adresime teslim",
+
+            _ =>
+                "Henüz seçilmedi"
         };
     }
 

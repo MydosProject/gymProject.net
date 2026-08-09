@@ -194,6 +194,90 @@ public class CommerceService(ApplicationDbContext dbContext)
         return CommerceResult.Ok(order.Id);
     }
 
+        public async Task<CommerceResult> CreateKitchenPackageOrderAsync(
+        string userId,
+        int kitchenSubscriptionId,
+        DeliveryDetails addressDetails)
+    {
+        var profile = await GetMemberProfileAsync(userId);
+
+        if (profile is null)
+        {
+            return CommerceResult.Fail(
+                "Üye profili bulunamadı.");
+        }
+
+        var subscription = await dbContext.KitchenSubscriptions
+            .FirstOrDefaultAsync(item =>
+                item.Id == kitchenSubscriptionId &&
+                item.MemberProfileId == profile.Id);
+
+        if (subscription is null)
+        {
+            return CommerceResult.Fail(
+                "Kitchen paketi bulunamadı.");
+        }
+
+        if (subscription.Status !=
+            KitchenSubscriptionStatus.PendingPayment)
+        {
+            return CommerceResult.Fail(
+                "Bu Kitchen paketi ödeme beklemiyor.");
+        }
+
+        if (subscription.PackagePriceSnapshot <= 0)
+        {
+            return CommerceResult.Fail(
+                "Kitchen paket tutarı geçerli değil.");
+        }
+
+        var existingOrder = await dbContext.Orders
+            .AsNoTracking()
+            .FirstOrDefaultAsync(order =>
+                order.KitchenSubscriptionId ==
+                    subscription.Id &&
+                order.Status == OrderStatus.Pending &&
+                order.PaymentStatus ==
+                    PaymentStatus.Pending);
+
+        if (existingOrder is not null)
+        {
+            return CommerceResult.Ok(
+                existingOrder.Id);
+        }
+
+        var orderItem = new OrderItem
+        {
+            ItemType =
+                CartItemType.KitchenSubscriptionPackage,
+
+            ProductName =
+                subscription.PackageNameSnapshot,
+
+            UnitPrice =
+                subscription.PackagePriceSnapshot,
+
+            Quantity = 1,
+
+            LineTotal =
+                subscription.PackagePriceSnapshot
+        };
+
+        var order = BuildOrder(
+            profile.Id,
+            null,
+            OrderType.KitchenSubscription,
+            addressDetails,
+            subscription.Id,
+            [orderItem]);
+
+        dbContext.Orders.Add(order);
+
+        await dbContext.SaveChangesAsync();
+
+        return CommerceResult.Ok(order.Id);
+    }
+
     public async Task<CommerceResult> CreateGuestShopOrderAsync(
         int productId,
         int quantity,
@@ -362,7 +446,7 @@ public class CommerceService(ApplicationDbContext dbContext)
             DeliveryCity = deliveryDetails.City.Trim(),
             DeliveryPostalCode = deliveryDetails.PostalCode?.Trim(),
             DeliveryDate = deliveryDetails.DeliveryDate,
-            DeliveryTimeSlot = deliveryDetails.DeliveryTimeSlot.Trim(),
+            DeliveryTimeSlot = deliveryDetails.DeliveryTimeSlot?.Trim(),
             Notes = deliveryDetails.Notes?.Trim(),
             Subtotal = subtotal,
             DeliveryFee = DeliveryFee,

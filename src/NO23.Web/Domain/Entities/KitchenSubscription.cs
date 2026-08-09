@@ -16,7 +16,8 @@ public class KitchenSubscription
 
     public KitchenSubscriptionPlan Plan { get; set; }
 
-    public KitchenSubscriptionStatus Status { get; set; } = KitchenSubscriptionStatus.Active;
+    public KitchenSubscriptionStatus Status { get; set; } =
+    KitchenSubscriptionStatus.PendingPayment;
 
     public string PackageNameSnapshot { get; set; } = string.Empty;
 
@@ -25,6 +26,16 @@ public class KitchenSubscription
     public int PackageDaysSnapshot { get; set; }
 
     public NutritionGoal Goal { get; set; }
+
+    public int? SourceHeightCm { get; set; }
+
+    public decimal? SourceWeightKg { get; set; }
+
+    public int? SourceAge { get; set; }
+
+    public Gender? SourceGender { get; set; }
+
+    public ActivityLevel? SourceActivityLevel { get; set; }
 
     public int DailyCalories { get; set; }
 

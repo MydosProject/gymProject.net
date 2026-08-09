@@ -86,7 +86,22 @@
                                 <td data-label="Tür">@order.Type</td>
                                 <td data-label="Durum"><span class="admin-status">@order.Status</span></td>
                                 <td data-label="Ödeme">@order.PaymentStatus</td>
-                                <td data-label="Teslimat"><strong>@order.DeliveryDate.ToString("dd.MM.yyyy")</strong><small class="admin-cell-note">@order.DeliveryTimeSlot</small></td>
+                                <td data-label="Teslimat">
+                                @if (order.DeliveryDate.HasValue)
+                                {
+                                    <strong>
+                                        @order.DeliveryDate.Value.ToString("dd.MM.yyyy")
+                                    </strong>
+
+                                    <small class="admin-cell-note">
+                                        @(order.DeliveryTimeSlot ?? "-")
+                                    </small>
+                                }
+                                else
+                                {
+                                    <strong>Paket planından belirlenecek</strong>
+                                }
+                                </td>
                                 <td data-label="Ürün">@order.ItemCount</td>
                                 <td data-label="Toplam"><strong>@order.Total.ToString("C0")</strong></td>
                                 <td class="text-end" data-label="İşlem">

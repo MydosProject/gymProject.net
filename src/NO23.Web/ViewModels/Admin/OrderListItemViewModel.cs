@@ -26,9 +26,9 @@ public class OrderListItemViewModel
 
     public IReadOnlyList<PaymentStatus> AvailablePaymentStatuses { get; init; } = [];
 
-    public DateOnly DeliveryDate { get; init; }
+    public DateOnly? DeliveryDate { get; init; }
 
-    public string DeliveryTimeSlot { get; init; } = string.Empty;
+    public string? DeliveryTimeSlot { get; init; }
 
     public decimal Total { get; init; }
 

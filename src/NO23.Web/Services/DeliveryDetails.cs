@@ -14,9 +14,9 @@ public class DeliveryDetails
 
     public string? PostalCode { get; set; }
 
-    public DateOnly DeliveryDate { get; set; }
+    public DateOnly? DeliveryDate { get; set; }
 
-    public string DeliveryTimeSlot { get; set; } = string.Empty;
+    public string? DeliveryTimeSlot { get; set; }
 
     public string? Notes { get; set; }
 }
