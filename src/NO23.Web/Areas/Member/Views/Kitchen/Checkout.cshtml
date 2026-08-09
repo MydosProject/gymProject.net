@@ -4,136 +4,144 @@
     ViewData["Title"] = "Kitchen Paket Ödemesi";
 }
 
-<section class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-7">
+<section class="member-kitchen-checkout-page">
+    <div class="container">
+        <div class="member-kitchen-checkout-shell">
 
-            <div class="mb-4">
-                <p class="text-uppercase small mb-2">
-                    NO23 Kitchen
-                </p>
+            <header class="member-kitchen-checkout-hero">
+                <div>
+                    <p class="member-kitchen-checkout-kicker">
+                        NO23 KITCHEN / ÖDEME
+                    </p>
 
-                <h1 class="h2">
-                    @Model.PackageName
-                </h1>
+                    <h1>@Model.PackageName</h1>
 
-                <p class="text-muted">
-                    @Model.PackageDays gün ·
-                    @Model.PackagePrice.ToString("C0")
-                </p>
-            </div>
+                    <p class="member-kitchen-checkout-summary">
+                        @Model.PackageDays gün
+                        <span>•</span>
+                        @Model.PackagePrice.ToString("C0")
+                    </p>
+                </div>
 
-            <div class="alert alert-light border mb-4">
-                Burada yalnızca ödeme ve adres bilgilerini
-                tamamlıyorsun. Salonda teslim alma veya eve
-                teslim seçimini beslenme planın oluştuktan
-                sonra gün bazında yapabileceksin.
+                <div class="member-kitchen-checkout-price">
+                    <span>Paket Tutarı</span>
+                    <strong>@Model.PackagePrice.ToString("C0")</strong>
+                    <small>@Model.PackageDays günlük Kitchen planı</small>
+                </div>
+            </header>
+
+            <div class="member-kitchen-checkout-note">
+                <span class="member-kitchen-checkout-note-icon"
+                      aria-hidden="true">
+                    i
+                </span>
+
+                <div>
+                    <strong>Teslimat tercihini daha sonra belirleyebilirsin.</strong>
+
+                    <p>
+                        Bu adımda yalnızca ödeme, iletişim ve adres bilgilerini
+                        tamamlıyorsun. Beslenme planın oluştuktan sonra her gün için
+                        NO23'ten teslim alma veya adresine teslim seçeneklerinden
+                        birini seçebilirsin.
+                    </p>
+                </div>
             </div>
 
             <form asp-area="Member"
                   asp-controller="Kitchen"
                   asp-action="Checkout"
-                  method="post">
+                  method="post"
+                  class="member-kitchen-checkout-form">
 
                 <input asp-for="KitchenSubscriptionId"
                        type="hidden" />
 
                 <div asp-validation-summary="ModelOnly"
-                     class="text-danger mb-3">
+                     class="member-kitchen-checkout-validation"
+                     role="alert">
                 </div>
 
-                <div class="mb-3">
-                    <label asp-for="FullName"
-                           class="form-label">
+                <div class="member-kitchen-checkout-form-head">
+                    <div>
+                        <p>TESLİMAT BİLGİLERİ</p>
+                        <h2>Bilgilerini tamamla.</h2>
+                    </div>
+
+                    <span>01</span>
+                </div>
+
+                <div class="member-kitchen-checkout-grid">
+
+                    <label class="member-kitchen-checkout-field">
+                        <span>Ad Soyad</span>
+
+                        <input asp-for="FullName"
+                               autocomplete="name" />
+
+                        <small asp-validation-for="FullName"></small>
                     </label>
 
-                    <input asp-for="FullName"
-                           class="form-control" />
+                    <label class="member-kitchen-checkout-field">
+                        <span>Telefon</span>
 
-                    <span asp-validation-for="FullName"
-                          class="text-danger">
-                    </span>
-                </div>
+                        <input asp-for="PhoneNumber"
+                               autocomplete="tel" />
 
-                <div class="mb-3">
-                    <label asp-for="PhoneNumber"
-                           class="form-label">
+                        <small asp-validation-for="PhoneNumber"></small>
                     </label>
 
-                    <input asp-for="PhoneNumber"
-                           class="form-control" />
+                    <label class="member-kitchen-checkout-field is-wide">
+                        <span>Adres</span>
 
-                    <span asp-validation-for="PhoneNumber"
-                          class="text-danger">
-                    </span>
-                </div>
+                        <textarea asp-for="AddressLine"
+                                  rows="3"
+                                  autocomplete="street-address"></textarea>
 
-                <div class="mb-3">
-                    <label asp-for="AddressLine"
-                           class="form-label">
+                        <small asp-validation-for="AddressLine"></small>
                     </label>
 
-                    <textarea asp-for="AddressLine"
-                              class="form-control"
-                              rows="3">
-                    </textarea>
-
-                    <span asp-validation-for="AddressLine"
-                          class="text-danger">
-                    </span>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-
-                        <label asp-for="District"
-                               class="form-label">
-                        </label>
+                    <label class="member-kitchen-checkout-field">
+                        <span>İlçe</span>
 
                         <input asp-for="District"
-                               class="form-control" />
+                               autocomplete="address-level2" />
 
-                        <span asp-validation-for="District"
-                              class="text-danger">
-                        </span>
-
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-
-                        <label asp-for="City"
-                               class="form-label">
-                        </label>
-
-                        <input asp-for="City"
-                               class="form-control" />
-
-                        <span asp-validation-for="City"
-                              class="text-danger">
-                        </span>
-
-                    </div>
-                </div>
-
-                <div class="mb-4">
-
-                    <label asp-for="PostalCode"
-                           class="form-label">
+                        <small asp-validation-for="District"></small>
                     </label>
 
-                    <input asp-for="PostalCode"
-                           class="form-control" />
+                    <label class="member-kitchen-checkout-field">
+                        <span>Şehir</span>
 
-                    <span asp-validation-for="PostalCode"
-                          class="text-danger">
-                    </span>
+                        <input asp-for="City"
+                               autocomplete="address-level1" />
+
+                        <small asp-validation-for="City"></small>
+                    </label>
+
+                    <label class="member-kitchen-checkout-field">
+                        <span>Posta Kodu</span>
+
+                        <input asp-for="PostalCode"
+                               autocomplete="postal-code" />
+
+                        <small asp-validation-for="PostalCode"></small>
+                    </label>
 
                 </div>
 
-                <button type="submit"
-                        class="btn btn-dark w-100">
-                    Ödeme Adımına Devam Et
-                </button>
+                <div class="member-kitchen-checkout-footer">
+                    <div>
+                        <span>Sonraki adım</span>
+                        <strong>iyzico güvenli ödeme ekranı</strong>
+                    </div>
+
+                    <button type="submit"
+                            class="member-kitchen-checkout-submit">
+                        Ödeme Adımına Devam Et
+                        <span aria-hidden="true">→</span>
+                    </button>
+                </div>
 
             </form>
         </div>

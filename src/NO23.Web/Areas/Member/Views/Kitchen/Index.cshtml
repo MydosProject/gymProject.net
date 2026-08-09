@@ -323,92 +323,96 @@
                                         </div>
                                     </dl>
 
-                                    <div class="kitchen-meal-day-actions">
+                                    <div class="kitchen-meal-day-controls">
+                                        <div class="kitchen-delivery-panel">
+                                            <div class="kitchen-delivery-panel-head">
+                                                <div>
+                                                    <span>TESLİMAT TERCİHİ</span>
+                                                    <strong>@day.DeliveryMethodDisplayName</strong>
+                                                </div>
+                                            </div>
 
-                                    <div>
-                                        <small>Teslimat tercihi</small>
+                                            @if (!day.IsFullySkipped && day.CanSkip)
+                                            {
+                                                <div class="kitchen-delivery-options">
+                                                    <form asp-area="Member"
+                                                          asp-controller="Kitchen"
+                                                          asp-action="SetGymPickup"
+                                                          method="post">
+                                                        <input type="hidden"
+                                                               name="mealPlanDayId"
+                                                               value="@day.Id" />
 
-                                        <strong>
-                                            @day.DeliveryMethodDisplayName
-                                        </strong>
+                                                        <button type="submit"
+                                                                class="kitchen-delivery-option @(day.DeliveryMethod == "GymPickup" ? "is-selected" : null)">
+                                                            <span class="kitchen-delivery-option-number">01</span>
+                                                            <span class="kitchen-delivery-option-content">
+                                                                <strong>NO23'ten Teslim Al</strong>
+                                                                <small>Öğünlerini kulüpten teslim al.</small>
+                                                            </span>
+                                                            <span class="kitchen-delivery-option-arrow" aria-hidden="true">→</span>
+                                                        </button>
+                                                    </form>
+
+                                                    <form asp-area="Member"
+                                                          asp-controller="Kitchen"
+                                                          asp-action="SetHomeDelivery"
+                                                          method="post">
+                                                        <input type="hidden"
+                                                               name="mealPlanDayId"
+                                                               value="@day.Id" />
+
+                                                        <button type="submit"
+                                                                class="kitchen-delivery-option @(day.DeliveryMethod == "HomeDelivery" ? "is-selected" : null)">
+                                                            <span class="kitchen-delivery-option-number">02</span>
+                                                            <span class="kitchen-delivery-option-content">
+                                                                <strong>Adresime Teslim</strong>
+                                                                <small>Kayıtlı teslimat adresini kullan.</small>
+                                                            </span>
+                                                            <span class="kitchen-delivery-option-arrow" aria-hidden="true">→</span>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            }
+
+                                            @if (day.DeliveryMethod == "HomeDelivery" &&
+                                                !string.IsNullOrWhiteSpace(day.DeliveryAddressLine))
+                                            {
+                                                <div class="kitchen-delivery-address">
+                                                    <small>Teslimat adresi</small>
+                                                    <strong>@day.DeliveryFullName</strong>
+                                                    <span>@day.DeliveryPhoneNumber</span>
+                                                    <p>
+                                                        @day.DeliveryAddressLine<br />
+                                                        @day.DeliveryDistrict / @day.DeliveryCity
+                                                    </p>
+                                                </div>
+                                            }
+                                        </div>
+
+                                        @if (day.CanSkip)
+                                        {
+                                            <div class="kitchen-day-management">
+                                                <small>Plan yönetimi</small>
+
+                                                <form asp-area="Member"
+                                                      asp-controller="Kitchen"
+                                                      asp-action="@(day.IsFullySkipped ? "RestoreDay" : "SkipDay")"
+                                                      method="post">
+                                                    <input type="hidden"
+                                                           name="mealPlanDayId"
+                                                           value="@day.Id" />
+
+                                                    <button type="submit"
+                                                            class="kitchen-day-skip-action @(day.IsFullySkipped ? "is-restore" : null)">
+                                                        @(day.IsFullySkipped
+                                                            ? "Günü Plana Al"
+                                                            : "Günü Pas Geç")
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        }
                                     </div>
-
-                                    @if (!day.IsFullySkipped && day.CanSkip)
-                                    {
-                                        <form asp-area="Member"
-                                            asp-controller="Kitchen"
-                                            asp-action="SetGymPickup"
-                                            method="post">
-
-                                            <input type="hidden"
-                                                name="mealPlanDayId"
-                                                value="@day.Id" />
-
-                                            <button type="submit"
-                                                    class="kitchen-inline-action">
-                                                NO23'ten Teslim Al
-                                            </button>
-
-                                        </form>
-
-                                        <form asp-area="Member"
-                                            asp-controller="Kitchen"
-                                            asp-action="SetHomeDelivery"
-                                            method="post">
-
-                                            <input type="hidden"
-                                                name="mealPlanDayId"
-                                                value="@day.Id" />
-
-                                            <button type="submit"
-                                                    class="kitchen-inline-action">
-                                                Adresime Teslim
-                                            </button>
-
-                                        </form>
-                                    }
-
-                                </div>
-
-                                    @if (day.DeliveryMethod == "HomeDelivery" &&
-                                        !string.IsNullOrWhiteSpace(day.DeliveryAddressLine))
-                                    {
-                                        <div class="kitchen-meal-day-totals">
-                                            <div>
-                                                <dt>Teslim alacak kişi</dt>
-                                                <dd>@day.DeliveryFullName</dd>
-                                            </div>
-
-                                            <div>
-                                                <dt>Telefon</dt>
-                                                <dd>@day.DeliveryPhoneNumber</dd>
-                                            </div>
-
-                                            <div>
-                                                <dt>Adres</dt>
-                                                <dd>
-                                                    @day.DeliveryAddressLine
-                                                    <br />
-                                                    @day.DeliveryDistrict / @day.DeliveryCity
-                                                </dd>
-                                            </div>
-                                        </div>
-                                    }
-
-                                    @if (day.CanSkip)
-                                    {
-                                        <div class="kitchen-meal-day-actions">
-                                            <form asp-area="Member"
-                                                  asp-controller="Kitchen"
-                                                  asp-action="@(day.IsFullySkipped ? "RestoreDay" : "SkipDay")"
-                                                  method="post">
-                                                <input type="hidden" name="mealPlanDayId" value="@day.Id" />
-                                                <button type="submit" class="kitchen-inline-action">
-                                                    @(day.IsFullySkipped ? "Günü Plana Al" : "Günü Pas Geç")
-                                                </button>
-                                            </form>
-                                        </div>
-                                    }
 
                                     <div class="kitchen-meal-list">
                                         @foreach (var meal in day.Meals)

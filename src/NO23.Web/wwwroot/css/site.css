@@ -17366,3 +17366,914 @@ button:focus-visible {
     }
 
 }
+/* =========================================================
+   MEMBER KITCHEN CHECKOUT
+   ========================================================= */
+
+.member-kitchen-checkout-page {
+    padding: 3rem 0 4.5rem;
+}
+
+.member-kitchen-checkout-shell {
+    display: grid;
+    gap: 1.2rem;
+    max-width: 980px;
+    margin: 0 auto;
+}
+
+.member-kitchen-checkout-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 2rem;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 22px;
+    background: rgba(17, 18, 16, 0.92);
+}
+
+.member-kitchen-checkout-kicker {
+    margin: 0 0 0.55rem;
+    color: #baff00;
+    font-size: 0.62rem;
+    font-weight: 900;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.member-kitchen-checkout-hero h1 {
+    margin: 0;
+    color: #fff;
+    font-size: clamp(2rem, 4vw, 3.6rem);
+    line-height: 0.98;
+}
+
+.member-kitchen-checkout-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    margin: 0.8rem 0 0;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.8rem;
+}
+
+.member-kitchen-checkout-price {
+    display: grid;
+    min-width: 185px;
+    gap: 0.15rem;
+    text-align: right;
+}
+
+.member-kitchen-checkout-price span,
+.member-kitchen-checkout-price small {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.62rem;
+}
+
+.member-kitchen-checkout-price strong {
+    color: #baff00;
+    font-size: 2rem;
+}
+
+.member-kitchen-checkout-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid rgba(186, 255, 0, 0.16);
+    border-radius: 16px;
+    background: rgba(186, 255, 0, 0.045);
+}
+
+.member-kitchen-checkout-note-icon {
+    display: grid;
+    flex: 0 0 28px;
+    width: 28px;
+    height: 28px;
+    place-items: center;
+    border: 1px solid rgba(186, 255, 0, 0.32);
+    border-radius: 50%;
+    color: #baff00;
+    font-size: 0.7rem;
+    font-weight: 900;
+}
+
+.member-kitchen-checkout-note strong {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: #fff;
+    font-size: 0.8rem;
+}
+
+.member-kitchen-checkout-note p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 0.72rem;
+    line-height: 1.55;
+}
+
+.member-kitchen-checkout-form {
+    padding: 1.4rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 22px;
+    background: rgba(17, 18, 16, 0.92);
+}
+
+.member-kitchen-checkout-form-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.member-kitchen-checkout-form-head p {
+    margin: 0 0 0.25rem;
+    color: #baff00;
+    font-size: 0.6rem;
+    font-weight: 900;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+}
+
+.member-kitchen-checkout-form-head h2 {
+    margin: 0;
+    color: #fff;
+    font-size: 1.55rem;
+}
+
+.member-kitchen-checkout-form-head > span {
+    color: rgba(255, 255, 255, 0.12);
+    font-size: 2.6rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.member-kitchen-checkout-validation {
+    margin-bottom: 1rem;
+    color: #f2a2a2;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.member-kitchen-checkout-validation:empty,
+.member-kitchen-checkout-validation.validation-summary-valid {
+    display: none;
+}
+
+.member-kitchen-checkout-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.9rem;
+}
+
+.member-kitchen-checkout-field {
+    display: grid;
+    gap: 0.4rem;
+}
+
+.member-kitchen-checkout-field.is-wide {
+    grid-column: 1 / -1;
+}
+
+.member-kitchen-checkout-field > span {
+    color: #baff00;
+    font-size: 0.62rem;
+    font-weight: 850;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.member-kitchen-checkout-field input,
+.member-kitchen-checkout-field textarea {
+    width: 100%;
+    min-width: 0;
+    padding: 0.8rem 0.9rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 13px;
+    outline: none;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.035);
+    font-size: 0.82rem;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background-color 0.2s ease;
+}
+
+.member-kitchen-checkout-field input {
+    min-height: 50px;
+}
+
+.member-kitchen-checkout-field textarea {
+    resize: vertical;
+}
+
+.member-kitchen-checkout-field input:focus,
+.member-kitchen-checkout-field textarea:focus {
+    border-color: rgba(186, 255, 0, 0.55);
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow: 0 0 0 3px rgba(186, 255, 0, 0.08);
+}
+
+.member-kitchen-checkout-field small {
+    min-height: 1em;
+    color: #f2a2a2;
+    font-size: 0.65rem;
+    font-weight: 700;
+}
+
+.member-kitchen-checkout-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 1.3rem;
+    padding-top: 1.1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.member-kitchen-checkout-footer > div span {
+    display: block;
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 0.62rem;
+}
+
+.member-kitchen-checkout-footer > div strong {
+    display: block;
+    margin-top: 0.2rem;
+    color: #fff;
+    font-size: 0.82rem;
+}
+
+.member-kitchen-checkout-submit {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+
+    min-width: 260px;
+    min-height: 50px;
+    padding: 0.85rem 1.1rem;
+
+    border: 0 !important;
+    border-radius: 13px;
+
+    background: #baff00 !important;
+    color: #0b0d09 !important;
+
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.02em;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        background-color 0.2s ease;
+}
+
+.member-kitchen-checkout-submit:hover {
+    background: #c8ff33 !important;
+    color: #0b0d09 !important;
+    transform: translateY(-2px);
+}
+
+.member-kitchen-checkout-submit:focus-visible {
+    outline: 3px solid rgba(186, 255, 0, 0.32);
+    outline-offset: 3px;
+}
+
+.member-kitchen-checkout-submit > span {
+    color: #0b0d09;
+    font-size: 1.1rem;
+}
+
+@media (max-width: 767.98px) {
+    .member-kitchen-checkout-page {
+        padding: 2rem 0 3.5rem;
+    }
+
+    .member-kitchen-checkout-shell {
+        gap: 1rem;
+    }
+
+    .member-kitchen-checkout-hero {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        padding: 1.1rem;
+    }
+
+    .member-kitchen-checkout-price {
+        min-width: 0;
+        text-align: left;
+    }
+
+    .member-kitchen-checkout-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .member-kitchen-checkout-field.is-wide {
+        grid-column: auto;
+    }
+
+    .member-kitchen-checkout-footer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .member-kitchen-checkout-submit {
+        width: 100%;
+        min-width: 0;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .member-kitchen-checkout-page {
+        padding: 1.5rem 0 3rem;
+    }
+
+    .member-kitchen-checkout-form,
+    .member-kitchen-checkout-hero {
+        padding: 1rem;
+        border-radius: 18px;
+    }
+
+    .member-kitchen-checkout-note {
+        padding: 0.9rem;
+    }
+
+    .member-kitchen-checkout-form-head h2 {
+        font-size: 1.35rem;
+    }
+
+    .member-kitchen-checkout-hero h1 {
+        font-size: clamp(1.8rem, 9vw, 2.5rem);
+    }
+
+    .member-kitchen-checkout-price strong {
+        font-size: 1.65rem;
+    }
+}
+
+/* =========================================================
+   NO23 KITCHEN - MEAL PLAN / DELIVERY REDESIGN
+   ========================================================= */
+
+.kitchen-meal-day-content {
+    grid-template-columns: 270px minmax(0, 1fr) !important;
+    align-items: stretch;
+    background: #f4f2ec;
+}
+
+.kitchen-meal-day-totals {
+    grid-column: 1;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-content: start;
+    margin: 0;
+    border-right: 1px solid #dedbd2;
+    background: #f4f2ec;
+}
+
+.kitchen-meal-day-totals > div {
+    min-width: 0;
+    padding: 1rem;
+    border-right: 1px solid #dedbd2;
+    border-bottom: 1px solid #dedbd2;
+}
+
+.kitchen-meal-day-totals > div:nth-child(2n) {
+    border-right: 0;
+}
+
+.kitchen-meal-day-totals dt,
+.kitchen-meal-day-totals dd {
+    margin: 0;
+}
+
+.kitchen-meal-day-totals dt {
+    margin-bottom: .38rem;
+    color: rgba(17, 17, 17, .46);
+    font-size: .56rem;
+    font-weight: 900;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+
+.kitchen-meal-day-totals dd {
+    color: #111;
+    font-size: .9rem;
+    font-weight: 900;
+}
+
+.kitchen-meal-day-controls {
+    grid-column: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+    border-right: 1px solid #dedbd2;
+    background: #f4f2ec;
+}
+
+.kitchen-delivery-panel {
+    display: grid;
+    gap: .8rem;
+}
+
+.kitchen-delivery-panel-head > div {
+    display: grid;
+    gap: .25rem;
+}
+
+.kitchen-delivery-panel-head span,
+.kitchen-day-management > small,
+.kitchen-delivery-address > small {
+    color: rgba(17, 17, 17, .44);
+    font-size: .55rem;
+    font-weight: 900;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+}
+
+.kitchen-delivery-panel-head strong {
+    color: #111;
+    font-size: .84rem;
+    font-weight: 900;
+}
+
+.kitchen-delivery-options {
+    display: grid;
+    gap: .55rem;
+}
+
+.kitchen-delivery-options form,
+.kitchen-day-management form {
+    width: 100%;
+    margin: 0;
+}
+
+.kitchen-delivery-option {
+    width: 100%;
+    min-height: 66px;
+    display: grid;
+    grid-template-columns: 30px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: .65rem;
+    padding: .72rem .78rem;
+    border: 1px solid rgba(17, 17, 17, .14);
+    border-radius: 12px;
+    color: #111;
+    background: rgba(255, 255, 255, .5);
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 180ms ease, background-color 180ms ease, transform 180ms ease;
+}
+
+.kitchen-delivery-option:hover,
+.kitchen-delivery-option:focus-visible {
+    border-color: rgba(17, 17, 17, .5);
+    transform: translateY(-1px);
+}
+
+.kitchen-delivery-option.is-selected {
+    border-color: #111;
+    background: var(--no23-accent, #b9ff00);
+}
+
+.kitchen-delivery-option-number {
+    display: grid;
+    width: 30px;
+    height: 30px;
+    place-items: center;
+    border: 1px solid rgba(17, 17, 17, .16);
+    border-radius: 8px;
+    font-size: .58rem;
+    font-weight: 950;
+}
+
+.kitchen-delivery-option-content {
+    min-width: 0;
+    display: grid;
+    gap: .15rem;
+}
+
+.kitchen-delivery-option-content strong {
+    color: #111;
+    font-size: .7rem;
+    font-weight: 950;
+    line-height: 1.2;
+    text-transform: uppercase;
+}
+
+.kitchen-delivery-option-content small {
+    color: rgba(17, 17, 17, .54);
+    font-size: .58rem;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.kitchen-delivery-option-arrow {
+    font-size: 1rem;
+    font-weight: 900;
+}
+
+.kitchen-delivery-address {
+    display: grid;
+    gap: .2rem;
+    padding: .75rem;
+    border: 1px solid rgba(17, 17, 17, .1);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, .45);
+}
+
+.kitchen-delivery-address strong {
+    color: #111;
+    font-size: .7rem;
+    font-weight: 900;
+}
+
+.kitchen-delivery-address span,
+.kitchen-delivery-address p {
+    margin: 0;
+    color: rgba(17, 17, 17, .62);
+    font-size: .61rem;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+.kitchen-day-management {
+    display: grid;
+    gap: .5rem;
+    margin-top: auto;
+    padding-top: .85rem;
+    border-top: 1px solid #dedbd2;
+}
+
+.kitchen-day-skip-action {
+    width: 100%;
+    min-height: 40px;
+    padding: .65rem .8rem;
+    border: 1px solid rgba(17, 17, 17, .18);
+    border-radius: 10px;
+    color: #111;
+    background: transparent;
+    font-size: .61rem;
+    font-weight: 950;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.kitchen-day-skip-action:hover,
+.kitchen-day-skip-action:focus-visible,
+.kitchen-day-skip-action.is-restore {
+    border-color: #111;
+    background: #111;
+    color: #fff;
+}
+
+.kitchen-meal-list {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    min-width: 0;
+    background: #f4f2ec;
+}
+
+.kitchen-meal-row {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: minmax(180px, 1fr) minmax(390px, 1.35fr);
+    align-items: stretch;
+    border-bottom: 1px solid #dedbd2;
+}
+
+.kitchen-meal-row:last-child {
+    border-bottom: 0;
+}
+
+.kitchen-meal-row > div:first-child {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: .25rem;
+    padding: .8rem 1rem;
+}
+
+.kitchen-meal-row > div:first-child > span {
+    color: rgba(17, 17, 17, .43);
+    font-size: .54rem;
+    font-weight: 900;
+    letter-spacing: .11em;
+    text-transform: uppercase;
+}
+
+.kitchen-meal-row > div:first-child > strong {
+    color: #111;
+    font-size: .78rem;
+    font-weight: 950;
+    line-height: 1.25;
+}
+
+.kitchen-meal-row > div:first-child > small {
+    color: rgba(17, 17, 17, .5);
+    font-size: .58rem;
+}
+
+.kitchen-meal-row dl {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: 70px 90px minmax(145px, 1fr) 92px;
+    margin: 0;
+}
+
+.kitchen-meal-row dl > div {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: .2rem;
+    padding: .7rem .75rem;
+    border-left: 1px solid #dedbd2;
+}
+
+.kitchen-meal-row dt,
+.kitchen-meal-row dd {
+    margin: 0;
+}
+
+.kitchen-meal-row dt {
+    color: rgba(17, 17, 17, .43);
+    font-size: .52rem;
+    font-weight: 900;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+}
+
+.kitchen-meal-row dd {
+    color: #111;
+    font-size: .67rem;
+    font-weight: 900;
+    overflow-wrap: anywhere;
+}
+
+.kitchen-meal-action-cell {
+    align-items: center;
+}
+
+.kitchen-meal-action-cell form {
+    width: 100%;
+    margin: 0;
+}
+
+.kitchen-inline-action {
+    width: 100%;
+    min-height: 34px;
+    padding: .45rem .55rem;
+    border: 1px solid rgba(17, 17, 17, .15);
+    border-radius: 9px;
+    color: #111;
+    background: rgba(255, 255, 255, .58);
+    font-size: .57rem;
+    font-weight: 950;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.kitchen-inline-action:hover,
+.kitchen-inline-action:focus-visible {
+    border-color: #111;
+    background: var(--no23-accent, #b9ff00);
+}
+
+.kitchen-meal-locked {
+    color: rgba(17, 17, 17, .42);
+    font-size: .56rem;
+    font-weight: 900;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.kitchen-meal-row.is-skipped {
+    opacity: .55;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1199.98px) {
+    .kitchen-meal-day-content {
+        grid-template-columns: 240px minmax(0, 1fr) !important;
+    }
+
+    .kitchen-meal-row {
+        grid-template-columns: minmax(155px, .85fr) minmax(350px, 1.35fr);
+    }
+
+    .kitchen-meal-row dl {
+        grid-template-columns: 60px 82px minmax(125px, 1fr) 82px;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .kitchen-meal-day-content {
+        display: grid;
+        grid-template-columns: 1fr !important;
+    }
+
+    .kitchen-meal-day-totals,
+    .kitchen-meal-day-controls,
+    .kitchen-meal-list {
+        grid-column: 1;
+        grid-row: auto;
+        border-right: 0;
+    }
+
+    .kitchen-meal-day-totals {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        border-bottom: 1px solid #dedbd2;
+    }
+
+    .kitchen-meal-day-totals > div {
+        border-bottom: 0;
+        border-right: 1px solid #dedbd2;
+    }
+
+    .kitchen-meal-day-totals > div:nth-child(2n) {
+        border-right: 1px solid #dedbd2;
+    }
+
+    .kitchen-meal-day-totals > div:last-child {
+        border-right: 0;
+    }
+
+    .kitchen-meal-day-controls {
+        border-bottom: 1px solid #dedbd2;
+    }
+
+    .kitchen-delivery-options {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 767.98px) {
+    .kitchen-meal-day-totals {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .kitchen-meal-day-totals > div:nth-child(2) {
+        border-right: 0;
+    }
+
+    .kitchen-meal-day-totals > div:nth-child(-n + 2) {
+        border-bottom: 1px solid #dedbd2;
+    }
+
+    .kitchen-delivery-options {
+        grid-template-columns: 1fr;
+    }
+
+    .kitchen-meal-row {
+        grid-template-columns: 1fr;
+    }
+
+    .kitchen-meal-row > div:first-child {
+        border-bottom: 1px solid #dedbd2;
+    }
+
+    .kitchen-meal-row dl {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .kitchen-meal-row dl > div:first-child {
+        border-left: 0;
+    }
+
+    .kitchen-meal-action-cell {
+        grid-column: 1 / -1;
+        border-top: 1px solid #dedbd2;
+        border-left: 0 !important;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .kitchen-meal-day-controls,
+    .kitchen-meal-day-totals > div,
+    .kitchen-meal-row > div:first-child {
+        padding: .8rem;
+    }
+
+    .kitchen-delivery-option {
+        min-height: 62px;
+    }
+
+    .kitchen-meal-row dl {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .kitchen-meal-row dl > div:nth-child(3) {
+        grid-column: 1 / -1;
+        border-top: 1px solid #dedbd2;
+        border-left: 0;
+    }
+
+    .kitchen-meal-action-cell {
+        grid-column: 1 / -1;
+    }
+}
+/* =========================================================
+   KITCHEN DELIVERY - FINAL ALIGNMENT FIX
+   ========================================================= */
+
+.kitchen-delivery-options {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 0.55rem !important;
+    width: 100%;
+}
+
+.kitchen-delivery-options form {
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+}
+
+.kitchen-delivery-option {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 52px;
+
+    display: grid !important;
+    grid-template-columns: 30px minmax(0, 1fr) auto !important;
+    align-items: center;
+
+    gap: 0.65rem;
+    padding: 0.65rem 0.75rem;
+
+    text-align: left;
+}
+
+.kitchen-delivery-option-number {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+}
+
+.kitchen-delivery-option-content {
+    display: block;
+    min-width: 0;
+}
+
+.kitchen-delivery-option-content strong {
+    display: block;
+    margin: 0;
+
+    font-size: 0.65rem;
+    line-height: 1.25;
+
+    white-space: normal;
+    overflow-wrap: normal;
+    word-break: normal;
+}
+
+.kitchen-delivery-option-content small {
+    display: none;
+}
+
+.kitchen-delivery-option-arrow {
+    flex-shrink: 0;
+    font-size: 0.9rem;
+}
+
+/* Teslimat alanının biraz daha rahat olması için */
+.kitchen-meal-day-content {
+    grid-template-columns: 300px minmax(0, 1fr) !important;
+}
+
+/* Tablet ve mobil */
+@media (max-width: 991.98px) {
+    .kitchen-meal-day-content {
+        grid-template-columns: 1fr !important;
+    }
+
+    .kitchen-delivery-options {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .kitchen-delivery-option {
+        grid-template-columns: 28px minmax(0, 1fr) !important;
+    }
+
+    .kitchen-delivery-option-arrow {
+        display: none;
+    }
+}
