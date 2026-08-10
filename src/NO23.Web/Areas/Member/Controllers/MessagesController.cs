@@ -8,6 +8,7 @@ using NO23.Web.Services;
 using NO23.Web.ViewModels.Member;
 using Microsoft.AspNetCore.SignalR;
 using NO23.Web.Hubs;
+using NO23.Web.Domain.Enums;
 
 namespace NO23.Web.Areas.Member.Controllers;
 
@@ -16,7 +17,8 @@ namespace NO23.Web.Areas.Member.Controllers;
 public class MessagesController(
     ApplicationDbContext dbContext,
     TrainerMessagingService messagingService,
-    IHubContext<TrainerChatHub> hubContext)
+    IHubContext<TrainerChatHub> hubContext,
+    UserNotificationRealtimeService notificationService)
     : Controller
 {
     public async Task<IActionResult> Index(
@@ -295,14 +297,22 @@ public class MessagesController(
             .SendAsync(
                 "MessageReceived",
                 realtimeMessage);
-            var recipientUserId = await messagingService.GetOtherParticipantUserIdAsync(userId, conversationId);
-        if (!string.IsNullOrWhiteSpace(
-            recipientUserId))
+        var recipientUserId = await messagingService.GetOtherParticipantUserIdAsync(userId, conversationId);
+        if (!string.IsNullOrWhiteSpace(recipientUserId))
         {
             await hubContext.Clients
                 .User(recipientUserId)
                 .SendAsync(
                     "RefreshUnreadCount");
+
+            await notificationService
+                .CreateAndPublishAsync(
+                    recipientUserId,
+                    UserNotificationType.Message,
+                    "Yeni mesaj",
+                    "Bir üye sana yeni bir mesaj gönderdi.",
+                    $"/Trainer/Messages?conversationId={conversationId}",
+                    conversationId);
         }
 
         if (IsAjaxRequest())

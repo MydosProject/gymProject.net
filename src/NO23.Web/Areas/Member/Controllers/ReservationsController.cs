@@ -16,7 +16,8 @@ namespace NO23.Web.Areas.Member.Controllers;
 public class ReservationsController(
     ApplicationDbContext dbContext,
     ClassReservationService reservationService,
-    PersonalTrainingRequestService personalTrainingRequestService) : Controller
+    PersonalTrainingRequestService personalTrainingRequestService,
+    UserNotificationRealtimeService notificationService) : Controller
 {
     public async Task<IActionResult> Index(int? trainerId = null)
     {
@@ -227,6 +228,40 @@ public class ReservationsController(
         }
 
         var result = await personalTrainingRequestService.CreateAsync(userId, model);
+        if (result.Succeeded &&
+    result.RequestId.HasValue)
+        {
+            var trainerUserId =
+                await dbContext.Trainers
+                    .AsNoTracking()
+                    .Where(trainer =>
+                        trainer.Id ==
+                            model.TrainerId)
+                    .Select(trainer =>
+                        trainer.ApplicationUserId)
+                    .SingleOrDefaultAsync();
+
+            if (!string.IsNullOrWhiteSpace(
+                trainerUserId))
+            {
+                await notificationService
+                    .CreateAndPublishAsync(
+                        trainerUserId,
+                        UserNotificationType
+                            .PersonalTrainingRequested,
+                        "Yeni birebir talep",
+                        "Bir üye sana yeni bir birebir çalışma talebi gönderdi.",
+                        $"/Trainer/PersonalTrainingRequests/Manage/{result.RequestId.Value}",
+                        result.RequestId.Value);
+
+                await notificationService
+                    .PublishPersonalTrainingChangedAsync(
+                        trainerUserId,
+                        result.RequestId.Value,
+                        PersonalTrainingRequestStatus
+                            .Pending);
+            }
+        }
         TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] =
             result.Succeeded
                 ? "Birebir antrenman talebin eğitmene iletildi."
@@ -246,6 +281,21 @@ public class ReservationsController(
             return Challenge();
         }
 
+        var requestContext = await dbContext.PersonalTrainingRequests
+        .AsNoTracking()
+        .Where(request =>
+            request.Id ==
+                requestId &&
+            request.MemberProfile
+                .ApplicationUserId ==
+                userId)
+        .Select(request =>
+            new
+            {
+                TrainerUserId = request.Trainer.ApplicationUserId
+            })
+        .SingleOrDefaultAsync();
+
         var result = await personalTrainingRequestService.CancelByMemberAsync(
             userId,
             requestId);
@@ -253,6 +303,25 @@ public class ReservationsController(
             result.Succeeded
                 ? "Birebir antrenman süreci iptal edildi."
                 : result.ErrorMessage;
+            if (result.Succeeded && !string.IsNullOrWhiteSpace(requestContext?.TrainerUserId))
+        {
+            await notificationService
+                .CreateAndPublishAsync(
+                    requestContext.TrainerUserId,
+                    UserNotificationType
+                        .PersonalTrainingCancelled,
+                    "Birebir süreç iptal edildi",
+                    "Üye birebir antrenman sürecini iptal etti.",
+                    "/Trainer/PersonalTrainingRequests",
+                    requestId);
+
+            await notificationService
+                .PublishPersonalTrainingChangedAsync(
+                    requestContext.TrainerUserId,
+                    requestId,
+                    PersonalTrainingRequestStatus
+                        .Cancelled);
+        }
 
         return LocalRedirect($"{Url.Action(nameof(Index))}#personal-training");
     }

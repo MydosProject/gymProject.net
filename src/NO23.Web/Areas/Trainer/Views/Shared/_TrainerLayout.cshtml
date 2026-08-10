@@ -297,13 +297,98 @@
 
                 </div>
 
-                <div class="admin-topbar-end trainer-topbar-end">
+               <div class="admin-topbar-end trainer-topbar-end">
 
-                    <span class="admin-date trainer-date">
-                        @DateTime.Now.ToString("dd.MM.yyyy")
-                    </span>
+    <span class="admin-date trainer-date">
+        @DateTime.Now.ToString("dd.MM.yyyy")
+    </span>
 
-                    <div class="admin-user trainer-user">
+
+    <div class="dropdown"
+         data-notification-root>
+
+        <button class="btn btn-sm btn-outline-light position-relative"
+                type="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+                aria-label="Bildirimleri aç">
+
+            <span aria-hidden="true">
+                🔔
+            </span>
+
+            <span class="position-absolute
+                         top-0
+                         start-100
+                         translate-middle
+                         badge
+                         rounded-pill
+                         bg-danger
+                         d-none"
+                  data-notification-count>
+                0
+            </span>
+
+        </button>
+
+        <div class="dropdown-menu
+                    dropdown-menu-end
+                    p-0"
+             style="width: min(360px, 90vw);">
+
+            <div class="d-flex
+                        justify-content-between
+                        align-items-center
+                        px-3
+                        py-2
+                        border-bottom">
+
+                <strong>
+                    Bildirimler
+                </strong>
+
+                <button type="button"
+                        class="btn btn-link btn-sm p-0"
+                        data-notification-mark-all>
+                    Tümünü okundu yap
+                </button>
+
+            </div>
+
+            <div class="p-3 text-muted small"
+                 data-notification-empty>
+                Henüz bildirimin yok.
+            </div>
+
+            <div data-notification-list>
+            </div>
+
+        </div>
+
+    </div>
+
+
+                            <div class="admin-user trainer-user">
+
+                                <span class="admin-user-avatar trainer-user-avatar">
+                                    @userInitial
+                                </span>
+
+                                <span class="admin-user-copy trainer-user-copy">
+
+                                    <strong>
+                                        @userName
+                                    </strong>
+
+                                    <small>
+                                        Eğitmen
+                                    </small>
+
+                                </span>
+
+                            </div>
+
+                        </div>
 
                         <span class="admin-user-avatar trainer-user-avatar">
                             @userInitial
@@ -395,6 +480,10 @@
    <script src="~/lib/signalr/signalr.min.js"></script>
 
     <script src="~/js/trainer-message-badge.js"
+        asp-append-version="true">
+    </script>
+
+    <script src="~/js/user-notifications.js"
         asp-append-version="true">
     </script>
 
