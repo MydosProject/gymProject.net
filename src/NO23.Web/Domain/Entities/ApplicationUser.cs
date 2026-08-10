@@ -16,5 +16,7 @@ public class ApplicationUser : IdentityUser
 
     public Trainer? TrainerProfile { get; set; }
 
+    public ICollection<UserNotification> Notifications { get; set; } = new List<UserNotification>();
+
     public ICollection<TrainerMessage> SentTrainerMessages { get; set; } = [];
 }

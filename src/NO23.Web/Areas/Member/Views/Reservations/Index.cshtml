@@ -422,7 +422,9 @@
                         {
                             var scheduledAtLocal = request.ScheduledAtUtc?.ToLocalTime();
 
-                            <article class="member-personal-request-card">
+                           <article class="member-personal-request-card"
+                                data-personal-training-request
+                                data-request-id="@request.Id">
                                 <div class="member-personal-request-date">
                                     <strong>@request.PreferredDate.ToString("dd")</strong>
                                     <span>@request.PreferredDate.ToString("MMM", turkishCulture)</span>
@@ -431,26 +433,39 @@
                                 <div class="member-personal-request-main">
                                     <div class="member-personal-request-top">
                                         <p>@request.PreferredDate.ToString("dddd", turkishCulture) · @request.PreferredTimeWindow</p>
-                                        <span class="member-personal-status">@request.Status</span>
+                                        <span class="member-personal-status"
+                                            data-personal-training-status
+                                            data-status="@(request.Status.ToString().ToLowerInvariant())">
+                                            @request.Status
+                                        </span>
                                     </div>
 
                                     <h3>@request.TrainerName</h3>
 
-                                    <div class="member-personal-request-details">
+                                    <div class="member-personal-request-details"
+                                        data-personal-training-details>
                                         @if (scheduledAtLocal.HasValue)
                                         {
-                                            <div>
-                                                <span>Kesin randevu</span>
-                                                <strong>@scheduledAtLocal.Value.ToString("dd.MM.yyyy · HH:mm", turkishCulture)</strong>
-                                            </div>
+                                                <div data-personal-training-scheduled>
+                                                    <span>Kesin randevu</span>
+
+                                                    <strong data-personal-training-scheduled-value>
+                                                        @scheduledAtLocal.Value.ToString(
+                                                            "dd.MM.yyyy · HH:mm",
+                                                            turkishCulture)
+                                                    </strong>
+                                                </div>
                                         }
 
                                         @if (!string.IsNullOrWhiteSpace(request.TrainerNote))
                                         {
-                                            <div>
-                                                <span>Eğitmen notu</span>
-                                                <strong>@request.TrainerNote</strong>
-                                            </div>
+                                                <div data-personal-training-trainer-note>
+                                                    <span>Eğitmen notu</span>
+
+                                                    <strong data-personal-training-trainer-note-value>
+                                                        @request.TrainerNote
+                                                    </strong>
+                                                </div>
                                         }
 
                                         @if (!string.IsNullOrWhiteSpace(request.AdminNote))
@@ -465,16 +480,21 @@
 
                                 @if (request.CanCancel)
                                 {
-                                    <form asp-area="Member"
-                                          asp-controller="Reservations"
-                                          asp-action="CancelPersonalTraining"
-                                          asp-antiforgery="true"
-                                          method="post"
-                                          class="member-reservation-action">
+                                       <form asp-area="Member"
+                                        asp-controller="Reservations"
+                                        asp-action="CancelPersonalTraining"
+                                        asp-antiforgery="true"
+                                        method="post"
+                                        class="member-reservation-action"
+                                        data-personal-training-cancel-form>
+
                                         <input type="hidden"
-                                               name="requestId"
-                                               value="@request.Id" />
-                                        <button type="submit" class="member-cancel-button">
+                                            name="requestId"
+                                            value="@request.Id" />
+
+                                        <button type="submit"
+                                                class="member-cancel-button"
+                                                data-personal-training-cancel-button>
                                             @(request.ScheduledAtUtc.HasValue
                                                 ? "Randevuyu İptal Et"
                                                 : "Talebi İptal Et")
@@ -582,5 +602,9 @@
                 });
             });
         });
+    </script>
+
+    <script src="~/js/member-personal-training-live.js"
+            asp-append-version="true">
     </script>
 }

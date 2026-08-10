@@ -15,8 +15,8 @@ namespace NO23.Web.Areas.Trainer.Controllers;
 [Authorize(Roles = ApplicationRoles.Trainer)]
 public class PersonalTrainingRequestsController(
     ApplicationDbContext dbContext,
-    PersonalTrainingRequestService personalTrainingRequestService)
-    : Controller
+    PersonalTrainingRequestService personalTrainingRequestService,
+    UserNotificationRealtimeService notificationService): Controller
 {
     public async Task<IActionResult> Index()
     {
@@ -176,6 +176,63 @@ public class PersonalTrainingRequestsController(
                     model.ScheduledAtLocal,
                     model.TrainerNote);
 
+        if (result.Succeeded)
+        {
+            var requestContext =
+            await dbContext
+            .PersonalTrainingRequests
+            .AsNoTracking()
+            .Where(request =>
+                request.Id == id)
+            .Select(request =>
+                new
+                {
+                    MemberUserId =
+                        request.MemberProfile
+                            .ApplicationUserId,
+
+                    TrainerName =
+                        request.Trainer.FirstName +
+                        " " +
+                        request.Trainer.LastName,
+
+                    request.Status,
+
+                    request.ScheduledAtUtc,
+
+                    request.TrainerNote
+                })
+            .SingleAsync();
+
+                var scheduledText =
+                    requestContext
+                        .ScheduledAtUtc
+                        ?.ToLocalTime()
+                        .ToString(
+                            "dd.MM.yyyy HH:mm");
+
+                await notificationService
+                    .CreateAndPublishAsync(
+                        requestContext.MemberUserId,
+                        UserNotificationType
+                            .PersonalTrainingScheduled,
+                        "Birebir randevun planlandı",
+                        scheduledText is null
+                            ? "Eğitmenin birebir randevunu planladı."
+                            : $"Birebir randevun {scheduledText} için planlandı.",
+                        "/Member/Reservations#personal-training",
+                        id);
+
+                await notificationService
+                    .PublishPersonalTrainingChangedAsync(
+                        requestContext.MemberUserId,
+                        id,
+                        requestContext.Status,
+                        requestContext.ScheduledAtUtc,
+                        requestContext.TrainerName,
+                        requestContext.TrainerNote);
+            }
+
         if (!result.Succeeded)
         {
             ModelState.AddModelError(
@@ -230,6 +287,52 @@ public class PersonalTrainingRequestsController(
                     PersonalTrainingRequestStatus.Rejected,
                     null,
                     model.TrainerNote);
+
+        if (result.Succeeded)
+        {
+            var requestContext =
+                await dbContext
+                    .PersonalTrainingRequests
+                    .AsNoTracking()
+                    .Where(request =>
+                        request.Id == id)
+                    .Select(request =>
+                        new
+                        {
+                            MemberUserId =
+                                request.MemberProfile
+                                    .ApplicationUserId,
+
+                            TrainerName =
+                                request.Trainer.FirstName +
+                                " " +
+                                request.Trainer.LastName,
+
+                            request.Status,
+
+                            request.TrainerNote
+                        })
+                    .SingleAsync();
+
+            await notificationService
+                .CreateAndPublishAsync(
+                    requestContext.MemberUserId,
+                    UserNotificationType
+                        .PersonalTrainingRejected,
+                    "Birebir talebin sonuçlandı",
+                    "Eğitmenin birebir çalışma talebini reddetti.",
+                    "/Member/Reservations#personal-training",
+                    id);
+
+            await notificationService
+                .PublishPersonalTrainingChangedAsync(
+                    requestContext.MemberUserId,
+                    id,
+                    requestContext.Status,
+                    null,
+                    requestContext.TrainerName,
+                    requestContext.TrainerNote);
+        }
 
         if (!result.Succeeded)
         {
