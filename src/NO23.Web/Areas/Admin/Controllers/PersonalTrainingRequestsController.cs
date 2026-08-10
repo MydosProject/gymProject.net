@@ -14,7 +14,8 @@ namespace NO23.Web.Areas.Admin.Controllers;
 [Authorize(Roles = ApplicationRoles.Admin)]
 public class PersonalTrainingRequestsController(
     ApplicationDbContext dbContext,
-    PersonalTrainingRequestService personalTrainingRequestService) : Controller
+    PersonalTrainingRequestService personalTrainingRequestService,
+    UserNotificationRealtimeService notificationService) : Controller
 {
     public async Task<IActionResult> Index()
     {
@@ -89,6 +90,57 @@ public class PersonalTrainingRequestsController(
             model.Status,
             model.ScheduledAtLocal,
             model.AdminNote);
+
+        if (result.Succeeded &&
+            model.Status ==
+                PersonalTrainingRequestStatus.Completed)
+        {
+            var requestContext =
+                await dbContext
+                    .PersonalTrainingRequests
+                    .AsNoTracking()
+                    .Where(request =>
+                        request.Id ==
+                            model.Id)
+                    .Select(request =>
+                        new
+                        {
+                            MemberUserId =
+                                request.MemberProfile
+                                    .ApplicationUserId,
+
+                            TrainerName =
+                                request.Trainer.FirstName +
+                                " " +
+                                request.Trainer.LastName,
+
+                            request.Status,
+
+                            request.ScheduledAtUtc,
+
+                            request.TrainerNote
+                        })
+                    .SingleAsync();
+
+            await notificationService
+                .CreateAndPublishAsync(
+                    requestContext.MemberUserId,
+                    UserNotificationType
+                        .PersonalTrainingCompleted,
+                    "Birebir antrenmanın tamamlandı",
+                    "Birebir antrenman randevun tamamlandı.",
+                    "/Member/Reservations#personal-training",
+                    model.Id);
+
+            await notificationService
+                .PublishPersonalTrainingChangedAsync(
+                    requestContext.MemberUserId,
+                    model.Id,
+                    requestContext.Status,
+                    requestContext.ScheduledAtUtc,
+                    requestContext.TrainerName,
+                    requestContext.TrainerNote);
+        }
 
         if (!result.Succeeded)
         {

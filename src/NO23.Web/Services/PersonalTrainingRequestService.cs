@@ -84,17 +84,25 @@ public class PersonalTrainingRequestService(ApplicationDbContext dbContext)
                 });
         }
 
-        dbContext.PersonalTrainingRequests.Add(new PersonalTrainingRequest
+        var request =
+        new PersonalTrainingRequest
         {
             MemberProfileId = profile.Id,
+
             TrainerId = model.TrainerId,
+
             PreferredDate = model.PreferredDate,
+
             PreferredTimeWindow = model.PreferredTimeWindow,
+
             GoalNote = model.GoalNote?.Trim()
-        });
+        };
+
+        dbContext.PersonalTrainingRequests.Add(request);
 
         await dbContext.SaveChangesAsync();
-        return PersonalTrainingRequestResult.Ok();
+
+        return PersonalTrainingRequestResult.Ok(request.Id);
     }
 
     public async Task<PersonalTrainingRequestResult> CancelByMemberAsync(
@@ -143,7 +151,7 @@ public class PersonalTrainingRequestService(ApplicationDbContext dbContext)
             request.UpdatedAtUtc = nowUtc;
 
             await dbContext.SaveChangesAsync();
-            return PersonalTrainingRequestResult.Ok();
+            return PersonalTrainingRequestResult.Ok(request.Id);
     }
 
     public async Task<PersonalTrainingRequestResult> UpdateByTrainerAsync(
@@ -219,7 +227,7 @@ public class PersonalTrainingRequestService(ApplicationDbContext dbContext)
 
         await dbContext.SaveChangesAsync();
 
-        return PersonalTrainingRequestResult.Ok();
+        return PersonalTrainingRequestResult.Ok(request.Id);
     }
 
     public async Task<PersonalTrainingRequestResult> UpdateByAdminAsync(
@@ -331,19 +339,29 @@ public class PersonalTrainingRequestService(ApplicationDbContext dbContext)
         request.UpdatedAtUtc = nowUtc;
 
         await dbContext.SaveChangesAsync();
-        return PersonalTrainingRequestResult.Ok();
+        return PersonalTrainingRequestResult.Ok(request.Id);
     }
 }
 
-public record PersonalTrainingRequestResult(bool Succeeded, string? ErrorMessage)
+public record PersonalTrainingRequestResult(
+    bool Succeeded,
+    string? ErrorMessage,
+    int? RequestId = null)
 {
-    public static PersonalTrainingRequestResult Ok()
+    public static PersonalTrainingRequestResult Ok(
+        int? requestId = null)
     {
-        return new PersonalTrainingRequestResult(true, null);
+        return new PersonalTrainingRequestResult(
+            true,
+            null,
+            requestId);
     }
 
-    public static PersonalTrainingRequestResult Fail(string message)
+    public static PersonalTrainingRequestResult Fail(
+        string message)
     {
-        return new PersonalTrainingRequestResult(false, message);
+        return new PersonalTrainingRequestResult(
+            false,
+            message);
     }
 }
