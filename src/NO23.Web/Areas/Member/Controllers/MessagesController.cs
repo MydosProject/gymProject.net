@@ -122,9 +122,41 @@ public class MessagesController(
             return NotFound();
         }
 
-        await messagingService.MarkAsReadByMemberAsync(
-        userId,
-        conversation.Id);
+        var readResult =
+        await messagingService.MarkConversationAsReadAsync(
+            userId,
+            conversation.Id);
+
+        if (readResult.Succeeded &&
+            readResult.MessageIds.Count > 0)
+        {
+            await hubContext.Clients
+                .Group(
+                    TrainerChatHub
+                        .GetConversationGroupName(
+                            conversation.Id))
+                .SendAsync(
+                    "MessagesRead",
+                    new
+                    {
+                        conversationId =
+                            conversation.Id,
+
+                        readerApplicationUserId =
+                            userId,
+
+                        messageIds =
+                            readResult.MessageIds,
+
+                        readAtUtc =
+                            readResult.ReadAtUtc
+                    });
+
+            await hubContext.Clients
+                .User(userId)
+                .SendAsync(
+                    "RefreshUnreadCount");
+        }
 
         var messages =
             await dbContext.TrainerMessages
@@ -145,6 +177,9 @@ public class MessagesController(
 
                         SentAtUtc =
                             message.SentAtUtc,
+
+                        ReadAtUtc =
+                            message.ReadAtUtc,
 
                         IsMine =
                             message.SenderApplicationUserId ==
@@ -260,6 +295,15 @@ public class MessagesController(
             .SendAsync(
                 "MessageReceived",
                 realtimeMessage);
+            var recipientUserId = await messagingService.GetOtherParticipantUserIdAsync(userId, conversationId);
+        if (!string.IsNullOrWhiteSpace(
+            recipientUserId))
+        {
+            await hubContext.Clients
+                .User(recipientUserId)
+                .SendAsync(
+                    "RefreshUnreadCount");
+        }
 
         if (IsAjaxRequest())
         {

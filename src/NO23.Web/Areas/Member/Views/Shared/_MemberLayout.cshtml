@@ -272,19 +272,27 @@
                         <small class="member-sidebar-badge">Yakında</small>
                     </span>
 
-                   <a class="member-sidebar-link
+                    <a class="member-sidebar-link
                     @ActiveClass("Messages")"
                     asp-area="Member"
                     asp-controller="Messages"
                     asp-action="Index">
 
-                    <span class="member-sidebar-index">
-                        17
-                    </span>
+                        <span class="member-sidebar-index">
+                            17
+                        </span>
 
-                    <span class="member-sidebar-label">
-                        Mesajlar
-                    </span>
+                        <span class="member-sidebar-label">
+                            Mesajlar
+                        </span>
+
+                        <small class="member-sidebar-badge
+                                    message-unread-badge
+                                    d-none"
+                            data-unread-message-badge
+                            aria-label="0 okunmamış mesaj">
+                            0
+                        </small>
 
                     </a>
                 </div>
@@ -712,6 +720,11 @@
             updateExpandedState();
         })();
     </script>
+    <script src="~/lib/signalr/signalr.min.js"></script>
+    <script src="~/js/trainer-message-badge.js"
+            asp-append-version="true">
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

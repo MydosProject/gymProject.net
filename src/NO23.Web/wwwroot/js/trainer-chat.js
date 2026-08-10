@@ -46,6 +46,11 @@
             "[data-chat-empty]"
         );
 
+    const typingIndicator =
+        chat.querySelector(
+            "[data-chat-typing]"
+        );
+
     if (
         !conversationId ||
         !currentUserId ||
@@ -62,14 +67,15 @@
             .withAutomaticReconnect()
             .build();
 
+    let typingTimeout = null;
+    let typingSent = false;
+
     const scrollToBottom = () => {
         messagesContainer.scrollTop =
             messagesContainer.scrollHeight;
     };
 
-    const formatDate = (
-        utcValue
-    ) => {
+    const formatDate = utcValue => {
         const date =
             new Date(utcValue);
 
@@ -85,18 +91,81 @@
         ).format(date);
     };
 
-    const appendMessage = (
-        message
-    ) => {
+    const setTypingState =
+        async isTyping => {
+            if (
+                connection.state !==
+                signalR.HubConnectionState.Connected
+            ) {
+                return;
+            }
+
+            if (typingSent === isTyping) {
+                return;
+            }
+
+            typingSent = isTyping;
+
+            try {
+                await connection.invoke(
+                    "SetTyping",
+                    conversationId,
+                    isTyping
+                );
+            } catch {
+                // Typing durumu kritik değildir.
+            }
+        };
+
+    const stopTypingLater = () => {
+        window.clearTimeout(
+            typingTimeout
+        );
+
+        typingTimeout =
+            window.setTimeout(
+                () => {
+                    void setTypingState(
+                        false
+                    );
+                },
+                1200
+            );
+    };
+
+    const markConversationAsRead =
+        async () => {
+            if (
+                connection.state !==
+                signalR.HubConnectionState.Connected
+            ) {
+                return;
+            }
+
+            try {
+                await connection.invoke(
+                    "MarkConversationAsRead",
+                    conversationId
+                );
+            } catch {
+                // Read state daha sonra
+                // tekrar senkronize olur.
+            }
+        };
+
+    const appendMessage = message => {
         if (
-            Number(message.conversationId) !==
-            conversationId
+            Number(
+                message.conversationId
+            ) !== conversationId
         ) {
             return;
         }
 
         const messageId =
-            String(message.messageId);
+            String(
+                message.messageId
+            );
 
         if (
             messagesContainer.querySelector(
@@ -113,7 +182,9 @@
             currentUserId;
 
         const row =
-            document.createElement("div");
+            document.createElement(
+                "div"
+            );
 
         row.className =
             `d-flex ${
@@ -126,7 +197,9 @@
             messageId;
 
         const bubble =
-            document.createElement("div");
+            document.createElement(
+                "div"
+            );
 
         bubble.className =
             "border rounded-3 px-3 py-2";
@@ -135,25 +208,56 @@
             "75%";
 
         const body =
-            document.createElement("div");
+            document.createElement(
+                "div"
+            );
 
         body.textContent =
             message.body ?? "";
 
-        const time =
-            document.createElement("div");
+        const meta =
+            document.createElement(
+                "div"
+            );
 
-        time.className =
+        meta.className =
             "small text-muted mt-1";
+
+        const time =
+            document.createElement(
+                "span"
+            );
 
         time.textContent =
             formatDate(
                 message.sentAtUtc
             );
 
+        meta.appendChild(time);
+
+        if (isMine) {
+            const readState =
+                document.createElement(
+                    "span"
+                );
+
+            readState.className =
+                "ms-2";
+
+            readState.dataset
+                .messageReadState = "";
+
+            readState.textContent =
+                "Gönderildi";
+
+            meta.appendChild(
+                readState
+            );
+        }
+
         bubble.append(
             body,
-            time
+            meta
         );
 
         row.appendChild(
@@ -171,6 +275,92 @@
         "MessageReceived",
         message => {
             appendMessage(message);
+
+            const isIncoming =
+                message
+                    .senderApplicationUserId !==
+                currentUserId;
+
+            if (
+                isIncoming &&
+                document.visibilityState ===
+                    "visible"
+            ) {
+                void markConversationAsRead();
+            }
+        }
+    );
+
+    connection.on(
+        "MessagesRead",
+        payload => {
+            if (
+                Number(
+                    payload.conversationId
+                ) !== conversationId
+            ) {
+                return;
+            }
+
+            if (
+                payload
+                    .readerApplicationUserId ===
+                currentUserId
+            ) {
+                return;
+            }
+
+            for (
+                const messageId of
+                payload.messageIds ?? []
+            ) {
+                const readState =
+                    messagesContainer
+                        .querySelector(
+                            `[data-message-id="${messageId}"] ` +
+                            "[data-message-read-state]"
+                        );
+
+                if (readState) {
+                    readState.textContent =
+                        "Görüldü";
+                }
+            }
+        }
+    );
+
+    connection.on(
+        "TypingChanged",
+        payload => {
+            if (
+                Number(
+                    payload.conversationId
+                ) !== conversationId
+            ) {
+                return;
+            }
+
+            if (
+                payload.userId ===
+                currentUserId
+            ) {
+                return;
+            }
+
+            if (!typingIndicator) {
+                return;
+            }
+
+            typingIndicator
+                .classList
+                .toggle(
+                    "d-none",
+                    !payload.isTyping
+                );
+
+            if (payload.isTyping) {
+                scrollToBottom();
+            }
         }
     );
 
@@ -180,6 +370,8 @@
                 "JoinConversation",
                 conversationId
             );
+
+            await markConversationAsRead();
         };
 
     const startConnection =
@@ -201,8 +393,61 @@
             try {
                 await joinConversation();
             } catch {
-                // Bir sonraki reconnect
-                // döngüsünde tekrar denenir.
+                // Sonraki reconnect
+                // turunda tekrar denenir.
+            }
+        }
+    );
+
+    textarea?.addEventListener(
+        "input",
+        () => {
+            const hasText =
+                Boolean(
+                    textarea.value.trim()
+                );
+
+            if (!hasText) {
+                window.clearTimeout(
+                    typingTimeout
+                );
+
+                void setTypingState(
+                    false
+                );
+
+                return;
+            }
+
+            void setTypingState(
+                true
+            );
+
+            stopTypingLater();
+        }
+    );
+
+    textarea?.addEventListener(
+        "blur",
+        () => {
+            window.clearTimeout(
+                typingTimeout
+            );
+
+            void setTypingState(
+                false
+            );
+        }
+    );
+
+    document.addEventListener(
+        "visibilitychange",
+        () => {
+            if (
+                document.visibilityState ===
+                "visible"
+            ) {
+                void markConversationAsRead();
             }
         }
     );
@@ -219,7 +464,16 @@
                 return;
             }
 
-            errorContainer?.replaceChildren();
+            window.clearTimeout(
+                typingTimeout
+            );
+
+            await setTypingState(
+                false
+            );
+
+            errorContainer
+                ?.replaceChildren();
 
             sendButton?.setAttribute(
                 "disabled",
@@ -252,8 +506,11 @@
                     !response.ok ||
                     !payload.succeeded
                 ) {
-                    if (errorContainer) {
-                        errorContainer.textContent =
+                    if (
+                        errorContainer
+                    ) {
+                        errorContainer
+                            .textContent =
                             payload.message ??
                             "Mesaj gönderilemedi.";
                     }
@@ -276,9 +533,10 @@
                         "Lütfen tekrar dene.";
                 }
             } finally {
-                sendButton?.removeAttribute(
-                    "disabled"
-                );
+                sendButton
+                    ?.removeAttribute(
+                        "disabled"
+                    );
             }
         }
     );

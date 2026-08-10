@@ -9,5 +9,7 @@ public class MemberTrainerMessageListItemViewModel
 
     public DateTime SentAtUtc { get; init; }
 
+    public DateTime? ReadAtUtc { get; init; }
+
     public bool IsMine { get; init; }
 }

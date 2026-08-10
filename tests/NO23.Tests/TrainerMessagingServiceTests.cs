@@ -476,6 +476,149 @@ public class TrainerMessagingServiceTests
         Assert.False(result);
     }
 
+    [Fact]
+    public async Task MarkConversationAsReadAsync_ReturnsMarkedMessageIds()
+    {
+        await using var dbContext =
+            CreateDbContext();
+
+        var member =
+            await SeedMemberAsync(
+                dbContext);
+
+        var trainer =
+            await SeedTrainerAsync(
+                dbContext);
+
+        var conversation =
+            await SeedConversationAsync(
+                dbContext,
+                member,
+                trainer);
+
+        var message =
+            new TrainerMessage
+            {
+                TrainerConversationId =
+                    conversation.Id,
+
+                SenderApplicationUserId =
+                    member.ApplicationUserId,
+
+                Body =
+                    "Test mesajı"
+            };
+
+        dbContext.TrainerMessages.Add(
+            message);
+
+        await dbContext.SaveChangesAsync();
+
+        var service =
+            new TrainerMessagingService(
+                dbContext);
+
+        var result =
+            await service
+                .MarkConversationAsReadAsync(
+                    trainer.ApplicationUserId!,
+                    conversation.Id);
+
+        Assert.True(
+            result.Succeeded);
+
+        Assert.Contains(
+            message.Id,
+            result.MessageIds);
+
+        Assert.NotNull(
+            message.ReadAtUtc);
+    }
+
+    [Fact]
+    public async Task GetUnreadCountAsync_CountsOnlyIncomingUnreadMessages()
+    {
+        await using var dbContext =
+            CreateDbContext();
+
+        var member =
+            await SeedMemberAsync(
+                dbContext);
+
+        var trainer =
+            await SeedTrainerAsync(
+                dbContext);
+
+        var conversation =
+            await SeedConversationAsync(
+                dbContext,
+                member,
+                trainer);
+
+        dbContext.TrainerMessages.AddRange(
+            new TrainerMessage
+            {
+                TrainerConversationId =
+                    conversation.Id,
+
+                SenderApplicationUserId =
+                    trainer.ApplicationUserId!,
+
+                Body =
+                    "Okunmamış mesaj",
+
+                SentAtUtc =
+                    DateTime.UtcNow
+            },
+
+            new TrainerMessage
+            {
+                TrainerConversationId =
+                    conversation.Id,
+
+                SenderApplicationUserId =
+                    member.ApplicationUserId,
+
+                Body =
+                    "Üyenin kendi mesajı",
+
+                SentAtUtc =
+                    DateTime.UtcNow
+            },
+
+            new TrainerMessage
+            {
+                TrainerConversationId =
+                    conversation.Id,
+
+                SenderApplicationUserId =
+                    trainer.ApplicationUserId!,
+
+                Body =
+                    "Okunmuş mesaj",
+
+                SentAtUtc =
+                    DateTime.UtcNow,
+
+                ReadAtUtc =
+                    DateTime.UtcNow
+            });
+
+        await dbContext.SaveChangesAsync();
+
+        var service =
+            new TrainerMessagingService(
+                dbContext);
+
+        var unreadCount =
+            await service.GetUnreadCountAsync(
+                member.ApplicationUserId);
+
+        Assert.Equal(
+            1,
+            unreadCount);
+    }
+
     private static ApplicationDbContext CreateDbContext()
     {
         var options =

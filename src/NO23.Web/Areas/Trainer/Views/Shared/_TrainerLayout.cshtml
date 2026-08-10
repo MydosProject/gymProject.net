@@ -202,6 +202,11 @@
 
                         <span class="trainer-nav-copy">
                             <strong>Mesajlar</strong>
+                            <small class="message-unread-badge d-none"
+                                data-unread-message-badge
+                                aria-label="0 okunmamış mesaj">
+                            0
+                            </small>
                             <small>Üye iletişimi</small>
                         </span>
 
@@ -387,9 +392,13 @@
         })();
     </script>
 
-    @await RenderSectionAsync(
-        "Scripts",
-        required: false)
+   <script src="~/lib/signalr/signalr.min.js"></script>
+
+    <script src="~/js/trainer-message-badge.js"
+        asp-append-version="true">
+    </script>
+
+    @await RenderSectionAsync( "Scripts",required: false)
 
 </body>
 </html>
