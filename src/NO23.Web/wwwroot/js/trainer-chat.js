@@ -59,6 +59,27 @@
         return;
     }
 
+    /*
+     * Aynı trainer-chat.js dosyası hem
+     * Trainer hem Member mesaj ekranında
+     * kullanılıyor.
+     *
+     * Burada bulunduğumuz ekranı tespit edip
+     * dinamik mesajlarda doğru CSS class'larını
+     * kullanıyoruz.
+     */
+    const isTrainerPage =
+        Boolean(
+            document.querySelector(
+                ".trainer-messages-page"
+            )
+        );
+
+    const messagePrefix =
+        isTrainerPage
+            ? "trainer"
+            : "member";
+
     const connection =
         new signalR.HubConnectionBuilder()
             .withUrl(
@@ -70,10 +91,12 @@
     let typingTimeout = null;
     let typingSent = false;
 
+
     const scrollToBottom = () => {
         messagesContainer.scrollTop =
             messagesContainer.scrollHeight;
     };
+
 
     const formatDate = utcValue => {
         const date =
@@ -90,6 +113,7 @@
             }
         ).format(date);
     };
+
 
     const setTypingState =
         async isTyping => {
@@ -117,6 +141,7 @@
             }
         };
 
+
     const stopTypingLater = () => {
         window.clearTimeout(
             typingTimeout
@@ -132,6 +157,7 @@
                 1200
             );
     };
+
 
     const markConversationAsRead =
         async () => {
@@ -153,6 +179,12 @@
             }
         };
 
+
+    /*
+     * Yeni mesaj SignalR veya AJAX üzerinden
+     * geldiğinde Razor tarafındaki mevcut
+     * tasarımla aynı DOM yapısını üretir.
+     */
     const appendMessage = message => {
         if (
             Number(
@@ -175,53 +207,111 @@
             return;
         }
 
-        emptyMessage?.remove();
+        /*
+         * İlk mesaj gönderiliyorsa
+         * "Henüz mesaj yok" alanını kaldır.
+         */
+        const currentEmptyMessage =
+            messagesContainer.querySelector(
+                "[data-chat-empty]"
+            );
+
+        currentEmptyMessage?.remove();
+
 
         const isMine =
             message.senderApplicationUserId ===
             currentUserId;
 
+
+        /*
+         * Razor tarafında mesajlar:
+         *
+         * .trainer-message-list
+         * veya
+         * .member-message-list
+         *
+         * içerisinde tutuluyor.
+         *
+         * İlk mesajsa listeyi JS oluşturur.
+         */
+        let messageList =
+            messagesContainer.querySelector(
+                `.${messagePrefix}-message-list`
+            );
+
+        if (!messageList) {
+            messageList =
+                document.createElement(
+                    "div"
+                );
+
+            messageList.className =
+                `${messagePrefix}-message-list`;
+
+            messagesContainer.appendChild(
+                messageList
+            );
+        }
+
+
+        /*
+         * MESAJ SATIRI
+         */
         const row =
             document.createElement(
                 "div"
             );
 
         row.className =
-            `d-flex ${
+            `${messagePrefix}-message-row ${
                 isMine
-                    ? "justify-content-end"
-                    : "justify-content-start"
+                    ? "is-mine"
+                    : "is-theirs"
             }`;
 
         row.dataset.messageId =
             messageId;
 
+
+        /*
+         * MESAJ BALONU
+         */
         const bubble =
             document.createElement(
                 "div"
             );
 
         bubble.className =
-            "border rounded-3 px-3 py-2";
+            `${messagePrefix}-message-bubble`;
 
-        bubble.style.maxWidth =
-            "75%";
 
+        /*
+         * MESAJ METNİ
+         */
         const body =
             document.createElement(
                 "div"
             );
 
+        body.className =
+            `${messagePrefix}-message-body`;
+
         body.textContent =
             message.body ?? "";
 
+
+        /*
+         * TARİH / SAAT / READ STATE
+         */
         const meta =
             document.createElement(
                 "div"
             );
 
         meta.className =
-            "small text-muted mt-1";
+            `${messagePrefix}-message-time`;
+
 
         const time =
             document.createElement(
@@ -233,8 +323,15 @@
                 message.sentAtUtc
             );
 
-        meta.appendChild(time);
+        meta.appendChild(
+            time
+        );
 
+
+        /*
+         * Mesajı gönderen mevcut kullanıcıysa
+         * Gönderildi / Görüldü durumu eklenir.
+         */
         if (isMine) {
             const readState =
                 document.createElement(
@@ -242,18 +339,19 @@
                 );
 
             readState.className =
-                "ms-2";
+                `${messagePrefix}-message-read-state`;
 
             readState.dataset
                 .messageReadState = "";
 
             readState.textContent =
-                "Gönderildi";
+                " · Gönderildi";
 
             meta.appendChild(
                 readState
             );
         }
+
 
         bubble.append(
             body,
@@ -264,13 +362,17 @@
             bubble
         );
 
-        messagesContainer.appendChild(
+        messageList.appendChild(
             row
         );
 
         scrollToBottom();
     };
 
+
+    /*
+     * SIGNALR - YENİ MESAJ
+     */
     connection.on(
         "MessageReceived",
         message => {
@@ -291,6 +393,10 @@
         }
     );
 
+
+    /*
+     * SIGNALR - MESAJLAR OKUNDU
+     */
     connection.on(
         "MessagesRead",
         payload => {
@@ -323,12 +429,16 @@
 
                 if (readState) {
                     readState.textContent =
-                        "Görüldü";
+                        " · Görüldü";
                 }
             }
         }
     );
 
+
+    /*
+     * SIGNALR - YAZIYOR...
+     */
     connection.on(
         "TypingChanged",
         payload => {
@@ -364,6 +474,10 @@
         }
     );
 
+
+    /*
+     * Konuşmaya SignalR grubundan katıl.
+     */
     const joinConversation =
         async () => {
             await connection.invoke(
@@ -374,6 +488,10 @@
             await markConversationAsRead();
         };
 
+
+    /*
+     * SignalR bağlantısını başlat.
+     */
     const startConnection =
         async () => {
             try {
@@ -388,6 +506,11 @@
             }
         };
 
+
+    /*
+     * Bağlantı kopup tekrar kurulursa
+     * konuşmaya yeniden katıl.
+     */
     connection.onreconnected(
         async () => {
             try {
@@ -399,6 +522,11 @@
         }
     );
 
+
+    /*
+     * Kullanıcı yazmaya başladığında
+     * karşı tarafa typing durumu gönder.
+     */
     textarea?.addEventListener(
         "input",
         () => {
@@ -427,6 +555,11 @@
         }
     );
 
+
+    /*
+     * Textarea focus kaybederse
+     * yazıyor durumunu kapat.
+     */
     textarea?.addEventListener(
         "blur",
         () => {
@@ -440,6 +573,11 @@
         }
     );
 
+
+    /*
+     * Kullanıcı sekmeye geri döndüğünde
+     * konuşmayı okunmuş olarak işaretle.
+     */
     document.addEventListener(
         "visibilitychange",
         () => {
@@ -452,6 +590,10 @@
         }
     );
 
+
+    /*
+     * MESAJ GÖNDERME
+     */
     sendForm?.addEventListener(
         "submit",
         async event => {
@@ -540,6 +682,7 @@
             }
         }
     );
+
 
     scrollToBottom();
 
