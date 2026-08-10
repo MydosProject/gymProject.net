@@ -27,6 +27,65 @@ public class TrainerMessagingService(
                 ));
     }
 
+    public async Task<int> GetUnreadCountAsync(
+    string userId)
+    {
+        return await dbContext.TrainerMessages
+            .AsNoTracking()
+            .CountAsync(message =>
+                message.ReadAtUtc == null &&
+                message.SenderApplicationUserId != userId &&
+                (
+                    message.TrainerConversation
+                        .MemberProfile
+                        .ApplicationUserId == userId ||
+
+                    message.TrainerConversation
+                        .Trainer
+                        .ApplicationUserId == userId
+                ));
+    }
+
+    public async Task<string?> GetOtherParticipantUserIdAsync(
+        string userId,
+        int conversationId)
+    {
+        var participants =
+            await dbContext.TrainerConversations
+                .AsNoTracking()
+                .Where(conversation =>
+                    conversation.Id == conversationId)
+                .Select(conversation =>
+                    new
+                    {
+                        MemberUserId =
+                            conversation.MemberProfile
+                                .ApplicationUserId,
+
+                        TrainerUserId =
+                            conversation.Trainer
+                                .ApplicationUserId
+                    })
+                .SingleOrDefaultAsync();
+
+        if (participants is null)
+        {
+            return null;
+        }
+
+        if (participants.MemberUserId == userId)
+        {
+            return participants.TrainerUserId;
+        }
+
+        if (participants.TrainerUserId == userId)
+        {
+            return participants.MemberUserId;
+        }
+
+        return null;
+    }
+
     public async Task<bool> CanMemberWriteAsync(
         string userId,
         int conversationId)
@@ -85,8 +144,7 @@ public class TrainerMessagingService(
             conversation.TrainerId);
     }
 
-    public async Task<TrainerMessageSendResult>
-        SendByMemberAsync(
+    public async Task<TrainerMessageSendResult> SendByMemberAsync(
             string userId,
             int conversationId,
             string? body)
@@ -168,45 +226,15 @@ public class TrainerMessagingService(
     string userId,
     int conversationId)
     {
-        var conversationExists =
-            await dbContext.TrainerConversations
-                .AsNoTracking()
-                .AnyAsync(conversation =>
-                    conversation.Id == conversationId &&
-                    conversation.MemberProfile
-                        .ApplicationUserId == userId);
+        var result =
+            await MarkConversationAsReadAsync(
+                userId,
+                conversationId);
 
-        if (!conversationExists)
-        {
-            return false;
-        }
-
-        var unreadMessages =
-            await dbContext.TrainerMessages
-                .Where(message =>
-                    message.TrainerConversationId ==
-                    conversationId &&
-                    message.SenderApplicationUserId !=
-                    userId &&
-                    message.ReadAtUtc == null)
-                .ToListAsync();
-
-        if (unreadMessages.Count == 0)
-        {
-            return true;
-        }
-
-        var nowUtc = DateTime.UtcNow;
-
-        foreach (var message in unreadMessages)
-        {
-            message.ReadAtUtc = nowUtc;
-        }
-
-        await dbContext.SaveChangesAsync();
-
-        return true;
+        return result.Succeeded;
     }
+
+
     public async Task<TrainerMessageSendResult> SendByTrainerAsync(
         string userId,
         int conversationId,
@@ -275,21 +303,19 @@ public class TrainerMessagingService(
         return TrainerMessageSendResult.Ok(message);
     }
 
-    public async Task<bool> MarkAsReadByTrainerAsync(
+    public async Task<TrainerMessageReadResult> MarkConversationAsReadAsync(
     string userId,
     int conversationId)
     {
-        var conversationExists =
-            await dbContext.TrainerConversations
-                .AsNoTracking()
-                .AnyAsync(conversation =>
-                    conversation.Id == conversationId &&
-                    conversation.Trainer
-                        .ApplicationUserId == userId);
+        var canAccess =
+            await CanAccessConversationAsync(
+                userId,
+                conversationId);
 
-        if (!conversationExists)
+        if (!canAccess)
         {
-            return false;
+            return TrainerMessageReadResult.Fail(
+                "Konuşmaya erişemezsiniz.");
         }
 
         var unreadMessages =
@@ -304,7 +330,9 @@ public class TrainerMessagingService(
 
         if (unreadMessages.Count == 0)
         {
-            return true;
+            return TrainerMessageReadResult.Ok(
+                [],
+                null);
         }
 
         var nowUtc = DateTime.UtcNow;
@@ -316,7 +344,23 @@ public class TrainerMessagingService(
 
         await dbContext.SaveChangesAsync();
 
-        return true;
+        return TrainerMessageReadResult.Ok(
+            unreadMessages
+                .Select(message => message.Id)
+                .ToArray(),
+            nowUtc);
+    }
+
+    public async Task<bool> MarkAsReadByTrainerAsync(
+        string userId,
+        int conversationId)
+    {
+        var result =
+            await MarkConversationAsReadAsync(
+                userId,
+                conversationId);
+
+        return result.Succeeded;
     }
 
 
@@ -351,9 +395,8 @@ public class TrainerMessagingService(
                 ));
     }
 
-}
 
-public record TrainerMessageSendResult(
+    public record TrainerMessageSendResult(
     bool Succeeded,
     string? ErrorMessage,
     int? MessageId = null,
@@ -361,25 +404,55 @@ public record TrainerMessageSendResult(
     string? Body = null,
     DateTime? SentAtUtc = null,
     string? SenderApplicationUserId = null)
-{
-    public static TrainerMessageSendResult Ok(
-        TrainerMessage message)
     {
-        return new TrainerMessageSendResult(
-            true,
-            null,
-            message.Id,
-            message.TrainerConversationId,
-            message.Body,
-            message.SentAtUtc,
-            message.SenderApplicationUserId);
+        public static TrainerMessageSendResult Ok(
+            TrainerMessage message)
+        {
+            return new TrainerMessageSendResult(
+                true,
+                null,
+                message.Id,
+                message.TrainerConversationId,
+                message.Body,
+                message.SentAtUtc,
+                message.SenderApplicationUserId);
+        }
+
+        public static TrainerMessageSendResult Fail(
+            string message)
+        {
+            return new TrainerMessageSendResult(
+                false,
+                message);
+        }
     }
 
-    public static TrainerMessageSendResult Fail(
-        string message)
+    public record TrainerMessageReadResult(
+        bool Succeeded,
+        string? ErrorMessage,
+        IReadOnlyList<int> MessageIds,
+        DateTime? ReadAtUtc)
     {
-        return new TrainerMessageSendResult(
-            false,
-            message);
+        public static TrainerMessageReadResult Ok(
+            IReadOnlyList<int> messageIds,
+            DateTime? readAtUtc)
+        {
+            return new TrainerMessageReadResult(
+                true,
+                null,
+                messageIds,
+                readAtUtc);
+        }
+
+        public static TrainerMessageReadResult Fail(
+            string message)
+        {
+            return new TrainerMessageReadResult(
+                false,
+                message,
+                [],
+                null);
+        }
     }
+
 }

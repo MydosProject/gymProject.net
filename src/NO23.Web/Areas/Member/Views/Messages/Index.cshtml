@@ -278,11 +278,23 @@
 
                                                 <div class="member-message-time">
 
-                                                    @(message
-                                                        .SentAtUtc
-                                                        .ToLocalTime()
-                                                        .ToString(
-                                                            "dd.MM.yyyy HH:mm"))
+                                                    <span>
+                                                        @(message
+                                                            .SentAtUtc
+                                                            .ToLocalTime()
+                                                            .ToString(
+                                                                "dd.MM.yyyy HH:mm"))
+                                                    </span>
+
+                                                    @if (message.IsMine)
+                                                    {
+                                                        <span class="member-message-read-state"
+                                                            data-message-read-state>
+                                                            @(message.ReadAtUtc.HasValue
+                                                                ? " · Görüldü"
+                                                                : " · Gönderildi")
+                                                        </span>
+                                                    }
 
                                                 </div>
 
@@ -294,6 +306,11 @@
                                 </div>
                             }
 
+                        </div>
+
+                        <div class="member-chat-typing d-none"
+                            data-chat-typing>
+                            Yazıyor...
                         </div>
 
 
@@ -367,7 +384,6 @@
     }
 
 </section>
-
 
 @section Scripts {
 
