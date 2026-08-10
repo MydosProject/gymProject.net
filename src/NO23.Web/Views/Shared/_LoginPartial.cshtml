@@ -17,6 +17,16 @@
                 Admin Paneli
             </a>
         }
+        else if (User.IsInRole(ApplicationRoles.Trainer))
+        {
+            <a class="nav-link no23-account-link"
+               asp-area="Trainer"
+               asp-controller="Dashboard"
+               asp-action="Index"
+               title="Eğitmen panelim">
+                Hesabım
+            </a>
+        }
         else if (User.IsInRole(ApplicationRoles.Member))
         {
             <a class="nav-link no23-account-link"
