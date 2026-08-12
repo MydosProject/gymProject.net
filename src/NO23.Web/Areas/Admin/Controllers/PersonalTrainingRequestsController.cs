@@ -85,61 +85,117 @@ public class PersonalTrainingRequestsController(
             return View(await RebuildFormModelAsync(id, model));
         }
 
+        var previousRequestState = await dbContext.PersonalTrainingRequests
+                .AsNoTracking()
+                .Where(request => request.Id == id)
+                .Select(request => new
+                {
+                    request.Status,
+                    request.ScheduledAtUtc
+                })
+                .SingleOrDefaultAsync();
+
+        if (previousRequestState is null)
+        {
+            return NotFound();
+        }
+
         var result = await personalTrainingRequestService.UpdateByAdminAsync(
             id,
             model.Status,
             model.ScheduledAtLocal,
             model.AdminNote);
 
-        if (result.Succeeded &&
-            model.Status ==
-                PersonalTrainingRequestStatus.Completed)
+        if (result.Succeeded)
         {
-            var requestContext =
-                await dbContext
+            var requestContext = await dbContext
                     .PersonalTrainingRequests
                     .AsNoTracking()
-                    .Where(request =>
-                        request.Id ==
-                            model.Id)
-                    .Select(request =>
-                        new
-                        {
-                            MemberUserId =
-                                request.MemberProfile
-                                    .ApplicationUserId,
+                    .Where(request => request.Id == model.Id)
+                    .Select(request => new
+                    {
+                        MemberUserId =
+                            request.MemberProfile.ApplicationUserId,
 
-                            TrainerName =
-                                request.Trainer.FirstName +
-                                " " +
-                                request.Trainer.LastName,
+                        TrainerName =
+                            request.Trainer.FirstName +
+                            " " +
+                            request.Trainer.LastName,
 
-                            request.Status,
-
-                            request.ScheduledAtUtc,
-
-                            request.TrainerNote
-                        })
+                        request.Status,
+                        request.ScheduledAtUtc,
+                        request.TrainerNote
+                    })
                     .SingleAsync();
 
-            await notificationService
-                .CreateAndPublishAsync(
+            var wasRescheduled =
+                previousRequestState.Status ==
+                    PersonalTrainingRequestStatus.Scheduled &&
+                requestContext.Status ==
+                    PersonalTrainingRequestStatus.Scheduled &&
+                previousRequestState.ScheduledAtUtc !=
+                    requestContext.ScheduledAtUtc;
+
+            var wasCancelled =
+                previousRequestState.Status ==
+                    PersonalTrainingRequestStatus.Scheduled &&
+                requestContext.Status ==
+                    PersonalTrainingRequestStatus.Cancelled;
+
+            if (wasRescheduled)
+            {
+                var scheduledText =
+                    requestContext.ScheduledAtUtc
+                        ?.ToLocalTime()
+                        .ToString("dd.MM.yyyy HH:mm");
+
+                await notificationService.CreateAndPublishAsync(
                     requestContext.MemberUserId,
-                    UserNotificationType
-                        .PersonalTrainingCompleted,
+                    UserNotificationType.PersonalTrainingRescheduled,
+                    "Birebir randevun değiştirildi",
+                    scheduledText is null
+                        ? $"{requestContext.TrainerName} ile birebir randevunun zamanı değiştirildi."
+                        : $"{requestContext.TrainerName} ile birebir randevun {scheduledText} olarak güncellendi.",
+                    "/Member/Reservations#personal-training",
+                    model.Id);
+            }
+            else if (wasCancelled)
+            {
+                await notificationService.CreateAndPublishAsync(
+                    requestContext.MemberUserId,
+                    UserNotificationType.PersonalTrainingCancelled,
+                    "Birebir randevun iptal edildi",
+                    $"{requestContext.TrainerName} ile planlanmış birebir randevun iptal edildi.",
+                    "/Member/Reservations#personal-training",
+                    model.Id);
+            }
+            else if (
+                requestContext.Status ==
+                PersonalTrainingRequestStatus.Completed)
+            {
+                await notificationService.CreateAndPublishAsync(
+                    requestContext.MemberUserId,
+                    UserNotificationType.PersonalTrainingCompleted,
                     "Birebir antrenmanın tamamlandı",
                     "Birebir antrenman randevun tamamlandı.",
                     "/Member/Reservations#personal-training",
                     model.Id);
+            }
 
-            await notificationService
-                .PublishPersonalTrainingChangedAsync(
-                    requestContext.MemberUserId,
-                    model.Id,
-                    requestContext.Status,
-                    requestContext.ScheduledAtUtc,
-                    requestContext.TrainerName,
-                    requestContext.TrainerNote);
+            if (wasRescheduled ||
+                wasCancelled ||
+                requestContext.Status ==
+                    PersonalTrainingRequestStatus.Completed)
+            {
+                await notificationService
+                    .PublishPersonalTrainingChangedAsync(
+                        requestContext.MemberUserId,
+                        model.Id,
+                        requestContext.Status,
+                        requestContext.ScheduledAtUtc,
+                        requestContext.TrainerName,
+                        requestContext.TrainerNote);
+            }
         }
 
         if (!result.Succeeded)

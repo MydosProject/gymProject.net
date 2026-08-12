@@ -15,5 +15,6 @@ public enum UserNotificationType
     ShopStockOut = 10,
     OrderStatusChanged = 11,
     GroupClassSessionChanged = 12,
-    GroupClassSessionCancelled = 13
+    GroupClassSessionCancelled = 13,
+    PersonalTrainingRescheduled = 14
 }
