@@ -114,13 +114,22 @@ public class PersonalTrainingRequestsController(
                     .Where(request => request.Id == model.Id)
                     .Select(request => new
                     {
-                        MemberUserId =
-                            request.MemberProfile.ApplicationUserId,
+                        MemberUserId = request.MemberProfile.ApplicationUserId,
 
                         TrainerName =
                             request.Trainer.FirstName +
                             " " +
                             request.Trainer.LastName,
+
+                        TrainerUserId = request.Trainer.ApplicationUserId,
+
+                        MemberName =
+                            ((request.MemberProfile.ApplicationUser.FirstName ?? "") +
+                            " " +
+                            (request.MemberProfile.ApplicationUser.LastName ?? ""))
+                                .Trim(),
+
+                        MemberEmail = request.MemberProfile.ApplicationUser.Email ?? "",
 
                         request.Status,
                         request.ScheduledAtUtc,
@@ -158,6 +167,22 @@ public class PersonalTrainingRequestsController(
                         : $"{requestContext.TrainerName} ile birebir randevun {scheduledText} olarak güncellendi.",
                     "/Member/Reservations#personal-training",
                     model.Id);
+                if (!string.IsNullOrWhiteSpace(requestContext.TrainerUserId))
+                    {
+                        var memberDisplayName = string.IsNullOrWhiteSpace(requestContext.MemberName)
+                                ? requestContext.MemberEmail
+                                : requestContext.MemberName;
+
+                        await notificationService.CreateAndPublishAsync(
+                            requestContext.TrainerUserId,
+                            UserNotificationType.PersonalTrainingRescheduled,
+                            "Birebir randevun değiştirildi",
+                            scheduledText is null
+                                ? $"{memberDisplayName} ile planlanmış birebir randevunun zamanı yönetici tarafından değiştirildi."
+                                : $"{memberDisplayName} ile birebir randevun {scheduledText} olarak güncellendi.",
+                            "/Trainer/PersonalTrainingRequests",
+                            model.Id);
+                    }
             }
             else if (wasCancelled)
             {
@@ -168,6 +193,23 @@ public class PersonalTrainingRequestsController(
                     $"{requestContext.TrainerName} ile planlanmış birebir randevun iptal edildi.",
                     "/Member/Reservations#personal-training",
                     model.Id);
+
+                if (!string.IsNullOrWhiteSpace(requestContext.TrainerUserId))
+                    {
+                        var memberDisplayName =
+                            string.IsNullOrWhiteSpace(
+                                requestContext.MemberName)
+                                ? requestContext.MemberEmail
+                                : requestContext.MemberName;
+
+                        await notificationService.CreateAndPublishAsync(
+                            requestContext.TrainerUserId,
+                            UserNotificationType.PersonalTrainingCancelled,
+                            "Birebir randevun iptal edildi",
+                            $"{memberDisplayName} ile planlanmış birebir randevun yönetici tarafından iptal edildi.",
+                            "/Trainer/PersonalTrainingRequests",
+                            model.Id);
+                    }
             }
             else if (
                 requestContext.Status ==
