@@ -55,12 +55,10 @@
         @if (Model.Id > 0 &&
              Model.Status == ClassSessionStatus.Scheduled)
         {
-            <button type="submit"
-                    asp-action="Cancel"
-                    asp-route-id="@Model.Id"
-                    formnovalidate
+            <button type="button"
                     class="btn btn-outline-danger admin-cancel-session-button"
-                    onclick="return confirm('Bu ders seansı iptal edilecek. Aktif rezervasyonlar iptal edilecek ve üyelerin ders hakları geri verilecek. Emin misin?');">
+                    data-bs-toggle="modal"
+                    data-bs-target="#cancelClassSessionModal">
                 Ders Seansını İptal Et
             </button>
         }
@@ -76,3 +74,48 @@
         </div>
     </div>
 </form>
+
+@if (Model.Id > 0 &&
+     Model.Status == ClassSessionStatus.Scheduled)
+{
+    <div class="modal fade admin-confirm-modal"
+         id="cancelClassSessionModal"
+         tabindex="-1"
+         aria-labelledby="cancelClassSessionModalTitle"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div>
+                        <p>NO23 / DERS YÖNETİMİ</p>
+                        <h2 class="modal-title" id="cancelClassSessionModalTitle">
+                            Ders seansı iptal edilsin mi?
+                        </h2>
+                    </div>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Kapat"></button>
+                </div>
+                <div class="modal-body">
+                    Aktif rezervasyonlar iptal edilecek ve üyelerin ders hakları geri verilecek.
+                </div>
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-outline-secondary"
+                            data-bs-dismiss="modal">
+                        Vazgeç
+                    </button>
+                    <form method="post"
+                          asp-action="Cancel"
+                          asp-route-id="@Model.Id">
+                        <button type="submit"
+                                class="btn btn-danger">
+                            Ders Seansını İptal Et
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}

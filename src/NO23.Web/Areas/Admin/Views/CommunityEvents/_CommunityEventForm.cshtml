@@ -75,12 +75,10 @@
         @if (Model.Id > 0 &&
              Model.Status == CommunityEventStatus.Scheduled)
         {
-            <button type="submit"
-                    asp-action="Cancel"
-                    asp-route-id="@Model.Id"
-                    formnovalidate
+            <button type="button"
                     class="btn btn-outline-danger admin-cancel-event-button"
-                    onclick="return confirm('Bu etkinlik iptal edilecek ve kullanıcıların etkinlik listesinden kaldırılacak. Emin misin?');">
+                    data-bs-toggle="modal"
+                    data-bs-target="#cancelCommunityEventModal">
                 Etkinliği İptal Et
             </button>
         }
@@ -97,3 +95,48 @@
         </div>
     </div>
 </form>
+
+@if (Model.Id > 0 &&
+     Model.Status == CommunityEventStatus.Scheduled)
+{
+    <div class="modal fade admin-confirm-modal"
+         id="cancelCommunityEventModal"
+         tabindex="-1"
+         aria-labelledby="cancelCommunityEventModalTitle"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div>
+                        <p>NO23 / ETKİNLİK</p>
+                        <h2 class="modal-title" id="cancelCommunityEventModalTitle">
+                            Etkinlik iptal edilsin mi?
+                        </h2>
+                    </div>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Kapat"></button>
+                </div>
+                <div class="modal-body">
+                    Bu etkinlik kullanıcıların etkinlik listesinden kaldırılacak.
+                </div>
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-outline-secondary"
+                            data-bs-dismiss="modal">
+                        Vazgeç
+                    </button>
+                    <form method="post"
+                          asp-action="Cancel"
+                          asp-route-id="@Model.Id">
+                        <button type="submit"
+                                class="btn btn-danger">
+                            Etkinliği İptal Et
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}

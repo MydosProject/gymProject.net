@@ -6,20 +6,80 @@
             )
         );
 
-    if (
-        roots.length === 0 ||
-        !window.signalR
-    ) {
+    if (roots.length === 0) {
         return;
     }
 
+    const hasSignalR =
+        Boolean(window.signalR);
+
     const connection =
-        new signalR.HubConnectionBuilder()
-            .withUrl(
-                "/hubs/user-notifications"
-            )
-            .withAutomaticReconnect()
-            .build();
+        hasSignalR
+            ? new signalR.HubConnectionBuilder()
+                .withUrl(
+                    "/hubs/user-notifications"
+                )
+                .withAutomaticReconnect()
+                .build()
+            : null;
+
+    const isConnected = () =>
+        connection &&
+        connection.state ===
+            signalR.HubConnectionState.Connected;
+
+    const getAntiForgeryToken = () =>
+        document.querySelector(
+            'input[name="__RequestVerificationToken"]'
+        )?.value ?? "";
+
+    const postNotificationAction =
+        async (url, formEntries = {}) => {
+            const body =
+                new URLSearchParams();
+
+            const token =
+                getAntiForgeryToken();
+
+            if (token) {
+                body.set(
+                    "__RequestVerificationToken",
+                    token
+                );
+            }
+
+            for (const [key, value] of
+                Object.entries(formEntries)) {
+                body.set(
+                    key,
+                    String(value)
+                );
+            }
+
+            const response =
+                await fetch(
+                    url,
+                    {
+                        method: "POST",
+                        credentials: "same-origin",
+                        headers: {
+                            "Content-Type":
+                                "application/x-www-form-urlencoded; charset=UTF-8",
+                            "X-Requested-With":
+                                "XMLHttpRequest"
+                        },
+                        body
+                    }
+                );
+
+            if (!response.ok) {
+                throw new Error(
+                    "Notification request failed."
+                );
+            }
+
+            return await response.json();
+        };
 
     const formatDate = utcValue => {
         const date =
@@ -65,6 +125,38 @@
         }
     };
 
+    const markRenderedNotificationRead =
+        notificationId => {
+            document
+                .querySelectorAll(
+                    `[data-notification-id="${notificationId}"]`
+                )
+                .forEach(item => {
+                    item.classList.remove(
+                        "is-unread"
+                    );
+                    item.classList.add(
+                        "is-read"
+                    );
+                });
+        };
+
+    const markAllRenderedNotificationsRead =
+        () => {
+            document
+                .querySelectorAll(
+                    "[data-notification-id]"
+                )
+                .forEach(item => {
+                    item.classList.remove(
+                        "is-unread"
+                    );
+                    item.classList.add(
+                        "is-read"
+                    );
+                });
+        };
+
     const createNotificationElement =
         notification => {
             const item =
@@ -73,9 +165,11 @@
             item.type = "button";
 
             item.className =
-                "dropdown-item " +
-                "notification-item " +
-                "text-wrap";
+                "no23-notification-item " +
+                (notification.isRead ||
+                notification.readAtUtc
+                    ? "is-read"
+                    : "is-unread");
 
             item.dataset.notificationId =
                 String(notification.id);
@@ -85,13 +179,26 @@
                     notification.url;
             }
 
+            const marker =
+                document.createElement("span");
+
+            marker.className =
+                "no23-notification-marker";
+            marker.setAttribute(
+                "aria-hidden",
+                "true"
+            );
+
+            const copy =
+                document.createElement("span");
+
+            copy.className =
+                "no23-notification-copy";
+
             const title =
                 document.createElement(
                     "strong"
                 );
-
-            title.className =
-                "d-block";
 
             title.textContent =
                 notification.title ?? "";
@@ -101,9 +208,6 @@
                     "span"
                 );
 
-            message.className =
-                "d-block small";
-
             message.textContent =
                 notification.message ?? "";
 
@@ -112,18 +216,20 @@
                     "small"
                 );
 
-            date.className =
-                "d-block text-muted mt-1";
-
             date.textContent =
                 formatDate(
                     notification.createdAtUtc
                 );
 
-            item.append(
+            copy.append(
                 title,
                 message,
                 date
+            );
+
+            item.append(
+                marker,
+                copy
             );
 
             return item;
@@ -175,10 +281,7 @@
         };
 
     const refreshState = async () => {
-        if (
-            connection.state !==
-            signalR.HubConnectionState.Connected
-        ) {
+        if (!isConnected()) {
             return;
         }
 
@@ -208,7 +311,76 @@
         }
     };
 
-    connection.on(
+    const markAsRead =
+        async notificationId => {
+            if (isConnected()) {
+                try {
+                    await connection.invoke(
+                        "MarkAsRead",
+                        notificationId
+                    );
+
+                    const unreadCount =
+                        await connection.invoke(
+                            "GetUnreadCount"
+                        );
+
+                    updateCount(
+                        unreadCount
+                    );
+                    markRenderedNotificationRead(
+                        notificationId
+                    );
+                    return;
+                } catch {
+                    // HTTP fallback kalıcı okundu bilgisini dener.
+                }
+            }
+
+            const payload =
+                await postNotificationAction(
+                    "/Notifications/MarkAsRead",
+                    {
+                        notificationId
+                    }
+                );
+
+            updateCount(
+                payload.unreadCount
+            );
+            markRenderedNotificationRead(
+                notificationId
+            );
+        };
+
+    const markAllAsRead =
+        async () => {
+            if (isConnected()) {
+                try {
+                    await connection.invoke(
+                        "MarkAllAsRead"
+                    );
+
+                    updateCount(0);
+                    markAllRenderedNotificationsRead();
+                    return;
+                } catch {
+                    // HTTP fallback kalıcı okundu bilgisini dener.
+                }
+            }
+
+            const payload =
+                await postNotificationAction(
+                    "/Notifications/MarkAllAsRead"
+                );
+
+            updateCount(
+                payload.unreadCount
+            );
+            markAllRenderedNotificationsRead();
+        };
+
+    connection?.on(
         "NotificationReceived",
         payload => {
             updateCount(
@@ -249,7 +421,7 @@
         }
     );
 
-    connection.on(
+    connection?.on(
         "NotificationStateChanged",
         payload => {
             updateCount(
@@ -260,7 +432,7 @@
         }
     );
 
-    connection.on(
+    connection?.on(
     "PersonalTrainingChanged",
         payload => {
             window.dispatchEvent(
@@ -295,16 +467,9 @@
                         .dataset
                         .notificationUrl;
 
-                if (
-                    notificationId &&
-                    connection.state ===
-                        signalR
-                            .HubConnectionState
-                            .Connected
-                ) {
+                if (notificationId) {
                     try {
-                        await connection.invoke(
-                            "MarkAsRead",
+                        await markAsRead(
                             notificationId
                         );
                     } catch {
@@ -330,17 +495,10 @@
                 return;
             }
 
-            if (
-                connection.state !==
-                signalR.HubConnectionState.Connected
-            ) {
-                return;
-            }
+            event.preventDefault();
 
             try {
-                await connection.invoke(
-                    "MarkAllAsRead"
-                );
+                await markAllAsRead();
             } catch {
                 // Bir sonraki senkronizasyonda
                 // tekrar doğru durum alınır.
@@ -350,6 +508,10 @@
 
     const startConnection =
         async () => {
+            if (!connection) {
+                return;
+            }
+
             try {
                 await connection.start();
 
@@ -362,7 +524,7 @@
             }
         };
 
-    connection.onreconnected(
+    connection?.onreconnected(
         async () => {
             await refreshState();
         }

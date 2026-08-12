@@ -178,12 +178,10 @@
     <div class="d-flex align-items-center flex-wrap gap-2 mt-4">
         @if (Model.Id > 0)
         {
-            <button type="submit"
-                    asp-action="Delete"
-                    asp-route-id="@Model.Id"
-                    formnovalidate
+            <button type="button"
                     class="btn btn-outline-danger admin-delete-product-button"
-                    onclick="return confirm('Bu ürünü silmek istediğine emin misin? Bu işlem geri alınamaz.');">
+                    data-bs-toggle="modal"
+                    data-bs-target="#deleteKitchenMenuItemModal">
                 Ürünü Sil
             </button>
         }
@@ -200,6 +198,50 @@
         </div>
     </div>
 </form>
+
+@if (Model.Id > 0)
+{
+    <div class="modal fade admin-confirm-modal"
+         id="deleteKitchenMenuItemModal"
+         tabindex="-1"
+         aria-labelledby="deleteKitchenMenuItemModalTitle"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div>
+                        <p>NO23 / KITCHEN</p>
+                        <h2 class="modal-title" id="deleteKitchenMenuItemModalTitle">
+                            Ürün silinsin mi?
+                        </h2>
+                    </div>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Kapat"></button>
+                </div>
+                <div class="modal-body">
+                    Bu işlem geri alınamaz. Ürün kalıcı olarak silinecek.
+                </div>
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-outline-secondary"
+                            data-bs-dismiss="modal">
+                        Vazgeç
+                    </button>
+                    <form method="post"
+                          asp-action="Delete"
+                          asp-route-id="@Model.Id">
+                        <button type="submit"
+                                class="btn btn-danger">
+                            Ürünü Sil
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}
 
 <script>
     (() => {
