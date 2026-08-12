@@ -398,11 +398,10 @@
                                 <td data-label="Tarih">
 
                                     <strong>
-                                        @session
-                                            .StartsAtUtc
+                                        @(session.StartsAtUtc
                                             .ToLocalTime()
                                             .ToString(
-                                                "dd.MM.yyyy HH:mm")
+                                                "dd.MM.yyyy HH:mm"))
                                     </strong>
 
                                 </td>

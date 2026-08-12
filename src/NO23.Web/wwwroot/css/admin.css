@@ -6457,3 +6457,297 @@ body.no23-admin-body {
         width: 100%;
     }
 }
+
+/* =========================================================
+   SHARED - NOTIFICATIONS AND CONFIRM MODALS
+   ========================================================= */
+
+.no23-notification-root {
+    position: relative;
+}
+
+.no23-notification-button {
+    position: relative;
+    display: grid;
+    width: 38px;
+    height: 38px;
+    place-items: center;
+    border: 1px solid rgba(17, 17, 17, 0.12);
+    border-radius: 10px;
+    color: #111;
+    background: #fff;
+    font-size: 0.85rem;
+    font-weight: 950;
+    line-height: 1;
+    transition:
+        border-color 160ms ease,
+        background-color 160ms ease,
+        color 160ms ease,
+        transform 160ms ease;
+}
+
+.trainer-topbar .no23-notification-button {
+    border-color: rgba(255, 255, 255, 0.14);
+    color: #baff00;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.no23-notification-button:hover,
+.no23-notification-button[aria-expanded="true"] {
+    border-color: #baff00;
+    color: #111;
+    background: #baff00;
+    transform: translateY(-1px);
+}
+
+.no23-notification-count {
+    position: absolute;
+    top: -7px;
+    right: -7px;
+    display: grid;
+    min-width: 20px;
+    height: 20px;
+    place-items: center;
+    padding: 0 5px;
+    border: 2px solid #fff;
+    border-radius: 999px;
+    color: #fff;
+    background: #c33f3f;
+    font-size: 0.56rem;
+    font-weight: 950;
+}
+
+.trainer-topbar .no23-notification-count {
+    border-color: #0a0c0a;
+}
+
+.no23-notification-menu {
+    width: min(380px, calc(100vw - 24px));
+    max-height: min(520px, calc(100vh - 110px));
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid rgba(17, 17, 17, 0.12);
+    border-radius: 14px;
+    background: #fbfaf6;
+    box-shadow: 0 22px 55px rgba(17, 17, 17, 0.18);
+}
+
+.no23-notification-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.95rem 1rem;
+    border-bottom: 1px solid #e2dfd6;
+    background: #111611;
+}
+
+.no23-notification-head > div {
+    display: grid;
+    gap: 0.1rem;
+}
+
+.no23-notification-head span {
+    color: #baff00;
+    font-size: 0.5rem;
+    font-weight: 950;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.no23-notification-head strong {
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 950;
+}
+
+.no23-notification-head button {
+    flex: 0 0 auto;
+    padding: 0;
+    border: 0;
+    color: rgba(255, 255, 255, 0.58);
+    background: transparent;
+    font-size: 0.57rem;
+    font-weight: 850;
+}
+
+.no23-notification-head button:hover {
+    color: #baff00;
+}
+
+.no23-notification-empty {
+    padding: 1.1rem;
+    color: rgba(17, 17, 17, 0.5);
+    font-size: 0.68rem;
+    font-weight: 750;
+}
+
+.no23-notification-list {
+    max-height: 390px;
+    overflow-y: auto;
+}
+
+.no23-notification-item {
+    display: grid;
+    width: 100%;
+    grid-template-columns: 9px minmax(0, 1fr);
+    gap: 0.75rem;
+    padding: 0.9rem 1rem;
+    border: 0;
+    border-bottom: 1px solid #e8e5dc;
+    color: #111;
+    background: #fff;
+    text-align: left;
+    transition:
+        background-color 160ms ease,
+        transform 160ms ease;
+}
+
+.no23-notification-item:last-child {
+    border-bottom: 0;
+}
+
+.no23-notification-item:hover {
+    background: #f3f8e4;
+}
+
+.no23-notification-marker {
+    width: 8px;
+    height: 8px;
+    margin-top: 0.35rem;
+    border-radius: 999px;
+    background: #d9d6cd;
+}
+
+.no23-notification-item.is-unread .no23-notification-marker {
+    background: #baff00;
+    box-shadow: 0 0 0 4px rgba(186, 255, 0, 0.16);
+}
+
+.no23-notification-copy {
+    display: grid;
+    min-width: 0;
+    gap: 0.2rem;
+}
+
+.no23-notification-copy strong {
+    overflow: hidden;
+    color: #111;
+    font-size: 0.72rem;
+    font-weight: 950;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.no23-notification-copy span {
+    color: rgba(17, 17, 17, 0.62);
+    font-size: 0.64rem;
+    line-height: 1.45;
+}
+
+.no23-notification-copy small {
+    color: rgba(17, 17, 17, 0.42);
+    font-size: 0.55rem;
+    font-weight: 800;
+}
+
+.no23-notification-item.is-read .no23-notification-copy {
+    opacity: 0.72;
+}
+
+.admin-confirm-modal .modal-content {
+    overflow: hidden;
+    border: 1px solid rgba(17, 17, 17, 0.12);
+    border-radius: 16px;
+    box-shadow: 0 24px 70px rgba(17, 17, 17, 0.28);
+}
+
+.admin-confirm-modal .modal-header {
+    align-items: flex-start;
+    border-bottom: 1px solid #e3e0d8;
+    background: #111611;
+}
+
+.admin-confirm-modal .modal-header p {
+    margin: 0 0 0.3rem;
+    color: #baff00;
+    font-size: 0.52rem;
+    font-weight: 950;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.admin-confirm-modal .modal-title {
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 950;
+}
+
+.admin-confirm-modal .btn-close {
+    filter: invert(1);
+    opacity: 0.8;
+}
+
+.admin-confirm-modal .modal-body {
+    color: rgba(17, 17, 17, 0.68);
+    font-size: 0.76rem;
+    line-height: 1.55;
+}
+
+.admin-confirm-modal .modal-footer {
+    gap: 0.6rem;
+    border-top: 1px solid #e3e0d8;
+    background: #f5f4ee;
+}
+
+.admin-confirm-modal .modal-footer form {
+    margin: 0;
+}
+
+.admin-confirm-modal .btn {
+    min-height: 40px;
+    border-radius: 10px;
+    font-size: 0.62rem;
+    font-weight: 950;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.admin-confirm-modal .btn-danger {
+    border-color: #c33f3f;
+    background: #c33f3f;
+}
+
+.trainer-topbar-end {
+    min-width: 0;
+    flex-wrap: nowrap;
+}
+
+.trainer-page-heading,
+.trainer-user {
+    min-width: 0;
+}
+
+@media (max-width: 575.98px) {
+    .no23-notification-menu {
+        width: calc(100vw - 18px);
+    }
+
+    .no23-notification-head {
+        padding: 0.85rem 0.9rem;
+    }
+
+    .no23-notification-item {
+        padding: 0.85rem 0.9rem;
+    }
+
+    .admin-confirm-modal .modal-footer {
+        align-items: stretch;
+        flex-direction: column-reverse;
+    }
+
+    .admin-confirm-modal .modal-footer form,
+    .admin-confirm-modal .modal-footer .btn {
+        width: 100%;
+    }
+}

@@ -84,12 +84,10 @@
              (Model.Status == CommunityChallengeStatus.Upcoming ||
               Model.Status == CommunityChallengeStatus.Active))
         {
-            <button type="submit"
-                    asp-action="Cancel"
-                    asp-route-id="@Model.Id"
-                    formnovalidate
+            <button type="button"
                     class="btn btn-outline-danger admin-cancel-challenge-button"
-                    onclick="return confirm('Bu challenge iptal edilecek ve kullanıcıların challenge listesinden kaldırılacak. Katılımcı kayıtları korunacak. Emin misin?');">
+                    data-bs-toggle="modal"
+                    data-bs-target="#cancelCommunityChallengeModal">
                 Challenge'ı İptal Et
             </button>
         }
@@ -105,3 +103,49 @@
         </div>
     </div>
 </form>
+
+@if (Model.Id > 0 &&
+     (Model.Status == CommunityChallengeStatus.Upcoming ||
+      Model.Status == CommunityChallengeStatus.Active))
+{
+    <div class="modal fade admin-confirm-modal"
+         id="cancelCommunityChallengeModal"
+         tabindex="-1"
+         aria-labelledby="cancelCommunityChallengeModalTitle"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div>
+                        <p>NO23 / CHALLENGE</p>
+                        <h2 class="modal-title" id="cancelCommunityChallengeModalTitle">
+                            Challenge iptal edilsin mi?
+                        </h2>
+                    </div>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Kapat"></button>
+                </div>
+                <div class="modal-body">
+                    Challenge kullanıcıların listesinden kaldırılacak. Katılımcı kayıtları korunacak.
+                </div>
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-outline-secondary"
+                            data-bs-dismiss="modal">
+                        Vazgeç
+                    </button>
+                    <form method="post"
+                          asp-action="Cancel"
+                          asp-route-id="@Model.Id">
+                        <button type="submit"
+                                class="btn btn-danger">
+                            Challenge'ı İptal Et
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}

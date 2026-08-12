@@ -334,62 +334,45 @@
 
                 <div class="member-topbar-end">
 
-                <div class="dropdown"data-notification-root>
+                <div class="dropdown no23-notification-root" data-notification-root>
 
-                    <button class="btn btn-sm btn-outline-light position-relative"
+                    <button class="no23-notification-button"
                             type="button"
                             data-bs-toggle="dropdown"
                             aria-expanded="false"
                             aria-label="Bildirimleri aç">
 
-                        <span aria-hidden="true">
-                            🔔
-                        </span>
+                        <span aria-hidden="true">!</span>
 
-                        <span class="position-absolute
-                                    top-0
-                                    start-100
-                                    translate-middle
-                                    badge
-                                    rounded-pill
-                                    bg-danger
-                                    d-none"
+                        <span class="no23-notification-count d-none"
                             data-notification-count>
                             0
                         </span>
 
                     </button>
 
-                    <div class="dropdown-menu
-                                dropdown-menu-end
-                                p-0"
-                        style="width: min(360px, 90vw);">
+                    <div class="dropdown-menu dropdown-menu-end no23-notification-menu">
 
-                        <div class="d-flex
-                                    justify-content-between
-                                    align-items-center
-                                    px-3
-                                    py-2
-                                    border-bottom">
+                        <div class="no23-notification-head">
 
-                            <strong>
-                                Bildirimler
-                            </strong>
+                            <div>
+                                <span>NO23</span>
+                                <strong>Bildirimler</strong>
+                            </div>
 
                             <button type="button"
-                                    class="btn btn-link btn-sm p-0"
                                     data-notification-mark-all>
                                 Tümünü okundu yap
                             </button>
 
                         </div>
 
-                        <div class="p-3 text-muted small"
+                        <div class="no23-notification-empty"
                             data-notification-empty>
                             Henüz bildirimin yok.
                         </div>
 
-                        <div data-notification-list>
+                        <div class="no23-notification-list" data-notification-list>
                         </div>
 
                     </div>
