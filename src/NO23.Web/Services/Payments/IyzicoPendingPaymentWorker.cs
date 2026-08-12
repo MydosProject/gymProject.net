@@ -56,11 +56,18 @@ public sealed class IyzicoPendingPaymentWorker(
                     .ProcessExpiredPaymentsAsync(
                         cancellationToken);
 
-            if (processedCount > 0)
+            var staleOrphanOrderCount =
+                await pendingPaymentService
+                    .ProcessStaleOrphanShopOrdersAsync(
+                        cancellationToken);
+
+            if (processedCount > 0 ||
+                staleOrphanOrderCount > 0)
             {
                 logger.LogInformation(
-                    "Processed {ProcessedCount} expired iyzico payment(s).",
-                    processedCount);
+                    "Processed {ProcessedCount} expired iyzico payment(s) and {StaleOrphanOrderCount} stale orphan shop order(s).",
+                    processedCount,
+                    staleOrphanOrderCount);
             }
         }
         catch (OperationCanceledException)

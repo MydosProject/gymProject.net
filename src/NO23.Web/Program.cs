@@ -173,6 +173,8 @@ builder.Services.AddScoped<IyzicoPendingPaymentService>();
 builder.Services.AddHostedService<IyzicoPendingPaymentWorker>();
 builder.Services.AddScoped<UserNotificationService>();
 builder.Services.AddScoped<UserNotificationRealtimeService>();
+builder.Services.AddScoped<AdminStockNotificationService>();
+builder.Services.AddScoped<ShopStockNotificationService>();
 
 var app = builder.Build();
 

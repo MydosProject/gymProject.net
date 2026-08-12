@@ -5,7 +5,9 @@ using NO23.Web.Domain.Enums;
 
 namespace NO23.Web.Services;
 
-public class OrderWorkflowService(ApplicationDbContext dbContext)
+public class OrderWorkflowService
+(ApplicationDbContext dbContext,
+UserNotificationRealtimeService? notificationService = null)
 {
     public static IReadOnlyList<OrderStatus> GetAvailableOrderStatuses(
         OrderStatus currentStatus,
@@ -87,6 +89,8 @@ public class OrderWorkflowService(ApplicationDbContext dbContext)
 
         await dbContext.SaveChangesAsync();
 
+        await PublishMemberOrderStatusChangedAsync(order);
+
         return OrderWorkflowResult.Ok(order.Id);
     }
 
@@ -126,12 +130,78 @@ public class OrderWorkflowService(ApplicationDbContext dbContext)
 
         await dbContext.SaveChangesAsync();
 
+        await PublishMemberOrderStatusChangedAsync(order);
+
         return OrderWorkflowResult.Ok(order.Id);
+    }
+
+    private async Task PublishMemberOrderStatusChangedAsync(
+    Order order)
+    {
+        if (notificationService is null ||
+            order.MemberProfile is null ||
+            string.IsNullOrWhiteSpace(
+                order.MemberProfile.ApplicationUserId))
+        {
+            return;
+        }
+
+        (string Title, string Message)? notification =
+            order.Status switch
+            {
+                OrderStatus.Preparing =>
+                    (
+                        "Siparişin hazırlanıyor",
+                        $"{order.OrderNumber} numaralı siparişin hazırlanmaya başladı."
+                    ),
+
+                OrderStatus.OutForDelivery =>
+                    (
+                        "Siparişin teslimata çıktı",
+                        $"{order.OrderNumber} numaralı siparişin teslimata çıktı."
+                    ),
+
+                OrderStatus.Delivered =>
+                    (
+                        "Siparişin teslim edildi",
+                        $"{order.OrderNumber} numaralı siparişin teslim edildi."
+                    ),
+
+                OrderStatus.Cancelled
+                    when order.PaymentStatus ==
+                        PaymentStatus.Refunded =>
+                    (
+                        "Siparişin iptal edildi",
+                        $"{order.OrderNumber} numaralı siparişin iptal edildi ve ödemen iade edildi."
+                    ),
+
+                OrderStatus.Cancelled =>
+                    (
+                        "Siparişin iptal edildi",
+                        $"{order.OrderNumber} numaralı siparişin iptal edildi."
+                    ),
+
+                _ => null
+            };
+
+        if (notification is null)
+        {
+            return;
+        }
+
+        await notificationService.CreateAndPublishAsync(
+            order.MemberProfile.ApplicationUserId,
+            UserNotificationType.OrderStatusChanged,
+            notification.Value.Title,
+            notification.Value.Message,
+            "/Member/Orders",
+            order.Id);
     }
 
     private async Task<Order?> LoadOrderForUpdateAsync(int orderId)
     {
         return await dbContext.Orders
+            .Include(order => order.MemberProfile)
             .Include(order => order.Items)
             .ThenInclude(item => item.ShopProduct)
             .FirstOrDefaultAsync(order => order.Id == orderId);

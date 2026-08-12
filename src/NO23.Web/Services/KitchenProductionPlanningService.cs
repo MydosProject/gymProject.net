@@ -5,7 +5,9 @@ using NO23.Web.Domain.Enums;
 
 namespace NO23.Web.Services;
 
-public class KitchenProductionPlanningService(ApplicationDbContext dbContext)
+public class KitchenProductionPlanningService
+(ApplicationDbContext dbContext,
+AdminStockNotificationService? adminStockNotificationService = null)
 {
     public async Task<KitchenProductionPlanResult> CreateOrRefreshPlanAsync(DateOnly planDate)
     {
@@ -185,6 +187,14 @@ public class KitchenProductionPlanningService(ApplicationDbContext dbContext)
         await using var transaction = await dbContext.Database.BeginTransactionAsync();
         var deductedAtUtc = DateTime.UtcNow;
 
+        var stockChanges = new List<(
+        int IngredientId,
+        string IngredientName,
+        decimal PreviousQuantity,
+        decimal CurrentQuantity,
+        decimal MinimumQuantity,
+        string UnitText)>();
+
         foreach (var material in plan.Materials.Where(material => material.RequiredQuantity > 0))
         {
             var ingredient = material.KitchenIngredient;
@@ -200,6 +210,15 @@ public class KitchenProductionPlanningService(ApplicationDbContext dbContext)
 
             ingredient.CurrentStockQuantity = quantityAfter;
             ingredient.UpdatedAtUtc = deductedAtUtc;
+            stockChanges.Add(
+            (
+                ingredient.Id,
+                ingredient.Name,
+                quantityBefore,
+                quantityAfter,
+                ingredient.MinimumStockQuantity,
+                GetIngredientUnitDisplayName(ingredient.Unit)
+            ));
             dbContext.KitchenStockMovements.Add(new KitchenStockMovement
             {
                 KitchenIngredientId = ingredient.Id,
@@ -219,6 +238,20 @@ public class KitchenProductionPlanningService(ApplicationDbContext dbContext)
 
         await dbContext.SaveChangesAsync();
         await transaction.CommitAsync();
+
+        if (adminStockNotificationService is not null)
+            {
+                foreach (var stockChange in stockChanges)
+                {
+                    await adminStockNotificationService.PublishKitchenStockChangedAsync(
+                        stockChange.IngredientId,
+                        stockChange.IngredientName,
+                        stockChange.PreviousQuantity,
+                        stockChange.CurrentQuantity,
+                        stockChange.MinimumQuantity,
+                        stockChange.UnitText);
+                }
+            }
 
         return KitchenProductionPlanResult.Ok(plan.Id);
     }
@@ -299,6 +332,17 @@ public class KitchenProductionPlanningService(ApplicationDbContext dbContext)
         });
 
         await dbContext.SaveChangesAsync();
+
+        if (adminStockNotificationService is not null)
+            {
+                await adminStockNotificationService.PublishKitchenStockChangedAsync(
+                    ingredient.Id,
+                    ingredient.Name,
+                    quantityBefore,
+                    quantityAfter,
+                    ingredient.MinimumStockQuantity,
+                    GetIngredientUnitDisplayName(ingredient.Unit));
+            }
 
         return KitchenProductionPlanResult.Ok(ingredient.Id);
     }

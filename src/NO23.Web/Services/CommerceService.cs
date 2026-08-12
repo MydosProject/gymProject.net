@@ -6,7 +6,8 @@ using NO23.Web.ViewModels.GuestOrders;
 
 namespace NO23.Web.Services;
 
-public class CommerceService(ApplicationDbContext dbContext)
+public class CommerceService
+(ApplicationDbContext dbContext)
 {
     private const decimal DeliveryFee = 0;
 
@@ -184,8 +185,8 @@ public class CommerceService(ApplicationDbContext dbContext)
 
         foreach (var cartItem in cart.Items.Where(item => item.ItemType == CartItemType.ShopProduct))
         {
-            cartItem.ShopProduct!.StockQuantity -= cartItem.Quantity;
-            cartItem.ShopProduct.UpdatedAtUtc = DateTime.UtcNow;
+              cartItem.ShopProduct!.StockQuantity -= cartItem.Quantity;
+              cartItem.ShopProduct.UpdatedAtUtc = DateTime.UtcNow;
         }
 
         dbContext.Orders.Add(order);

@@ -32,6 +32,7 @@
                         <th>Kategori</th>
                         <th>Fiyat</th>
                         <th>Stok</th>
+                        <th>Kritik eşik</th>
                         <th>Durum</th>
                         <th class="text-end">İşlem</th>
                     </tr>
@@ -39,7 +40,7 @@
                 <tbody>
                     @if (Model.Count == 0)
                     {
-                        <tr><td colspan="8"><div class="admin-empty-row">Henüz Shop ürünü eklenmedi.</div></td></tr>
+                        <tr><td colspan="9"><div class="admin-empty-row">Henüz Shop ürünü eklenmedi.</div></td></tr>
                     }
                     else
                     {
@@ -52,6 +53,7 @@
                                 <td data-label="Kategori">@product.Category</td>
                                 <td data-label="Fiyat"><strong>@product.UnitPrice.ToString("C0")</strong></td>
                                 <td data-label="Stok">@product.StockQuantity</td>
+                                <td data-label="Kritik eşik">@product.MinimumStockQuantity</td>
                                 <td data-label="Durum"><span class="badge @(product.IsActive ? "text-bg-success" : "text-bg-secondary")">@(product.IsActive ? "Aktif" : "Pasif")</span></td>
                                 <td class="text-end" data-label="İşlem"><a class="btn btn-sm btn-outline-dark" asp-action="Edit" asp-route-id="@product.Id">Düzenle</a></td>
                             </tr>

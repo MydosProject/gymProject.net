@@ -11,7 +11,10 @@ namespace NO23.Web.Hubs;
     Roles =
         ApplicationRoles.Member +
         "," +
-        ApplicationRoles.Trainer)]
+        ApplicationRoles.Trainer +
+        "," +
+        ApplicationRoles.Admin)]
+
 public class UserNotificationHub(
     UserNotificationService notificationService)
     : Hub
