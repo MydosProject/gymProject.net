@@ -213,10 +213,14 @@ public class ClassSessionsController(
     {
         var nowUtc = DateTime.UtcNow;
 
-        var className = await dbContext.GroupClasses
+        var classContext = await dbContext.GroupClasses
         .AsNoTracking()
         .Where(groupClass => groupClass.Id == session.GroupClassId)
-        .Select(groupClass => groupClass.Name)
+        .Select(groupClass => new
+        {
+            groupClass.Name,
+            TrainerUserId = groupClass.Trainer.ApplicationUserId
+        })
         .SingleAsync();
 
         var activeReservations = await dbContext.ClassReservations
@@ -262,8 +266,20 @@ public class ClassSessionsController(
                 memberUserId,
                 UserNotificationType.GroupClassSessionCancelled,
                 "Ders iptal edildi",
-                $"{className} için rezervasyon yaptığın ders seansı yönetici tarafından iptal edildi.",
+                $"{classContext.Name} için rezervasyon yaptığın ders seansı yönetici tarafından iptal edildi.",
                 "/Member/Reservations",
+                session.Id);
+        }
+
+            if (!string.IsNullOrWhiteSpace(
+            classContext.TrainerUserId))
+        {
+            await notificationService.CreateAndPublishAsync(
+                classContext.TrainerUserId,
+                UserNotificationType.GroupClassSessionCancelled,
+                "Grup dersin iptal edildi",
+                $"{classContext.Name} ders seansı yönetici tarafından iptal edildi.",
+                "/Trainer/Classes",
                 session.Id);
         }
     }
@@ -331,10 +347,14 @@ public class ClassSessionsController(
     int classSessionId,
     DateTime startsAtUtc)
     {
-        var className = await dbContext.ClassSessions
+        var sessionContext = await dbContext.ClassSessions
             .AsNoTracking()
             .Where(session => session.Id == classSessionId)
-            .Select(session => session.GroupClass.Name)
+            .Select(session => new
+            {
+                ClassName = session.GroupClass.Name,
+                TrainerUserId = session.GroupClass.Trainer.ApplicationUserId
+            })
             .SingleAsync();
 
         var memberUserIds = await dbContext.ClassReservations
@@ -358,9 +378,22 @@ public class ClassSessionsController(
                 memberUserId,
                 UserNotificationType.GroupClassSessionChanged,
                 "Ders saati değişti",
-                $"{className} dersinin tarih veya saati değiştirildi. " +
+                $"{sessionContext.ClassName} dersinin tarih veya saati değiştirildi. " +
                 $"Yeni zaman: {localStartsAt:dd.MM.yyyy HH:mm}.",
                 "/Member/Reservations",
+                classSessionId);
+        }
+
+            if (!string.IsNullOrWhiteSpace(
+            sessionContext.TrainerUserId))
+        {
+            await notificationService.CreateAndPublishAsync(
+                sessionContext.TrainerUserId,
+                UserNotificationType.GroupClassSessionChanged,
+                "Grup dersinin zamanı değiştirildi",
+                $"{sessionContext.ClassName} dersinin yeni zamanı " +
+                $"{localStartsAt:dd.MM.yyyy HH:mm} olarak güncellendi.",
+                "/Trainer/Classes",
                 classSessionId);
         }
     }
