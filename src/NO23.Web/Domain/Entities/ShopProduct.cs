@@ -16,6 +16,8 @@ public class ShopProduct
 
     public int StockQuantity { get; set; }
 
+    public int MinimumStockQuantity { get; set; } = 5;
+
     public string? ImageUrl { get; set; }
 
     public string? Tags { get; set; }

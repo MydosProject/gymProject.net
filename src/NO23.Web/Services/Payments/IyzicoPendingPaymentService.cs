@@ -9,11 +9,15 @@ public sealed class IyzicoPendingPaymentService(
     ApplicationDbContext dbContext,
     IIyzicoCheckoutClient checkoutClient,
     KitchenPlanMatchingService kitchenPlanMatchingService,
-    ILogger<IyzicoPendingPaymentService> logger)
+    ILogger<IyzicoPendingPaymentService> logger,
+    ShopStockNotificationService? shopStockNotificationService = null)
 {
     private const string ProviderName = "iyzico";
+    private const string MissingPaymentErrorCode = "5122";
     private const int BatchSize = 50;
     private const int LastErrorMaximumLength = 2000;
+    private static readonly TimeSpan OrphanShopOrderExpiration =
+        TimeSpan.FromMinutes(30);
 
     public async Task<int> ProcessExpiredPaymentsAsync(
         CancellationToken cancellationToken = default)
@@ -48,6 +52,50 @@ public sealed class IyzicoPendingPaymentService(
         }
 
         return processedCount;
+    }
+
+    public async Task<int> ProcessStaleOrphanShopOrdersAsync(
+        CancellationToken cancellationToken = default)
+    {
+        var utcNow =
+            DateTime.UtcNow;
+
+        var expiresBeforeUtc =
+            utcNow.Subtract(
+                OrphanShopOrderExpiration);
+
+        var staleOrders =
+            await dbContext.Orders
+                .Include(order => order.Items)
+                    .ThenInclude(item => item.ShopProduct)
+                .Include(order => order.PaymentTransactions)
+                .Where(order =>
+                    order.Status == OrderStatus.Pending &&
+                    order.PaymentStatus == PaymentStatus.Pending &&
+                    order.CreatedAtUtc <= expiresBeforeUtc &&
+                    !order.StockRestoredAtUtc.HasValue &&
+                    !order.PaymentTransactions.Any() &&
+                    order.Items.Any(item =>
+                        item.ItemType == CartItemType.ShopProduct &&
+                        item.ShopProductId.HasValue))
+                .OrderBy(order => order.CreatedAtUtc)
+                .Take(BatchSize)
+                .ToListAsync(cancellationToken);
+
+        foreach (var order in staleOrders)
+        {
+            MarkOrphanShopOrderAsExpired(
+                order,
+                utcNow);
+        }
+
+        if (staleOrders.Count > 0)
+        {
+            await dbContext.SaveChangesAsync(
+                cancellationToken);
+        }
+
+        return staleOrders.Count;
     }
 
     private async Task<bool> ReconcileAsync(
@@ -185,6 +233,15 @@ public sealed class IyzicoPendingPaymentService(
             await dbContext.SaveChangesAsync(
                 cancellationToken);
 
+            if (shopStockNotificationService is not null)
+            {
+                await shopStockNotificationService
+                    .PublishForPaidOrderAsync(
+                        order.Id,
+                        cancellationToken);
+            }
+
+
             if (order.Type == OrderType.KitchenSubscription)
             {
                 var activated =
@@ -217,6 +274,31 @@ public sealed class IyzicoPendingPaymentService(
             if (order.Type == OrderType.KitchenSubscription)
             {
                 await MarkKitchenPaymentFailedAsync(
+                    order,
+                    checkedAtUtc,
+                    cancellationToken);
+            }
+
+            await dbContext.SaveChangesAsync(
+                cancellationToken);
+
+            return true;
+        }
+
+            if (!retrieveResult.Succeeded &&
+                IsTerminalExpiredCheckoutFailure(
+                    retrieveResult))
+        {
+            MarkAsExpired(
+                paymentTransaction,
+                order,
+                checkedAtUtc,
+                BuildProviderFailureStatus(
+                    retrieveResult));
+
+            if (order.Type == OrderType.KitchenSubscription)
+            {
+                await MarkKitchenCheckoutExpiredAsync(
                     order,
                     checkedAtUtc,
                     cancellationToken);
@@ -270,6 +352,31 @@ public sealed class IyzicoPendingPaymentService(
             cancellationToken);
 
         return true;
+    }
+
+    private static bool IsTerminalExpiredCheckoutFailure(
+        IyzicoCheckoutRetrieveResult retrieveResult)
+    {
+        return string.Equals(
+            retrieveResult.ErrorCode?.Trim(),
+            MissingPaymentErrorCode,
+            StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string BuildProviderFailureStatus(
+        IyzicoCheckoutRetrieveResult retrieveResult)
+    {
+        if (string.IsNullOrWhiteSpace(
+                retrieveResult.ErrorCode))
+        {
+            return retrieveResult.PaymentStatus ??
+                   "UNKNOWN";
+        }
+
+        return string.IsNullOrWhiteSpace(
+                retrieveResult.ErrorMessage)
+            ? $"ERROR {retrieveResult.ErrorCode}"
+            : $"ERROR {retrieveResult.ErrorCode}: {retrieveResult.ErrorMessage}";
     }
 
     private async Task<bool> ActivateKitchenPackageAsync(
@@ -557,6 +664,23 @@ public sealed class IyzicoPendingPaymentService(
         paymentTransaction.UpdatedAtUtc =
             utcNow;
 
+        order.PaymentStatus =
+            PaymentStatus.Expired;
+
+        order.Status =
+            OrderStatus.Cancelled;
+
+        order.UpdatedAtUtc =
+            utcNow;
+
+        OrderWorkflowService.RestoreShopProductStockOnce(
+            order);
+    }
+
+    private static void MarkOrphanShopOrderAsExpired(
+        Domain.Entities.Order order,
+        DateTime utcNow)
+    {
         order.PaymentStatus =
             PaymentStatus.Expired;
 

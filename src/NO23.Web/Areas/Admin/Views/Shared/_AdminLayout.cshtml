@@ -229,6 +229,67 @@
 
                 <div class="admin-topbar-end">
                     <span class="admin-date">@DateTime.Now.ToString("dd.MM.yyyy")</span>
+                    <div class="dropdown" data-notification-root>
+
+                    <button class="btn btn-sm btn-outline-dark position-relative"
+                            type="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false"
+                            aria-label="Bildirimleri aç">
+
+                        <span aria-hidden="true">
+                            🔔
+                        </span>
+
+                        <span class="position-absolute
+                                    top-0
+                                    start-100
+                                    translate-middle
+                                    badge
+                                    rounded-pill
+                                    bg-danger
+                                    d-none"
+                            data-notification-count>
+                            0
+                        </span>
+
+                    </button>
+
+                    <div class="dropdown-menu
+                                dropdown-menu-end
+                                p-0"
+                        style="width: min(360px, 90vw);">
+
+                        <div class="d-flex
+                                    justify-content-between
+                                    align-items-center
+                                    px-3
+                                    py-2
+                                    border-bottom">
+
+                            <strong>
+                                Bildirimler
+                            </strong>
+
+                            <button type="button"
+                                    class="btn btn-link btn-sm p-0"
+                                    data-notification-mark-all>
+                                Tümünü okundu yap
+                            </button>
+
+                        </div>
+
+                        <div class="p-3 text-muted small"
+                            data-notification-empty>
+                            Henüz bildirimin yok.
+                        </div>
+
+                        <div data-notification-list>
+                        </div>
+
+                    </div>
+
+                </div>
                     <a class="admin-user" asp-area="Identity" asp-page="/Account/Manage/Index" title="Hesap ayarları">
                         <span class="admin-user-avatar">@userInitial</span>
                         <span class="admin-user-copy">
@@ -248,6 +309,10 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site-validation.js" asp-append-version="true"></script>
+    <script src="~/lib/signalr/signalr.min.js"></script>
+    <script src="~/js/user-notifications.js"
+            asp-append-version="true">
+    </script>
     <script>
         (() => {
             const body = document.body;

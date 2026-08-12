@@ -13,7 +13,8 @@ public sealed class IyzicoPaymentService(
     IIyzicoCheckoutClient checkoutClient,
     KitchenPlanMatchingService kitchenPlanMatchingService,
     IOptions<IyzicoOptions> options,
-    ILogger<IyzicoPaymentService> logger)
+    ILogger<IyzicoPaymentService> logger,
+    ShopStockNotificationService? shopStockNotificationService = null)
 {
     private const string ProviderName = "iyzico";
     private const int LastErrorMaximumLength = 2000;
@@ -397,6 +398,14 @@ public sealed class IyzicoPaymentService(
 
         await dbContext.SaveChangesAsync(
             cancellationToken);
+
+        if (shopStockNotificationService is not null)
+            {
+                await shopStockNotificationService
+                    .PublishForPaidOrderAsync(
+                        order.Id,
+                        cancellationToken);
+            }
 
         if (order.Type == OrderType.KitchenSubscription)
             {

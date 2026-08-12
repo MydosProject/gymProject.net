@@ -7,5 +7,10 @@ public enum UserNotificationType
     PersonalTrainingScheduled = 3,
     PersonalTrainingRejected = 4,
     PersonalTrainingCancelled = 5,
-    PersonalTrainingCompleted = 6
+    PersonalTrainingCompleted = 6,
+
+    KitchenStockCritical = 7,
+    KitchenStockOut = 8,
+    ShopStockCritical = 9,
+    ShopStockOut = 10
 }

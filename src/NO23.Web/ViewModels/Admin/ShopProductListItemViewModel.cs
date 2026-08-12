@@ -14,6 +14,8 @@ public class ShopProductListItemViewModel
 
     public int StockQuantity { get; init; }
 
+    public int MinimumStockQuantity { get; init; }
+
     public bool IsActive { get; init; }
 
     public int DisplayOrder { get; init; }

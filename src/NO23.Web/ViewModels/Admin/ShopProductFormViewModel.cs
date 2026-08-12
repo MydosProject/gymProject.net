@@ -33,6 +33,10 @@ public class ShopProductFormViewModel
     [Display(Name = "Stock quantity")]
     public int StockQuantity { get; set; }
 
+    [Range(0, 100000)]
+    [Display(Name = "Minimum stock quantity")]
+    public int MinimumStockQuantity { get; set; } = 5;
+
     [StringLength(500)]
     [Display(Name = "Image URL")]
     public string? ImageUrl { get; set; }

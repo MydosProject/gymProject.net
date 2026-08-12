@@ -26,6 +26,7 @@ public class ShopProductsController(ApplicationDbContext dbContext) : Controller
                 Category = product.Category,
                 UnitPrice = product.UnitPrice,
                 StockQuantity = product.StockQuantity,
+                MinimumStockQuantity = product.MinimumStockQuantity,
                 IsActive = product.IsActive,
                 DisplayOrder = product.DisplayOrder
             })
@@ -40,6 +41,7 @@ public class ShopProductsController(ApplicationDbContext dbContext) : Controller
         {
             UnitPrice = 500,
             StockQuantity = 10,
+            MinimumStockQuantity = 5,
             DisplayOrder = 10,
             IsActive = true
         });
@@ -130,6 +132,7 @@ public class ShopProductsController(ApplicationDbContext dbContext) : Controller
         product.Category = model.Category.Trim();
         product.UnitPrice = model.UnitPrice;
         product.StockQuantity = model.StockQuantity;
+        product.MinimumStockQuantity = model.MinimumStockQuantity;
         product.ImageUrl = model.ImageUrl?.Trim();
         product.Tags = model.Tags?.Trim();
         product.IsActive = model.IsActive;
@@ -148,6 +151,7 @@ public class ShopProductsController(ApplicationDbContext dbContext) : Controller
             Category = product.Category,
             UnitPrice = product.UnitPrice,
             StockQuantity = product.StockQuantity,
+            MinimumStockQuantity = product.MinimumStockQuantity,
             ImageUrl = product.ImageUrl,
             Tags = product.Tags,
             IsActive = product.IsActive,

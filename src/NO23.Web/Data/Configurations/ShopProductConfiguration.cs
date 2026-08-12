@@ -29,6 +29,9 @@ public class ShopProductConfiguration : IEntityTypeConfiguration<ShopProduct>
         builder.Property(product => product.UnitPrice)
             .HasPrecision(10, 2);
 
+        builder.Property(product => product.MinimumStockQuantity)
+            .HasDefaultValue(5);
+
         builder.Property(product => product.ImageUrl)
             .HasMaxLength(500);
 
