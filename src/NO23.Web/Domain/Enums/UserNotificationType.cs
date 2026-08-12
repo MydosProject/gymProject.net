@@ -12,5 +12,8 @@ public enum UserNotificationType
     KitchenStockCritical = 7,
     KitchenStockOut = 8,
     ShopStockCritical = 9,
-    ShopStockOut = 10
+    ShopStockOut = 10,
+    OrderStatusChanged = 11,
+    GroupClassSessionChanged = 12,
+    GroupClassSessionCancelled = 13
 }
