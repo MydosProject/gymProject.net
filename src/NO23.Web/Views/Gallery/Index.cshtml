@@ -1,0 +1,208 @@
+@{
+    ViewData["Title"] = "Galeri";
+
+    var galleryItems = new[]
+    {
+        new { File = "no23-gallery-01.webp", Title = "NO23 Lounge", Category = "Yaşam Alanı", Description = "Antrenman öncesi ve sonrası kulüp ritmine eşlik eden lounge alanı." },
+        new { File = "no23-gallery-02.webp", Title = "Reformer Studio", Category = "Pilates", Description = "Kontrollü ve kişiselleştirilmiş çalışmalar için reformer stüdyosu." },
+        new { File = "no23-gallery-03.webp", Title = "NO23 Detayları", Category = "Atmosfer", Description = "Kulübün güçlü ve yalın tasarım dilinden bir detay." },
+        new { File = "no23-gallery-04.webp", Title = "Pilates Alanı", Category = "Pilates", Description = "Bireysel ve küçük grup çalışmalarına uygun stüdyo düzeni." },
+        new { File = "no23-gallery-05.webp", Title = "Kulüp Lounge", Category = "Yaşam Alanı", Description = "Günün temposunda nefes almak ve sosyalleşmek için tasarlandı." },
+        new { File = "no23-gallery-06.webp", Title = "Functional Training", Category = "Antrenman", Description = "Fonksiyonel kuvvet, kondisyon ve mobilite çalışmalarının merkezi." },
+        new { File = "no23-gallery-07.webp", Title = "Soyunma Alanı", Category = "Konfor", Description = "Antrenman deneyimini tamamlayan sade ve konforlu alanlar." },
+        new { File = "no23-gallery-08.webp", Title = "Ekipman Duvarı", Category = "Antrenman", Description = "Farklı performans hedefleri için seçilmiş yardımcı ekipmanlar." },
+        new { File = "no23-gallery-09.webp", Title = "Strength Zone", Category = "Antrenman", Description = "Serbest ağırlık ve güç çalışmalarına ayrılan performans alanı." },
+        new { File = "no23-gallery-10.webp", Title = "Free Weight Area", Category = "Antrenman", Description = "Dambıl ve tamamlayıcı ekipmanlarla özgür antrenman alanı." },
+        new { File = "no23-gallery-11.webp", Title = "Training Studio", Category = "Antrenman", Description = "Doğal ışıkla buluşan kapsamlı antrenman stüdyosu." }
+    };
+}
+
+<section class="gallery-page">
+    <div class="gallery-page-grid" aria-hidden="true"></div>
+
+    <div class="container position-relative">
+        <header class="gallery-hero">
+            <div>
+                <p class="gallery-kicker">NO23 / Inside the club</p>
+                <h1>Her köşesi<br /><span>hareket için.</span></h1>
+            </div>
+            <div class="gallery-hero-copy">
+                <p>
+                    Antrenmandan dinlenmeye, güçten dengeye uzanan NO23 deneyimini
+                    yakından keşfet.
+                </p>
+                <a href="#gallery-collection">Alanları keşfet <span aria-hidden="true">↓</span></a>
+            </div>
+        </header>
+
+        <div class="gallery-summary" aria-label="Galeri özeti">
+            <span><strong>@galleryItems.Length.ToString("00")</strong> Kare</span>
+            <span><strong>01</strong> Kulüp</span>
+            <span><strong>∞</strong> Hareket</span>
+        </div>
+
+        <section class="gallery-experience" id="no23-experience" aria-labelledby="gallery-experience-title">
+            <div class="gallery-experience-heading">
+                <div>
+                    <p class="gallery-kicker">NO23 / Motion</p>
+                    <h2 id="gallery-experience-title">NO23 Experience</h2>
+                </div>
+                <p>
+                    Kulübün atmosferini, antrenman alanlarını ve NO23 ritmini
+                    tek bir kareden fazlasıyla keşfet.
+                </p>
+            </div>
+
+            <div class="gallery-video-card" data-experience-video-card>
+                <video class="gallery-experience-video"
+                       data-experience-video
+                       controls
+                       playsinline
+                       preload="none"
+                       poster="@Url.Content("~/images/gallery/no23-gallery-11.webp")">
+                    <source data-src="@Url.Content("~/videos/no23-experience.mp4")"
+                            type="video/mp4" />
+                    Tarayıcınız video oynatmayı desteklemiyor.
+                </video>
+
+                <button class="gallery-video-play"
+                        type="button"
+                        data-experience-play
+                        aria-label="NO23 Experience videosunu oynat">
+                    <span aria-hidden="true">▶</span>
+                    <strong>Videoyu oynat</strong>
+                    <small>Yalnızca tıkladığında yüklenir</small>
+                </button>
+            </div>
+        </section>
+
+        <section class="gallery-collection" id="gallery-collection" aria-label="NO23 fotoğraf galerisi">
+            @for (var index = 0; index < galleryItems.Length; index++)
+            {
+                var item = galleryItems[index];
+
+                <button class="gallery-card @(index is 0 or 5 or 10 ? "gallery-card-wide" : string.Empty)"
+                        type="button"
+                        data-gallery-item
+                        data-gallery-index="@index"
+                        aria-label="@item.Title fotoğrafını büyüt">
+                    <img src="~/images/gallery/@item.File"
+                         alt="@item.Title — @item.Description"
+                         loading="@(index < 2 ? "eager" : "lazy")"
+                         decoding="async" />
+                    <span class="gallery-card-overlay">
+                        <small>@item.Category</small>
+                        <strong>@item.Title</strong>
+                        <i aria-hidden="true">↗</i>
+                    </span>
+                </button>
+            }
+        </section>
+
+        <footer class="gallery-cta">
+            <img class="gallery-cta-emblem"
+                 src="~/images/brand/no23-emblem.webp"
+                 alt=""
+                 width="320"
+                 height="320"
+                 loading="lazy"
+                 aria-hidden="true" />
+            <div>
+                <p>NO23'ü yerinde deneyimle</p>
+                <h2>Sıradaki karede<br />sen de ol.</h2>
+            </div>
+            <a asp-area="Identity" asp-page="/Account/Register">
+                Üyeliği keşfet <span aria-hidden="true">→</span>
+            </a>
+        </footer>
+    </div>
+</section>
+
+<dialog class="gallery-lightbox" data-gallery-lightbox aria-label="Büyütülmüş galeri fotoğrafı">
+    <button class="gallery-lightbox-close" type="button" data-gallery-close aria-label="Galeriyi kapat">×</button>
+    <button class="gallery-lightbox-nav gallery-lightbox-prev" type="button" data-gallery-prev aria-label="Önceki fotoğraf">←</button>
+    <figure>
+        <img src="" alt="" data-gallery-lightbox-image />
+        <figcaption>
+            <span data-gallery-lightbox-count></span>
+            <div>
+                <small data-gallery-lightbox-category></small>
+                <strong data-gallery-lightbox-title></strong>
+            </div>
+        </figcaption>
+    </figure>
+    <button class="gallery-lightbox-nav gallery-lightbox-next" type="button" data-gallery-next aria-label="Sonraki fotoğraf">→</button>
+</dialog>
+
+@section Scripts {
+    <script>
+        (() => {
+            const items = [...document.querySelectorAll('[data-gallery-item]')];
+            const dialog = document.querySelector('[data-gallery-lightbox]');
+            const image = dialog?.querySelector('[data-gallery-lightbox-image]');
+            const title = dialog?.querySelector('[data-gallery-lightbox-title]');
+            const category = dialog?.querySelector('[data-gallery-lightbox-category]');
+            const count = dialog?.querySelector('[data-gallery-lightbox-count]');
+            let activeIndex = 0;
+
+            if (!dialog || !image || !title || !category || !count) return;
+
+            const show = (index) => {
+                activeIndex = (index + items.length) % items.length;
+                const card = items[activeIndex];
+                const source = card.querySelector('img');
+                const cardTitle = card.querySelector('strong')?.textContent?.trim() ?? '';
+                const cardCategory = card.querySelector('small')?.textContent?.trim() ?? '';
+
+                image.src = source?.currentSrc || source?.src || '';
+                image.alt = source?.alt || cardTitle;
+                title.textContent = cardTitle;
+                category.textContent = cardCategory;
+                count.textContent = `${String(activeIndex + 1).padStart(2, '0')} / ${String(items.length).padStart(2, '0')}`;
+            };
+
+            items.forEach((item, index) => item.addEventListener('click', () => {
+                show(index);
+                dialog.showModal();
+            }));
+
+            dialog.querySelector('[data-gallery-close]')?.addEventListener('click', () => dialog.close());
+            dialog.querySelector('[data-gallery-prev]')?.addEventListener('click', () => show(activeIndex - 1));
+            dialog.querySelector('[data-gallery-next]')?.addEventListener('click', () => show(activeIndex + 1));
+            dialog.addEventListener('click', event => {
+                if (event.target === dialog) dialog.close();
+            });
+            dialog.addEventListener('keydown', event => {
+                if (event.key === 'ArrowLeft') show(activeIndex - 1);
+                if (event.key === 'ArrowRight') show(activeIndex + 1);
+            });
+        })();
+
+        (() => {
+            const card = document.querySelector('[data-experience-video-card]');
+            const video = card?.querySelector('[data-experience-video]');
+            const source = video?.querySelector('source[data-src]');
+            const playButton = card?.querySelector('[data-experience-play]');
+
+            if (!card || !video || !source || !playButton) return;
+
+            playButton.addEventListener('click', async () => {
+                if (!source.src) {
+                    source.src = source.dataset.src;
+                    video.load();
+                }
+
+                card.classList.add('is-playing');
+
+                try {
+                    await video.play();
+                } catch {
+                    card.classList.remove('is-playing');
+                }
+            });
+
+            video.addEventListener('play', () => card.classList.add('is-playing'));
+            video.addEventListener('ended', () => card.classList.remove('is-playing'));
+        })();
+    </script>
+}
