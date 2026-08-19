@@ -11,15 +11,49 @@
             <div>
                 <p class="admin-eyebrow">NO23 KITCHEN / PAKETLER</p>
                 <h1>Kitchen paketleri</h1>
-                <p class="admin-page-description">5, 10, 20 günlük ve aylık Kitchen yemek paketlerinin fiyatlarını ve görünürlüğünü yönet.</p>
+                <p class="admin-page-description">
+                    5, 10, 20 günlük ve aylık Kitchen yemek paketlerinin fiyatlarını ve görünürlüğünü yönet.
+                </p>
             </div>
-            <a class="btn btn-dark" asp-action="Create">+ Yeni paket</a>
+
+            <a class="btn btn-dark"
+               asp-action="Create">
+                + Yeni paket
+            </a>
         </header>
 
+        @if (TempData["SuccessMessage"] is string successMessage)
+        {
+            <div class="alert alert-success" role="alert">
+                @successMessage
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] is string errorMessage)
+        {
+            <div class="alert alert-danger" role="alert">
+                @errorMessage
+            </div>
+        }
+
         <div class="admin-metrics">
-            <article><span>Kitchen paketi</span><strong>@Model.Count</strong><small>Toplam paket</small></article>
-            <article><span>Aktif paket</span><strong>@activeCount</strong><small>Üye panelinde görünür</small></article>
-            <article><span>Abonelik</span><strong>@totalSubscriptionCount</strong><small>Bu paketlerden oluşan</small></article>
+            <article>
+                <span>Kitchen paketi</span>
+                <strong>@Model.Count</strong>
+                <small>Toplam paket</small>
+            </article>
+
+            <article>
+                <span>Aktif paket</span>
+                <strong>@activeCount</strong>
+                <small>Üye panelinde görünür</small>
+            </article>
+
+            <article>
+                <span>Abonelik</span>
+                <strong>@totalSubscriptionCount</strong>
+                <small>Bu paketlerden oluşan</small>
+            </article>
         </div>
 
         <div class="table-responsive admin-table-card">
@@ -36,27 +70,69 @@
                         <th class="text-end">İşlem</th>
                     </tr>
                 </thead>
+
                 <tbody>
                     @if (Model.Count == 0)
                     {
-                        <tr><td colspan="8"><div class="admin-empty-row">Henüz Kitchen paketi eklenmedi.</div></td></tr>
+                        <tr>
+                            <td colspan="8">
+                                <div class="admin-empty-row">
+                                    Henüz Kitchen paketi eklenmedi.
+                                </div>
+                            </td>
+                        </tr>
                     }
                     else
                     {
                         @foreach (var package in Model)
                         {
                             <tr>
-                                <td data-label="Sıra"><span class="admin-order-no">@package.DisplayOrder.ToString("00")</span></td>
-                                <td data-label="Plan"><span class="admin-status">@package.Plan</span></td>
+                                <td data-label="Sıra">
+                                    <span class="admin-order-no">
+                                        @package.DisplayOrder.ToString("00")
+                                    </span>
+                                </td>
+
+                                <td data-label="Plan">
+                                    <span class="admin-status">
+                                        @package.Plan
+                                    </span>
+                                </td>
+
                                 <td data-label="Paket">
                                     <strong>@package.Name</strong>
-                                    <small class="admin-cell-note">@package.Description</small>
+                                    <small class="admin-cell-note">
+                                        @package.Description
+                                    </small>
                                 </td>
-                                <td data-label="Gün"><strong>@package.Days</strong><span class="admin-cell-note">gün</span></td>
-                                <td data-label="Fiyat"><strong>@package.UnitPrice.ToString("C0")</strong></td>
-                                <td data-label="Abonelik"><strong>@package.SubscriptionCount</strong></td>
-                                <td data-label="Durum"><span class="badge @(package.IsActive ? "text-bg-success" : "text-bg-secondary")">@(package.IsActive ? "Aktif" : "Pasif")</span></td>
-                                <td class="text-end" data-label="İşlem">
+
+                                <td data-label="Gün">
+                                    <strong>@package.Days</strong>
+                                    <span class="admin-cell-note">
+                                        gün
+                                    </span>
+                                </td>
+
+                                <td data-label="Fiyat">
+                                    <strong>
+                                        @package.UnitPrice.ToString("C0")
+                                    </strong>
+                                </td>
+
+                                <td data-label="Abonelik">
+                                    <strong>
+                                        @package.SubscriptionCount
+                                    </strong>
+                                </td>
+
+                                <td data-label="Durum">
+                                    <span class="badge @(package.IsActive ? "text-bg-success" : "text-bg-secondary")">
+                                        @(package.IsActive ? "Aktif" : "Pasif")
+                                    </span>
+                                </td>
+
+                                <td class="text-end"
+                                    data-label="İşlem">
                                     <a class="btn btn-sm btn-outline-dark"
                                        asp-action="Edit"
                                        asp-route-id="@package.Id">

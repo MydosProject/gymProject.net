@@ -6751,3 +6751,20 @@ body.no23-admin-body {
         width: 100%;
     }
 }
+.admin-delete-button {
+    min-height: 44px;
+    padding: 0.65rem 1.1rem;
+    border: 1px solid #ff5b5b;
+    border-radius: 10px;
+    background: transparent;
+    color: #e54848;
+    font-weight: 700;
+    font-size: 0.82rem;
+    letter-spacing: 0.02em;
+}
+
+.admin-delete-button:hover {
+    background: #fff1f1;
+    border-color: #e54848;
+    color: #c93636;
+}

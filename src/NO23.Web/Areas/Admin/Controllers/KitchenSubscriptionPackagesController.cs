@@ -116,6 +116,35 @@ public class KitchenSubscriptionPackagesController(ApplicationDbContext dbContex
         return RedirectToAction(nameof(Index));
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var package = await dbContext.KitchenSubscriptionPackages
+            .Include(item => item.KitchenSubscriptions)
+            .FirstOrDefaultAsync(item => item.Id == id);
+
+        if (package is null)
+        {
+            return NotFound();
+        }
+
+        if (package.KitchenSubscriptions.Count > 0)
+        {
+            TempData["ErrorMessage"] =
+                "Bu Kitchen paketi abonelik geçmişinde kullanıldığı için silinemez. Paketi pasife alabilirsiniz.";
+
+            return RedirectToAction(nameof(Edit), new { id });
+        }
+
+        dbContext.KitchenSubscriptionPackages.Remove(package);
+        await dbContext.SaveChangesAsync();
+
+        TempData["SuccessMessage"] = "Kitchen paketi başarıyla silindi.";
+
+        return RedirectToAction(nameof(Index));
+    }
+
     private async Task<bool> PackagePlanExistsAsync(KitchenSubscriptionPackageFormViewModel model)
     {
         return await dbContext.KitchenSubscriptionPackages

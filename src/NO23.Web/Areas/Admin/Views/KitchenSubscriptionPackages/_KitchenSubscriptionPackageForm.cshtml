@@ -56,8 +56,29 @@
         </div>
     </section>
 
-    <div class="d-flex justify-content-end gap-2 mt-4">
-        <a asp-action="Index" class="btn btn-outline-secondary">Vazgeç</a>
-        <button type="submit" class="btn btn-dark">Kaydet</button>
+    <div class="d-flex justify-content-between align-items-center gap-2 mt-4 flex-wrap">
+        @if (Model.Id > 0)
+        {
+            <button type="submit"
+                    asp-action="Delete"
+                    asp-route-id="@Model.Id"
+                    formnovalidate
+                    class="btn btn-outline-danger admin-delete-button"
+                    onclick="return confirm('Bu Kitchen paketini silmek istediğinize emin misiniz?');">
+                Paketi Sil
+            </button>
+        }
+
+        <div class="d-flex gap-2 ms-auto">
+            <a asp-action="Index"
+               class="btn btn-outline-secondary">
+                Vazgeç
+            </a>
+
+            <button type="submit"
+                    class="btn btn-dark">
+                Kaydet
+            </button>
+        </div>
     </div>
 </form>
