@@ -248,24 +248,54 @@
                     <div class="member-settings-fields">
                         <label>
                             <span>Mevcut şifre</span>
-                            <input asp-for="ChangePassword.CurrentPassword"
-                                   autocomplete="current-password" />
+                            <div class="no23-password-field member-password-field">
+                                <input asp-for="ChangePassword.CurrentPassword"
+                                       autocomplete="current-password" />
+
+                                <button type="button"
+                                        class="no23-password-toggle"
+                                        aria-label="Parolayı göster"
+                                        aria-pressed="false"
+                                        data-password-toggle>
+                                    <span aria-hidden="true"></span>
+                                </button>
+                            </div>
                             <small asp-validation-for="ChangePassword.CurrentPassword"
                                    class="text-danger"></small>
                         </label>
 
                         <label>
                             <span>Yeni şifre</span>
-                            <input asp-for="ChangePassword.NewPassword"
-                                   autocomplete="new-password" />
+                            <div class="no23-password-field member-password-field">
+                                <input asp-for="ChangePassword.NewPassword"
+                                       autocomplete="new-password" />
+
+                                <button type="button"
+                                        class="no23-password-toggle"
+                                        aria-label="Parolayı göster"
+                                        aria-pressed="false"
+                                        data-password-toggle>
+                                    <span aria-hidden="true"></span>
+                                </button>
+                            </div>
                             <small asp-validation-for="ChangePassword.NewPassword"
                                    class="text-danger"></small>
                         </label>
 
                         <label>
                             <span>Yeni şifre tekrar</span>
-                            <input asp-for="ChangePassword.ConfirmPassword"
-                                   autocomplete="new-password" />
+                            <div class="no23-password-field member-password-field">
+                                <input asp-for="ChangePassword.ConfirmPassword"
+                                       autocomplete="new-password" />
+
+                                <button type="button"
+                                        class="no23-password-toggle"
+                                        aria-label="Parolayı göster"
+                                        aria-pressed="false"
+                                        data-password-toggle>
+                                    <span aria-hidden="true"></span>
+                                </button>
+                            </div>
                             <small asp-validation-for="ChangePassword.ConfirmPassword"
                                    class="text-danger"></small>
                         </label>
