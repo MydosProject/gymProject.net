@@ -15,6 +15,9 @@ public class MemberListItemViewModel
     public string? FitnessGoal { get; init; }
 
     public int RemainingClassCredits { get; init; }
+    public bool IsSuspended { get; init; }
+
+    public DateTime? SuspendedAtUtc { get; init; }
 
     public DateTime CreatedAtUtc { get; init; }
 }

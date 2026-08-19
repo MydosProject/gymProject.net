@@ -38,6 +38,12 @@ public class PersonalTrainingRequestService(ApplicationDbContext dbContext)
             return PersonalTrainingRequestResult.Fail("Üye profili bulunamadı.");
         }
 
+        if (profile.IsSuspended)
+        {
+            return PersonalTrainingRequestResult.Fail(
+                "Üyeliğiniz askıya alındığı için birebir antrenman talebi oluşturamazsınız.");
+        }
+
         if (!profile.MembershipPackage.IncludesPersonalTrainingSupport)
         {
             return PersonalTrainingRequestResult.Fail(

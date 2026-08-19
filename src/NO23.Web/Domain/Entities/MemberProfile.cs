@@ -16,6 +16,12 @@ public class MemberProfile
 
     public int RemainingClassCredits { get; set; }
 
+    public bool IsSuspended { get; set; }
+
+    public DateTime? SuspendedAtUtc { get; set; }
+
+    public string? SuspensionReason { get; set; }
+
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
 
     public DateTime? UpdatedAtUtc { get; set; }
