@@ -21,4 +21,6 @@ public class AvailableClassSessionViewModel
     public int ReservedCount { get; init; }
 
     public bool IsReservedByMember { get; init; }
+
+    public bool HasAvailableClassCredits { get; init; } = true;
 }

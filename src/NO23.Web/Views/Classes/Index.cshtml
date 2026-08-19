@@ -213,10 +213,41 @@
                                 </small>
                             </div>
 
-                            <a class="classes-reservation-link @(isFull ? "is-full" : null)"
-                               href="@Model.ReservationTargetUrl">
-                                @(isFull ? "Programı Gör" : "Rezervasyon Yap") <span>↗</span>
-                            </a>
+                            @if (session.IsReservedByMember && session.ReservationId.HasValue)
+                            {
+                                if (session.CanCancel)
+                                {
+                                    <form asp-area="Member"
+                                          asp-controller="Reservations"
+                                          asp-action="Cancel"
+                                          asp-antiforgery="true"
+                                          method="post">
+                                        <input type="hidden"
+                                               name="reservationId"
+                                               value="@session.ReservationId.Value" />
+                                        <input type="hidden"
+                                               name="returnUrl"
+                                               value="@($"{Url.Action("Index", "Classes", new { area = "" })}#class-schedule")" />
+                                        <button type="submit"
+                                                class="classes-reservation-link">
+                                            İptal Et <span>↗</span>
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <span class="classes-reservation-link is-full">
+                                        İptal Süresi Geçti
+                                    </span>
+                                }
+                            }
+                            else
+                            {
+                                <a class="classes-reservation-link @(isFull ? "is-full" : null)"
+                                   href="@Model.ReservationTargetUrl">
+                                    @(isFull ? "Programı Gör" : "Rezervasyon Yap") <span>↗</span>
+                                </a>
+                            }
                         </article>
                     }
                 </div>

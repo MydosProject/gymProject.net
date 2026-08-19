@@ -7,7 +7,7 @@ namespace NO23.Web.Services;
 
 public class ClassReservationService(ApplicationDbContext dbContext)
 {
-    private static readonly TimeSpan CancellationWindow = TimeSpan.FromHours(2);
+    public static readonly TimeSpan CancellationWindow = TimeSpan.FromHours(2);
 
     public async Task<ReservationResult> ReserveAsync(string userId, int classSessionId)
     {

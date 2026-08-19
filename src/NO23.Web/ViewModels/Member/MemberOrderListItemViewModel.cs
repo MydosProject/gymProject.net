@@ -6,9 +6,15 @@ public class MemberOrderListItemViewModel
 
     public string Type { get; init; } = string.Empty;
 
+    public string TypeDisplayName { get; init; } = string.Empty;
+
     public string Status { get; init; } = string.Empty;
 
+    public string StatusDisplayName { get; init; } = string.Empty;
+
     public string PaymentStatus { get; init; } = string.Empty;
+
+    public string PaymentStatusDisplayName { get; init; } = string.Empty;
 
     public DateTime CreatedAtUtc { get; init; }
 

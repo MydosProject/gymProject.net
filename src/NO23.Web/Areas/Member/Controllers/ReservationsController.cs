@@ -35,10 +35,17 @@ public class ReservationsController(
             .Select(member => new
             {
                 member.Id,
+                member.RemainingClassCredits,
+                member.MembershipPackage.WeeklyClassLimit,
                 member.MembershipPackage.IncludesPersonalTrainingSupport
             })
             .FirstOrDefaultAsync();
         var profileId = memberContext?.Id;
+        var nowUtc = DateTime.UtcNow;
+        var hasAvailableClassCredits =
+            memberContext is not null &&
+            (memberContext.WeeklyClassLimit is null ||
+             memberContext.RemainingClassCredits > 0);
 
         var upcomingReservations = profileId is null
             ? []
@@ -49,7 +56,7 @@ public class ReservationsController(
                     reservation.Status == ClassReservationStatus.Reserved &&
                     reservation.ClassSession.Status == ClassSessionStatus.Scheduled &&
                     reservation.ClassSession.GroupClass.IsActive &&
-                    reservation.ClassSession.StartsAtUtc >= DateTime.UtcNow)
+                    reservation.ClassSession.StartsAtUtc >= nowUtc)
                 .OrderBy(reservation => reservation.ClassSession.StartsAtUtc)
                 .Select(reservation => new MemberReservationViewModel
                 {
@@ -58,7 +65,10 @@ public class ReservationsController(
                     TrainerName =
                         reservation.ClassSession.GroupClass.Trainer.FirstName + " " +
                         reservation.ClassSession.GroupClass.Trainer.LastName,
-                    StartsAtUtc = reservation.ClassSession.StartsAtUtc
+                    StartsAtUtc = reservation.ClassSession.StartsAtUtc,
+                    CanCancel =
+                        reservation.ClassSession.StartsAtUtc - nowUtc >=
+                        ClassReservationService.CancellationWindow
                 })
                 .ToListAsync();
 
@@ -66,7 +76,7 @@ public class ReservationsController(
             .AsNoTracking()
             .Where(session =>
                 session.Status == ClassSessionStatus.Scheduled &&
-                session.StartsAtUtc >= DateTime.UtcNow &&
+                session.StartsAtUtc >= nowUtc &&
                 session.GroupClass.IsActive)
             .OrderBy(session => session.StartsAtUtc)
             .Take(20)
@@ -87,7 +97,8 @@ public class ReservationsController(
                 IsReservedByMember = profileId != null &&
                     session.Reservations.Any(reservation =>
                         reservation.MemberProfileId == profileId &&
-                        reservation.Status == ClassReservationStatus.Reserved)
+                        reservation.Status == ClassReservationStatus.Reserved),
+                HasAvailableClassCredits = hasAvailableClassCredits
             })
             .ToListAsync();
 
@@ -140,6 +151,7 @@ public class ReservationsController(
                     PreferredDate = request.PreferredDate,
                     PreferredTimeWindow = request.PreferredTimeWindow,
                     Status = request.Status.GetDisplayName(),
+                    RawStatus = request.Status,
                     ScheduledAtUtc = request.ScheduledAtUtc,
                     TrainerNote = request.TrainerNote,
                     AdminNote = request.AdminNote,
@@ -193,7 +205,9 @@ public class ReservationsController(
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Cancel(int reservationId)
+    public async Task<IActionResult> Cancel(
+        int reservationId,
+        string? returnUrl = null)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -205,6 +219,12 @@ public class ReservationsController(
         var result = await reservationService.CancelAsync(userId, reservationId);
         TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] =
             result.Succeeded ? "Rezervasyon iptal edildi." : result.ErrorMessage;
+
+        if (!string.IsNullOrWhiteSpace(returnUrl) &&
+            Url.IsLocalUrl(returnUrl))
+        {
+            return LocalRedirect(returnUrl);
+        }
 
         return LocalRedirect($"{Url.Action(nameof(Index))}#upcoming-reservations");
     }

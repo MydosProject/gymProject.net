@@ -9,4 +9,6 @@ public class MemberReservationViewModel
     public string TrainerName { get; init; } = string.Empty;
 
     public DateTime StartsAtUtc { get; init; }
+
+    public bool CanCancel { get; init; }
 }

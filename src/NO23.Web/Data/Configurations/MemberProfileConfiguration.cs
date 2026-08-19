@@ -18,6 +18,13 @@ public class MemberProfileConfiguration : IEntityTypeConfiguration<MemberProfile
         builder.Property(profile => profile.FitnessGoal)
             .HasMaxLength(160);
 
+        builder.Property(profile => profile.MembershipStartsAtUtc)
+            .HasDefaultValueSql("NOW()");
+
+        builder.Property(profile => profile.MembershipEndsAtUtc)
+            .HasDefaultValueSql(
+                $"NOW() + INTERVAL '{MemberProfile.DefaultMembershipDurationDays} days'");
+
         builder.Property(profile => profile.CreatedAtUtc)
             .HasDefaultValueSql("NOW()");
 

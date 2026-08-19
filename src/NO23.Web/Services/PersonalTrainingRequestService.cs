@@ -19,7 +19,10 @@ public class PersonalTrainingRequestService(ApplicationDbContext dbContext)
         string userId,
         PersonalTrainingRequestInputViewModel model)
     {
-        if (!PreferredTimeWindows.Contains(model.PreferredTimeWindow))
+        var preferredTimeWindow = model.PreferredTimeWindow?.Trim();
+
+        if (string.IsNullOrWhiteSpace(preferredTimeWindow) ||
+            !PreferredTimeWindows.Contains(preferredTimeWindow))
         {
             return PersonalTrainingRequestResult.Fail("Geçerli bir saat aralığı seçmelisin.");
         }
@@ -93,7 +96,7 @@ public class PersonalTrainingRequestService(ApplicationDbContext dbContext)
 
             PreferredDate = model.PreferredDate,
 
-            PreferredTimeWindow = model.PreferredTimeWindow,
+            PreferredTimeWindow = preferredTimeWindow,
 
             GoalNote = model.GoalNote?.Trim()
         };

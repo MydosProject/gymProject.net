@@ -238,8 +238,26 @@
                     : "Talebi İptal Et";
         };
 
+    const getStatusDisplayName =
+        status => {
+            switch (String(status ?? "").toLowerCase()) {
+                case "pending":
+                    return "Beklemede";
+                case "scheduled":
+                    return "Planlandı";
+                case "rejected":
+                    return "Reddedildi";
+                case "cancelled":
+                    return "İptal edildi";
+                case "completed":
+                    return "Tamamlandı";
+                default:
+                    return String(status ?? "");
+            }
+        };
+
     const updateStatus =
-        (card, status) => {
+        (card, status, statusDisplayName) => {
             const element =
                 card.querySelector(
                     "[data-personal-training-status]"
@@ -253,7 +271,8 @@
                 String(status ?? "");
 
             element.textContent =
-                value;
+                statusDisplayName ||
+                getStatusDisplayName(value);
 
             element.dataset.status =
                 value.toLowerCase();
@@ -279,7 +298,8 @@
 
             updateStatus(
                 card,
-                payload.status
+                payload.status,
+                payload.statusDisplayName
             );
 
             if (

@@ -103,19 +103,28 @@
                                 <span>Eğitmen: @reservation.TrainerName</span>
                             </div>
 
-                            <form asp-area="Member"
-                                  asp-controller="Reservations"
-                                  asp-action="Cancel"
-                                  asp-antiforgery="true"
-                                  method="post"
-                                  class="member-reservation-action">
-                                <input type="hidden"
-                                       name="reservationId"
-                                       value="@reservation.ReservationId" />
-                                <button type="submit" class="member-cancel-button">
-                                    İptal Et
-                                </button>
-                            </form>
+                            @if (reservation.CanCancel)
+                            {
+                                <form asp-area="Member"
+                                      asp-controller="Reservations"
+                                      asp-action="Cancel"
+                                      asp-antiforgery="true"
+                                      method="post"
+                                      class="member-reservation-action">
+                                    <input type="hidden"
+                                           name="reservationId"
+                                           value="@reservation.ReservationId" />
+                                    <button type="submit" class="member-cancel-button">
+                                        İptal Et
+                                    </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <span class="member-reserved-label">
+                                    İptal süresi geçti
+                                </span>
+                            }
                         </article>
                     }
                 </div>
@@ -150,6 +159,7 @@
                     @foreach (var session in Model.AvailableSessions)
                     {
                         var isFull = session.ReservedCount >= session.Capacity;
+                        var hasNoClassCredits = !session.HasAvailableClassCredits;
                         var remainingCapacity = Math.Max(0, session.Capacity - session.ReservedCount);
                         var localStart = session.StartsAtUtc.ToLocalTime();
 
@@ -163,7 +173,13 @@
                                     <span>@localStart.ToString("MMM", turkishCulture)</span>
                                 </div>
                                 <span class="member-session-status">
-                                    @(session.IsReservedByMember ? "Rezerve" : "Müsait")
+                                    @(session.IsReservedByMember
+                                        ? "Rezerve"
+                                        : isFull
+                                            ? "Kontenjan dolu"
+                                            : hasNoClassCredits
+                                                ? "Ders hakkı yok"
+                                                : "Müsait")
                                 </span>
                             </div>
 
@@ -201,8 +217,12 @@
                                                value="@session.SessionId" />
                                         <button type="submit"
                                                 class="member-reserve-button"
-                                                disabled="@isFull">
-                                            @(isFull ? "Kontenjan Dolu" : "Rezervasyon Yap")
+                                                disabled="@(isFull || hasNoClassCredits)">
+                                            @(isFull
+                                                ? "Kontenjan Dolu"
+                                                : hasNoClassCredits
+                                                    ? "Ders Hakkı Yok"
+                                                    : "Rezervasyon Yap")
                                         </button>
                                     </form>
                                 }
@@ -357,13 +377,23 @@
 
                                 <label>
                                     <span>Saat aralığı</span>
-                                    <select name="PreferredTimeWindow" required>
+                                    <select class="member-personal-time-window-select"
+                                            name="PreferredTimeWindow"
+                                            required>
                                         @foreach (var timeWindow in Model.PreferredTimeWindows)
                                         {
-                                            <option value="@timeWindow"
-                                                    selected="@(timeWindow == Model.PersonalTrainingRequestInput.PreferredTimeWindow)">
-                                                @timeWindow
-                                            </option>
+                                            if (timeWindow == Model.PersonalTrainingRequestInput.PreferredTimeWindow)
+                                            {
+                                                <option value="@timeWindow" selected>
+                                                    @timeWindow
+                                                </option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@timeWindow">
+                                                    @timeWindow
+                                                </option>
+                                            }
                                         }
                                     </select>
                                 </label>
@@ -435,7 +465,7 @@
                                         <p>@request.PreferredDate.ToString("dddd", turkishCulture) · @request.PreferredTimeWindow</p>
                                         <span class="member-personal-status"
                                             data-personal-training-status
-                                            data-status="@(request.Status.ToString().ToLowerInvariant())">
+                                            data-status="@(request.RawStatus.ToString().ToLowerInvariant())">
                                             @request.Status
                                         </span>
                                     </div>

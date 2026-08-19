@@ -188,22 +188,31 @@
                                 </span>
                             </div>
 
-                            <form asp-area="Member"
-                                  asp-controller="Home"
-                                  asp-action="Cancel"
-                                  asp-antiforgery="true"
-                                  method="post"
-                                  class="member-reservation-action">
+                            @if (reservation.CanCancel)
+                            {
+                                <form asp-area="Member"
+                                      asp-controller="Home"
+                                      asp-action="Cancel"
+                                      asp-antiforgery="true"
+                                      method="post"
+                                      class="member-reservation-action">
 
-                                <input type="hidden"
-                                       name="reservationId"
-                                       value="@reservation.ReservationId" />
+                                    <input type="hidden"
+                                           name="reservationId"
+                                           value="@reservation.ReservationId" />
 
-                                <button type="submit"
-                                        class="member-cancel-button">
-                                    İptal Et
-                                </button>
-                            </form>
+                                    <button type="submit"
+                                            class="member-cancel-button">
+                                        İptal Et
+                                    </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <span class="member-reserved-message">
+                                    İptal süresi geçti
+                                </span>
+                            }
                         </article>
                     }
                 </div>
@@ -247,6 +256,9 @@
                         var isFull =
                             session.ReservedCount >= session.Capacity;
 
+                        var hasNoClassCredits =
+                            !session.HasAvailableClassCredits;
+
                         var remainingCapacity = Math.Max(
                             0,
                             session.Capacity - session.ReservedCount);
@@ -281,6 +293,12 @@
                                 {
                                     <span class="member-session-status full">
                                         Kontenjan dolu
+                                    </span>
+                                }
+                                else if (hasNoClassCredits)
+                                {
+                                    <span class="member-session-status full">
+                                        Ders hakkı yok
                                     </span>
                                 }
                                 else
@@ -353,10 +371,12 @@
 
                                         <button type="submit"
                                                 class="member-reserve-button"
-                                                disabled="@isFull">
+                                                disabled="@(isFull || hasNoClassCredits)">
                                             @(isFull
                                                 ? "Ders Dolu"
-                                                : "Rezervasyon Yap")
+                                                : hasNoClassCredits
+                                                    ? "Ders Hakkı Yok"
+                                                    : "Rezervasyon Yap")
 
                                             <span aria-hidden="true">→</span>
                                         </button>

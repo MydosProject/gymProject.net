@@ -1457,8 +1457,18 @@ namespace NO23.Web.Data.Migrations
                         .HasMaxLength(160)
                         .HasColumnType("character varying(160)");
 
+                    b.Property<DateTime>("MembershipEndsAtUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW() + INTERVAL '28 days'");
+
                     b.Property<int>("MembershipPackageId")
                         .HasColumnType("integer");
+
+                    b.Property<DateTime>("MembershipStartsAtUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
 
                     b.Property<int>("RemainingClassCredits")
                         .HasColumnType("integer");

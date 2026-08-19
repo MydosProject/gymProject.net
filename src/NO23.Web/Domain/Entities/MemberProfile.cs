@@ -2,6 +2,8 @@ namespace NO23.Web.Domain.Entities;
 
 public class MemberProfile
 {
+    public const int DefaultMembershipDurationDays = 28;
+
     public int Id { get; set; }
 
     public string ApplicationUserId { get; set; } = string.Empty;
@@ -15,6 +17,11 @@ public class MemberProfile
     public string? FitnessGoal { get; set; }
 
     public int RemainingClassCredits { get; set; }
+
+    public DateTime MembershipStartsAtUtc { get; set; } = DateTime.UtcNow;
+
+    public DateTime MembershipEndsAtUtc { get; set; } =
+        DateTime.UtcNow.AddDays(DefaultMembershipDurationDays);
 
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
 

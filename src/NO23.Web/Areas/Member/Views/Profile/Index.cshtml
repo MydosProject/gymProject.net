@@ -117,8 +117,12 @@
                         <dd>@Model.MembershipPackageName</dd>
                     </div>
                     <div>
-                        <dt>Üyelik başlangıcı</dt>
-                        <dd>@Model.MemberSinceUtc.ToLocalTime().ToString("dd MMMM yyyy", turkishCulture)</dd>
+                        <dt>Paket başlangıcı</dt>
+                        <dd>@Model.MembershipStartsAtUtc.ToLocalTime().ToString("dd MMMM yyyy", turkishCulture)</dd>
+                    </div>
+                    <div>
+                        <dt>Paket bitişi</dt>
+                        <dd>@Model.MembershipEndsAtUtc.ToLocalTime().ToString("dd MMMM yyyy", turkishCulture)</dd>
                     </div>
                 </dl>
 

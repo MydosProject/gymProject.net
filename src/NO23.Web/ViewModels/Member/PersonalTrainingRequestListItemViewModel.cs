@@ -1,3 +1,5 @@
+using NO23.Web.Domain.Enums;
+
 namespace NO23.Web.ViewModels.Member;
 
 public class PersonalTrainingRequestListItemViewModel
@@ -11,6 +13,8 @@ public class PersonalTrainingRequestListItemViewModel
     public DateOnly PreferredDate { get; init; }
 
     public string Status { get; init; } = string.Empty;
+
+    public PersonalTrainingRequestStatus RawStatus { get; init; }
 
     public DateTime? ScheduledAtUtc { get; init; }
 

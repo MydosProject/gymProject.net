@@ -36,6 +36,11 @@ public class HomeController(
             return View(new MemberDashboardViewModel());
         }
 
+        var nowUtc = DateTime.UtcNow;
+        var hasAvailableClassCredits =
+            profile.MembershipPackage.WeeklyClassLimit is null ||
+            profile.RemainingClassCredits > 0;
+
         var upcomingReservations = await dbContext.ClassReservations
             .AsNoTracking()
             .Include(reservation => reservation.ClassSession)
@@ -46,14 +51,17 @@ public class HomeController(
                 reservation.Status == ClassReservationStatus.Reserved &&
                 reservation.ClassSession.Status == ClassSessionStatus.Scheduled &&
                 reservation.ClassSession.GroupClass.IsActive &&
-                reservation.ClassSession.StartsAtUtc >= DateTime.UtcNow)
+                reservation.ClassSession.StartsAtUtc >= nowUtc)
             .OrderBy(reservation => reservation.ClassSession.StartsAtUtc)
             .Select(reservation => new MemberReservationViewModel
             {
                 ReservationId = reservation.Id,
                 ClassName = reservation.ClassSession.GroupClass.Name,
                 TrainerName = reservation.ClassSession.GroupClass.Trainer.FirstName + " " + reservation.ClassSession.GroupClass.Trainer.LastName,
-                StartsAtUtc = reservation.ClassSession.StartsAtUtc
+                StartsAtUtc = reservation.ClassSession.StartsAtUtc,
+                CanCancel =
+                    reservation.ClassSession.StartsAtUtc - nowUtc >=
+                    ClassReservationService.CancellationWindow
             })
             .ToListAsync();
 
@@ -64,7 +72,7 @@ public class HomeController(
             .Include(session => session.Reservations)
             .Where(session =>
                 session.Status == ClassSessionStatus.Scheduled &&
-                session.StartsAtUtc >= DateTime.UtcNow &&
+                session.StartsAtUtc >= nowUtc &&
                 session.GroupClass.IsActive)
             .OrderBy(session => session.StartsAtUtc)
             .Take(20)
@@ -81,7 +89,8 @@ public class HomeController(
                 ReservedCount = session.Reservations.Count(reservation => reservation.Status == ClassReservationStatus.Reserved),
                 IsReservedByMember = session.Reservations.Any(reservation =>
                     reservation.MemberProfileId == profile.Id &&
-                    reservation.Status == ClassReservationStatus.Reserved)
+                    reservation.Status == ClassReservationStatus.Reserved),
+                HasAvailableClassCredits = hasAvailableClassCredits
             })
             .ToListAsync();
 
