@@ -14,6 +14,11 @@
         ? "Paket bilgisi bulunamadı"
         : Model.PackageName;
 
+    var membershipSummaryTitle = string.IsNullOrWhiteSpace(
+            Model.MembershipSummaryTitle)
+        ? packageName
+        : Model.MembershipSummaryTitle;
+
     var kitchenPanelUrl = Url.Action("Index", "Kitchen", new { area = "Member" }) ?? "/Member/Kitchen";
     var kitchenCtaUrl = Model.HasActiveKitchenSubscription
         ? kitchenPanelUrl
@@ -77,12 +82,22 @@
             <article class="member-stat-card member-stat-card-accent">
                 <div class="member-stat-card-top">
                     <span class="member-stat-number">01</span>
-                    <span class="member-stat-label">Aktif üyelik</span>
+                    <span class="member-stat-label">
+                        @Model.MembershipSummaryLabel
+                    </span>
                 </div>
 
                 <div>
-                    <p>Paketin</p>
-                    <h2>@packageName</h2>
+                    <p>@Model.MembershipSummaryDescription</p>
+                    <h2>@membershipSummaryTitle</h2>
+
+                    @if (!string.IsNullOrWhiteSpace(
+                            Model.LastMembershipPackageName))
+                    {
+                        <small class="member-stat-note">
+                            Son paket: @Model.LastMembershipPackageName
+                        </small>
+                    }
                 </div>
             </article>
 
@@ -259,6 +274,10 @@
                         var hasNoClassCredits =
                             !session.HasAvailableClassCredits;
 
+                        var isReservationUnavailable =
+                            !string.IsNullOrWhiteSpace(
+                                session.ReservationUnavailableReason);
+
                         var remainingCapacity = Math.Max(
                             0,
                             session.Capacity - session.ReservedCount);
@@ -293,6 +312,12 @@
                                 {
                                     <span class="member-session-status full">
                                         Kontenjan dolu
+                                    </span>
+                                }
+                                else if (isReservationUnavailable)
+                                {
+                                    <span class="member-session-status full">
+                                        @session.ReservationUnavailableReason
                                     </span>
                                 }
                                 else if (hasNoClassCredits)
@@ -371,10 +396,14 @@
 
                                         <button type="submit"
                                                 class="member-reserve-button"
-                                                disabled="@(isFull || hasNoClassCredits)">
+                                                disabled="@(isFull ||
+                                                    hasNoClassCredits ||
+                                                    isReservationUnavailable)">
                                             @(isFull
                                                 ? "Ders Dolu"
-                                                : hasNoClassCredits
+                                                : isReservationUnavailable
+                                                    ? session.ReservationUnavailableReason
+                                                    : hasNoClassCredits
                                                     ? "Ders Hakkı Yok"
                                                     : "Rezervasyon Yap")
 

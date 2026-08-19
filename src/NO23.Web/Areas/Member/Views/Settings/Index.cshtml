@@ -1,7 +1,9 @@
+@using System.Globalization
 @model MemberAccountSettingsViewModel
 
 @{
     ViewData["Title"] = "Hesap Ayarları";
+    var turkishCulture = CultureInfo.GetCultureInfo("tr-TR");
 }
 
 <section class="member-account-page member-settings-page">
@@ -25,70 +27,203 @@
             <div class="member-dashboard-alert member-dashboard-alert-success" role="status">
                 <span aria-hidden="true">✓</span>
                 <div>
-                    <strong>Güvenlik bilgilerin güncellendi</strong>
+                    <strong>İşlem tamamlandı</strong>
                     <p>@successMessage</p>
                 </div>
             </div>
         }
 
+        @if (TempData["ErrorMessage"] is string errorMessage)
+        {
+            <div class="member-dashboard-alert member-dashboard-alert-error" role="alert">
+                <span aria-hidden="true">!</span>
+                <div>
+                    <strong>İşlem gerçekleştirilemedi</strong>
+                    <p>@errorMessage</p>
+                </div>
+            </div>
+        }
+
         <div class="member-settings-layout">
-            <aside class="member-settings-overview">
-                <div class="member-account-card-head">
-                    <span>01</span>
-                    <div>
-                        <p>HESAP BİLGİLERİ</p>
-                        <h2>Güvenlik özeti</h2>
+            <div class="member-settings-side">
+                <aside class="member-settings-overview">
+                    <div class="member-account-card-head">
+                        <span>01</span>
+                        <div>
+                            <p>HESAP BİLGİLERİ</p>
+                            <h2>Güvenlik özeti</h2>
+                        </div>
                     </div>
-                </div>
 
-                <div class="member-settings-list">
-                    <article>
+                    <div class="member-settings-list">
+                        <article>
+                            <div>
+                                <span>E-posta adresi</span>
+                                <strong>@Model.Email</strong>
+                            </div>
+                            <small class="@(Model.EmailConfirmed ? "is-secure" : "is-warning")">
+                                @(Model.EmailConfirmed ? "Doğrulandı" : "Doğrulanmadı")
+                            </small>
+                        </article>
+
+                        <article>
+                            <div>
+                                <span>Telefon</span>
+                                <strong>
+                                    @(string.IsNullOrWhiteSpace(Model.PhoneNumber)
+                                        ? "Telefon eklenmedi"
+                                        : Model.PhoneNumber)
+                                </strong>
+                            </div>
+                            <a asp-area="Member"
+                               asp-controller="Profile"
+                               asp-action="Index">
+                                Düzenle
+                            </a>
+                        </article>
+
+                        <article>
+                            <div>
+                                <span>İki adımlı doğrulama</span>
+                                <strong>
+                                    @(Model.TwoFactorEnabled ? "Etkin" : "Devre dışı")
+                                </strong>
+                            </div>
+                            <small class="@(Model.TwoFactorEnabled ? "is-secure" : string.Empty)">
+                                @(Model.TwoFactorEnabled ? "Açık" : "Kapalı")
+                            </small>
+                        </article>
+                    </div>
+
+                    <div class="member-settings-info">
+                        <span aria-hidden="true">i</span>
+                        <p>
+                            E-posta değişikliği için doğrulama servisi gerekir.
+                            Bu nedenle mevcut adres güvenli biçimde yalnızca görüntülenir.
+                        </p>
+                    </div>
+                </aside>
+
+                <section class="member-settings-membership">
+                    <div class="member-account-card-head">
+                        <span>02</span>
                         <div>
-                            <span>E-posta adresi</span>
-                            <strong>@Model.Email</strong>
+                            <p>ÜYELİK PAKETİ</p>
+                            <h2>Paket durumun</h2>
                         </div>
-                        <small class="@(Model.EmailConfirmed ? "is-secure" : "is-warning")">
-                            @(Model.EmailConfirmed ? "Doğrulandı" : "Doğrulanmadı")
-                        </small>
-                    </article>
+                    </div>
 
-                    <article>
-                        <div>
-                            <span>Telefon</span>
-                            <strong>
-                                @(string.IsNullOrWhiteSpace(Model.PhoneNumber)
-                                    ? "Telefon eklenmedi"
-                                    : Model.PhoneNumber)
-                            </strong>
+                    @if (Model.HasMembershipPackage)
+                    {
+                        <div class="member-settings-membership-status">
+                            <span>@Model.MembershipStatusDisplayName</span>
+                            <strong>@Model.MembershipPackageName</strong>
                         </div>
-                        <a asp-area="Member"
-                           asp-controller="Profile"
-                           asp-action="Index">
-                            Düzenle
-                        </a>
-                    </article>
 
-                    <article>
-                        <div>
-                            <span>İki adımlı doğrulama</span>
-                            <strong>
-                                @(Model.TwoFactorEnabled ? "Etkin" : "Devre dışı")
-                            </strong>
+                        <dl class="member-settings-membership-dates">
+                            <div>
+                                <dt>Başlangıç</dt>
+                                <dd>
+                                    @(Model.MembershipStartsAtUtc?.ToLocalTime().ToString("dd MMMM yyyy", turkishCulture) ?? "-")
+                                </dd>
+                            </div>
+                            <div>
+                                <dt>Bitiş</dt>
+                                <dd>
+                                    @(Model.MembershipEndsAtUtc?.ToLocalTime().ToString("dd MMMM yyyy", turkishCulture) ?? "-")
+                                </dd>
+                            </div>
+                        </dl>
+
+                        @if (Model.MembershipCancellationRequestedAtUtc.HasValue)
+                        {
+                            <p class="member-settings-membership-note">
+                                İptal talebin alındı. Paketin
+                                @(Model.MembershipCancellationEffectiveAtUtc?.ToLocalTime().ToString("dd MMMM yyyy", turkishCulture) ?? "bitiş tarihine")
+                                kadar aktif kalacak.
+                            </p>
+                        }
+                        else
+                        {
+                            <p class="member-settings-membership-note">
+                                İptal edersen paket dönem sonunda kapanır; bitiş tarihine kadar haklarını kullanmaya devam edebilirsin.
+                            </p>
+                        }
+
+                        @if (Model.CanCancelMembership)
+                        {
+                            <div class="member-settings-membership-cancel">
+                                <button type="button"
+                                        data-membership-cancel-open>
+                                    Paketimi İptal Et
+                                </button>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="member-settings-empty">
+                            Aktif üyelik paketi bulunamadı.
                         </div>
-                        <small class="@(Model.TwoFactorEnabled ? "is-secure" : string.Empty)">
-                            @(Model.TwoFactorEnabled ? "Açık" : "Kapalı")
-                        </small>
-                    </article>
-                </div>
+                    }
 
-                <div class="member-settings-info">
-                    <span aria-hidden="true">i</span>
-                    <p>
-                        E-posta değişikliği için doğrulama servisi gerekir.
-                        Bu nedenle mevcut adres güvenli biçimde yalnızca görüntülenir.
-                    </p>
-                </div>
-            </aside>
+                    <div class="member-settings-package-market"
+                         id="membership-packages">
+                        <div class="member-settings-package-market-head">
+                            <div>
+                                <span>Paket yenileme</span>
+                                <strong>Paketleri incele</strong>
+                            </div>
+
+                            @if (Model.HasPendingPackageChangeRequest)
+                            {
+                                <small>
+                                    Devam eden talep:
+                                    @Model.PendingPackageChangeRequestName
+                                </small>
+                            }
+                        </div>
+
+                        <div class="member-settings-package-options">
+                            @foreach (var package in Model.MembershipPackageOptions)
+                            {
+                                <article class="member-settings-package-option">
+                                    <div>
+                                        <span>
+                                            @(package.IsCurrentPackage
+                                                ? "Mevcut paket"
+                                                : "Alternatif paket")
+                                        </span>
+                                        <strong>@package.Name</strong>
+                                        <p>@package.Audience</p>
+                                    </div>
+
+                                    <small>@package.ClassAccessSummary</small>
+
+                                    <form asp-area="Member"
+                                          asp-controller="Settings"
+                                          asp-action="RequestMembershipPackageChange"
+                                          asp-antiforgery="true"
+                                          method="post">
+                                        <input type="hidden"
+                                               name="packageId"
+                                               value="@package.Id" />
+
+                                        <button type="submit"
+                                                disabled="@Model.HasPendingPackageChangeRequest">
+                                            @(Model.HasPendingPackageChangeRequest
+                                                ? "Talep Bekliyor"
+                                                : package.IsCurrentPackage
+                                                    ? "Yenileme Talebi Gönder"
+                                                    : "Talep Gönder")
+                                        </button>
+                                    </form>
+                                </article>
+                            }
+                        </div>
+                    </div>
+                </section>
+            </div>
 
             <form asp-area="Member"
                   asp-controller="Settings"
@@ -97,7 +232,7 @@
                   method="post"
                   class="member-settings-password">
                 <div class="member-account-card-head">
-                    <span>02</span>
+                    <span>03</span>
                     <div>
                         <p>ŞİFRE GÜVENLİĞİ</p>
                         <h2>Şifreni güncelle</h2>
@@ -159,8 +294,85 @@
             </form>
         </div>
     </div>
+
+    @if (Model.CanCancelMembership)
+    {
+        <div class="member-confirm-dialog"
+             data-membership-cancel-dialog
+             hidden>
+            <div class="member-confirm-dialog-backdrop"
+                 data-membership-cancel-close></div>
+
+            <section class="member-confirm-dialog-panel"
+                     role="dialog"
+                     aria-modal="true"
+                     aria-labelledby="membershipCancelDialogTitle">
+                <div>
+                    <span>ÜYELİK İPTALİ</span>
+                    <h2 id="membershipCancelDialogTitle">
+                        Paketini dönem sonunda iptal edelim mi?
+                    </h2>
+                    <p>
+                        Paketin bitiş tarihine kadar aktif kalacak. Bu tarihten
+                        sonraki grup dersi rezervasyonların iptal edilir.
+                    </p>
+                </div>
+
+                <div class="member-confirm-dialog-actions">
+                    <button type="button"
+                            data-membership-cancel-close>
+                        Vazgeç
+                    </button>
+
+                    <form asp-area="Member"
+                          asp-controller="Settings"
+                          asp-action="CancelMembership"
+                          asp-antiforgery="true"
+                          method="post">
+                        <button type="submit">
+                            Evet, İptal Et
+                        </button>
+                    </form>
+                </div>
+            </section>
+        </div>
+    }
 </section>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        (() => {
+            const dialog = document.querySelector("[data-membership-cancel-dialog]");
+            const openButton = document.querySelector("[data-membership-cancel-open]");
+            const closeButtons = document.querySelectorAll("[data-membership-cancel-close]");
+
+            if (!dialog || !openButton) {
+                return;
+            }
+
+            const openDialog = () => {
+                dialog.hidden = false;
+                document.body.classList.add("member-confirm-dialog-open");
+                dialog.querySelector("button")?.focus();
+            };
+
+            const closeDialog = () => {
+                dialog.hidden = true;
+                document.body.classList.remove("member-confirm-dialog-open");
+                openButton.focus();
+            };
+
+            openButton.addEventListener("click", openDialog);
+            closeButtons.forEach((button) => {
+                button.addEventListener("click", closeDialog);
+            });
+
+            document.addEventListener("keydown", (event) => {
+                if (event.key === "Escape" && !dialog.hidden) {
+                    closeDialog();
+                }
+            });
+        })();
+    </script>
 }

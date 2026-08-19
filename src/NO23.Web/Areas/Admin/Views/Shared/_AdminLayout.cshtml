@@ -14,7 +14,8 @@
         currentController.Equals("PersonalTrainingRequests", StringComparison.OrdinalIgnoreCase);
     var isMembershipSection =
         currentController.Equals("Members", StringComparison.OrdinalIgnoreCase) ||
-        currentController.Equals("MembershipPackages", StringComparison.OrdinalIgnoreCase);
+        currentController.Equals("MembershipPackages", StringComparison.OrdinalIgnoreCase) ||
+        currentController.Equals("MembershipPackageChangeRequests", StringComparison.OrdinalIgnoreCase);
 
     string ActiveClass(params string[] controllers) =>
         controllers.Contains(currentController, StringComparer.OrdinalIgnoreCase) ? "is-active" : string.Empty;
@@ -128,7 +129,7 @@
 
                 <div class="admin-nav-group">
                     <p class="admin-nav-title">Kulüp</p>
-                    <a class="admin-nav-link has-submenu @ActiveClass("Members", "MembershipPackages")"
+                    <a class="admin-nav-link has-submenu @ActiveClass("Members", "MembershipPackages", "MembershipPackageChangeRequests")"
                        asp-area="Admin"
                        asp-controller="Members"
                        asp-action="Index"
@@ -153,6 +154,12 @@
                            asp-controller="MembershipPackages"
                            asp-action="Index">
                             Üyelik Paketleri
+                        </a>
+                        <a class="admin-nav-sublink @ActiveClass("MembershipPackageChangeRequests")"
+                           asp-area="Admin"
+                           asp-controller="MembershipPackageChangeRequests"
+                           asp-action="Index">
+                            Paket Talepleri
                         </a>
                     </div>
                     <a class="admin-nav-link @ActiveClass("Trainers")" asp-area="Admin" asp-controller="Trainers" asp-action="Index">

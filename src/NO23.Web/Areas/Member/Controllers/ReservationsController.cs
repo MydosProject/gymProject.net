@@ -36,16 +36,32 @@ public class ReservationsController(
             {
                 member.Id,
                 member.RemainingClassCredits,
+                member.MembershipStatus,
+                member.MembershipEndsAtUtc,
                 member.MembershipPackage.WeeklyClassLimit,
                 member.MembershipPackage.IncludesPersonalTrainingSupport
             })
             .FirstOrDefaultAsync();
         var profileId = memberContext?.Id;
         var nowUtc = DateTime.UtcNow;
+        var membershipEndsAtUtc = memberContext?.MembershipEndsAtUtc;
+        var canUseMembership =
+            memberContext is not null &&
+            MemberMembershipService.IsActiveForUse(
+                memberContext.MembershipStatus,
+                memberContext.MembershipEndsAtUtc,
+                nowUtc);
         var hasAvailableClassCredits =
             memberContext is not null &&
+            canUseMembership &&
             (memberContext.WeeklyClassLimit is null ||
              memberContext.RemainingClassCredits > 0);
+        var personalTrainingUnavailableTitle = canUseMembership
+            ? "Paketin birebir destek içermiyor."
+            : "Üyelik paketin aktif değil.";
+        var personalTrainingUnavailableMessage = canUseMembership
+            ? "Birebir antrenman talebi oluşturmak için paketinde Personal Training desteği bulunmalı."
+            : "Birebir antrenman talebi oluşturmak için aktif üyelik paketin olmalı.";
 
         var upcomingReservations = profileId is null
             ? []
@@ -98,7 +114,13 @@ public class ReservationsController(
                     session.Reservations.Any(reservation =>
                         reservation.MemberProfileId == profileId &&
                         reservation.Status == ClassReservationStatus.Reserved),
-                HasAvailableClassCredits = hasAvailableClassCredits
+                HasAvailableClassCredits = hasAvailableClassCredits,
+                ReservationUnavailableReason = !canUseMembership
+                    ? "Üyelik aktif değil"
+                    : membershipEndsAtUtc.HasValue &&
+                        session.StartsAtUtc >= membershipEndsAtUtc.Value
+                        ? "Paket süresi dışında"
+                        : null
             })
             .ToListAsync();
 
@@ -181,7 +203,10 @@ public class ReservationsController(
             PreferredTimeWindows = PersonalTrainingRequestService.PreferredTimeWindows,
             PersonalTrainingRequests = personalTrainingRequests,
             CanRequestPersonalTraining =
-                memberContext?.IncludesPersonalTrainingSupport == true
+                canUseMembership &&
+                memberContext?.IncludesPersonalTrainingSupport == true,
+            PersonalTrainingUnavailableTitle = personalTrainingUnavailableTitle,
+            PersonalTrainingUnavailableMessage = personalTrainingUnavailableMessage
         });
     }
 

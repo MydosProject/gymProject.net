@@ -1,3 +1,5 @@
+using NO23.Web.Domain.Enums;
+
 namespace NO23.Web.Domain.Entities;
 
 public class MemberProfile
@@ -23,6 +25,21 @@ public class MemberProfile
     public DateTime MembershipEndsAtUtc { get; set; } =
         DateTime.UtcNow.AddDays(DefaultMembershipDurationDays);
 
+    public MembershipStatus MembershipStatus { get; set; } =
+        MembershipStatus.Active;
+
+    public DateTime? MembershipCancellationRequestedAtUtc { get; set; }
+
+    public DateTime? MembershipCancellationEffectiveAtUtc { get; set; }
+
+    public string? MembershipCancellationReason { get; set; }
+
+    public string? IyzicoCustomerReferenceCode { get; set; }
+
+    public string? IyzicoSubscriptionReferenceCode { get; set; }
+
+    public string? IyzicoPricingPlanReferenceCode { get; set; }
+
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
 
     public DateTime? UpdatedAtUtc { get; set; }
@@ -30,6 +47,8 @@ public class MemberProfile
     public ICollection<ClassReservation> ClassReservations { get; set; } = [];
 
     public ICollection<PersonalTrainingRequest> PersonalTrainingRequests { get; set; } = [];
+
+    public ICollection<MembershipPackageChangeRequest> MembershipPackageChangeRequests { get; set; } = [];
 
     public ICollection<TrainerConversation> TrainerConversations { get; set; } = [];
 

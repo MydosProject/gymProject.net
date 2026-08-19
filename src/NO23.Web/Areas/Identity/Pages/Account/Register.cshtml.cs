@@ -122,7 +122,8 @@ public class RegisterModel(
             MembershipStartsAtUtc = membershipStartsAtUtc,
             MembershipEndsAtUtc =
                 membershipStartsAtUtc.AddDays(
-                    MemberProfile.DefaultMembershipDurationDays)
+                    MemberProfile.DefaultMembershipDurationDays),
+            MembershipStatus = MembershipStatus.Active
         });
 
         await dbContext.SaveChangesAsync();

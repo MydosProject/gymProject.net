@@ -41,6 +41,15 @@ public class PersonalTrainingRequestService(ApplicationDbContext dbContext)
             return PersonalTrainingRequestResult.Fail("Üye profili bulunamadı.");
         }
 
+        if (!MemberMembershipService.CanRequestPersonalTraining(
+                profile,
+                model.PreferredDate,
+                DateTime.UtcNow,
+                out var membershipErrorMessage))
+        {
+            return PersonalTrainingRequestResult.Fail(membershipErrorMessage);
+        }
+
         if (!profile.MembershipPackage.IncludesPersonalTrainingSupport)
         {
             return PersonalTrainingRequestResult.Fail(

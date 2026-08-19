@@ -23,4 +23,6 @@ public class AvailableClassSessionViewModel
     public bool IsReservedByMember { get; init; }
 
     public bool HasAvailableClassCredits { get; init; } = true;
+
+    public string? ReservationUnavailableReason { get; init; }
 }

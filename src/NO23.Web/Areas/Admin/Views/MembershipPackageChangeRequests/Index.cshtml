@@ -1,0 +1,170 @@
+@model IReadOnlyList<MembershipPackageChangeRequestListItemViewModel>
+
+@{
+    ViewData["Title"] = "Paket Talepleri";
+
+    var pendingCount = Model.Count(request => request.IsPending);
+    var processedCount = Model.Count - pendingCount;
+}
+
+<section class="admin-page">
+    <div class="container">
+        <header class="admin-page-head">
+            <div>
+                <p class="admin-eyebrow">KULÜP / ÜYELİK TALEPLERİ</p>
+                <h1>Paket talepleri</h1>
+                <p class="admin-page-description">
+                    Üyelerin paket yenileme ve paket değiştirme taleplerini
+                    incele, dönem başlangıcını koruyarak onayla veya reddet.
+                </p>
+            </div>
+
+            <a class="btn btn-outline-dark"
+               asp-area="Admin"
+               asp-controller="MembershipPackages"
+               asp-action="Index">
+                Paketleri Yönet
+            </a>
+        </header>
+
+        @if (TempData["SuccessMessage"] is string successMessage)
+        {
+            <div class="admin-inline-alert admin-inline-alert-success"
+                 role="status">
+                @successMessage
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] is string errorMessage)
+        {
+            <div class="admin-inline-alert admin-inline-alert-error"
+                 role="alert">
+                @errorMessage
+            </div>
+        }
+
+        <div class="admin-metrics">
+            <article>
+                <span>Toplam talep</span>
+                <strong>@Model.Count</strong>
+                <small>Tüm paket talepleri</small>
+            </article>
+            <article>
+                <span>Bekleyen</span>
+                <strong>@pendingCount</strong>
+                <small>İşlem bekleyen kayıt</small>
+            </article>
+            <article>
+                <span>İşlenen</span>
+                <strong>@processedCount</strong>
+                <small>Onaylanan veya reddedilen</small>
+            </article>
+        </div>
+
+        <div class="table-responsive admin-table-card">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Üye</th>
+                        <th>Mevcut Paket</th>
+                        <th>Talep Edilen</th>
+                        <th>Talep Tarihi</th>
+                        <th>Durum</th>
+                        <th class="text-end">İşlem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="6">
+                                <div class="admin-empty-row">
+                                    Henüz paket talebi bulunmuyor.
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var request in Model)
+                        {
+                            var requestedAtLocal =
+                                request.RequestedAtUtc.ToLocalTime();
+
+                            <tr>
+                                <td data-label="Üye">
+                                    <strong>@request.MemberName</strong>
+                                    <small class="admin-cell-note">
+                                        @request.MemberEmail
+                                    </small>
+                                </td>
+                                <td data-label="Mevcut Paket">
+                                    <span class="admin-status">
+                                        @request.CurrentPackageName
+                                    </span>
+                                </td>
+                                <td data-label="Talep Edilen">
+                                    <strong>@request.RequestedPackageName</strong>
+                                </td>
+                                <td data-label="Talep Tarihi">
+                                    <strong>
+                                        @requestedAtLocal.ToString("dd.MM.yyyy")
+                                    </strong>
+                                    <small class="admin-cell-note">
+                                        @requestedAtLocal.ToString("HH:mm")
+                                    </small>
+                                </td>
+                                <td data-label="Durum">
+                                    <span class="admin-status @request.StatusCssClass">
+                                        @request.Status
+                                    </span>
+                                </td>
+                                <td class="text-end"
+                                    data-label="İşlem">
+                                    @if (request.IsPending)
+                                    {
+                                        <div class="admin-package-request-actions">
+                                            <form asp-area="Admin"
+                                                  asp-controller="MembershipPackageChangeRequests"
+                                                  asp-action="Approve"
+                                                  asp-route-id="@request.Id"
+                                                  asp-antiforgery="true"
+                                                  method="post">
+                                                <input name="adminNote"
+                                                       placeholder="Admin notu" />
+                                                <button class="btn btn-dark"
+                                                        type="submit">
+                                                    Onayla
+                                                </button>
+                                            </form>
+
+                                            <form asp-area="Admin"
+                                                  asp-controller="MembershipPackageChangeRequests"
+                                                  asp-action="Reject"
+                                                  asp-route-id="@request.Id"
+                                                  asp-antiforgery="true"
+                                                  method="post">
+                                                <input name="adminNote"
+                                                       placeholder="Red notu" />
+                                                <button class="btn btn-outline-dark"
+                                                        type="submit">
+                                                    Reddet
+                                                </button>
+                                            </form>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="admin-cell-note">
+                                            @(request.ResolvedAtUtc?.ToLocalTime().ToString("dd.MM.yyyy HH:mm") ?? "-")
+                                        </span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>

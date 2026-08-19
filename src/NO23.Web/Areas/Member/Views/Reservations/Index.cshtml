@@ -160,6 +160,9 @@
                     {
                         var isFull = session.ReservedCount >= session.Capacity;
                         var hasNoClassCredits = !session.HasAvailableClassCredits;
+                        var isReservationUnavailable =
+                            !string.IsNullOrWhiteSpace(
+                                session.ReservationUnavailableReason);
                         var remainingCapacity = Math.Max(0, session.Capacity - session.ReservedCount);
                         var localStart = session.StartsAtUtc.ToLocalTime();
 
@@ -175,6 +178,8 @@
                                 <span class="member-session-status">
                                     @(session.IsReservedByMember
                                         ? "Rezerve"
+                                        : isReservationUnavailable
+                                            ? session.ReservationUnavailableReason
                                         : isFull
                                             ? "Kontenjan dolu"
                                             : hasNoClassCredits
@@ -217,10 +222,14 @@
                                                value="@session.SessionId" />
                                         <button type="submit"
                                                 class="member-reserve-button"
-                                                disabled="@(isFull || hasNoClassCredits)">
+                                                disabled="@(isFull ||
+                                                    hasNoClassCredits ||
+                                                    isReservationUnavailable)">
                                             @(isFull
                                                 ? "Kontenjan Dolu"
-                                                : hasNoClassCredits
+                                                : isReservationUnavailable
+                                                    ? session.ReservationUnavailableReason
+                                                    : hasNoClassCredits
                                                     ? "Ders Hakkı Yok"
                                                     : "Rezervasyon Yap")
                                         </button>
@@ -328,8 +337,8 @@
                         <div class="member-empty-state member-personal-empty-state">
                             <span class="member-empty-number">!</span>
                             <div>
-                                <h3>Paketin birebir destek içermiyor.</h3>
-                                <p>Birebir antrenman talebi oluşturmak için paketinde Personal Training desteği bulunmalı.</p>
+                                <h3>@Model.PersonalTrainingUnavailableTitle</h3>
+                                <p>@Model.PersonalTrainingUnavailableMessage</p>
                             </div>
                         </div>
                     }

@@ -14,7 +14,44 @@ public class MemberAccountSettingsViewModel
 
     public bool HasPassword { get; set; }
 
+    public bool HasMembershipPackage { get; set; }
+
+    public string MembershipPackageName { get; set; } = string.Empty;
+
+    public DateTime? MembershipStartsAtUtc { get; set; }
+
+    public DateTime? MembershipEndsAtUtc { get; set; }
+
+    public string MembershipStatusDisplayName { get; set; } = string.Empty;
+
+    public DateTime? MembershipCancellationRequestedAtUtc { get; set; }
+
+    public DateTime? MembershipCancellationEffectiveAtUtc { get; set; }
+
+    public bool CanCancelMembership { get; set; }
+
+    public bool HasPendingPackageChangeRequest { get; set; }
+
+    public string? PendingPackageChangeRequestName { get; set; }
+
+    public IReadOnlyList<MemberMembershipPackageOptionViewModel> MembershipPackageOptions { get; set; } = [];
+
     public ChangePasswordInputViewModel ChangePassword { get; set; } = new();
+}
+
+public class MemberMembershipPackageOptionViewModel
+{
+    public int Id { get; init; }
+
+    public string Name { get; init; } = string.Empty;
+
+    public string Audience { get; init; } = string.Empty;
+
+    public string Description { get; init; } = string.Empty;
+
+    public string ClassAccessSummary { get; init; } = string.Empty;
+
+    public bool IsCurrentPackage { get; init; }
 }
 
 public class ChangePasswordInputViewModel
