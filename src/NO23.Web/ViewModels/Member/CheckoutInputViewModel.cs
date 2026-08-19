@@ -11,6 +11,9 @@ public class CheckoutInputViewModel
 
     [Required(ErrorMessage = "Telefon alanı zorunludur.")]
     [StringLength(40, ErrorMessage = "Telefon en fazla 40 karakter olabilir.")]
+    [RegularExpression(
+        @"^05\d{2}\s?\d{3}\s?\d{2}\s?\d{2}$",
+        ErrorMessage = "Telefon numarasını 05xx xxx xx xx formatında girmelisin.")]
     [Display(Name = "Telefon")]
     public string PhoneNumber { get; set; } = string.Empty;
 
