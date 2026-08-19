@@ -32,6 +32,6 @@ public class KitchenSubscriptionPackageFormViewModel
     public bool IsActive { get; set; } = true;
 
     [Range(1, 100)]
-    [Display(Name = "Sıralama")]
+    [Display(Name = "Gösterim Sırası")]
     public int DisplayOrder { get; set; }
 }

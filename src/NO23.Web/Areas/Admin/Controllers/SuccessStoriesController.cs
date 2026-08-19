@@ -72,7 +72,9 @@ public class SuccessStoriesController(ApplicationDbContext dbContext) : Controll
 
     public async Task<IActionResult> Edit(int id)
     {
-        var item = await dbContext.SuccessStories.AsNoTracking().FirstOrDefaultAsync(item => item.Id == id);
+        var item = await dbContext.SuccessStories
+            .AsNoTracking()
+            .FirstOrDefaultAsync(item => item.Id == id);
 
         if (item is null)
         {
@@ -115,9 +117,29 @@ public class SuccessStoriesController(ApplicationDbContext dbContext) : Controll
         return RedirectToAction(nameof(Index));
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var item = await dbContext.SuccessStories.FindAsync(id);
+
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        dbContext.SuccessStories.Remove(item);
+        await dbContext.SaveChangesAsync();
+
+        TempData["SuccessMessage"] = "Başarı hikâyesi başarıyla silindi.";
+
+        return RedirectToAction(nameof(Index));
+    }
+
     private Task<bool> SlugExistsAsync(string slug, int? currentId)
     {
         var normalizedSlug = slug.Trim();
+
         return dbContext.SuccessStories.AnyAsync(item =>
             item.Slug == normalizedSlug &&
             (!currentId.HasValue || item.Id != currentId.Value));
@@ -142,9 +164,13 @@ public class SuccessStoriesController(ApplicationDbContext dbContext) : Controll
         item.AfterImageUrl = model.AfterImageUrl?.Trim();
         item.VideoUrl = model.VideoUrl?.Trim();
         item.Status = model.Status;
+
         item.PublishedAtUtc = model.PublishedAtUtc.HasValue
-            ? DateTime.SpecifyKind(model.PublishedAtUtc.Value, DateTimeKind.Utc)
+            ? DateTime.SpecifyKind(
+                model.PublishedAtUtc.Value,
+                DateTimeKind.Utc)
             : null;
+
         item.UpdatedAtUtc = DateTime.UtcNow;
     }
 
