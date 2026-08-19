@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.SignalR;
 using NO23.Web.Domain.Enums;
+using NO23.Web.Extensions;
 using NO23.Web.Hubs;
 
 namespace NO23.Web.Services;
@@ -80,6 +81,9 @@ public class UserNotificationRealtimeService(
 
                     status =
                         status.ToString(),
+
+                    statusDisplayName =
+                        status.GetDisplayName(),
 
                     scheduledAtUtc,
 

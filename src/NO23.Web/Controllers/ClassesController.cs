@@ -1,7 +1,10 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NO23.Web.Data;
+using NO23.Web.Data.Seed;
 using NO23.Web.Domain.Enums;
+using NO23.Web.Services;
 using NO23.Web.ViewModels.Classes;
 
 namespace NO23.Web.Controllers;
@@ -13,10 +16,23 @@ public class ClassesController(ApplicationDbContext dbContext) : Controller
     public async Task<IActionResult> Index()
     {
         var nowUtc = DateTime.UtcNow;
+        var memberProfileId = User.IsInRole(ApplicationRoles.Member)
+            ? await dbContext.MemberProfiles
+                .AsNoTracking()
+                .Where(member =>
+                    member.ApplicationUserId ==
+                    User.FindFirstValue(ClaimTypes.NameIdentifier))
+                .Select(member => (int?)member.Id)
+                .FirstOrDefaultAsync()
+            : null;
 
         var groupClasses = await dbContext.GroupClasses
             .AsNoTracking()
-            .Where(groupClass => groupClass.IsActive)
+            .Where(groupClass =>
+                groupClass.IsActive &&
+                groupClass.Sessions.Any(session =>
+                    session.Status == ClassSessionStatus.Scheduled &&
+                    session.StartsAtUtc >= nowUtc))
             .OrderBy(groupClass => groupClass.Name)
             .Select(groupClass => new
             {
@@ -46,7 +62,15 @@ public class ClassesController(ApplicationDbContext dbContext) : Controller
                 session.StartsAtUtc,
                 Capacity = session.CapacityOverride ?? session.GroupClass.Capacity,
                 ReservedCount = session.Reservations.Count(reservation =>
-                    reservation.Status == ClassReservationStatus.Reserved)
+                    reservation.Status == ClassReservationStatus.Reserved),
+                ReservationId = memberProfileId.HasValue
+                    ? session.Reservations
+                        .Where(reservation =>
+                            reservation.MemberProfileId == memberProfileId.Value &&
+                            reservation.Status == ClassReservationStatus.Reserved)
+                        .Select(reservation => (int?)reservation.Id)
+                        .FirstOrDefault()
+                    : null
             })
             .ToListAsync();
 
@@ -61,7 +85,13 @@ public class ClassesController(ApplicationDbContext dbContext) : Controller
                 StartsAtLocal = session.StartsAtUtc.ToLocalTime(),
                 Capacity = session.Capacity,
                 ReservedCount = session.ReservedCount,
-                RemainingCapacity = Math.Max(0, session.Capacity - session.ReservedCount)
+                RemainingCapacity = Math.Max(0, session.Capacity - session.ReservedCount),
+                ReservationId = session.ReservationId,
+                IsReservedByMember = session.ReservationId.HasValue,
+                CanCancel =
+                    session.ReservationId.HasValue &&
+                    session.StartsAtUtc - nowUtc >=
+                    ClassReservationService.CancellationWindow
             })
             .ToList();
 

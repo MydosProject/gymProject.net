@@ -665,6 +665,51 @@ body.no23-admin-body {
     text-align: center;
 }
 
+.admin-inline-alert {
+    max-width: 1480px;
+    margin: 0 auto 18px;
+    padding: 14px 16px;
+    border: 1px solid;
+    border-radius: 12px;
+    font-size: .78rem;
+    font-weight: 800;
+}
+
+.admin-inline-alert-success {
+    color: #516a13;
+    background: var(--admin-lime-soft);
+    border-color: rgba(151, 199, 32, .35);
+}
+
+.admin-inline-alert-error {
+    color: #a52a36;
+    background: #fff0f1;
+    border-color: #efb5bb;
+}
+
+.admin-package-request-actions {
+    display: grid;
+    min-width: 230px;
+    gap: 8px;
+}
+
+.admin-package-request-actions form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+}
+
+.admin-package-request-actions input {
+    min-width: 0;
+    min-height: 38px;
+    padding: 8px 10px;
+    border: 1px solid var(--admin-line);
+    border-radius: 9px;
+    color: var(--admin-copy);
+    background: #fff;
+    font-size: .72rem;
+}
+
 .admin-recipe-details {
     padding: 10px 12px;
     border: 1px solid var(--admin-line);
@@ -1317,6 +1362,12 @@ body.no23-admin-body {
         width: 100%;
         min-height: 44px;
         white-space: normal;
+    }
+
+    .admin-package-request-actions,
+    .admin-package-request-actions form {
+        min-width: 0;
+        grid-template-columns: 1fr;
     }
 
     .admin-truncate-cell {

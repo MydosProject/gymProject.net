@@ -36,6 +36,22 @@ public class HomeController(
             return View(new MemberDashboardViewModel());
         }
 
+        var nowUtc = DateTime.UtcNow;
+        var canUseMembership =
+            MemberMembershipService.IsActiveForUse(profile, nowUtc);
+        var effectiveMembershipStatus =
+            MemberMembershipService.GetEffectiveStatus(
+                profile.MembershipStatus,
+                profile.MembershipEndsAtUtc,
+                nowUtc);
+        var membershipSummary = BuildMembershipSummary(
+            effectiveMembershipStatus,
+            profile.MembershipPackage.Name);
+        var hasAvailableClassCredits =
+            canUseMembership &&
+            (profile.MembershipPackage.WeeklyClassLimit is null ||
+             profile.RemainingClassCredits > 0);
+
         var upcomingReservations = await dbContext.ClassReservations
             .AsNoTracking()
             .Include(reservation => reservation.ClassSession)
@@ -46,14 +62,17 @@ public class HomeController(
                 reservation.Status == ClassReservationStatus.Reserved &&
                 reservation.ClassSession.Status == ClassSessionStatus.Scheduled &&
                 reservation.ClassSession.GroupClass.IsActive &&
-                reservation.ClassSession.StartsAtUtc >= DateTime.UtcNow)
+                reservation.ClassSession.StartsAtUtc >= nowUtc)
             .OrderBy(reservation => reservation.ClassSession.StartsAtUtc)
             .Select(reservation => new MemberReservationViewModel
             {
                 ReservationId = reservation.Id,
                 ClassName = reservation.ClassSession.GroupClass.Name,
                 TrainerName = reservation.ClassSession.GroupClass.Trainer.FirstName + " " + reservation.ClassSession.GroupClass.Trainer.LastName,
-                StartsAtUtc = reservation.ClassSession.StartsAtUtc
+                StartsAtUtc = reservation.ClassSession.StartsAtUtc,
+                CanCancel =
+                    reservation.ClassSession.StartsAtUtc - nowUtc >=
+                    ClassReservationService.CancellationWindow
             })
             .ToListAsync();
 
@@ -64,7 +83,7 @@ public class HomeController(
             .Include(session => session.Reservations)
             .Where(session =>
                 session.Status == ClassSessionStatus.Scheduled &&
-                session.StartsAtUtc >= DateTime.UtcNow &&
+                session.StartsAtUtc >= nowUtc &&
                 session.GroupClass.IsActive)
             .OrderBy(session => session.StartsAtUtc)
             .Take(20)
@@ -81,7 +100,13 @@ public class HomeController(
                 ReservedCount = session.Reservations.Count(reservation => reservation.Status == ClassReservationStatus.Reserved),
                 IsReservedByMember = session.Reservations.Any(reservation =>
                     reservation.MemberProfileId == profile.Id &&
-                    reservation.Status == ClassReservationStatus.Reserved)
+                    reservation.Status == ClassReservationStatus.Reserved),
+                HasAvailableClassCredits = hasAvailableClassCredits,
+                ReservationUnavailableReason = !canUseMembership
+                    ? "Üyelik aktif değil"
+                    : session.StartsAtUtc >= profile.MembershipEndsAtUtc
+                        ? "Paket süresi dışında"
+                        : null
             })
             .ToListAsync();
 
@@ -98,8 +123,19 @@ public class HomeController(
         {
             MemberName = string.IsNullOrWhiteSpace(memberName) ? profile.ApplicationUser.Email ?? "NO23 Member" : memberName,
             PackageName = profile.MembershipPackage.Name,
-            RemainingClassCredits = profile.RemainingClassCredits,
-            HasUnlimitedClasses = profile.MembershipPackage.WeeklyClassLimit is null,
+            MembershipSummaryLabel = membershipSummary.Label,
+            MembershipSummaryTitle = membershipSummary.Title,
+            MembershipSummaryDescription = membershipSummary.Description,
+            LastMembershipPackageName = membershipSummary.ShowLastPackageName
+                ? profile.MembershipPackage.Name
+                : string.Empty,
+            MembershipEndsAtUtc = profile.MembershipEndsAtUtc,
+            RemainingClassCredits = canUseMembership
+                ? profile.RemainingClassCredits
+                : 0,
+            HasUnlimitedClasses =
+                canUseMembership &&
+                profile.MembershipPackage.WeeklyClassLimit is null,
             HasActiveKitchenSubscription = hasActiveKitchenSubscription,
             UpcomingReservations = upcomingReservations,
             AvailableSessions = availableSessions
@@ -141,4 +177,44 @@ public class HomeController(
 
         return RedirectToAction(nameof(Index));
     }
+
+    private static MembershipSummary BuildMembershipSummary(
+        MembershipStatus status,
+        string packageName)
+    {
+        return status switch
+        {
+            MembershipStatus.CancellationScheduled => new MembershipSummary(
+                "İptal planlandı",
+                packageName,
+                "Paketin dönem sonunda iptal edilecek. Bitiş tarihine kadar aktif.",
+                false),
+            MembershipStatus.Expired => new MembershipSummary(
+                "Üyelik sona erdi",
+                "Üyelik sona erdi",
+                "Yeni paket seçerek devam edebilirsin.",
+                true),
+            MembershipStatus.Cancelled => new MembershipSummary(
+                "Üyelik iptal edildi",
+                "Üyelik iptal edildi",
+                "Yeni paket seçerek tekrar başlayabilirsin.",
+                true),
+            MembershipStatus.PaymentFailed => new MembershipSummary(
+                "Ödeme başarısız",
+                "Ödeme başarısız",
+                "Paket yenilemek için talep oluştur.",
+                true),
+            _ => new MembershipSummary(
+                "Aktif üyelik",
+                packageName,
+                "Paketin aktif.",
+                false)
+        };
+    }
+
+    private sealed record MembershipSummary(
+        string Label,
+        string Title,
+        string Description,
+        bool ShowLastPackageName);
 }

@@ -673,12 +673,25 @@
                         }
                     </ul>
 
-                    <a class="membership-button"
-                       asp-area="Identity"
-                       asp-page="/Account/Register"
-                       asp-route-package="@package.Code">
-                        @buttonText
-                    </a>
+                    @if (User.IsInRole(ApplicationRoles.Member))
+                    {
+                        <a class="membership-button"
+                           asp-area="Member"
+                           asp-controller="Settings"
+                           asp-action="Index"
+                           asp-fragment="membership-packages">
+                            Paketleri İncele
+                        </a>
+                    }
+                    else
+                    {
+                        <a class="membership-button"
+                           asp-area="Identity"
+                           asp-page="/Account/Register"
+                           asp-route-package="@package.Code">
+                            @buttonText
+                        </a>
+                    }
                 </article>
             }
         </div>

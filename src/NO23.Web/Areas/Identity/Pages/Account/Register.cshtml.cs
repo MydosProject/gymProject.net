@@ -37,6 +37,8 @@ public class RegisterModel(
         ReturnUrl = returnUrl ?? ReturnUrl;
         await LoadPackageOptionsAsync(Input.PackageCode);
 
+        Input.Email = Input.Email?.Trim() ?? string.Empty;
+
         var selectedPackage =
             await FindSelectedPackageAsync(Input.PackageCode);
 
@@ -45,6 +47,18 @@ public class RegisterModel(
             ModelState.AddModelError(
                 nameof(Input.PackageCode),
                 "Geçerli bir üyelik paketi seçmelisin.");
+        }
+
+        var existingUser = string.IsNullOrWhiteSpace(Input.Email)
+            ? null
+            : await userManager.FindByEmailAsync(Input.Email) ??
+                await userManager.FindByNameAsync(Input.Email);
+
+        if (existingUser is not null)
+        {
+            ModelState.AddModelError(
+                $"{nameof(Input)}.{nameof(Input.Email)}",
+                "Bu e-posta adresi zaten kullanılıyor.");
         }
 
         if (!ModelState.IsValid)
@@ -67,8 +81,23 @@ public class RegisterModel(
 
         if (!createResult.Succeeded)
         {
+            var hasDuplicateEmailError = createResult.Errors.Any(error =>
+                error.Code is "DuplicateEmail" or "DuplicateUserName");
+
+            if (hasDuplicateEmailError)
+            {
+                ModelState.AddModelError(
+                    $"{nameof(Input)}.{nameof(Input.Email)}",
+                    "Bu e-posta adresi zaten kullanılıyor.");
+            }
+
             foreach (var error in createResult.Errors)
             {
+                if (error.Code is "DuplicateEmail" or "DuplicateUserName")
+                {
+                    continue;
+                }
+
                 ModelState.AddModelError(
                     string.Empty,
                     error.Description);
@@ -81,13 +110,20 @@ public class RegisterModel(
             user,
             ApplicationRoles.Member);
 
+        var membershipStartsAtUtc = DateTime.UtcNow;
+
         dbContext.MemberProfiles.Add(new MemberProfile
         {
             ApplicationUserId = user.Id,
             MembershipPackageId = selectedPackage!.Id,
             FitnessGoal = Input.FitnessGoal,
             RemainingClassCredits =
-                CalculateInitialClassCredits(selectedPackage)
+                CalculateInitialClassCredits(selectedPackage),
+            MembershipStartsAtUtc = membershipStartsAtUtc,
+            MembershipEndsAtUtc =
+                membershipStartsAtUtc.AddDays(
+                    MemberProfile.DefaultMembershipDurationDays),
+            MembershipStatus = MembershipStatus.Active
         });
 
         await dbContext.SaveChangesAsync();

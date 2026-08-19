@@ -18,4 +18,10 @@ public class MemberReservationsIndexViewModel
     public IReadOnlyList<PersonalTrainingRequestListItemViewModel> PersonalTrainingRequests { get; init; } = [];
 
     public bool CanRequestPersonalTraining { get; init; }
+
+    public string PersonalTrainingUnavailableTitle { get; init; } =
+        "Birebir talep oluşturulamıyor.";
+
+    public string PersonalTrainingUnavailableMessage { get; init; } =
+        "Birebir antrenman talebi oluşturmak için aktif ve uygun bir üyelik paketin olmalı.";
 }

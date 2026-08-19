@@ -19,7 +19,10 @@ public class PersonalTrainingRequestService(ApplicationDbContext dbContext)
         string userId,
         PersonalTrainingRequestInputViewModel model)
     {
-        if (!PreferredTimeWindows.Contains(model.PreferredTimeWindow))
+        var preferredTimeWindow = model.PreferredTimeWindow?.Trim();
+
+        if (string.IsNullOrWhiteSpace(preferredTimeWindow) ||
+            !PreferredTimeWindows.Contains(preferredTimeWindow))
         {
             return PersonalTrainingRequestResult.Fail("Geçerli bir saat aralığı seçmelisin.");
         }
@@ -36,6 +39,15 @@ public class PersonalTrainingRequestService(ApplicationDbContext dbContext)
         if (profile is null)
         {
             return PersonalTrainingRequestResult.Fail("Üye profili bulunamadı.");
+        }
+
+        if (!MemberMembershipService.CanRequestPersonalTraining(
+                profile,
+                model.PreferredDate,
+                DateTime.UtcNow,
+                out var membershipErrorMessage))
+        {
+            return PersonalTrainingRequestResult.Fail(membershipErrorMessage);
         }
 
         if (!profile.MembershipPackage.IncludesPersonalTrainingSupport)
@@ -93,7 +105,7 @@ public class PersonalTrainingRequestService(ApplicationDbContext dbContext)
 
             PreferredDate = model.PreferredDate,
 
-            PreferredTimeWindow = model.PreferredTimeWindow,
+            PreferredTimeWindow = preferredTimeWindow,
 
             GoalNote = model.GoalNote?.Trim()
         };

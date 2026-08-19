@@ -19,4 +19,10 @@ public class UpcomingClassSessionPublicViewModel
     public int ReservedCount { get; init; }
 
     public int RemainingCapacity { get; init; }
+
+    public int? ReservationId { get; init; }
+
+    public bool IsReservedByMember { get; init; }
+
+    public bool CanCancel { get; init; }
 }

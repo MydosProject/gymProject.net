@@ -90,7 +90,10 @@ else
                 </div>
                 <div class="shop-form-field shop-form-field-wide">
                     <label asp-for="CheckoutInput.PhoneNumber">Telefon</label>
-                    <input asp-for="CheckoutInput.PhoneNumber" autocomplete="tel" />
+                    <input asp-for="CheckoutInput.PhoneNumber"
+                           autocomplete="tel"
+                           inputmode="tel"
+                           placeholder="05xx xxx xx xx" />
                     <span asp-validation-for="CheckoutInput.PhoneNumber"></span>
                 </div>
                 <div class="shop-form-field shop-form-field-wide">

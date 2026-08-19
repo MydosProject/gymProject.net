@@ -23,5 +23,7 @@ public class MemberProfileIndexViewModel
 
     public string MembershipPackageName { get; set; } = string.Empty;
 
-    public DateTime MemberSinceUtc { get; set; }
+    public DateTime MembershipStartsAtUtc { get; set; }
+
+    public DateTime MembershipEndsAtUtc { get; set; }
 }

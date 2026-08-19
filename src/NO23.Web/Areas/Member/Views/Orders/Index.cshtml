@@ -8,30 +8,6 @@
 
     var totalItemCount = Model.Orders.Sum(order => order.ItemCount);
 
-    string GetOrderTypeName(string type)
-    {
-        return type switch
-        {
-            "OneTime" => "Tek Seferlik Sipariş",
-            "KitchenSubscription" => "Kitchen Paketi",
-            _ => type
-        };
-    }
-
-    string GetOrderStatusName(string status)
-    {
-        return status switch
-        {
-            "Pending" => "Beklemede",
-            "Confirmed" => "Onaylandı",
-            "Preparing" => "Hazırlanıyor",
-            "OutForDelivery" => "Dağıtımda",
-            "Delivered" => "Teslim Edildi",
-            "Cancelled" => "İptal Edildi",
-            _ => status
-        };
-    }
-
     string GetOrderStatusClass(string status)
     {
         return status switch
@@ -44,18 +20,6 @@
         };
     }
 
-    string GetPaymentStatusName(string status)
-    {
-        return status switch
-        {
-            "Pending" => "Ödeme Bekliyor",
-            "Paid" => "Ödendi",
-            "Failed" => "Ödeme Başarısız",
-            "Refunded" => "İade Edildi",
-            _ => status
-        };
-    }
-
     string GetPaymentStatusClass(string status)
     {
         return status switch
@@ -63,20 +27,11 @@
             "Paid" => "is-paid",
             "Failed" => "is-failed",
             "Refunded" => "is-refunded",
+            "Expired" => "is-expired",
             _ => "is-payment-pending"
         };
     }
 
-    string GetItemTypeName(string itemType)
-    {
-        return itemType switch
-        {
-            "ShopProduct" => "NO23 Shop",
-            "KitchenMenuItem" => "NO23 Kitchen",
-            "KitchenSubscriptionPackage" => "NO23 Kitchen Paketi",
-            _ => itemType
-        };
-    }
 }
 
 <section class="member-orders-page">
@@ -181,17 +136,17 @@
                                 <span class="member-order-index">@((index + 1).ToString("00"))</span>
 
                                 <div class="member-order-identity">
-                                    <p>@GetOrderTypeName(order.Type)</p>
+                                    <p>@order.TypeDisplayName</p>
                                     <h3>@order.OrderNumber</h3>
                                     <small>@order.CreatedAtLocal.ToString("dd.MM.yyyy · HH:mm")</small>
                                 </div>
 
                                 <div class="member-order-statuses">
                                     <span class="@GetOrderStatusClass(order.Status)">
-                                        @GetOrderStatusName(order.Status)
+                                        @order.StatusDisplayName
                                     </span>
                                     <span class="@GetPaymentStatusClass(order.PaymentStatus)">
-                                        @GetPaymentStatusName(order.PaymentStatus)
+                                        @order.PaymentStatusDisplayName
                                     </span>
                                 </div>
                             </header>
@@ -242,7 +197,7 @@
                                         {
                                             <div class="member-order-item">
                                                 <div>
-                                                    <span>@GetItemTypeName(item.ItemType)</span>
+                                                    <span>@item.ItemTypeDisplayName</span>
                                                     <strong>@item.ProductName</strong>
                                                 </div>
 
@@ -262,4 +217,3 @@
         </section>
     </div>
 </section>
-
