@@ -1,11 +1,14 @@
 @model IReadOnlyList<MemberListItemViewModel>
 @{
     ViewData["Title"] = "Üyeler";
+
     var packageCount = Model
         .Select(member => member.PackageName)
         .Distinct(StringComparer.OrdinalIgnoreCase)
         .Count();
+
     var utcNow = DateTime.UtcNow;
+
     var newThisMonthCount = Model.Count(member =>
         member.CreatedAtUtc.Year == utcNow.Year &&
         member.CreatedAtUtc.Month == utcNow.Month);
@@ -16,7 +19,9 @@
         <header class="admin-page-head">
             <div>
                 <p class="admin-eyebrow">KULÜP / ÜYE YÖNETİMİ</p>
+
                 <h1>Üyeler</h1>
+
                 <p class="admin-page-description">
                     Üye profillerini, paket dağılımını, hedefleri ve kalan ders haklarını tek ekrandan takip et.
                 </p>
@@ -30,17 +35,33 @@
             </a>
         </header>
 
+        @if (TempData["SuccessMessage"] is string successMessage)
+        {
+            <div class="alert alert-success" role="alert">
+                @successMessage
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] is string errorMessage)
+        {
+            <div class="alert alert-danger" role="alert">
+                @errorMessage
+            </div>
+        }
+
         <div class="admin-metrics">
             <article>
                 <span>Toplam üye</span>
                 <strong>@Model.Count</strong>
                 <small>Kayıtlı üye profili</small>
             </article>
+
             <article>
                 <span>Aktif paket türü</span>
                 <strong>@packageCount</strong>
                 <small>Üyeler tarafından kullanılan</small>
             </article>
+
             <article>
                 <span>Bu ay katılan</span>
                 <strong>@newThisMonthCount</strong>
@@ -58,14 +79,19 @@
                         <th>Hedef</th>
                         <th>Kalan Ders</th>
                         <th>Kayıt</th>
+                        <th>Durum</th>
+                        <th class="text-end">İşlem</th>
                     </tr>
                 </thead>
+
                 <tbody>
                     @if (Model.Count == 0)
                     {
                         <tr>
-                            <td colspan="6">
-                                <div class="admin-empty-row">Henüz kayıtlı üye bulunmuyor.</div>
+                            <td colspan="8">
+                                <div class="admin-empty-row">
+                                    Henüz kayıtlı üye bulunmuyor.
+                                </div>
                             </td>
                         </tr>
                     }
@@ -75,19 +101,112 @@
                         {
                             <tr>
                                 <td data-label="Üye">
-                                    <strong>@(string.IsNullOrWhiteSpace(member.FullName) ? "İsimsiz üye" : member.FullName)</strong>
-                                    <small class="admin-cell-note">@member.Email</small>
+                                    <strong>
+                                        @(string.IsNullOrWhiteSpace(member.FullName)
+                                            ? "İsimsiz üye"
+                                            : member.FullName)
+                                    </strong>
+
+                                    <small class="admin-cell-note">
+                                        @member.Email
+                                    </small>
                                 </td>
-                                <td data-label="İletişim">@(string.IsNullOrWhiteSpace(member.PhoneNumber) ? "-" : member.PhoneNumber)</td>
-                                <td data-label="Paket"><span class="admin-status">@member.PackageName</span></td>
-                                <td data-label="Hedef">@(string.IsNullOrWhiteSpace(member.FitnessGoal) ? "-" : member.FitnessGoal)</td>
+
+                                <td data-label="İletişim">
+                                    @(string.IsNullOrWhiteSpace(member.PhoneNumber)
+                                        ? "-"
+                                        : member.PhoneNumber)
+                                </td>
+
+                                <td data-label="Paket">
+                                    <span class="admin-status">
+                                        @member.PackageName
+                                    </span>
+                                </td>
+
+                                <td data-label="Hedef">
+                                    @(string.IsNullOrWhiteSpace(member.FitnessGoal)
+                                        ? "-"
+                                        : member.FitnessGoal)
+                                </td>
+
                                 <td data-label="Kalan ders">
-                                    <strong>@(member.RemainingClassCredits == 0 ? "Sınırsız" : member.RemainingClassCredits)</strong>
-                                    <small class="admin-cell-note">Ders hakkı</small>
+                                    <strong>
+                                        @(member.RemainingClassCredits == 0
+                                            ? "Sınırsız"
+                                            : member.RemainingClassCredits)
+                                    </strong>
+
+                                    <small class="admin-cell-note">
+                                        Ders hakkı
+                                    </small>
                                 </td>
+
                                 <td data-label="Kayıt">
                                     <strong>@member.CreatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy")</strong>
-                                    <small class="admin-cell-note">Kayıt tarihi</small>
+
+                                    <small class="admin-cell-note">
+                                        Kayıt tarihi
+                                    </small>
+                                </td>
+
+                                <td data-label="Durum">
+                                    @if (member.IsSuspended)
+                                    {
+                                        <span class="badge text-bg-warning">
+                                            Askıya Alındı
+                                        </span>
+
+                                        @if (member.SuspendedAtUtc.HasValue)
+                                        {
+                                            <small class="admin-cell-note">
+                                                @member.SuspendedAtUtc.Value.ToLocalTime().ToString("dd.MM.yyyy")
+                                            </small>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="badge text-bg-success">
+                                            Aktif
+                                        </span>
+                                    }
+                                </td>
+
+                                <td class="text-end"
+                                    data-label="İşlem">
+
+                                    @if (member.IsSuspended)
+                                    {
+                                        <form asp-action="Reactivate"
+                                              asp-route-id="@member.Id"
+                                              method="post"
+                                              class="d-inline">
+
+                                            @Html.AntiForgeryToken()
+
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-outline-success"
+                                                    onclick="return confirm('Bu üyeliği yeniden aktifleştirmek istediğinize emin misiniz?');">
+                                                Aktifleştir
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <form asp-action="Suspend"
+                                              asp-route-id="@member.Id"
+                                              method="post"
+                                              class="d-inline">
+
+                                            @Html.AntiForgeryToken()
+
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-outline-warning"
+                                                    onclick="return confirm('Bu üyeliği askıya almak istediğinize emin misiniz?');">
+                                                Askıya Al
+                                            </button>
+                                        </form>
+                                    }
                                 </td>
                             </tr>
                         }

@@ -12,6 +12,9 @@
 
     <meta name="theme-color" content="#0b0b0b" />
 
+    <link rel="icon" type="image/png" sizes="48x48" href="~/images/brand/favicon-48.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="~/images/brand/no23-icon-192.png" />
+
     <script type="importmap"></script>
 
     <link rel="stylesheet"
@@ -91,6 +94,15 @@
                             </a>
                         </li>
 
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               asp-area=""
+                               asp-controller="Gallery"
+                               asp-action="Index">
+                                Galeri
+                            </a>
+                        </li>
+
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle"
                                href="#"
@@ -145,13 +157,21 @@
         <div class="container">
             <div class="row g-4">
                 <div class="col-lg-5">
-                    <a class="no23-brand footer-brand"
-                       asp-area=""
-                       asp-controller="Home"
-                       asp-action="Index">
-                        <span class="no23-brand-number">NO23</span>
-                        <span class="no23-brand-name">Sports Club</span>
-                    </a>
+                    <div class="footer-brand-lockup">
+                        <img class="footer-emblem"
+                             src="~/images/brand/no23-emblem.webp"
+                             alt=""
+                             width="96"
+                             height="96"
+                             loading="lazy" />
+                        <a class="no23-brand footer-brand"
+                           asp-area=""
+                           asp-controller="Home"
+                           asp-action="Index">
+                            <span class="no23-brand-number">NO23</span>
+                            <span class="no23-brand-name">Sports Club</span>
+                        </a>
+                    </div>
 
                     <p class="footer-description">
                         Daha iyi antrenman, doğru beslenme ve güçlü bir

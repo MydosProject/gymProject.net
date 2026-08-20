@@ -123,6 +123,25 @@ public class BlogPostsController(ApplicationDbContext dbContext) : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var item = await dbContext.BlogPosts.FindAsync(id);
+
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        dbContext.BlogPosts.Remove(item);
+        await dbContext.SaveChangesAsync();
+
+        TempData["SuccessMessage"] = "Blog yazısı başarıyla silindi.";
+
+        return RedirectToAction(nameof(Index));
+    }
+
     private Task<bool> SlugExistsAsync(
         string slug,
         int? currentId)

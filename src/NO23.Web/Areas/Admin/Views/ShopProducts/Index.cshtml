@@ -16,10 +16,38 @@
             <a class="btn btn-dark" asp-action="Create">+ Yeni ürün</a>
         </header>
 
+        @if (TempData["SuccessMessage"] is string successMessage)
+        {
+            <div class="alert alert-success" role="alert">
+                @successMessage
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] is string errorMessage)
+        {
+            <div class="alert alert-danger" role="alert">
+                @errorMessage
+            </div>
+        }
+
         <div class="admin-metrics">
-            <article><span>Toplam ürün</span><strong>@Model.Count</strong><small>Kayıtlı koleksiyon</small></article>
-            <article><span>Aktif ürün</span><strong>@activeCount</strong><small>Satışta olan ürün</small></article>
-            <article><span>Toplam stok</span><strong>@totalStock</strong><small>Hazır ürün adedi</small></article>
+            <article>
+                <span>Toplam ürün</span>
+                <strong>@Model.Count</strong>
+                <small>Kayıtlı koleksiyon</small>
+            </article>
+
+            <article>
+                <span>Aktif ürün</span>
+                <strong>@activeCount</strong>
+                <small>Satışta olan ürün</small>
+            </article>
+
+            <article>
+                <span>Toplam stok</span>
+                <strong>@totalStock</strong>
+                <small>Hazır ürün adedi</small>
+            </article>
         </div>
 
         <div class="table-responsive admin-table-card">
@@ -37,25 +65,66 @@
                         <th class="text-end">İşlem</th>
                     </tr>
                 </thead>
+
                 <tbody>
                     @if (Model.Count == 0)
                     {
-                        <tr><td colspan="9"><div class="admin-empty-row">Henüz Shop ürünü eklenmedi.</div></td></tr>
+                        <tr>
+                            <td colspan="9">
+                                <div class="admin-empty-row">
+                                    Henüz Shop ürünü eklenmedi.
+                                </div>
+                            </td>
+                        </tr>
                     }
                     else
                     {
                         @foreach (var product in Model)
                         {
                             <tr>
-                                <td data-label="Sıra"><span class="admin-order-no">@product.DisplayOrder.ToString("00")</span></td>
-                                <td data-label="Ürün"><strong>@product.Name</strong></td>
-                                <td data-label="SKU"><span class="admin-code">@product.Sku</span></td>
-                                <td data-label="Kategori">@product.Category</td>
-                                <td data-label="Fiyat"><strong>@product.UnitPrice.ToString("C0")</strong></td>
-                                <td data-label="Stok">@product.StockQuantity</td>
-                                <td data-label="Kritik eşik">@product.MinimumStockQuantity</td>
-                                <td data-label="Durum"><span class="badge @(product.IsActive ? "text-bg-success" : "text-bg-secondary")">@(product.IsActive ? "Aktif" : "Pasif")</span></td>
-                                <td class="text-end" data-label="İşlem"><a class="btn btn-sm btn-outline-dark" asp-action="Edit" asp-route-id="@product.Id">Düzenle</a></td>
+                                <td data-label="Sıra">
+                                    <span class="admin-order-no">
+                                        @product.DisplayOrder.ToString("00")
+                                    </span>
+                                </td>
+
+                                <td data-label="Ürün">
+                                    <strong>@product.Name</strong>
+                                </td>
+
+                                <td data-label="SKU">
+                                    <span class="admin-code">@product.Sku</span>
+                                </td>
+
+                                <td data-label="Kategori">
+                                    @product.Category
+                                </td>
+
+                                <td data-label="Fiyat">
+                                    <strong>@product.UnitPrice.ToString("C0")</strong>
+                                </td>
+
+                                <td data-label="Stok">
+                                    @product.StockQuantity
+                                </td>
+
+                                <td data-label="Kritik eşik">
+                                    @product.MinimumStockQuantity
+                                </td>
+
+                                <td data-label="Durum">
+                                    <span class="badge @(product.IsActive ? "text-bg-success" : "text-bg-secondary")">
+                                        @(product.IsActive ? "Aktif" : "Pasif")
+                                    </span>
+                                </td>
+
+                                <td class="text-end" data-label="İşlem">
+                                    <a class="btn btn-sm btn-outline-dark"
+                                       asp-action="Edit"
+                                       asp-route-id="@product.Id">
+                                        Düzenle
+                                    </a>
+                                </td>
                             </tr>
                         }
                     }

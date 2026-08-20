@@ -13,6 +13,21 @@
                 <p class="admin-page-description">Üye bilgilerini, dönüşüm içeriğini ve yayın durumunu güncelle.</p>
             </div>
         </header>
+
+        @if (TempData["SuccessMessage"] is string successMessage)
+        {
+            <div class="alert alert-success" role="alert">
+                @successMessage
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] is string errorMessage)
+        {
+            <div class="alert alert-danger" role="alert">
+                @errorMessage
+            </div>
+        }
+
         <partial name="_SuccessStoryForm" model="Model" />
     </div>
 </section>

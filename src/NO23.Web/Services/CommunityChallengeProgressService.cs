@@ -47,6 +47,12 @@ public class CommunityChallengeProgressService(ApplicationDbContext dbContext)
                 "Bu challenge'a katılmak için Community üyeliği gerekir.");
         }
 
+        if (profile.IsSuspended)
+        {
+            return CommunityChallengeActionResult.Fail(
+                "Üyeliğiniz askıya alındığı için challenge'a katılamazsınız.");
+        }
+
         var existingParticipation = await dbContext.CommunityChallengeParticipations
             .FirstOrDefaultAsync(item =>
                 item.CommunityChallengeId == challenge.Id &&
@@ -102,6 +108,12 @@ public class CommunityChallengeProgressService(ApplicationDbContext dbContext)
                 "Bu işlem için Community üyeliği gerekir.");
         }
 
+        if (profile.IsSuspended)
+        {
+            return CommunityChallengeActionResult.Fail(
+                "Üyeliğiniz askıya alındığı için challenge ilerlemesi kaydedemezsiniz.");
+        }
+
         var participation = await dbContext.CommunityChallengeParticipations
             .Include(item => item.CommunityChallenge)
             .Include(item => item.ProgressEntries)
@@ -151,6 +163,7 @@ public class CommunityChallengeProgressService(ApplicationDbContext dbContext)
         var range = CommunityChallengeProgressCalculator.GetCalorieRange(
             challenge.TargetDailyCalories,
             challenge.CalorieTolerancePercent);
+
         var isCompliant = CommunityChallengeProgressCalculator.IsCalorieCompliant(
             request.CaloriesConsumed,
             range);
@@ -188,9 +201,11 @@ public class CommunityChallengeProgressService(ApplicationDbContext dbContext)
         participation.Status = stats.IsCompleted
             ? CommunityChallengeParticipationStatus.Completed
             : CommunityChallengeParticipationStatus.Active;
+
         participation.CompletedAtUtc = stats.IsCompleted
             ? participation.CompletedAtUtc ?? DateTime.UtcNow
             : null;
+
         participation.UpdatedAtUtc = DateTime.UtcNow;
 
         await dbContext.SaveChangesAsync();
@@ -243,20 +258,25 @@ public static class CommunityChallengeProgressCalculator
     {
         var totalDays = Math.Max(1, endsOn.DayNumber - startsOn.DayNumber + 1);
         var normalizedRequiredPercent = Math.Clamp(requiredCompletionPercent, 1, 100);
+
         var loggedDays = entries
             .Select(entry => entry.EntryDate)
             .Distinct()
             .Count();
+
         var compliantDays = entries
             .Where(entry => entry.IsCompliant)
             .Select(entry => entry.EntryDate)
             .Distinct()
             .Count();
+
         var progressPercent = decimal.Round(
             compliantDays * 100m / totalDays,
             1,
             MidpointRounding.AwayFromZero);
-        var requiredCompliantDays = (int)Math.Ceiling(totalDays * normalizedRequiredPercent / 100m);
+
+        var requiredCompliantDays =
+            (int)Math.Ceiling(totalDays * normalizedRequiredPercent / 100m);
 
         return new ChallengeProgressStats(
             totalDays,

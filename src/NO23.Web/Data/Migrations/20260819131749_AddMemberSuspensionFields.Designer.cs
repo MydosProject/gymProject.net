@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NO23.Web.Data;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace NO23.Web.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260819131749_AddMemberSuspensionFields")]
+    partial class AddMemberSuspensionFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1460,47 +1463,8 @@ namespace NO23.Web.Data.Migrations
                     b.Property<bool>("IsSuspended")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("IyzicoCustomerReferenceCode")
-                        .HasMaxLength(120)
-                        .HasColumnType("character varying(120)");
-
-                    b.Property<string>("IyzicoPricingPlanReferenceCode")
-                        .HasMaxLength(120)
-                        .HasColumnType("character varying(120)");
-
-                    b.Property<string>("IyzicoSubscriptionReferenceCode")
-                        .HasMaxLength(120)
-                        .HasColumnType("character varying(120)");
-
-                    b.Property<DateTime?>("MembershipCancellationEffectiveAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("MembershipCancellationReason")
-                        .HasMaxLength(240)
-                        .HasColumnType("character varying(240)");
-
-                    b.Property<DateTime?>("MembershipCancellationRequestedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("MembershipEndsAtUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW() + INTERVAL '28 days'");
-
                     b.Property<int>("MembershipPackageId")
                         .HasColumnType("integer");
-
-                    b.Property<DateTime>("MembershipStartsAtUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<string>("MembershipStatus")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(40)
-                        .HasColumnType("character varying(40)")
-                        .HasDefaultValue("Active");
 
                     b.Property<int>("RemainingClassCredits")
                         .HasColumnType("integer");
@@ -1583,68 +1547,6 @@ namespace NO23.Web.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("MemberProgressEntries");
-                });
-
-            modelBuilder.Entity("NO23.Web.Domain.Entities.MembershipPackageChangeRequest", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("AdminNote")
-                        .HasMaxLength(1200)
-                        .HasColumnType("character varying(1200)");
-
-                    b.Property<int>("CurrentMembershipPackageId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("MemberProfileId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("RequestedAtUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<int>("RequestedMembershipPackageId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("ResolvedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("ResolvedByUserId")
-                        .HasMaxLength(450)
-                        .HasColumnType("character varying(450)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(40)
-                        .HasColumnType("character varying(40)")
-                        .HasDefaultValue("Pending");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CurrentMembershipPackageId");
-
-                    b.HasIndex("MemberProfileId", "Status");
-
-                    b.HasIndex("MemberProfileId")
-                        .IsUnique()
-                        .HasDatabaseName("IX_MembershipPackageChangeRequests_MemberProfileId_Pending")
-                        .HasFilter("\"Status\" = 'Pending'");
-
-                    b.HasIndex("RequestedAtUtc");
-
-                    b.HasIndex("RequestedMembershipPackageId");
-
-                    b.HasIndex("ResolvedByUserId");
-
-                    b.HasIndex("Status");
-
-                    b.ToTable("MembershipPackageChangeRequests");
                 });
 
             modelBuilder.Entity("NO23.Web.Domain.Entities.MembershipPackage", b =>
@@ -2738,40 +2640,6 @@ namespace NO23.Web.Data.Migrations
                     b.Navigation("MemberProfile");
                 });
 
-            modelBuilder.Entity("NO23.Web.Domain.Entities.MembershipPackageChangeRequest", b =>
-                {
-                    b.HasOne("NO23.Web.Domain.Entities.MembershipPackage", "CurrentMembershipPackage")
-                        .WithMany()
-                        .HasForeignKey("CurrentMembershipPackageId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("NO23.Web.Domain.Entities.MemberProfile", "MemberProfile")
-                        .WithMany("MembershipPackageChangeRequests")
-                        .HasForeignKey("MemberProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("NO23.Web.Domain.Entities.MembershipPackage", "RequestedMembershipPackage")
-                        .WithMany()
-                        .HasForeignKey("RequestedMembershipPackageId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("NO23.Web.Domain.Entities.ApplicationUser", "ResolvedByUser")
-                        .WithMany()
-                        .HasForeignKey("ResolvedByUserId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("CurrentMembershipPackage");
-
-                    b.Navigation("MemberProfile");
-
-                    b.Navigation("RequestedMembershipPackage");
-
-                    b.Navigation("ResolvedByUser");
-                });
-
             modelBuilder.Entity("NO23.Web.Domain.Entities.Order", b =>
                 {
                     b.HasOne("NO23.Web.Domain.Entities.KitchenSubscription", "KitchenSubscription")
@@ -3005,8 +2873,6 @@ namespace NO23.Web.Data.Migrations
                     b.Navigation("CommunityChallengeParticipations");
 
                     b.Navigation("KitchenSubscriptions");
-
-                    b.Navigation("MembershipPackageChangeRequests");
 
                     b.Navigation("Orders");
 

@@ -117,6 +117,41 @@ public class ShopProductsController(ApplicationDbContext dbContext) : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var product = await dbContext.ShopProducts
+            .Include(item => item.OrderItems)
+            .Include(item => item.CartItems)
+            .FirstOrDefaultAsync(item => item.Id == id);
+
+        if (product is null)
+        {
+            return NotFound();
+        }
+
+        if (product.OrderItems.Count > 0)
+        {
+            TempData["ErrorMessage"] =
+                "Bu ürün sipariş geçmişinde kullanıldığı için silinemez. Ürünü pasife alabilirsiniz.";
+
+            return RedirectToAction(nameof(Edit), new { id });
+        }
+
+        if (product.CartItems.Count > 0)
+        {
+            dbContext.CartItems.RemoveRange(product.CartItems);
+        }
+
+        dbContext.ShopProducts.Remove(product);
+        await dbContext.SaveChangesAsync();
+
+        TempData["SuccessMessage"] = "Shop ürünü başarıyla silindi.";
+
+        return RedirectToAction(nameof(Index));
+    }
+
     private static ShopProduct MapToEntity(ShopProductFormViewModel model)
     {
         var product = new ShopProduct();

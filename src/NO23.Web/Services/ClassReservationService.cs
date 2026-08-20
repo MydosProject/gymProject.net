@@ -20,6 +20,12 @@ public class ClassReservationService(ApplicationDbContext dbContext)
             return ReservationResult.Fail("Üye profili bulunamadı.");
         }
 
+        if (profile.IsSuspended)
+        {
+            return ReservationResult.Fail(
+                "Üyeliğiniz askıya alındığı için ders rezervasyonu yapamazsınız.");
+        }
+
         var session = await dbContext.ClassSessions
             .Include(classSession => classSession.GroupClass)
             .Include(classSession => classSession.Reservations)
@@ -60,6 +66,7 @@ public class ClassReservationService(ApplicationDbContext dbContext)
 
         var activeReservationCount = session.Reservations.Count(reservation =>
             reservation.Status == ClassReservationStatus.Reserved);
+
         var capacity = session.CapacityOverride ?? session.GroupClass.Capacity;
 
         if (activeReservationCount >= capacity)
@@ -98,6 +105,7 @@ public class ClassReservationService(ApplicationDbContext dbContext)
         profile.UpdatedAtUtc = DateTime.UtcNow;
 
         await dbContext.SaveChangesAsync();
+
         return ReservationResult.Ok();
     }
 
@@ -123,7 +131,8 @@ public class ClassReservationService(ApplicationDbContext dbContext)
 
         if (reservation.ClassSession.StartsAtUtc - DateTime.UtcNow < CancellationWindow)
         {
-            return ReservationResult.Fail("Rezervasyon iptali ders başlangıcından 2 saat öncesine kadar yapılabilir.");
+            return ReservationResult.Fail(
+                "Rezervasyon iptali ders başlangıcından 2 saat öncesine kadar yapılabilir.");
         }
 
         reservation.Status = ClassReservationStatus.Cancelled;
@@ -138,6 +147,7 @@ public class ClassReservationService(ApplicationDbContext dbContext)
         reservation.MemberProfile.UpdatedAtUtc = DateTime.UtcNow;
 
         await dbContext.SaveChangesAsync();
+
         return ReservationResult.Ok();
     }
 }
