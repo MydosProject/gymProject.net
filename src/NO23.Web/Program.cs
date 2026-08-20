@@ -156,6 +156,7 @@ builder.Services.AddControllersWithViews(options =>
         "Bu alan zorunludur.");
 });
 builder.Services.AddSignalR();
+builder.Services.AddScoped<MemberMembershipService>();
 builder.Services.AddScoped<ClassReservationService>();
 builder.Services.AddScoped<PersonalTrainingRequestService>();
 builder.Services.AddScoped<TrainerMessagingService>();

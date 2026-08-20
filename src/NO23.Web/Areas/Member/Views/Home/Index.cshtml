@@ -14,6 +14,11 @@
         ? "Paket bilgisi bulunamadı"
         : Model.PackageName;
 
+    var membershipSummaryTitle = string.IsNullOrWhiteSpace(
+            Model.MembershipSummaryTitle)
+        ? packageName
+        : Model.MembershipSummaryTitle;
+
     var kitchenPanelUrl = Url.Action("Index", "Kitchen", new { area = "Member" }) ?? "/Member/Kitchen";
     var kitchenCtaUrl = Model.HasActiveKitchenSubscription
         ? kitchenPanelUrl
@@ -77,12 +82,22 @@
             <article class="member-stat-card member-stat-card-accent">
                 <div class="member-stat-card-top">
                     <span class="member-stat-number">01</span>
-                    <span class="member-stat-label">Aktif üyelik</span>
+                    <span class="member-stat-label">
+                        @Model.MembershipSummaryLabel
+                    </span>
                 </div>
 
                 <div>
-                    <p>Paketin</p>
-                    <h2>@packageName</h2>
+                    <p>@Model.MembershipSummaryDescription</p>
+                    <h2>@membershipSummaryTitle</h2>
+
+                    @if (!string.IsNullOrWhiteSpace(
+                            Model.LastMembershipPackageName))
+                    {
+                        <small class="member-stat-note">
+                            Son paket: @Model.LastMembershipPackageName
+                        </small>
+                    }
                 </div>
             </article>
 
@@ -188,22 +203,31 @@
                                 </span>
                             </div>
 
-                            <form asp-area="Member"
-                                  asp-controller="Home"
-                                  asp-action="Cancel"
-                                  asp-antiforgery="true"
-                                  method="post"
-                                  class="member-reservation-action">
+                            @if (reservation.CanCancel)
+                            {
+                                <form asp-area="Member"
+                                      asp-controller="Home"
+                                      asp-action="Cancel"
+                                      asp-antiforgery="true"
+                                      method="post"
+                                      class="member-reservation-action">
 
-                                <input type="hidden"
-                                       name="reservationId"
-                                       value="@reservation.ReservationId" />
+                                    <input type="hidden"
+                                           name="reservationId"
+                                           value="@reservation.ReservationId" />
 
-                                <button type="submit"
-                                        class="member-cancel-button">
-                                    İptal Et
-                                </button>
-                            </form>
+                                    <button type="submit"
+                                            class="member-cancel-button">
+                                        İptal Et
+                                    </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <span class="member-reserved-message">
+                                    İptal süresi geçti
+                                </span>
+                            }
                         </article>
                     }
                 </div>
@@ -247,6 +271,13 @@
                         var isFull =
                             session.ReservedCount >= session.Capacity;
 
+                        var hasNoClassCredits =
+                            !session.HasAvailableClassCredits;
+
+                        var isReservationUnavailable =
+                            !string.IsNullOrWhiteSpace(
+                                session.ReservationUnavailableReason);
+
                         var remainingCapacity = Math.Max(
                             0,
                             session.Capacity - session.ReservedCount);
@@ -281,6 +312,18 @@
                                 {
                                     <span class="member-session-status full">
                                         Kontenjan dolu
+                                    </span>
+                                }
+                                else if (isReservationUnavailable)
+                                {
+                                    <span class="member-session-status full">
+                                        @session.ReservationUnavailableReason
+                                    </span>
+                                }
+                                else if (hasNoClassCredits)
+                                {
+                                    <span class="member-session-status full">
+                                        Ders hakkı yok
                                     </span>
                                 }
                                 else
@@ -353,10 +396,16 @@
 
                                         <button type="submit"
                                                 class="member-reserve-button"
-                                                disabled="@isFull">
+                                                disabled="@(isFull ||
+                                                    hasNoClassCredits ||
+                                                    isReservationUnavailable)">
                                             @(isFull
                                                 ? "Ders Dolu"
-                                                : "Rezervasyon Yap")
+                                                : isReservationUnavailable
+                                                    ? session.ReservationUnavailableReason
+                                                    : hasNoClassCredits
+                                                    ? "Ders Hakkı Yok"
+                                                    : "Rezervasyon Yap")
 
                                             <span aria-hidden="true">→</span>
                                         </button>

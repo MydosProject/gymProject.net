@@ -1231,16 +1231,22 @@
   color: #ff8d76;
 }
 
+.classes-schedule-item form {
+  margin: 0;
+}
+
 .classes-reservation-link {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.6rem;
+  width: 100%;
   padding: 0.85rem 1rem;
   border: 1px solid var(--no23-accent);
   border-radius: 10px;
   color: #080b08;
   background: var(--no23-accent);
+  cursor: pointer;
   font-size: 0.66rem;
   font-weight: 900;
   letter-spacing: 0.07em;
@@ -3616,10 +3622,16 @@ button:focus-visible {
   display: grid;
   grid-template-columns: minmax(340px, 0.85fr) minmax(0, 1.15fr);
   gap: 1.25rem;
+  align-items: stretch;
+}
+
+.member-settings-side {
+  display: contents;
 }
 
 .member-settings-overview,
-.member-settings-password {
+.member-settings-password,
+.member-settings-membership {
   min-width: 0;
   padding: 1.7rem;
   border: 1px solid rgba(255, 255, 255, 0.13);
@@ -3629,15 +3641,311 @@ button:focus-visible {
 .member-settings-overview {
   display: flex;
   flex-direction: column;
+  grid-column: 1;
+  grid-row: 1;
   color: #fff;
   background:
     radial-gradient(circle at 100% 0, rgba(197, 255, 32, 0.1), transparent 19rem),
     #111510;
 }
 
-.member-settings-password {
+.member-settings-membership {
+  grid-column: 1 / -1;
+  grid-row: 2;
   color: #0c0f0b;
   background: #f4f2eb;
+}
+
+.member-settings-password {
+  grid-column: 2;
+  grid-row: 1;
+  color: #0c0f0b;
+  background: #f4f2eb;
+}
+
+.member-settings-membership-status {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1.2rem;
+}
+
+.member-settings-membership-status span {
+  width: fit-content;
+  padding: 0.4rem 0.55rem;
+  border: 1px solid rgba(113, 149, 16, 0.18);
+  border-radius: 999px;
+  color: #597600;
+  background: rgba(197, 255, 32, 0.16);
+  font-size: 0.56rem;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.member-settings-membership-status strong {
+  color: #10130f;
+  font-size: 1.35rem;
+  font-weight: 950;
+  line-height: 1.05;
+}
+
+.member-settings-membership-dates {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 1rem 0 0;
+}
+
+.member-settings-membership-dates div {
+  min-width: 0;
+  padding: 0.85rem;
+  border: 1px solid rgba(16, 18, 16, 0.1);
+  border-radius: 13px;
+  background: #fff;
+}
+
+.member-settings-membership-dates dt {
+  color: #719510;
+  font-size: 0.56rem;
+  font-weight: 950;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.member-settings-membership-dates dd {
+  margin: 0.25rem 0 0;
+  color: #10130f;
+  font-size: 0.75rem;
+  font-weight: 850;
+  overflow-wrap: anywhere;
+}
+
+.member-settings-membership-note {
+  margin: 1rem 0 0;
+  color: rgba(16, 18, 16, 0.58);
+  font-size: 0.68rem;
+  line-height: 1.55;
+}
+
+.member-settings-membership-cancel {
+  margin-top: 1rem;
+}
+
+.member-settings-membership-cancel button {
+  width: 100%;
+  min-height: 46px;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid rgba(161, 59, 46, 0.24);
+  border-radius: 13px;
+  color: #8f2f24;
+  background: #fff0ed;
+  font-size: 0.65rem;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease,
+    transform 180ms ease;
+}
+
+.member-settings-membership-cancel button:hover,
+.member-settings-membership-cancel button:focus-visible {
+  border-color: rgba(161, 59, 46, 0.38);
+  background: #ffe4df;
+  transform: translateY(-1px);
+}
+
+.member-settings-package-market {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(16, 18, 16, 0.1);
+}
+
+.member-settings-package-market-head {
+  display: flex;
+  min-width: 0;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.9rem;
+}
+
+.member-settings-package-market-head span,
+.member-settings-package-option span {
+  color: #719510;
+  font-size: 0.56rem;
+  font-weight: 950;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.member-settings-package-market-head strong {
+  display: block;
+  margin-top: 0.15rem;
+  color: #10130f;
+  font-size: 0.95rem;
+  font-weight: 950;
+}
+
+.member-settings-package-market-head small {
+  color: rgba(16, 18, 16, 0.6);
+  font-size: 0.64rem;
+  font-weight: 800;
+  text-align: right;
+}
+
+.member-settings-package-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
+
+.member-settings-package-option {
+  display: grid;
+  min-width: 0;
+  grid-template-rows: minmax(104px, auto) auto auto;
+  gap: 0.75rem;
+  padding: 0.9rem;
+  border: 1px solid rgba(16, 18, 16, 0.1);
+  border-radius: 13px;
+  background: #fff;
+}
+
+.member-settings-package-option strong {
+  display: block;
+  margin-top: 0.2rem;
+  color: #10130f;
+  font-size: 0.95rem;
+  font-weight: 950;
+}
+
+.member-settings-package-option p,
+.member-settings-package-option small {
+  margin: 0;
+  color: rgba(16, 18, 16, 0.6);
+  font-size: 0.67rem;
+  line-height: 1.45;
+}
+
+.member-settings-package-option form {
+  min-width: 0;
+}
+
+.member-settings-package-option button {
+  width: 100%;
+  min-height: 42px;
+  padding: 0.7rem 0.85rem;
+  border: 0;
+  border-radius: 12px;
+  color: #071000;
+  background: var(--member-accent);
+  font-size: 0.62rem;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.member-settings-package-option button:disabled {
+  cursor: not-allowed;
+  color: rgba(16, 18, 16, 0.48);
+  background: rgba(16, 18, 16, 0.08);
+}
+
+.member-confirm-dialog[hidden] {
+  display: none;
+}
+
+.member-confirm-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 1080;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+}
+
+.member-confirm-dialog-open {
+  overflow: hidden;
+}
+
+.member-confirm-dialog-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 6, 4, 0.72);
+  backdrop-filter: blur(10px);
+}
+
+.member-confirm-dialog-panel {
+  position: relative;
+  display: grid;
+  width: min(100%, 440px);
+  gap: 1.2rem;
+  padding: 1.35rem;
+  border: 1px solid rgba(197, 255, 32, 0.24);
+  border-radius: 24px;
+  color: #0c0f0b;
+  background: #f4f2eb;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.38);
+}
+
+.member-confirm-dialog-panel span {
+  color: #719510;
+  font-size: 0.58rem;
+  font-weight: 950;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.member-confirm-dialog-panel h2 {
+  margin: 0.35rem 0 0;
+  color: #10130f;
+  font-size: 1.35rem;
+  font-weight: 950;
+  line-height: 1.05;
+}
+
+.member-confirm-dialog-panel p {
+  margin: 0.75rem 0 0;
+  color: rgba(16, 18, 16, 0.62);
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+
+.member-confirm-dialog-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.member-confirm-dialog-actions form {
+  min-width: 0;
+}
+
+.member-confirm-dialog-actions button {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.75rem 0.9rem;
+  border-radius: 13px;
+  font-size: 0.64rem;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.member-confirm-dialog-actions > button {
+  border: 1px solid rgba(16, 18, 16, 0.12);
+  color: #10130f;
+  background: #fff;
+}
+
+.member-confirm-dialog-actions form button {
+  border: 1px solid rgba(161, 59, 46, 0.24);
+  color: #8f2f24;
+  background: #fff0ed;
 }
 
 .member-settings-list {
@@ -3834,6 +4142,23 @@ button:focus-visible {
   .member-settings-layout {
     grid-template-columns: 1fr;
   }
+
+  .member-settings-side {
+    display: grid;
+    min-width: 0;
+    gap: 1.25rem;
+  }
+
+  .member-settings-overview,
+  .member-settings-membership,
+  .member-settings-password {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .member-settings-package-options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 575.98px) {
@@ -3844,7 +4169,31 @@ button:focus-visible {
   .member-account-fields,
   .member-goals-benefits,
   .member-challenge-stats,
-  .member-settings-fields {
+  .member-settings-fields,
+  .member-settings-membership-dates,
+  .member-settings-package-options {
+    grid-template-columns: 1fr;
+  }
+
+  .member-settings-package-market-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .member-settings-membership-status {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .member-settings-package-market-head small {
+    text-align: left;
+  }
+
+  .member-confirm-dialog-panel {
+    border-radius: 20px;
+  }
+
+  .member-confirm-dialog-actions {
     grid-template-columns: 1fr;
   }
 
@@ -3859,6 +4208,7 @@ button:focus-visible {
   .member-goals-membership,
   .member-goals-challenges,
   .member-settings-overview,
+  .member-settings-membership,
   .member-settings-password {
     padding: 1.2rem;
     border-radius: 21px;
@@ -5396,6 +5746,85 @@ button:focus-visible {
   box-shadow: 0 0 0 0.22rem rgba(200, 255, 50, 0.3);
 }
 
+.no23-password-field {
+  position: relative;
+  display: grid;
+  width: 100%;
+}
+
+.no23-password-field .no23-form-control,
+.member-password-field input {
+  padding-right: 3.25rem;
+}
+
+.no23-password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0.55rem;
+  z-index: 2;
+  display: inline-grid;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid rgba(16, 18, 16, 0.14);
+  border-radius: 999px;
+  color: #111410;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 8px 18px rgba(16, 18, 16, 0.08);
+  transform: translateY(-50%);
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.no23-password-toggle:hover,
+.no23-password-toggle:focus-visible {
+  border-color: rgba(137, 180, 20, 0.45);
+  color: #0b0d0b;
+  background: #c8ff32;
+  box-shadow: 0 10px 22px rgba(137, 180, 20, 0.2);
+}
+
+.no23-password-toggle:focus-visible {
+  outline: 2px solid rgba(137, 180, 20, 0.42);
+  outline-offset: 2px;
+}
+
+.no23-password-toggle span {
+  position: relative;
+  display: block;
+  width: 18px;
+  height: 12px;
+  border: 2px solid currentColor;
+  border-radius: 999px / 720px;
+}
+
+.no23-password-toggle span::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  transform: translate(-50%, -50%);
+}
+
+.no23-password-toggle[aria-pressed="true"]::after {
+  content: "";
+  position: absolute;
+  width: 2px;
+  height: 23px;
+  border-radius: 999px;
+  background: currentColor;
+  transform: rotate(45deg);
+}
+
 .no23-package-field {
   padding: 1rem;
   border: 1px solid rgba(138, 182, 0, 0.28);
@@ -5797,6 +6226,14 @@ button:focus-visible {
     font-weight: 900;
     line-height: 1;
     letter-spacing: -0.05em;
+  }
+
+  .member-stat-note {
+    display: block;
+    margin-top: 0.65rem;
+    color: rgba(7, 9, 7, 0.62);
+    font-size: 0.68rem;
+    font-weight: 850;
   }
 
   .member-dashboard-section + .member-dashboard-section {
@@ -13777,6 +14214,12 @@ button:focus-visible {
   color: #526e00;
 }
 
+.member-order-statuses .is-expired {
+  border-color: #e6cf8f;
+  background: #fff7dc;
+  color: #7a5900;
+}
+
 .member-order-summary {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -16460,6 +16903,15 @@ button:focus-visible {
   padding: 0.7rem 0.8rem;
 }
 
+#personal-training .member-personal-time-window-select {
+  color-scheme: dark;
+}
+
+#personal-training .member-personal-time-window-select option {
+  color: #111;
+  background: #fff;
+}
+
 #personal-training .member-personal-form textarea {
   min-height: 92px;
   padding: 0.75rem 0.8rem;
@@ -17151,24 +17603,61 @@ button:focus-visible {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: .85rem;
     min-width: 220px;
     min-height: 48px;
     padding: .8rem 1rem;
-    border: none;
+    border: 1px solid rgba(200, 255, 50, .8);
     border-radius: 13px;
-    color: #111;
-    background: var(--accent-color);
+    color: #050805;
+    background:
+        linear-gradient(135deg, #dfff4d 0%, var(--no23-accent, #c8ff32) 100%);
+    box-shadow:
+        0 14px 34px rgba(200, 255, 50, .18),
+        inset 0 1px 0 rgba(255, 255, 255, .45);
+    cursor: pointer;
     font-size: .72rem;
-    font-weight: 800;
-    transition: transform .25s ease;
+    font-weight: 900;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    transition:
+        transform .25s ease,
+        border-color .25s ease,
+        box-shadow .25s ease,
+        filter .25s ease,
+        opacity .25s ease;
 }
 
-.member-progress-submit:hover {
+.member-progress-submit:hover:not(:disabled),
+.member-progress-submit:focus-visible:not(:disabled) {
     transform: translateY(-2px);
+    border-color: #efff9d;
+    box-shadow:
+        0 18px 42px rgba(200, 255, 50, .26),
+        inset 0 1px 0 rgba(255, 255, 255, .62);
+    filter: saturate(1.08);
+}
+
+.member-progress-submit:disabled {
+    color: rgba(255, 255, 255, .42);
+    border-color: rgba(255, 255, 255, .12);
+    background: rgba(255, 255, 255, .06);
+    box-shadow: none;
+    cursor: not-allowed;
+    opacity: .48;
+}
+
+.member-progress-submit span {
+    min-width: 0;
+    color: #050805;
+    overflow-wrap: anywhere;
+    line-height: 1.25;
 }
 
 .member-progress-submit strong {
+    flex: 0 0 auto;
     margin: 0;
+    color: #050805;
     font-size: 1.15rem;
 }
 
@@ -17223,6 +17712,8 @@ button:focus-visible {
 
     .member-progress-submit {
         width: 100%;
+        min-width: 0;
+        justify-content: center;
     }
 
     .member-progress-hero-steps {

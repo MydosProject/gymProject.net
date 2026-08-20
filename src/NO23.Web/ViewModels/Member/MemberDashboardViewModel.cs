@@ -6,6 +6,18 @@ public class MemberDashboardViewModel
 
     public string PackageName { get; init; } = string.Empty;
 
+    public string MembershipSummaryLabel { get; init; } = "Üyelik bilgisi";
+
+    public string MembershipSummaryTitle { get; init; } =
+        "Paket bilgisi bulunamadı";
+
+    public string MembershipSummaryDescription { get; init; } =
+        "Üyelik kaydın görüntülenemiyor.";
+
+    public string LastMembershipPackageName { get; init; } = string.Empty;
+
+    public DateTime? MembershipEndsAtUtc { get; init; }
+
     public int RemainingClassCredits { get; init; }
 
     public bool HasUnlimitedClasses { get; init; }

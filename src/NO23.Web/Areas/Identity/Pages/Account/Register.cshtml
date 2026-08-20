@@ -175,10 +175,20 @@
                         <div class="col-md-6">
                             <div class="no23-form-field">
                                 <label asp-for="Input.Password"></label>
-                                <input asp-for="Input.Password"
-                                       class="form-control no23-form-control"
-                                       autocomplete="new-password"
-                                       placeholder="En az 6 karakter" />
+                                <div class="no23-password-field">
+                                    <input asp-for="Input.Password"
+                                           class="form-control no23-form-control"
+                                           autocomplete="new-password"
+                                           placeholder="En az 6 karakter" />
+
+                                    <button type="button"
+                                            class="no23-password-toggle"
+                                            aria-label="Parolayı göster"
+                                            aria-pressed="false"
+                                            data-password-toggle>
+                                        <span aria-hidden="true"></span>
+                                    </button>
+                                </div>
                                 <span asp-validation-for="Input.Password"></span>
                             </div>
                         </div>
@@ -186,10 +196,20 @@
                         <div class="col-md-6">
                             <div class="no23-form-field">
                                 <label asp-for="Input.ConfirmPassword"></label>
-                                <input asp-for="Input.ConfirmPassword"
-                                       class="form-control no23-form-control"
-                                       autocomplete="new-password"
-                                       placeholder="Parolanı tekrar yaz" />
+                                <div class="no23-password-field">
+                                    <input asp-for="Input.ConfirmPassword"
+                                           class="form-control no23-form-control"
+                                           autocomplete="new-password"
+                                           placeholder="Parolanı tekrar yaz" />
+
+                                    <button type="button"
+                                            class="no23-password-toggle"
+                                            aria-label="Parolayı göster"
+                                            aria-pressed="false"
+                                            data-password-toggle>
+                                        <span aria-hidden="true"></span>
+                                    </button>
+                                </div>
                                 <span asp-validation-for="Input.ConfirmPassword"></span>
                             </div>
                         </div>

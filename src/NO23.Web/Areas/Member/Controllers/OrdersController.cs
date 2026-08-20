@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NO23.Web.Data;
 using NO23.Web.Data.Seed;
+using NO23.Web.Extensions;
 using NO23.Web.ViewModels.Member;
 
 namespace NO23.Web.Areas.Member.Controllers;
@@ -69,8 +70,11 @@ public async Task<IActionResult> Index(
             {
                 OrderNumber = order.OrderNumber,
                 Type = order.Type.ToString(),
+                TypeDisplayName = order.Type.GetDisplayName(),
                 Status = order.Status.ToString(),
+                StatusDisplayName = order.Status.GetDisplayName(),
                 PaymentStatus = order.PaymentStatus.ToString(),
+                PaymentStatusDisplayName = order.PaymentStatus.GetDisplayName(),
                 CreatedAtUtc = order.CreatedAtUtc,
                 CreatedAtLocal = order.CreatedAtUtc.ToLocalTime(),
                 DeliveryDate = order.DeliveryDate,
@@ -82,6 +86,7 @@ public async Task<IActionResult> Index(
                     {
                         ProductName = item.ProductName,
                         ItemType = item.ItemType.ToString(),
+                        ItemTypeDisplayName = item.ItemType.GetDisplayName(),
                         UnitPrice = item.UnitPrice,
                         Quantity = item.Quantity,
                         LineTotal = item.LineTotal

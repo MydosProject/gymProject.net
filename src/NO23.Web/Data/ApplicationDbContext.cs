@@ -14,6 +14,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<MemberProfile> MemberProfiles => Set<MemberProfile>();
 
+    public DbSet<MembershipPackageChangeRequest> MembershipPackageChangeRequests =>
+        Set<MembershipPackageChangeRequest>();
+
     public DbSet<Trainer> Trainers => Set<Trainer>();
 
     public DbSet<GroupClass> GroupClasses => Set<GroupClass>();

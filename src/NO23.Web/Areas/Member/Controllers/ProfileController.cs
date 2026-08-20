@@ -118,12 +118,21 @@ public class ProfileController(
             .Select(member => new
             {
                 PackageName = member.MembershipPackage.Name,
-                member.CreatedAtUtc
+                member.CreatedAtUtc,
+                member.MembershipStartsAtUtc,
+                member.MembershipEndsAtUtc
             })
             .FirstOrDefaultAsync();
 
         model.Email = user.Email ?? string.Empty;
         model.MembershipPackageName = membership?.PackageName ?? "Üyelik bilgisi bulunamadı";
-        model.MemberSinceUtc = membership?.CreatedAtUtc ?? user.CreatedAtUtc;
+        model.MembershipStartsAtUtc =
+            membership?.MembershipStartsAtUtc ??
+            membership?.CreatedAtUtc ??
+            user.CreatedAtUtc;
+        model.MembershipEndsAtUtc =
+            membership?.MembershipEndsAtUtc ??
+            model.MembershipStartsAtUtc.AddDays(
+                MemberProfile.DefaultMembershipDurationDays);
     }
 }

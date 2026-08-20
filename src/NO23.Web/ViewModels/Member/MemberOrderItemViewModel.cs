@@ -6,6 +6,8 @@ public class MemberOrderItemViewModel
 
     public string ItemType { get; init; } = string.Empty;
 
+    public string ItemTypeDisplayName { get; init; } = string.Empty;
+
     public decimal UnitPrice { get; init; }
 
     public int Quantity { get; init; }
