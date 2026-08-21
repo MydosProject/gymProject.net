@@ -824,11 +824,11 @@
                                             }
                                         </div>
 
-                                        @if (!string.IsNullOrWhiteSpace(item.Allergens))
+                                        @if (item.AllergenNames.Count > 0)
                                         {
                                             <p class="kitchen-allergen">
                                                 <strong>Alerjen:</strong>
-                                                @item.Allergens
+                                                @string.Join(", ", item.AllergenNames)
                                             </p>
                                         }
                                         else

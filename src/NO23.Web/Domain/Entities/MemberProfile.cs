@@ -12,9 +12,17 @@ public class MemberProfile
 
     public MembershipPackage MembershipPackage { get; set; } = null!;
 
+    public int? MembershipPackageOptionId { get; set; }
+
+    public MembershipPackageOption? MembershipPackageOption { get; set; }
+
     public string? FitnessGoal { get; set; }
 
     public int RemainingClassCredits { get; set; }
+
+    public int? AssignedTrainerId { get; set; }
+
+    public Trainer? AssignedTrainer { get; set; }
 
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
 
@@ -24,6 +32,8 @@ public class MemberProfile
 
     public ICollection<PersonalTrainingRequest> PersonalTrainingRequests { get; set; } = [];
 
+    public ICollection<PersonalTrainingSession> PersonalTrainingSessions { get; set; } = [];
+
     public ICollection<TrainerConversation> TrainerConversations { get; set; } = [];
 
     public ICollection<CommunityChallengeParticipation> CommunityChallengeParticipations { get; set; } = [];
@@ -31,6 +41,8 @@ public class MemberProfile
     public ICollection<MemberProgressEntry> ProgressEntries { get; set; } = [];
 
     public ICollection<KitchenSubscription> KitchenSubscriptions { get; set; } = [];
+
+    public ICollection<MemberAllergen> Allergens { get; set; } = [];
 
     public ShoppingCart? ShoppingCart { get; set; }
 

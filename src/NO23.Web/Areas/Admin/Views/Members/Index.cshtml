@@ -30,6 +30,11 @@
             </a>
         </header>
 
+        @if (TempData["StatusMessage"] is string statusMessage)
+        { <div class="alert alert-success">@statusMessage</div> }
+        @if (TempData["ErrorMessage"] is string errorMessage)
+        { <div class="alert alert-danger">@errorMessage</div> }
+
         <div class="admin-metrics">
             <article>
                 <span>Toplam üye</span>
@@ -57,14 +62,16 @@
                         <th>Paket</th>
                         <th>Hedef</th>
                         <th>Kalan Ders</th>
+                        <th>Personel Trainer</th>
                         <th>Kayıt</th>
+                        <th>İşlem</th>
                     </tr>
                 </thead>
                 <tbody>
                     @if (Model.Count == 0)
                     {
                         <tr>
-                            <td colspan="6">
+                            <td colspan="8">
                                 <div class="admin-empty-row">Henüz kayıtlı üye bulunmuyor.</div>
                             </td>
                         </tr>
@@ -82,12 +89,31 @@
                                 <td data-label="Paket"><span class="admin-status">@member.PackageName</span></td>
                                 <td data-label="Hedef">@(string.IsNullOrWhiteSpace(member.FitnessGoal) ? "-" : member.FitnessGoal)</td>
                                 <td data-label="Kalan ders">
-                                    <strong>@(member.RemainingClassCredits == 0 ? "Sınırsız" : member.RemainingClassCredits)</strong>
+                                    <strong>@(member.IsUnlimitedPackage ? "Sınırsız" : member.RemainingClassCredits)</strong>
                                     <small class="admin-cell-note">Ders hakkı</small>
+                                </td>
+                                <td data-label="Personel Trainer">
+                                    <form asp-action="AssignTrainer" method="post" class="d-flex gap-2">
+                                        <input type="hidden" name="memberProfileId" value="@member.MemberProfileId" />
+                                        <select class="form-select form-select-sm" name="trainerId">
+                                            <option value="">Atanmamış</option>
+                                            @foreach (var trainer in (IEnumerable<SelectListItem>)ViewBag.Trainers)
+                                            {
+                                                <option value="@trainer.Value" selected="@(trainer.Value == member.AssignedTrainerId?.ToString())">@trainer.Text</option>
+                                            }
+                                        </select>
+                                        <button class="btn btn-outline-dark btn-sm" type="submit">Kaydet</button>
+                                    </form>
                                 </td>
                                 <td data-label="Kayıt">
                                     <strong>@member.CreatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy")</strong>
                                     <small class="admin-cell-note">Kayıt tarihi</small>
+                                </td>
+                                <td data-label="İşlem">
+                                    <div class="d-flex gap-2">
+                                        <a class="btn btn-outline-dark btn-sm" asp-action="Edit" asp-route-id="@member.MemberProfileId">Düzenle</a>
+                                        <a class="btn btn-outline-danger btn-sm" asp-action="Delete" asp-route-id="@member.MemberProfileId">Sil</a>
+                                    </div>
                                 </td>
                             </tr>
                         }

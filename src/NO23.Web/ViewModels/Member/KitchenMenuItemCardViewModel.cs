@@ -20,7 +20,13 @@ public class KitchenMenuItemCardViewModel
 
     public string Ingredients { get; init; } = string.Empty;
 
-    public string? Allergens { get; init; }
+    public IReadOnlyList<string> AllergenNames { get; init; } = [];
+
+    public IReadOnlyList<int> AllergenIds { get; init; } = [];
+
+    public IReadOnlyList<string> MatchingAllergenNames { get; init; } = [];
+
+    public bool HasAllergenConflict => MatchingAllergenNames.Count > 0;
 
     public string? Tags { get; init; }
 

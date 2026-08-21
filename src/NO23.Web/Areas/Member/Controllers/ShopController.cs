@@ -218,7 +218,12 @@ public class ShopController(
                 CarbohydrateGrams = item.CarbohydrateGrams,
                 FatGrams = item.FatGrams,
                 Ingredients = item.Ingredients,
-                Allergens = item.Allergens,
+                AllergenIds = item.MenuItemAllergens.Select(x => x.KitchenAllergenId).ToList(),
+                AllergenNames = item.MenuItemAllergens.OrderBy(x => x.KitchenAllergen.DisplayOrder)
+                    .Select(x => x.KitchenAllergen.Name).ToList(),
+                MatchingAllergenNames = item.MenuItemAllergens
+                    .Where(x => x.KitchenAllergen.Members.Any(m => m.MemberProfile.ApplicationUserId == userId))
+                    .Select(x => x.KitchenAllergen.Name).ToList(),
                 Tags = item.Tags
             })
             .ToListAsync();

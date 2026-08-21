@@ -156,9 +156,21 @@
         </div>
 
         <div class="col-md-6">
-            <label asp-for="Allergens" class="form-label"></label>
-            <input asp-for="Allergens" class="form-control" />
-            <span asp-validation-for="Allergens" class="text-danger"></span>
+            <label class="form-label">Alerjenler</label>
+            <div class="border rounded-3 p-3 d-flex flex-wrap gap-3">
+                @if (Model.AllergenOptions.Count == 0)
+                {
+                    <span class="text-muted small">Önce Alerjenler ekranından kayıt oluştur.</span>
+                }
+                @foreach (var allergen in Model.AllergenOptions)
+                {
+                    <label class="form-check mb-0">
+                        <input class="form-check-input" type="checkbox" name="SelectedAllergenIds" value="@allergen.Id" checked="@(allergen.IsSelected ? "checked" : null)" />
+                        <span class="form-check-label">@allergen.Name</span>
+                    </label>
+                }
+            </div>
+            <span asp-validation-for="SelectedAllergenIds" class="text-danger"></span>
         </div>
 
         <div class="col-md-6">

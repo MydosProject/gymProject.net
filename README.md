@@ -6,11 +6,23 @@ NO23 Sports Club; spor kulübü deneyimini üyelik, antrenman, beslenme,
 alışveriş ve topluluk özellikleriyle tek bir platformda birleştiren
 ASP.NET Core MVC tabanlı bir web uygulamasıdır.
 
-Proje üç temel kullanıcı deneyiminden oluşur:
+Proje dört temel kullanıcı deneyiminden oluşur:
 
 - Ziyaretçilerin kulübü ve hizmetleri inceleyebildiği public site
 - Üyelerin kendilerine özel işlemleri gerçekleştirebildiği üye paneli
+- Antrenörlerin kişisel antrenman takvimlerini yönetebildiği antrenör paneli
 - Kulüp operasyonlarının yönetildiği admin paneli
+
+## V2 ile Gelen Yenilikler
+
+- Antrenörlere üye atama, panel hesabı oluşturma ve kişisel antrenman
+  takvimi yönetimi
+- Üye bilgilerinin admin panelinden düzenlenmesi ve güvenli biçimde silinmesi
+- Mutfak menüsünde ilişkisel alerjen tanımları ve üyeye özel alerjen uyarıları
+- Üyelik paketi seçenekleri ile birleşik hizmet paketi kataloğu
+- Paket özellikleri, varyantları ve faturalandırma türleri için yönetim ekranları
+- Üye profili, mağaza, mutfak ve admin arayüzlerinde kullanılabilirlik iyileştirmeleri
+- Yeni özellikleri kapsayan Entity Framework Core migration, seed verileri ve xUnit testleri
 
 ## Kullanılan Teknolojiler
 
@@ -36,7 +48,8 @@ NO23SportsClub/
 │       ├── Areas/
 │       │   ├── Admin/          # Admin controller ve view dosyaları
 │       │   ├── Identity/       # Giriş ve kayıt sayfaları
-│       │   └── Member/         # Üye paneli controller ve view dosyaları
+│       │   ├── Member/         # Üye paneli controller ve view dosyaları
+│       │   └── Trainer/        # Antrenör paneli ve takvim ekranları
 │       ├── Controllers/        # Public site controller'ları
 │       ├── Data/
 │       │   ├── Configurations/ # Entity Framework yapılandırmaları
@@ -58,7 +71,7 @@ NO23SportsClub/
 ├── tests/
 │   └── NO23.Tests/             # xUnit test projesi
 ├── docker-compose.yml          # Yerel PostgreSQL servisi
-└── NO23SportsClub.sln          # Solution dosyası
+└── NO23SportsClub.slnx         # Solution dosyası
 ```
 
 ## Projeyi Çalıştırma

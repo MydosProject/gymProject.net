@@ -15,4 +15,6 @@ public class TrainerListItemViewModel
     public bool IsActive { get; init; }
 
     public bool HasPanelAccount { get; init; }
+
+    public bool HasPassword { get; init; }
 }

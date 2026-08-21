@@ -48,6 +48,17 @@ public class ProfileController(
             return View(model);
         }
 
+        var validAllergenIds = await dbContext.KitchenAllergens
+            .Where(x => model.SelectedAllergenIds.Contains(x.Id) &&
+                (x.IsActive || x.Members.Any(m => m.MemberProfile.ApplicationUserId == userId)))
+            .Select(x => x.Id).ToListAsync();
+        if (validAllergenIds.Count != model.SelectedAllergenIds.Distinct().Count())
+        {
+            ModelState.AddModelError(nameof(model.SelectedAllergenIds), "Geçersiz bir alerjen seçildi.");
+            await PopulateReadOnlyFieldsAsync(model, userId, user);
+            return View(model);
+        }
+
         user.FirstName = model.FirstName.Trim();
         user.LastName = model.LastName.Trim();
         user.PhoneNumber = string.IsNullOrWhiteSpace(model.PhoneNumber)
@@ -72,6 +83,17 @@ public class ProfileController(
 
         if (profile is not null)
         {
+            var existingAllergens = await dbContext.MemberAllergens
+                .Where(x => x.MemberProfileId == profile.Id).ToListAsync();
+            var selectedIds = validAllergenIds.ToHashSet();
+            dbContext.MemberAllergens.RemoveRange(
+                existingAllergens.Where(x => !selectedIds.Contains(x.KitchenAllergenId)));
+            foreach (var allergenId in selectedIds.Except(existingAllergens.Select(x => x.KitchenAllergenId)))
+                dbContext.MemberAllergens.Add(new MemberAllergen
+                {
+                    MemberProfileId = profile.Id,
+                    KitchenAllergenId = allergenId
+                });
             profile.UpdatedAtUtc = DateTime.UtcNow;
             await dbContext.SaveChangesAsync();
         }
@@ -118,12 +140,29 @@ public class ProfileController(
             .Select(member => new
             {
                 PackageName = member.MembershipPackage.Name,
+                OptionName = member.MembershipPackageOption != null ? member.MembershipPackageOption.Name : null,
                 member.CreatedAtUtc
             })
             .FirstOrDefaultAsync();
 
+        var selectedIds = model.SelectedAllergenIds.Count > 0
+            ? model.SelectedAllergenIds.ToHashSet()
+            : (await dbContext.MemberAllergens.AsNoTracking()
+                .Where(x => x.MemberProfile.ApplicationUserId == userId)
+                .Select(x => x.KitchenAllergenId).ToListAsync()).ToHashSet();
+        model.SelectedAllergenIds = selectedIds.ToList();
+        model.AllergenOptions = await dbContext.KitchenAllergens.AsNoTracking()
+            .Where(x => x.IsActive || selectedIds.Contains(x.Id))
+            .OrderBy(x => x.DisplayOrder).ThenBy(x => x.Name)
+            .Select(x => new MemberAllergenOptionViewModel
+            {
+                Id = x.Id, Name = x.Name, Description = x.Description,
+                IsSelected = selectedIds.Contains(x.Id)
+            }).ToListAsync();
+
         model.Email = user.Email ?? string.Empty;
         model.MembershipPackageName = membership?.PackageName ?? "Üyelik bilgisi bulunamadı";
+        model.MembershipPackageOptionName = membership?.OptionName;
         model.MemberSinceUtc = membership?.CreatedAtUtc ?? user.CreatedAtUtc;
     }
 }

@@ -1,0 +1,13 @@
+@model NO23.Web.ViewModels.Plans.ServicePackageCatalogViewModel
+@using NO23.Web.Domain.Enums
+@{ViewData["Title"]=Model.CategoryTitle;}
+<section class="service-catalog-page service-catalog-@Model.Category.ToString().ToLowerInvariant()">
+<div class="service-catalog-grid-bg" aria-hidden="true"></div><div class="container position-relative">
+<header class="service-catalog-hero"><p class="section-kicker">NO23 / @Model.CategoryTitle.ToUpperInvariant()</p><h1>@Model.CategoryTitle</h1><h2>@Model.Headline</h2><p>@Model.Description</p></header>
+<nav class="service-catalog-tabs" aria-label="Paket kategorileri"><a asp-action="Index" asp-route-category="membership" class="@(Model.Category==ServicePackageCategory.Membership?"active":"")">Membership</a><a asp-action="Index" asp-route-category="personal-training" class="@(Model.Category==ServicePackageCategory.PersonalTraining?"active":"")">Personal Training</a><a asp-action="Index" asp-route-category="group-classes" class="@(Model.Category==ServicePackageCategory.GroupClasses?"active":"")">Grup Dersleri</a><a asp-action="Index" asp-route-category="kids-club" class="@(Model.Category==ServicePackageCategory.KidsClub?"active":"")">Kids Club</a></nav>
+<div class="service-catalog-cards">
+@foreach(var package in Model.Packages){<article class="service-package-card @(package.IsFeatured?"is-featured":"")">@if(package.IsFeatured){<span class="service-package-badge">En çok tercih edilen</span>}<div class="service-package-head"><small>@Model.CategoryTitle</small><h3>@package.Name</h3><strong>@package.Subtitle</strong></div><p>@package.Description</p><ul>@foreach(var feature in package.Features){<li>@feature</li>}</ul>
+<div class="service-package-variants">@foreach(var variant in package.Variants){<div class="service-variant @(variant.IsRecommended?"is-recommended":"")"><div><strong>@variant.Name</strong><small>@variant.Rights</small></div><div><b>@variant.Price</b><small>@variant.PriceNote</small></div></div>}</div>
+@if(Model.Category==ServicePackageCategory.Membership && package.MembershipCode is not null){<a asp-area="Identity" asp-page="/Account/Register" asp-route-package="@package.MembershipCode">Başvuru Yap <span>→</span></a>}else{<a asp-controller="Home" asp-action="Index" asp-fragment="contact">Bilgi Al <span>→</span></a>}</article>}
+</div><div class="service-catalog-footer"><div><strong>Kararsız mısın?</strong><span>Hedefine uygun paketi birlikte belirleyelim.</span></div><a asp-controller="Home" asp-action="Index" asp-fragment="contact">Planını Bul →</a></div>
+</div></section>

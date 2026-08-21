@@ -92,6 +92,25 @@
                     </label>
                 </div>
 
+                <div class="mt-4">
+                    <div class="member-account-card-head mb-3">
+                        <span>02</span><div><p>BESLENME GÜVENLİĞİ</p><h2>Alerjim olan besinler</h2></div>
+                    </div>
+                    <p class="text-muted">Seçtiğin alerjenleri içeren Kitchen öğünleri işaretlenir ve sepete eklenemez.</p>
+                    <div class="row g-2">
+                        @foreach (var allergen in Model.AllergenOptions)
+                        {
+                            <div class="col-md-6">
+                                <label class="border rounded-3 p-3 d-flex gap-2 h-100">
+                                    <input class="form-check-input" type="checkbox" name="SelectedAllergenIds" value="@allergen.Id" checked="@(allergen.IsSelected ? "checked" : null)" />
+                                    <span><strong class="d-block">@allergen.Name</strong><small class="text-muted">@allergen.Description</small></span>
+                                </label>
+                            </div>
+                        }
+                    </div>
+                    <small asp-validation-for="SelectedAllergenIds" class="text-danger"></small>
+                </div>
+
                 <button class="member-account-submit" type="submit">
                     Bilgilerimi Güncelle
                     <span aria-hidden="true">→</span>
@@ -100,7 +119,7 @@
 
             <aside class="member-account-summary">
                 <div class="member-account-card-head">
-                    <span>02</span>
+                    <span>03</span>
                     <div>
                         <p>HESAP ÖZETİ</p>
                         <h2>Üyelik bilgilerin</h2>
@@ -116,6 +135,10 @@
                         <dt>Aktif paket</dt>
                         <dd>@Model.MembershipPackageName</dd>
                     </div>
+                    @if (!string.IsNullOrWhiteSpace(Model.MembershipPackageOptionName))
+                    {
+                        <div><dt>Hizmet seçeneği</dt><dd>@Model.MembershipPackageOptionName</dd></div>
+                    }
                     <div>
                         <dt>Üyelik başlangıcı</dt>
                         <dd>@Model.MemberSinceUtc.ToLocalTime().ToString("dd MMMM yyyy", turkishCulture)</dd>

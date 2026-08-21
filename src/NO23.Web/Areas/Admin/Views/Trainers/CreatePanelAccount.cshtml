@@ -25,7 +25,7 @@
 
             <p>
                 <strong>@Model.TrainerName</strong>
-                için giriş hesabı oluştur.
+                için şifresiz giriş hesabı ve davet oluştur.
             </p>
 
         </div>
@@ -47,14 +47,13 @@
             </span>
 
             <h2>
-                Eğitmene giriş bilgilerini tanımla.
+                Eğitmene güvenli davet gönder.
             </h2>
 
             <p>
-                Oluşturulan hesap ile eğitmen kendi
-                paneline giriş yapabilir; derslerini,
-                birebir taleplerini ve mesajlarını
-                görüntüleyebilir.
+                Eğitmen e-posta adresine gönderilen tek kullanımlık
+                bağlantıdan ilk şifresini kendisi belirler. Admin
+                tarafından şifre oluşturulmaz.
             </p>
 
             <div class="admin-trainer-account-trainer">
@@ -92,7 +91,7 @@
                     </span>
 
                     <strong>
-                        Hesap bilgilerini tamamla
+                        Davet e-postasını tanımla
                     </strong>
 
                 </div>
@@ -120,42 +119,6 @@
 
                 </label>
 
-
-                <div class="admin-trainer-account-row">
-
-                    <label class="admin-trainer-account-field">
-
-                        <span>
-                            @Html.DisplayNameFor(
-                                model => model.Password)
-                        </span>
-
-                        <input asp-for="Password"
-                               autocomplete="new-password" />
-
-                        <small asp-validation-for="Password">
-                        </small>
-
-                    </label>
-
-
-                    <label class="admin-trainer-account-field">
-
-                        <span>
-                            @Html.DisplayNameFor(
-                                model => model.ConfirmPassword)
-                        </span>
-
-                        <input asp-for="ConfirmPassword"
-                               autocomplete="new-password" />
-
-                        <small asp-validation-for="ConfirmPassword">
-                        </small>
-
-                    </label>
-
-                </div>
-
             </div>
 
 
@@ -170,7 +133,7 @@
                         class="admin-trainer-account-submit">
 
                     <span>
-                        Hesabı oluştur
+                        Hesabı oluştur ve davet gönder
                     </span>
 
                     <strong aria-hidden="true">

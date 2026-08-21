@@ -63,6 +63,13 @@
                                 </td>
                                 <td data-label="Durum"><span class="badge @(package.IsActive ? "text-bg-success" : "text-bg-secondary")">@(package.IsActive ? "Aktif" : "Pasif")</span></td>
                                 <td class="text-end" data-label="İşlem">
+                                    <a class="btn btn-sm btn-outline-secondary"
+                                       asp-area="Admin"
+                                       asp-controller="ServicePackages"
+                                       asp-action="Index"
+                                       >
+                                        Katalog
+                                    </a>
                                     <a class="btn btn-sm btn-outline-dark"
                                        asp-area="Admin"
                                        asp-controller="MembershipPackages"

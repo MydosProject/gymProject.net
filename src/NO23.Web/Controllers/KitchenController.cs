@@ -34,7 +34,8 @@ public class KitchenController(
                 CarbohydrateGrams = item.CarbohydrateGrams,
                 FatGrams = item.FatGrams,
                 Ingredients = item.Ingredients,
-                Allergens = item.Allergens
+                AllergenNames = item.MenuItemAllergens.OrderBy(x => x.KitchenAllergen.DisplayOrder)
+                    .Select(x => x.KitchenAllergen.Name).ToList()
             })
             .ToListAsync();
 
@@ -51,7 +52,7 @@ public class KitchenController(
                 CarbohydrateGrams = item.CarbohydrateGrams,
                 FatGrams = item.FatGrams,
                 Ingredients = item.Ingredients,
-                Allergens = item.Allergens
+                Allergens = string.Join(", ", item.AllergenNames)
             })
             .ToList();
 
@@ -198,7 +199,8 @@ public class KitchenController(
                 CarbohydrateGrams = item.CarbohydrateGrams,
                 FatGrams = item.FatGrams,
                 Ingredients = item.Ingredients,
-                Allergens = item.Allergens
+                AllergenNames = item.MenuItemAllergens.OrderBy(x => x.KitchenAllergen.DisplayOrder)
+                    .Select(x => x.KitchenAllergen.Name).ToList()
             })
             .FirstOrDefaultAsync();
 
@@ -216,7 +218,7 @@ public class KitchenController(
                 CarbohydrateGrams = menuItem.CarbohydrateGrams,
                 FatGrams = menuItem.FatGrams,
                 Ingredients = menuItem.Ingredients,
-                Allergens = menuItem.Allergens,
+                Allergens = string.Join(", ", menuItem.AllergenNames),
                 Input = input ?? new GuestOrderInputViewModel()
             };
     }

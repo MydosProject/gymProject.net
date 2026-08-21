@@ -1,0 +1,4 @@
+@model ServicePackageFormViewModel
+@{ViewData["Title"]="Yeni Hizmet Paketi";}
+<section class="admin-page"><div class="container"><header class="admin-page-head admin-form-head"><div><a asp-action="Index" class="admin-back-link">← Kataloğa dön</a><p class="admin-eyebrow">Paket Kataloğu</p><h1>Yeni hizmet paketi</h1></div></header><partial name="_Form" model="Model" /></div></section>
+@section Scripts{<partial name="_ValidationScriptsPartial"/>}

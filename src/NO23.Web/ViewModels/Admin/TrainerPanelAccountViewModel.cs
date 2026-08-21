@@ -14,14 +14,4 @@ public class TrainerPanelAccountViewModel
     [Display(Name = "E-posta")]
     public string Email { get; set; } = string.Empty;
 
-    [Required]
-    [DataType(DataType.Password)]
-    [Display(Name = "Parola")]
-    public string Password { get; set; } = string.Empty;
-
-    [Required]
-    [DataType(DataType.Password)]
-    [Compare(nameof(Password), ErrorMessage = "Parolalar eşleşmiyor.")]
-    [Display(Name = "Parola tekrar")]
-    public string ConfirmPassword { get; set; } = string.Empty;
 }

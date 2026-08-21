@@ -23,5 +23,12 @@ public class MemberProfileIndexViewModel
 
     public string MembershipPackageName { get; set; } = string.Empty;
 
+    public string? MembershipPackageOptionName { get; set; }
+
     public DateTime MemberSinceUtc { get; set; }
+
+    [Display(Name = "Alerjim olan besinler")]
+    public List<int> SelectedAllergenIds { get; set; } = [];
+
+    public List<MemberAllergenOptionViewModel> AllergenOptions { get; set; } = [];
 }

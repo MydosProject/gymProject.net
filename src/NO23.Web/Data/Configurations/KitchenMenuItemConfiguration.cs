@@ -35,9 +35,6 @@ public class KitchenMenuItemConfiguration : IEntityTypeConfiguration<KitchenMenu
             .HasMaxLength(1000)
             .IsRequired();
 
-        builder.Property(item => item.Allergens)
-            .HasMaxLength(500);
-
         builder.Property(item => item.Tags)
             .HasMaxLength(500);
 

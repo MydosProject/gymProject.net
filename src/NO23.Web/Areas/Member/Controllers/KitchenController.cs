@@ -1125,6 +1125,13 @@ public class KitchenController(
 
     private async Task<KitchenDashboardViewModel> BuildMenuDashboardAsync()
     {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var memberAllergenIds = await dbContext.MemberAllergens.AsNoTracking()
+            .Where(x => x.MemberProfile.ApplicationUserId == userId)
+            .Select(x => x.KitchenAllergenId).ToListAsync();
+        var memberAllergenNames = await dbContext.KitchenAllergens.AsNoTracking()
+            .Where(x => memberAllergenIds.Contains(x.Id)).OrderBy(x => x.DisplayOrder)
+            .Select(x => x.Name).ToListAsync();
         var rawItems = await dbContext.KitchenMenuItems
             .AsNoTracking()
             .Where(item => item.IsActive)
@@ -1141,8 +1148,9 @@ public class KitchenController(
                 item.CarbohydrateGrams,
                 item.FatGrams,
                 item.Ingredients,
-                item.Allergens,
-                item.Tags
+                item.Tags,
+                Allergens = item.MenuItemAllergens.OrderBy(x => x.KitchenAllergen.DisplayOrder)
+                    .Select(x => new { x.KitchenAllergenId, x.KitchenAllergen.Name }).ToList()
             })
             .ToListAsync();
 
@@ -1162,7 +1170,11 @@ public class KitchenController(
                     CarbohydrateGrams = item.CarbohydrateGrams,
                     FatGrams = item.FatGrams,
                     Ingredients = item.Ingredients,
-                    Allergens = item.Allergens,
+                    AllergenIds = item.Allergens.Select(x => x.KitchenAllergenId).ToList(),
+                    AllergenNames = item.Allergens.Select(x => x.Name).ToList(),
+                    MatchingAllergenNames = item.Allergens
+                        .Where(x => memberAllergenIds.Contains(x.KitchenAllergenId))
+                        .Select(x => x.Name).ToList(),
                     Tags = string.Join(", ", tagList),
                     TagList = tagList
                 };
@@ -1172,6 +1184,7 @@ public class KitchenController(
         return new KitchenDashboardViewModel
         {
             MenuItems = menuItems,
+            MemberAllergenNames = memberAllergenNames,
             CategoryFilters = BuildCategoryFilters(menuItems),
             TagFilters = BuildTagFilters(menuItems)
         };

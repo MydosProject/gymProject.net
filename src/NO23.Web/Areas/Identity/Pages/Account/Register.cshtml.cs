@@ -22,20 +22,26 @@ public class RegisterModel(
     public string? ReturnUrl { get; set; }
 
     public IReadOnlyList<PackageOption> PackageOptions { get; private set; } = [];
+    public IReadOnlyList<ServiceOption> ServiceOptions { get; private set; } = [];
 
     public async Task OnGetAsync(
         string? package = null,
+        int? option = null,
         string? returnUrl = null)
     {
         ReturnUrl = returnUrl;
-        await LoadPackageOptionsAsync(package);
+        await LoadPackageOptionsAsync(package, option);
     }
 
     public async Task<IActionResult> OnPostAsync(
         string? returnUrl = null)
     {
         ReturnUrl = returnUrl ?? ReturnUrl;
-        await LoadPackageOptionsAsync(Input.PackageCode);
+        var postedPackageCode = Input.PackageCode;
+        var postedOptionId = Input.PackageOptionId;
+        await LoadPackageOptionsAsync(postedPackageCode, postedOptionId);
+        Input.PackageCode = postedPackageCode;
+        Input.PackageOptionId = postedOptionId;
 
         var selectedPackage =
             await FindSelectedPackageAsync(Input.PackageCode);
@@ -101,7 +107,8 @@ public class RegisterModel(
     }
 
     private async Task LoadPackageOptionsAsync(
-        string? selectedPackageCode)
+        string? selectedPackageCode,
+        int? selectedOptionId = null)
     {
         var packages = await dbContext.MembershipPackages
             .AsNoTracking()
@@ -128,6 +135,20 @@ public class RegisterModel(
             ResolvePackageCode(selectedPackageCode)
             ?? PackageOptions.FirstOrDefault()?.Code
             ?? string.Empty;
+
+        var serviceOptions = await dbContext.MembershipPackageOptions.AsNoTracking()
+            .Where(x => x.IsActive && x.MembershipPackage.IsActive)
+            .OrderBy(x => x.MembershipPackage.DisplayOrder).ThenBy(x => x.DisplayOrder)
+            .Select(x => new { x.Id, x.MembershipPackage.Code, x.Name, x.DurationDays,
+                x.PersonalTrainingSessionCount, x.GroupClassCreditCount })
+            .ToListAsync();
+        ServiceOptions = serviceOptions.Select(x => new ServiceOption(
+            x.Id, x.Code.ToString().ToUpperInvariant(), x.Name, x.DurationDays,
+            x.PersonalTrainingSessionCount, x.GroupClassCreditCount)).ToList();
+        var validSelectedOption = ServiceOptions.FirstOrDefault(x =>
+            x.Id == selectedOptionId && x.PackageCode.Equals(Input.PackageCode, StringComparison.OrdinalIgnoreCase));
+        Input.PackageOptionId = validSelectedOption?.Id ?? ServiceOptions
+            .FirstOrDefault(x => x.PackageCode.Equals(Input.PackageCode, StringComparison.OrdinalIgnoreCase))?.Id;
     }
 
     private async Task<MembershipPackage?>
@@ -193,6 +214,9 @@ public class RegisterModel(
         [Display(Name = "Üyelik paketi")]
         public string PackageCode { get; set; } = string.Empty;
 
+        [Display(Name = "Hizmet seçeneği")]
+        public int? PackageOptionId { get; set; }
+
         [StringLength(160)]
         [Display(Name = "Hedef")]
         public string? FitnessGoal { get; set; }
@@ -220,4 +244,12 @@ public class RegisterModel(
         string Code,
         string Name,
         string Audience);
+
+    public record ServiceOption(
+        int Id,
+        string PackageCode,
+        string Name,
+        int DurationDays,
+        int PersonalTrainingSessionCount,
+        int GroupClassCreditCount);
 }

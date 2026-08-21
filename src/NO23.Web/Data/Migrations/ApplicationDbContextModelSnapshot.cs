@@ -736,6 +736,45 @@ namespace NO23.Web.Data.Migrations
                     b.ToTable("GroupClasses");
                 });
 
+            modelBuilder.Entity("NO23.Web.Domain.Entities.KitchenAllergen", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("KitchenAllergens");
+                });
+
             modelBuilder.Entity("NO23.Web.Domain.Entities.KitchenIngredient", b =>
                 {
                     b.Property<int>("Id")
@@ -999,10 +1038,6 @@ namespace NO23.Web.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Allergens")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
                     b.Property<int>("Calories")
                         .HasColumnType("integer");
 
@@ -1067,6 +1102,21 @@ namespace NO23.Web.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("KitchenMenuItems");
+                });
+
+            modelBuilder.Entity("NO23.Web.Domain.Entities.KitchenMenuItemAllergen", b =>
+                {
+                    b.Property<int>("KitchenMenuItemId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("KitchenAllergenId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("KitchenMenuItemId", "KitchenAllergenId");
+
+                    b.HasIndex("KitchenAllergenId");
+
+                    b.ToTable("KitchenMenuItemAllergens");
                 });
 
             modelBuilder.Entity("NO23.Web.Domain.Entities.KitchenProductionPlan", b =>
@@ -1435,6 +1485,26 @@ namespace NO23.Web.Data.Migrations
                     b.ToTable("KitchenSubscriptionPackages");
                 });
 
+            modelBuilder.Entity("NO23.Web.Domain.Entities.MemberAllergen", b =>
+                {
+                    b.Property<int>("MemberProfileId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("KitchenAllergenId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.HasKey("MemberProfileId", "KitchenAllergenId");
+
+                    b.HasIndex("KitchenAllergenId");
+
+                    b.ToTable("MemberAllergens");
+                });
+
             modelBuilder.Entity("NO23.Web.Domain.Entities.MemberProfile", b =>
                 {
                     b.Property<int>("Id")
@@ -1448,6 +1518,9 @@ namespace NO23.Web.Data.Migrations
                         .HasMaxLength(450)
                         .HasColumnType("character varying(450)");
 
+                    b.Property<int?>("AssignedTrainerId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("CreatedAtUtc")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -1458,6 +1531,9 @@ namespace NO23.Web.Data.Migrations
                         .HasColumnType("character varying(160)");
 
                     b.Property<int>("MembershipPackageId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("MembershipPackageOptionId")
                         .HasColumnType("integer");
 
                     b.Property<int>("RemainingClassCredits")
@@ -1471,7 +1547,11 @@ namespace NO23.Web.Data.Migrations
                     b.HasIndex("ApplicationUserId")
                         .IsUnique();
 
+                    b.HasIndex("AssignedTrainerId");
+
                     b.HasIndex("MembershipPackageId");
+
+                    b.HasIndex("MembershipPackageOptionId");
 
                     b.ToTable("MemberProfiles");
                 });
@@ -1618,6 +1698,61 @@ namespace NO23.Web.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("MembershipPackages");
+                });
+
+            modelBuilder.Entity("NO23.Web.Domain.Entities.MembershipPackageOption", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("DurationDays")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("GroupClassCreditCount")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IncludesGymAccess")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("MembershipPackageId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("PersonalTrainingSessionCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MembershipPackageId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("MembershipPackageOptions");
                 });
 
             modelBuilder.Entity("NO23.Web.Domain.Entities.Order", b =>
@@ -1967,6 +2102,264 @@ namespace NO23.Web.Data.Migrations
                     b.HasIndex("MemberProfileId", "TrainerId", "PreferredDate", "Status");
 
                     b.ToTable("PersonalTrainingRequests");
+                });
+
+            modelBuilder.Entity("NO23.Web.Domain.Entities.PersonalTrainingSession", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<bool>("CreditConsumed")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("DurationMinutes")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MemberProfileId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(600)
+                        .HasColumnType("character varying(600)");
+
+                    b.Property<DateTime>("StartsAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TrainerId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MemberProfileId");
+
+                    b.HasIndex("TrainerId", "StartsAtUtc");
+
+                    b.ToTable("PersonalTrainingSessions");
+                });
+
+            modelBuilder.Entity("NO23.Web.Domain.Entities.PersonalTrainingSessionHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("ChangedAtUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<string>("ChangedByUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<DateTime>("NewStartsAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("NewStatus")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(600)
+                        .HasColumnType("character varying(600)");
+
+                    b.Property<int>("PersonalTrainingSessionId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("PreviousStartsAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("PreviousStatus")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PersonalTrainingSessionId");
+
+                    b.ToTable("PersonalTrainingSessionHistories");
+                });
+
+            modelBuilder.Entity("NO23.Web.Domain.Entities.ServicePackage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(700)
+                        .HasColumnType("character varying(700)");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsFeatured")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("MembershipPackageId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<string>("Subtitle")
+                        .IsRequired()
+                        .HasMaxLength(180)
+                        .HasColumnType("character varying(180)");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MembershipPackageId");
+
+                    b.HasIndex("Slug")
+                        .IsUnique();
+
+                    b.ToTable("ServicePackages");
+                });
+
+            modelBuilder.Entity("NO23.Web.Domain.Entities.ServicePackageFeature", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ServicePackageId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(240)
+                        .HasColumnType("character varying(240)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ServicePackageId");
+
+                    b.ToTable("ServicePackageFeatures");
+                });
+
+            modelBuilder.Entity("NO23.Web.Domain.Entities.ServicePackageVariant", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BillingType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("DurationDays")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("DurationMonths")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("GroupClassCreditCount")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IncludesGymAccess")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsRecommended")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("KidsClassCreditCount")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal?>("MonthlyPrice")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("PerformanceClassCreditCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PersonalTrainingSessionCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ReformerClassCreditCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ServicePackageId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("TotalPrice")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ServicePackageId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("ServicePackageVariants");
                 });
 
             modelBuilder.Entity("NO23.Web.Domain.Entities.ShopProduct", b =>
@@ -2504,6 +2897,25 @@ namespace NO23.Web.Data.Migrations
                     b.Navigation("KitchenMenuItem");
                 });
 
+            modelBuilder.Entity("NO23.Web.Domain.Entities.KitchenMenuItemAllergen", b =>
+                {
+                    b.HasOne("NO23.Web.Domain.Entities.KitchenAllergen", "KitchenAllergen")
+                        .WithMany("MenuItems")
+                        .HasForeignKey("KitchenAllergenId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NO23.Web.Domain.Entities.KitchenMenuItem", "KitchenMenuItem")
+                        .WithMany("MenuItemAllergens")
+                        .HasForeignKey("KitchenMenuItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("KitchenAllergen");
+
+                    b.Navigation("KitchenMenuItem");
+                });
+
             modelBuilder.Entity("NO23.Web.Domain.Entities.KitchenProductionPlanItem", b =>
                 {
                     b.HasOne("NO23.Web.Domain.Entities.KitchenMenuItem", "KitchenMenuItem")
@@ -2598,6 +3010,25 @@ namespace NO23.Web.Data.Migrations
                     b.Navigation("MemberProfile");
                 });
 
+            modelBuilder.Entity("NO23.Web.Domain.Entities.MemberAllergen", b =>
+                {
+                    b.HasOne("NO23.Web.Domain.Entities.KitchenAllergen", "KitchenAllergen")
+                        .WithMany("Members")
+                        .HasForeignKey("KitchenAllergenId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NO23.Web.Domain.Entities.MemberProfile", "MemberProfile")
+                        .WithMany("Allergens")
+                        .HasForeignKey("MemberProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("KitchenAllergen");
+
+                    b.Navigation("MemberProfile");
+                });
+
             modelBuilder.Entity("NO23.Web.Domain.Entities.MemberProfile", b =>
                 {
                     b.HasOne("NO23.Web.Domain.Entities.ApplicationUser", "ApplicationUser")
@@ -2606,15 +3037,29 @@ namespace NO23.Web.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("NO23.Web.Domain.Entities.Trainer", "AssignedTrainer")
+                        .WithMany("AssignedMembers")
+                        .HasForeignKey("AssignedTrainerId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("NO23.Web.Domain.Entities.MembershipPackage", "MembershipPackage")
                         .WithMany("MemberProfiles")
                         .HasForeignKey("MembershipPackageId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("NO23.Web.Domain.Entities.MembershipPackageOption", "MembershipPackageOption")
+                        .WithMany("MemberProfiles")
+                        .HasForeignKey("MembershipPackageOptionId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("ApplicationUser");
 
+                    b.Navigation("AssignedTrainer");
+
                     b.Navigation("MembershipPackage");
+
+                    b.Navigation("MembershipPackageOption");
                 });
 
             modelBuilder.Entity("NO23.Web.Domain.Entities.MemberProgressEntry", b =>
@@ -2626,6 +3071,17 @@ namespace NO23.Web.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("MemberProfile");
+                });
+
+            modelBuilder.Entity("NO23.Web.Domain.Entities.MembershipPackageOption", b =>
+                {
+                    b.HasOne("NO23.Web.Domain.Entities.MembershipPackage", "MembershipPackage")
+                        .WithMany("Options")
+                        .HasForeignKey("MembershipPackageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MembershipPackage");
                 });
 
             modelBuilder.Entity("NO23.Web.Domain.Entities.Order", b =>
@@ -2698,6 +3154,68 @@ namespace NO23.Web.Data.Migrations
                     b.Navigation("MemberProfile");
 
                     b.Navigation("Trainer");
+                });
+
+            modelBuilder.Entity("NO23.Web.Domain.Entities.PersonalTrainingSession", b =>
+                {
+                    b.HasOne("NO23.Web.Domain.Entities.MemberProfile", "MemberProfile")
+                        .WithMany("PersonalTrainingSessions")
+                        .HasForeignKey("MemberProfileId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NO23.Web.Domain.Entities.Trainer", "Trainer")
+                        .WithMany("PersonalTrainingSessions")
+                        .HasForeignKey("TrainerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("MemberProfile");
+
+                    b.Navigation("Trainer");
+                });
+
+            modelBuilder.Entity("NO23.Web.Domain.Entities.PersonalTrainingSessionHistory", b =>
+                {
+                    b.HasOne("NO23.Web.Domain.Entities.PersonalTrainingSession", "PersonalTrainingSession")
+                        .WithMany("History")
+                        .HasForeignKey("PersonalTrainingSessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("PersonalTrainingSession");
+                });
+
+            modelBuilder.Entity("NO23.Web.Domain.Entities.ServicePackage", b =>
+                {
+                    b.HasOne("NO23.Web.Domain.Entities.MembershipPackage", "MembershipPackage")
+                        .WithMany()
+                        .HasForeignKey("MembershipPackageId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("MembershipPackage");
+                });
+
+            modelBuilder.Entity("NO23.Web.Domain.Entities.ServicePackageFeature", b =>
+                {
+                    b.HasOne("NO23.Web.Domain.Entities.ServicePackage", "ServicePackage")
+                        .WithMany("Features")
+                        .HasForeignKey("ServicePackageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ServicePackage");
+                });
+
+            modelBuilder.Entity("NO23.Web.Domain.Entities.ServicePackageVariant", b =>
+                {
+                    b.HasOne("NO23.Web.Domain.Entities.ServicePackage", "ServicePackage")
+                        .WithMany("Variants")
+                        .HasForeignKey("ServicePackageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ServicePackage");
                 });
 
             modelBuilder.Entity("NO23.Web.Domain.Entities.ShoppingCart", b =>
@@ -2801,6 +3319,13 @@ namespace NO23.Web.Data.Migrations
                     b.Navigation("Sessions");
                 });
 
+            modelBuilder.Entity("NO23.Web.Domain.Entities.KitchenAllergen", b =>
+                {
+                    b.Navigation("Members");
+
+                    b.Navigation("MenuItems");
+                });
+
             modelBuilder.Entity("NO23.Web.Domain.Entities.KitchenIngredient", b =>
                 {
                     b.Navigation("ProductionPlanMaterials");
@@ -2825,6 +3350,8 @@ namespace NO23.Web.Data.Migrations
                     b.Navigation("CartItems");
 
                     b.Navigation("MealPlanItems");
+
+                    b.Navigation("MenuItemAllergens");
 
                     b.Navigation("OrderItems");
 
@@ -2856,6 +3383,8 @@ namespace NO23.Web.Data.Migrations
 
             modelBuilder.Entity("NO23.Web.Domain.Entities.MemberProfile", b =>
                 {
+                    b.Navigation("Allergens");
+
                     b.Navigation("ClassReservations");
 
                     b.Navigation("CommunityChallengeParticipations");
@@ -2865,6 +3394,8 @@ namespace NO23.Web.Data.Migrations
                     b.Navigation("Orders");
 
                     b.Navigation("PersonalTrainingRequests");
+
+                    b.Navigation("PersonalTrainingSessions");
 
                     b.Navigation("ProgressEntries");
 
@@ -2876,6 +3407,13 @@ namespace NO23.Web.Data.Migrations
             modelBuilder.Entity("NO23.Web.Domain.Entities.MembershipPackage", b =>
                 {
                     b.Navigation("MemberProfiles");
+
+                    b.Navigation("Options");
+                });
+
+            modelBuilder.Entity("NO23.Web.Domain.Entities.MembershipPackageOption", b =>
+                {
+                    b.Navigation("MemberProfiles");
                 });
 
             modelBuilder.Entity("NO23.Web.Domain.Entities.Order", b =>
@@ -2883,6 +3421,18 @@ namespace NO23.Web.Data.Migrations
                     b.Navigation("Items");
 
                     b.Navigation("PaymentTransactions");
+                });
+
+            modelBuilder.Entity("NO23.Web.Domain.Entities.PersonalTrainingSession", b =>
+                {
+                    b.Navigation("History");
+                });
+
+            modelBuilder.Entity("NO23.Web.Domain.Entities.ServicePackage", b =>
+                {
+                    b.Navigation("Features");
+
+                    b.Navigation("Variants");
                 });
 
             modelBuilder.Entity("NO23.Web.Domain.Entities.ShopProduct", b =>
@@ -2899,9 +3449,13 @@ namespace NO23.Web.Data.Migrations
 
             modelBuilder.Entity("NO23.Web.Domain.Entities.Trainer", b =>
                 {
+                    b.Navigation("AssignedMembers");
+
                     b.Navigation("GroupClasses");
 
                     b.Navigation("PersonalTrainingRequests");
+
+                    b.Navigation("PersonalTrainingSessions");
 
                     b.Navigation("TrainerConversations");
                 });

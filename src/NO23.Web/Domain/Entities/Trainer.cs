@@ -28,5 +28,9 @@ public class Trainer
 
     public ICollection<PersonalTrainingRequest> PersonalTrainingRequests { get; set; } = [];
 
+    public ICollection<MemberProfile> AssignedMembers { get; set; } = [];
+
+    public ICollection<PersonalTrainingSession> PersonalTrainingSessions { get; set; } = [];
+
     public ICollection<TrainerConversation> TrainerConversations { get; set; } = [];
 }

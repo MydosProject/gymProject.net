@@ -1,0 +1,193 @@
+@using System.Globalization
+@model AdminAccountSettingsViewModel
+
+@{
+    ViewData["Title"] = "Hesap Ayarları";
+    var turkishCulture = CultureInfo.GetCultureInfo("tr-TR");
+    var fullName = $"{Model.Profile.FirstName} {Model.Profile.LastName}".Trim();
+    var initials = string.Join(
+        string.Empty,
+        new[] { Model.Profile.FirstName, Model.Profile.LastName }
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Select(value => value.Trim()[0].ToString().ToUpper(turkishCulture)));
+}
+
+<section class="admin-account-page">
+    <header class="admin-account-hero">
+        <div>
+            <p class="admin-account-kicker">NO23 / YÖNETİCİ HESABI</p>
+            <h1>Hesap ayarları</h1>
+            <p class="admin-account-intro">
+                Yönetici profilini ve giriş güvenliğini tek noktadan yönet.
+            </p>
+        </div>
+
+        <div class="admin-account-identity">
+            <span class="admin-account-avatar">
+                @(string.IsNullOrWhiteSpace(initials) ? "N" : initials)
+            </span>
+            <div>
+                <small>YÖNETİCİ</small>
+                <strong>@(string.IsNullOrWhiteSpace(fullName) ? Model.Email : fullName)</strong>
+                <span>@Model.Email</span>
+            </div>
+            <b aria-hidden="true">23</b>
+        </div>
+    </header>
+
+    @if (TempData["SuccessMessage"] is string successMessage)
+    {
+        <div class="admin-account-alert" role="status">
+            <span aria-hidden="true">✓</span>
+            <div>
+                <strong>İşlem tamamlandı</strong>
+                <p>@successMessage</p>
+            </div>
+        </div>
+    }
+
+    <div class="admin-account-status-grid">
+        <article>
+            <span>E-POSTA DURUMU</span>
+            <strong>@(Model.EmailConfirmed ? "Doğrulandı" : "Doğrulanmadı")</strong>
+            <small class="@(Model.EmailConfirmed ? "is-secure" : "is-warning")">
+                @(Model.EmailConfirmed ? "Güvenli" : "Kontrol gerekli")
+            </small>
+        </article>
+        <article>
+            <span>İKİ ADIMLI DOĞRULAMA</span>
+            <strong>@(Model.TwoFactorEnabled ? "Etkin" : "Devre dışı")</strong>
+            <small class="@(Model.TwoFactorEnabled ? "is-secure" : string.Empty)">
+                @(Model.TwoFactorEnabled ? "Aktif" : "Kapalı")
+            </small>
+        </article>
+        <article>
+            <span>HESAP OLUŞTURMA</span>
+            <strong>@Model.CreatedAtUtc.ToLocalTime().ToString("dd MMM yyyy", turkishCulture)</strong>
+            <small>Yönetici hesabı</small>
+        </article>
+        <article>
+            <span>SON GİRİŞ</span>
+            <strong>
+                @(Model.LastLoginAtUtc.HasValue
+                    ? Model.LastLoginAtUtc.Value.ToLocalTime().ToString("dd MMM, HH:mm", turkishCulture)
+                    : "Kayıt bulunamadı")
+            </strong>
+            <small>Oturum hareketi</small>
+        </article>
+    </div>
+
+    <div class="admin-account-layout">
+        <form asp-area="Admin"
+              asp-controller="Account"
+              asp-action="UpdateProfile"
+              method="post"
+              class="admin-account-card">
+            <header>
+                <span>01</span>
+                <div>
+                    <p>PROFİL BİLGİLERİ</p>
+                    <h2>Yönetici kimliği</h2>
+                </div>
+            </header>
+
+            <div asp-validation-summary="ModelOnly"
+                 class="admin-account-validation"
+                 role="alert"></div>
+
+            <div class="admin-account-fields">
+                <label>
+                    <span>Ad</span>
+                    <input asp-for="Profile.FirstName" autocomplete="given-name" />
+                    <small asp-validation-for="Profile.FirstName"></small>
+                </label>
+                <label>
+                    <span>Soyad</span>
+                    <input asp-for="Profile.LastName" autocomplete="family-name" />
+                    <small asp-validation-for="Profile.LastName"></small>
+                </label>
+                <label class="admin-account-field-wide">
+                    <span>E-posta</span>
+                    <input value="@Model.Email" type="email" disabled />
+                    <small class="admin-account-field-note">
+                        Doğrulanmış giriş adresi güvenlik nedeniyle bu ekranda değiştirilemez.
+                    </small>
+                </label>
+                <label class="admin-account-field-wide">
+                    <span>Telefon</span>
+                    <input asp-for="Profile.PhoneNumber"
+                           autocomplete="tel"
+                           placeholder="05__ ___ __ __" />
+                    <small asp-validation-for="Profile.PhoneNumber"></small>
+                </label>
+            </div>
+
+            <button type="submit" class="admin-account-submit">
+                Profili Güncelle
+                <span aria-hidden="true">→</span>
+            </button>
+        </form>
+
+        <form asp-area="Admin"
+              asp-controller="Account"
+              asp-action="ChangePassword"
+              method="post"
+              class="admin-account-card">
+            <header>
+                <span>02</span>
+                <div>
+                    <p>GİRİŞ GÜVENLİĞİ</p>
+                    <h2>Şifreyi güncelle</h2>
+                </div>
+            </header>
+
+            <div asp-validation-summary="All"
+                 class="admin-account-validation"
+                 role="alert"></div>
+
+            @if (Model.HasPassword)
+            {
+                <div class="admin-account-fields">
+                    <label class="admin-account-field-wide">
+                        <span>Mevcut şifre</span>
+                        <input asp-for="ChangePassword.CurrentPassword"
+                               autocomplete="current-password" />
+                        <small asp-validation-for="ChangePassword.CurrentPassword"></small>
+                    </label>
+                    <label class="admin-account-field-wide">
+                        <span>Yeni şifre</span>
+                        <input asp-for="ChangePassword.NewPassword"
+                               autocomplete="new-password" />
+                        <small asp-validation-for="ChangePassword.NewPassword"></small>
+                    </label>
+                    <label class="admin-account-field-wide">
+                        <span>Yeni şifre tekrar</span>
+                        <input asp-for="ChangePassword.ConfirmPassword"
+                               autocomplete="new-password" />
+                        <small asp-validation-for="ChangePassword.ConfirmPassword"></small>
+                    </label>
+                </div>
+
+                <div class="admin-account-password-rules">
+                    <span>GÜÇLÜ ŞİFRE</span>
+                    <p>En az 6 karakter; büyük-küçük harf, rakam ve özel karakter kullan.</p>
+                </div>
+
+                <button type="submit" class="admin-account-submit">
+                    Şifreyi Güncelle
+                    <span aria-hidden="true">→</span>
+                </button>
+            }
+            else
+            {
+                <div class="admin-account-empty">
+                    Bu hesap için henüz parola tanımlanmamış.
+                </div>
+            }
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

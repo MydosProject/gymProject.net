@@ -45,10 +45,6 @@ public class KitchenMenuItemFormViewModel
     public string Ingredients { get; set; } = string.Empty;
 
     [StringLength(500)]
-    [Display(Name = "Alerjen")]
-    public string? Allergens { get; set; }
-
-    [StringLength(500)]
     [Display(Name = "Etiketler")]
     public string? Tags { get; set; }
 
@@ -60,4 +56,9 @@ public class KitchenMenuItemFormViewModel
     public int DisplayOrder { get; set; }
 
     public List<KitchenMenuItemRecipeIngredientInputViewModel> RecipeIngredients { get; set; } = [];
+
+    [Display(Name = "Alerjenler")]
+    public List<int> SelectedAllergenIds { get; set; } = [];
+
+    public List<KitchenAllergenOptionViewModel> AllergenOptions { get; set; } = [];
 }

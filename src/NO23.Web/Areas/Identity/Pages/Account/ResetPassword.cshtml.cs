@@ -14,7 +14,7 @@ public class ResetPasswordModel(
     [BindProperty]
     public InputModel Input { get; set; } = new();
 
-    public IActionResult OnGet(string? code = null)
+    public IActionResult OnGet(string? code = null, string? email = null)
     {
         if (string.IsNullOrWhiteSpace(code))
         {
@@ -29,6 +29,7 @@ public class ResetPasswordModel(
         {
             Input.Code = Encoding.UTF8.GetString(
                 WebEncoders.Base64UrlDecode(code));
+            Input.Email = email ?? string.Empty;
         }
         catch (FormatException)
         {

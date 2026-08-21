@@ -253,6 +253,18 @@
                                 <h3>@item.Name</h3>
                                 <p class="shop-kitchen-ingredients">@item.Ingredients</p>
 
+                                @if (item.HasAllergenConflict)
+                                {
+                                    <div class="alert alert-danger py-2 px-3 small" role="alert">
+                                        <strong>Bu öğün profilindeki alerjenleri içeriyor:</strong>
+                                        @string.Join(", ", item.MatchingAllergenNames)
+                                    </div>
+                                }
+                                else if (item.AllergenNames.Count > 0)
+                                {
+                                    <p class="small text-muted"><strong>Alerjen:</strong> @string.Join(", ", item.AllergenNames)</p>
+                                }
+
                                 <div class="shop-kitchen-macros" aria-label="Makro değerleri">
                                     <span><small>Protein</small><strong>@item.ProteinGrams g</strong></span>
                                     <span><small>Karbonhidrat</small><strong>@item.CarbohydrateGrams g</strong></span>
@@ -303,8 +315,8 @@
                                             </svg>
                                         </button>
                                     </div>
-                                    <button type="submit">
-                                        Sepete Ekle
+                                    <button type="submit" @(item.HasAllergenConflict ? "disabled" : null)>
+                                        @(item.HasAllergenConflict ? "Alerjinle Uyuşmuyor" : "Sepete Ekle")
                                         <span aria-hidden="true">+</span>
                                     </button>
                                 </form>

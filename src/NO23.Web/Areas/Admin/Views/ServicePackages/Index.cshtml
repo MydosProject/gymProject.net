@@ -1,0 +1,8 @@
+@model IReadOnlyList<ServicePackageListItemViewModel>
+@{ ViewData["Title"]="Paket Kataloğu"; }
+<section class="admin-page"><div class="container">
+<header class="admin-page-head"><div><p class="admin-eyebrow">NO23 / ÜRÜN YÖNETİMİ</p><h1>Paket kataloğu</h1><p class="admin-page-description">Membership, Personal Training, grup dersleri ve Kids Club paketlerini tek yerden yönet.</p></div><div class="admin-page-actions"><a class="btn btn-dark" asp-action="Create">+ Yeni Paket</a></div></header>
+<div class="admin-metrics"><article><span>Toplam paket</span><strong>@Model.Count</strong><small>Dört hizmet kategorisi</small></article><article><span>Aktif</span><strong>@Model.Count(x=>x.IsActive)</strong><small>Public alanda görünür</small></article><article><span>Varyant</span><strong>@Model.Sum(x=>x.VariantCount)</strong><small>Süre, ders ve fiyat seçeneği</small></article></div>
+<div class="table-responsive admin-table-card"><table class="table align-middle mb-0"><thead><tr><th>Sıra</th><th>Kategori</th><th>Paket</th><th>Varyant</th><th>Durum</th><th></th></tr></thead><tbody>
+@foreach(var item in Model){<tr><td><span class="admin-order-no">@item.DisplayOrder.ToString("00")</span></td><td><span class="admin-package-code">@item.Category</span></td><td><strong>@item.Name</strong><span class="admin-cell-note">@item.Subtitle</span></td><td>@item.VariantCount seçenek</td><td><span class="badge @(item.IsActive?"text-bg-success":"text-bg-secondary")">@(item.IsActive?"Aktif":"Pasif")</span>@if(item.IsFeatured){<span class="badge text-bg-warning ms-1">Öne çıkan</span>}</td><td class="text-end"><a class="btn btn-sm btn-outline-dark" asp-action="Edit" asp-route-id="@item.Id">Yönet</a></td></tr>}
+</tbody></table></div></div></section>

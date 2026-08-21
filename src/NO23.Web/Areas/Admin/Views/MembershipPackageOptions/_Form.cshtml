@@ -1,0 +1,26 @@
+@model MembershipPackageOptionFormViewModel
+<form method="post" class="bg-white border rounded-3 p-4 text-dark admin-form-card">
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div><input type="hidden" asp-for="Id" />
+    <section class="admin-form-section">
+        <header><span>01</span><div><h2>Seçenek bilgileri</h2><p>Ana paketten sonra gösterilecek hizmet seçeneğini tanımla.</p></div></header>
+        <div class="row g-3">
+            <div class="col-md-4"><label asp-for="MembershipPackageId" class="form-label"></label><select asp-for="MembershipPackageId" class="form-select">@foreach (var package in Model.PackageOptions) { <option value="@package.Id">@package.Name</option> }</select><span asp-validation-for="MembershipPackageId" class="text-danger"></span></div>
+            <div class="col-md-5"><label asp-for="Name" class="form-label"></label><input asp-for="Name" class="form-control" /><span asp-validation-for="Name" class="text-danger"></span></div>
+            <div class="col-md-3"><label asp-for="DisplayOrder" class="form-label"></label><input asp-for="DisplayOrder" class="form-control" /></div>
+            <div class="col-12"><label asp-for="Description" class="form-label"></label><textarea asp-for="Description" class="form-control" rows="3"></textarea><span asp-validation-for="Description" class="text-danger"></span></div>
+        </div>
+    </section>
+    <section class="admin-form-section">
+        <header><span>02</span><div><h2>Hizmet kapsamı</h2><p>Süreyi ve kullanıcıya tanımlanacak hizmet haklarını belirle.</p></div></header>
+        <div class="row g-3">
+            <div class="col-md-4"><label asp-for="DurationDays" class="form-label"></label><input asp-for="DurationDays" class="form-control" /><span asp-validation-for="DurationDays" class="text-danger"></span></div>
+            <div class="col-md-4"><label asp-for="PersonalTrainingSessionCount" class="form-label"></label><input asp-for="PersonalTrainingSessionCount" class="form-control" /><span asp-validation-for="PersonalTrainingSessionCount" class="text-danger"></span></div>
+            <div class="col-md-4"><label asp-for="GroupClassCreditCount" class="form-label"></label><input asp-for="GroupClassCreditCount" class="form-control" /><span asp-validation-for="GroupClassCreditCount" class="text-danger"></span></div>
+        </div>
+        <div class="admin-feature-grid mt-4">
+            <label class="form-check admin-feature-option"><input asp-for="IncludesGymAccess" class="form-check-input" /><span>@Html.DisplayNameFor(x => x.IncludesGymAccess)</span></label>
+            <label class="form-check admin-feature-option"><input asp-for="IsActive" class="form-check-input" /><span>@Html.DisplayNameFor(x => x.IsActive)</span></label>
+        </div>
+    </section>
+    <div class="d-flex justify-content-end gap-2 mt-4"><a asp-action="Index" class="btn btn-outline-secondary">Vazgeç</a><button class="btn btn-dark">Kaydet</button></div>
+</form>

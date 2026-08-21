@@ -12,6 +12,14 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<MembershipPackage> MembershipPackages => Set<MembershipPackage>();
 
+    public DbSet<MembershipPackageOption> MembershipPackageOptions => Set<MembershipPackageOption>();
+
+    public DbSet<ServicePackage> ServicePackages => Set<ServicePackage>();
+
+    public DbSet<ServicePackageFeature> ServicePackageFeatures => Set<ServicePackageFeature>();
+
+    public DbSet<ServicePackageVariant> ServicePackageVariants => Set<ServicePackageVariant>();
+
     public DbSet<MemberProfile> MemberProfiles => Set<MemberProfile>();
 
     public DbSet<Trainer> Trainers => Set<Trainer>();
@@ -25,6 +33,12 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<PersonalTrainingRequest> PersonalTrainingRequests =>
         Set<PersonalTrainingRequest>();
 
+    public DbSet<PersonalTrainingSession> PersonalTrainingSessions =>
+        Set<PersonalTrainingSession>();
+
+    public DbSet<PersonalTrainingSessionHistory> PersonalTrainingSessionHistories =>
+        Set<PersonalTrainingSessionHistory>();
+
     public DbSet<TrainerConversation> TrainerConversations =>
         Set<TrainerConversation>();
 
@@ -32,6 +46,12 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         Set<TrainerMessage>();
 
     public DbSet<KitchenMenuItem> KitchenMenuItems => Set<KitchenMenuItem>();
+
+    public DbSet<KitchenAllergen> KitchenAllergens => Set<KitchenAllergen>();
+
+    public DbSet<KitchenMenuItemAllergen> KitchenMenuItemAllergens => Set<KitchenMenuItemAllergen>();
+
+    public DbSet<MemberAllergen> MemberAllergens => Set<MemberAllergen>();
 
     public DbSet<KitchenSubscription> KitchenSubscriptions => Set<KitchenSubscription>();
 

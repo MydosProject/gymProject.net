@@ -30,5 +30,15 @@ public class MemberProfileConfiguration : IEntityTypeConfiguration<MemberProfile
             .WithMany(package => package.MemberProfiles)
             .HasForeignKey(profile => profile.MembershipPackageId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(profile => profile.MembershipPackageOption)
+            .WithMany(option => option.MemberProfiles)
+            .HasForeignKey(profile => profile.MembershipPackageOptionId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasOne(profile => profile.AssignedTrainer)
+            .WithMany(trainer => trainer.AssignedMembers)
+            .HasForeignKey(profile => profile.AssignedTrainerId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

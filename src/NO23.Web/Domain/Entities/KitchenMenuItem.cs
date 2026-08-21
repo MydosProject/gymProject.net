@@ -1,4 +1,5 @@
 using NO23.Web.Domain.Enums;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace NO23.Web.Domain.Entities;
 
@@ -24,6 +25,7 @@ public class KitchenMenuItem
 
     public string Ingredients { get; set; } = string.Empty;
 
+    [NotMapped]
     public string? Allergens { get; set; }
 
     public string? Tags { get; set; }
@@ -45,6 +47,8 @@ public class KitchenMenuItem
     public ICollection<KitchenMealPlanItem> MealPlanItems { get; set; } = [];
 
     public ICollection<KitchenRecipeIngredient> RecipeIngredients { get; set; } = [];
+
+    public ICollection<KitchenMenuItemAllergen> MenuItemAllergens { get; set; } = [];
 
     public ICollection<KitchenProductionPlanItem> ProductionPlanItems { get; set; } = [];
 }

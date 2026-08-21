@@ -45,4 +45,6 @@ public class MembershipPackage
     public DateTime? UpdatedAtUtc { get; set; }
 
     public ICollection<MemberProfile> MemberProfiles { get; set; } = [];
+
+    public ICollection<MembershipPackageOption> Options { get; set; } = [];
 }

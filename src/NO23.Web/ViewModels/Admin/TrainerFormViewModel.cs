@@ -6,6 +6,11 @@ public class TrainerFormViewModel
 {
     public int Id { get; set; }
 
+    [EmailAddress]
+    [StringLength(256)]
+    [Display(Name = "Giriş e-postası")]
+    public string? Email { get; set; }
+
     [Required]
     [StringLength(80)]
     [Display(Name = "Ad")]

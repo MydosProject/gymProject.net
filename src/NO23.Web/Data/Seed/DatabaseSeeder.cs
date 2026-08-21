@@ -35,8 +35,10 @@ public static class DatabaseSeeder
 
         await SeedRolesAsync(roleManager);
         await SeedMembershipPackagesAsync(dbContext);
+        await SeedServicePackagesAsync(dbContext);
         await SeedClassOperationsAsync(dbContext);
         await SeedKitchenSubscriptionPackagesAsync(dbContext);
+        await SeedKitchenAllergensAsync(dbContext);
         await SeedKitchenMenuItemsAsync(dbContext);
         await SeedKitchenStockAsync(dbContext);
         await SeedShopProductsAsync(dbContext);
@@ -109,6 +111,47 @@ public static class DatabaseSeeder
             }
         }
 
+        await dbContext.SaveChangesAsync();
+    }
+
+    private static async Task SeedMembershipPackageOptionsAsync(ApplicationDbContext dbContext)
+    {
+        var packages = await dbContext.MembershipPackages.ToDictionaryAsync(x => x.Code);
+        foreach (var defaultOption in MembershipPackageOptionSeed.Defaults)
+        {
+            if (!packages.TryGetValue(defaultOption.PackageCode, out var package)) continue;
+            if (await dbContext.MembershipPackageOptions.AnyAsync(x =>
+                x.MembershipPackageId == package.Id && x.Name == defaultOption.Name)) continue;
+            dbContext.MembershipPackageOptions.Add(new MembershipPackageOption
+            {
+                MembershipPackageId = package.Id,
+                Name = defaultOption.Name,
+                Description = defaultOption.Description,
+                DurationDays = defaultOption.DurationDays,
+                PersonalTrainingSessionCount = defaultOption.PersonalTrainingSessionCount,
+                GroupClassCreditCount = defaultOption.GroupClassCreditCount,
+                IncludesGymAccess = defaultOption.IncludesGymAccess,
+                DisplayOrder = defaultOption.DisplayOrder,
+                IsActive = true
+            });
+        }
+        await dbContext.SaveChangesAsync();
+    }
+
+    private static async Task SeedServicePackagesAsync(ApplicationDbContext dbContext)
+    {
+        var membershipPackages = await dbContext.MembershipPackages.ToDictionaryAsync(x => x.Code);
+        foreach (var defaultPackage in ServicePackageSeed.Defaults)
+        {
+            if (await dbContext.ServicePackages.AnyAsync(x => x.Slug == defaultPackage.Slug)) continue;
+            if (defaultPackage.MembershipPackage is not null &&
+                membershipPackages.TryGetValue(defaultPackage.MembershipPackage.Code, out var membershipPackage))
+            {
+                defaultPackage.MembershipPackage = null;
+                defaultPackage.MembershipPackageId = membershipPackage.Id;
+            }
+            dbContext.ServicePackages.Add(defaultPackage);
+        }
         await dbContext.SaveChangesAsync();
     }
 
@@ -220,9 +263,28 @@ public static class DatabaseSeeder
             if (item is null)
             {
                 dbContext.KitchenMenuItems.Add(defaultItem);
+                item = defaultItem;
             }
+
+            var allergenNames = KitchenAllergenSeed.ResolveNames(defaultItem.Allergens);
+            var allergenIds = await dbContext.KitchenAllergens
+                .Where(x => allergenNames.Contains(x.Name)).Select(x => x.Id).ToListAsync();
+            var existingIds = await dbContext.KitchenMenuItemAllergens
+                .Where(x => x.KitchenMenuItemId == item.Id).Select(x => x.KitchenAllergenId).ToListAsync();
+            foreach (var allergenId in allergenIds.Except(existingIds))
+                item.MenuItemAllergens.Add(new KitchenMenuItemAllergen { KitchenAllergenId = allergenId });
         }
 
+        await dbContext.SaveChangesAsync();
+    }
+
+    private static async Task SeedKitchenAllergensAsync(ApplicationDbContext dbContext)
+    {
+        foreach (var defaultItem in KitchenAllergenSeed.Defaults)
+        {
+            if (!await dbContext.KitchenAllergens.AnyAsync(x => x.Name == defaultItem.Name))
+                dbContext.KitchenAllergens.Add(defaultItem);
+        }
         await dbContext.SaveChangesAsync();
     }
 

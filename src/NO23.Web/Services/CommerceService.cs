@@ -88,12 +88,19 @@ public class CommerceService
         }
 
         var menuItem = await dbContext.KitchenMenuItems
+            .Include(item => item.MenuItemAllergens)
+                .ThenInclude(item => item.KitchenAllergen)
             .FirstOrDefaultAsync(item => item.Id == menuItemId && item.IsActive);
 
         if (menuItem is null)
         {
             return CommerceResult.Fail("Kitchen menü ürünü bulunamadı.");
         }
+
+        var conflictNames = await GetAllergenConflictsAsync(profile.Id, menuItem.MenuItemAllergens);
+        if (conflictNames.Count > 0)
+            return CommerceResult.Fail(
+                $"Bu öğün profilinde seçili olan şu alerjenleri içeriyor: {string.Join(", ", conflictNames)}.");
 
         var cart = await GetOrCreateCartAsync(profile.Id);
         var existingItem = cart.Items.FirstOrDefault(item =>
@@ -172,6 +179,17 @@ public class CommerceService
         {
             return CommerceResult.Fail("Sepet boş.");
         }
+
+        var menuItemIds = cart.Items.Where(x => x.ItemType == CartItemType.KitchenMenuItem)
+            .Select(x => x.KitchenMenuItemId).OfType<int>().ToList();
+        var conflict = await dbContext.KitchenMenuItemAllergens.AsNoTracking()
+            .Where(x => menuItemIds.Contains(x.KitchenMenuItemId) &&
+                x.KitchenAllergen.Members.Any(m => m.MemberProfileId == profile.Id))
+            .Select(x => new { x.KitchenMenuItem.Name, AllergenName = x.KitchenAllergen.Name })
+            .FirstOrDefaultAsync();
+        if (conflict is not null)
+            return CommerceResult.Fail(
+                $"{conflict.Name} profilinde seçili olan {conflict.AllergenName} alerjenini içeriyor. Sepetini güncelle.");
 
         foreach (var cartItem in cart.Items.Where(item => item.ItemType == CartItemType.ShopProduct))
         {
@@ -369,6 +387,17 @@ public class CommerceService
     {
         return await dbContext.MemberProfiles
             .FirstOrDefaultAsync(member => member.ApplicationUserId == userId);
+    }
+
+    private async Task<List<string>> GetAllergenConflictsAsync(
+        int memberProfileId,
+        IEnumerable<KitchenMenuItemAllergen> menuAllergens)
+    {
+        var allergenIds = menuAllergens.Select(x => x.KitchenAllergenId).ToList();
+        return await dbContext.MemberAllergens.AsNoTracking()
+            .Where(x => x.MemberProfileId == memberProfileId && allergenIds.Contains(x.KitchenAllergenId))
+            .OrderBy(x => x.KitchenAllergen.DisplayOrder)
+            .Select(x => x.KitchenAllergen.Name).ToListAsync();
     }
 
     private async Task<ShoppingCart> GetOrCreateCartAsync(int memberProfileId)

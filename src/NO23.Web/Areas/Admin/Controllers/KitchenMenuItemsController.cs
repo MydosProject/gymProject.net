@@ -40,7 +40,7 @@ public class KitchenMenuItemsController(ApplicationDbContext dbContext) : Contro
 
     public async Task<IActionResult> Create()
     {
-        return View(new KitchenMenuItemFormViewModel
+        var model = new KitchenMenuItemFormViewModel
         {
             Calories = 450,
             UnitPrice = 250,
@@ -48,18 +48,20 @@ public class KitchenMenuItemsController(ApplicationDbContext dbContext) : Contro
             CarbohydrateGrams = 45,
             FatGrams = 15,
             DisplayOrder = 10,
-            IsActive = true,
-            RecipeIngredients = await BuildRecipeInputsAsync(null)
-        });
+            IsActive = true
+        };
+        await PopulateOptionsAsync(model, null);
+        return View(model);
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(KitchenMenuItemFormViewModel model)
     {
+        await ValidateAllergensAsync(model.SelectedAllergenIds);
         if (!ModelState.IsValid)
         {
-            model.RecipeIngredients = await BuildRecipeInputsAsync(null, model.RecipeIngredients);
+            await PopulateOptionsAsync(model, null);
             return View(model);
         }
 
@@ -82,7 +84,7 @@ public class KitchenMenuItemsController(ApplicationDbContext dbContext) : Contro
         }
 
         var model = MapToFormModel(item);
-        model.RecipeIngredients = await BuildRecipeInputsAsync(id);
+        await PopulateOptionsAsync(model, id);
 
         return View(model);
     }
@@ -96,14 +98,16 @@ public class KitchenMenuItemsController(ApplicationDbContext dbContext) : Contro
             return BadRequest();
         }
 
+        await ValidateAllergensAsync(model.SelectedAllergenIds);
         if (!ModelState.IsValid)
         {
-            model.RecipeIngredients = await BuildRecipeInputsAsync(id, model.RecipeIngredients);
+            await PopulateOptionsAsync(model, id);
             return View(model);
         }
 
         var item = await dbContext.KitchenMenuItems
             .Include(item => item.RecipeIngredients)
+            .Include(item => item.MenuItemAllergens)
             .FirstOrDefaultAsync(item => item.Id == id);
 
         if (item is null)
@@ -115,6 +119,7 @@ public class KitchenMenuItemsController(ApplicationDbContext dbContext) : Contro
         dbContext.KitchenRecipeIngredients.RemoveRange(item.RecipeIngredients);
         item.RecipeIngredients.Clear();
         ApplyRecipeIngredients(item, model);
+        SyncAllergens(item, model);
         await dbContext.SaveChangesAsync();
 
         return RedirectToAction(nameof(Index));
@@ -149,7 +154,7 @@ public class KitchenMenuItemsController(ApplicationDbContext dbContext) : Contro
                 "Bu ürün sipariş, sepet veya plan kayıtlarında kullanıldığı için silinemez. Bunun yerine ürünü pasif duruma getirebilirsin.");
 
             var model = MapToFormModel(item);
-            model.RecipeIngredients = await BuildRecipeInputsAsync(id);
+            await PopulateOptionsAsync(model, id);
 
             return View("Edit", model);
         }
@@ -165,6 +170,7 @@ public class KitchenMenuItemsController(ApplicationDbContext dbContext) : Contro
         var item = new KitchenMenuItem();
         ApplyFormModel(item, model);
         ApplyRecipeIngredients(item, model);
+        ApplyAllergens(item, model);
         return item;
     }
 
@@ -179,7 +185,6 @@ public class KitchenMenuItemsController(ApplicationDbContext dbContext) : Contro
         item.CarbohydrateGrams = model.CarbohydrateGrams;
         item.FatGrams = model.FatGrams;
         item.Ingredients = model.Ingredients.Trim();
-        item.Allergens = model.Allergens?.Trim();
         item.Tags = model.Tags?.Trim();
         item.IsActive = model.IsActive;
         item.DisplayOrder = model.DisplayOrder;
@@ -200,7 +205,6 @@ public class KitchenMenuItemsController(ApplicationDbContext dbContext) : Contro
             CarbohydrateGrams = item.CarbohydrateGrams,
             FatGrams = item.FatGrams,
             Ingredients = item.Ingredients,
-            Allergens = item.Allergens,
             Tags = item.Tags,
             IsActive = item.IsActive,
             DisplayOrder = item.DisplayOrder
@@ -261,6 +265,47 @@ public class KitchenMenuItemsController(ApplicationDbContext dbContext) : Contro
                 QuantityPerPortion = recipeInput.QuantityPerPortion
             });
         }
+    }
+
+    private static void ApplyAllergens(KitchenMenuItem item, KitchenMenuItemFormViewModel model)
+    {
+        foreach (var allergenId in model.SelectedAllergenIds.Distinct())
+            item.MenuItemAllergens.Add(new KitchenMenuItemAllergen { KitchenAllergenId = allergenId });
+    }
+
+    private void SyncAllergens(KitchenMenuItem item, KitchenMenuItemFormViewModel model)
+    {
+        var selectedIds = model.SelectedAllergenIds.ToHashSet();
+        var removedItems = item.MenuItemAllergens.Where(x => !selectedIds.Contains(x.KitchenAllergenId)).ToList();
+        dbContext.KitchenMenuItemAllergens.RemoveRange(removedItems);
+        foreach (var allergenId in selectedIds.Except(item.MenuItemAllergens.Select(x => x.KitchenAllergenId)))
+            item.MenuItemAllergens.Add(new KitchenMenuItemAllergen { KitchenAllergenId = allergenId });
+    }
+
+    private async Task PopulateOptionsAsync(KitchenMenuItemFormViewModel model, int? menuItemId)
+    {
+        model.RecipeIngredients = await BuildRecipeInputsAsync(menuItemId, model.RecipeIngredients);
+        var existingIds = model.SelectedAllergenIds.Count > 0
+            ? model.SelectedAllergenIds.ToHashSet()
+            : menuItemId.HasValue
+                ? (await dbContext.KitchenMenuItemAllergens.AsNoTracking()
+                    .Where(x => x.KitchenMenuItemId == menuItemId.Value)
+                    .Select(x => x.KitchenAllergenId).ToListAsync()).ToHashSet()
+                : [];
+        model.SelectedAllergenIds = existingIds.ToList();
+        model.AllergenOptions = await dbContext.KitchenAllergens.AsNoTracking()
+            .Where(x => x.IsActive || existingIds.Contains(x.Id))
+            .OrderBy(x => x.DisplayOrder).ThenBy(x => x.Name)
+            .Select(x => new KitchenAllergenOptionViewModel { Id = x.Id, Name = x.Name, IsSelected = existingIds.Contains(x.Id) })
+            .ToListAsync();
+    }
+
+    private async Task ValidateAllergensAsync(IReadOnlyCollection<int> allergenIds)
+    {
+        var distinctIds = allergenIds.Distinct().ToList();
+        var validCount = await dbContext.KitchenAllergens.CountAsync(x => distinctIds.Contains(x.Id));
+        if (validCount != distinctIds.Count)
+            ModelState.AddModelError(nameof(KitchenMenuItemFormViewModel.SelectedAllergenIds), "Geçersiz bir alerjen seçildi.");
     }
 
     private static string GetIngredientUnitDisplayName(KitchenIngredientUnit unit)

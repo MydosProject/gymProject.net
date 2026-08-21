@@ -158,6 +158,7 @@ builder.Services.AddControllersWithViews(options =>
 builder.Services.AddSignalR();
 builder.Services.AddScoped<ClassReservationService>();
 builder.Services.AddScoped<PersonalTrainingRequestService>();
+builder.Services.AddScoped<PersonalTrainingCalendarService>();
 builder.Services.AddScoped<TrainerMessagingService>();
 builder.Services.AddScoped<CalorieCalculatorService>();
 builder.Services.AddScoped<KitchenPlanMatchingService>();
@@ -208,6 +209,24 @@ app.UseRouting();
 app.UseSession();
 
 app.UseAuthorization();
+
+app.Use(async (context, next) =>
+{
+    var requestPath = context.Request.Path.Value?.TrimEnd('/');
+
+    if (HttpMethods.IsGet(context.Request.Method) &&
+        string.Equals(
+            requestPath,
+            "/Identity/Account/Manage",
+            StringComparison.OrdinalIgnoreCase) &&
+        context.User.IsInRole(ApplicationRoles.Admin))
+    {
+        context.Response.Redirect("/Admin/Account");
+        return;
+    }
+
+    await next();
+});
 
 if (app.Environment.IsDevelopment())
 {
@@ -272,12 +291,12 @@ if (app.Environment.IsDevelopment())
 
     api.MapGet("/kitchen-menu-items", async (ApplicationDbContext dbContext) =>
     {
-        return await dbContext.KitchenMenuItems
+        var items = await dbContext.KitchenMenuItems
             .AsNoTracking()
             .Where(item => item.IsActive)
             .OrderBy(item => item.DisplayOrder)
             .ThenBy(item => item.Name)
-            .Select(item => new KitchenMenuItemResponse
+            .Select(item => new
             {
                 Id = item.Id,
                 Name = item.Name,
@@ -288,10 +307,19 @@ if (app.Environment.IsDevelopment())
                 CarbohydrateGrams = item.CarbohydrateGrams,
                 FatGrams = item.FatGrams,
                 Ingredients = item.Ingredients,
-                Allergens = item.Allergens,
+                AllergenNames = item.MenuItemAllergens.OrderBy(x => x.KitchenAllergen.DisplayOrder)
+                    .Select(x => x.KitchenAllergen.Name).ToList(),
                 Tags = item.Tags
             })
             .ToListAsync();
+        return items.Select(item => new KitchenMenuItemResponse
+        {
+            Id = item.Id, Name = item.Name, Category = item.Category,
+            Calories = item.Calories, UnitPrice = item.UnitPrice,
+            ProteinGrams = item.ProteinGrams, CarbohydrateGrams = item.CarbohydrateGrams,
+            FatGrams = item.FatGrams, Ingredients = item.Ingredients,
+            Allergens = string.Join(", ", item.AllergenNames), Tags = item.Tags
+        }).ToList();
     })
     .WithName("GetKitchenMenuItems")
     .Produces<IReadOnlyList<KitchenMenuItemResponse>>();

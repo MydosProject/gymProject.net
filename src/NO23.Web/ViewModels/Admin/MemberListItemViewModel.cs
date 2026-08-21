@@ -16,5 +16,13 @@ public class MemberListItemViewModel
 
     public int RemainingClassCredits { get; init; }
 
+    public bool IsUnlimitedPackage { get; init; }
+
+    public int MemberProfileId { get; init; }
+
+    public int? AssignedTrainerId { get; init; }
+
+    public string? AssignedTrainerName { get; init; }
+
     public DateTime CreatedAtUtc { get; init; }
 }

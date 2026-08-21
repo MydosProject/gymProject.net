@@ -1,0 +1,230 @@
+@model TrainerCalendarViewModel
+@{
+    ViewData["Title"] = "Takvimim";
+}
+
+@section Styles {
+    <style>
+        .trainer-week-toolbar { display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:1rem; }
+        .trainer-week-toolbar strong { font-size:1.05rem; }
+        .trainer-week-scroll { overflow-x:auto; padding-bottom:.5rem; }
+        .trainer-week-grid { display:grid; grid-template-columns:repeat(7,minmax(165px,1fr)); min-width:1155px; border:1px solid #dee2e6; border-radius:14px; overflow:hidden; background:#fff; }
+        .trainer-week-day { min-height:230px; border-right:1px solid #e9ecef; background:#fff; }
+        .trainer-week-day:last-child { border-right:0; }
+        .trainer-week-day.is-today { background:#f8ffe8; }
+        .trainer-week-day-head { padding:.85rem; border-bottom:1px solid #e9ecef; display:flex; justify-content:space-between; align-items:center; }
+        .trainer-week-day-head span { display:block; text-transform:capitalize; font-weight:700; }
+        .trainer-week-day-head small { color:#6c757d; }
+        .trainer-week-count { border-radius:999px; padding:.2rem .5rem; background:#eef0ea; font-size:.72rem; white-space:nowrap; }
+        .trainer-week-count.is-busy { background:#171917; color:#fff; }
+        .trainer-week-items { display:grid; gap:.55rem; padding:.65rem; }
+        .trainer-week-event { display:block; padding:.65rem; border-radius:10px; background:#eef5dc; border-left:4px solid #8eb516; color:#171917; text-decoration:none; }
+        .trainer-week-event:hover { color:#171917; background:#e3efc3; }
+        .trainer-week-event strong, .trainer-week-event span { display:block; }
+        .trainer-week-event span { font-size:.78rem; margin-top:.15rem; }
+        .trainer-week-empty { padding:1rem .75rem; color:#9a9f96; font-size:.8rem; }
+    </style>
+}
+
+<section class="admin-page">
+    <div class="container">
+        <header class="admin-page-head">
+            <div>
+                <p class="admin-eyebrow">TRAINER / BİREBİR DERSLER</p>
+                <h1>Takvimim</h1>
+                <p class="admin-page-description">Size atanmış üyelerin derslerini planlayın, tamamlayın, iptal edin veya ders hakkını düşmeden erteleyin.</p>
+            </div>
+        </header>
+
+        @if (TempData["StatusMessage"] is string message)
+        { <div class="alert alert-success">@message</div> }
+        @if (TempData["ErrorMessage"] is string error)
+        { <div class="alert alert-danger">@error</div> }
+
+        <div class="admin-form-card mb-4">
+            <div class="trainer-week-toolbar">
+                <a class="btn btn-outline-dark btn-sm" asp-action="Index"
+                   asp-route-week="@Model.WeekStart.AddDays(-7).ToString("yyyy-MM-dd")">← Önceki hafta</a>
+                <div class="text-center">
+                    <small class="text-muted d-block">HAFTALIK PROGRAM</small>
+                    <strong>@Model.WeekStart.ToString("dd.MM.yyyy") — @Model.WeekEnd.ToString("dd.MM.yyyy")</strong>
+                    <a class="d-block small mt-1" asp-action="Index">Bu haftaya dön</a>
+                </div>
+                <a class="btn btn-outline-dark btn-sm" asp-action="Index"
+                   asp-route-week="@Model.WeekStart.AddDays(7).ToString("yyyy-MM-dd")">Sonraki hafta →</a>
+            </div>
+            <div class="trainer-week-scroll">
+                <div class="trainer-week-grid">
+                    @foreach (var day in Model.Days)
+                    {
+                        <section class="trainer-week-day @(day.IsToday ? "is-today" : "")">
+                            <header class="trainer-week-day-head">
+                                <div>
+                                    <span>@day.DayName</span>
+                                    <small>@day.Date.ToString("dd MMM")</small>
+                                </div>
+                                <span class="trainer-week-count @(day.Sessions.Count > 0 ? "is-busy" : "")">
+                                    @(day.Sessions.Count > 0 ? $"{day.Sessions.Count} ders" : "Boş")
+                                </span>
+                            </header>
+                            @if (day.Sessions.Count == 0)
+                            {
+                                <div class="trainer-week-empty">Planlanmış ders yok</div>
+                            }
+                            else
+                            {
+                                <div class="trainer-week-items">
+                                    @foreach (var item in day.Sessions)
+                                    {
+                                        <a class="trainer-week-event" href="#session-@item.Id">
+                                            <strong>@item.StartsAtUtc.ToLocalTime().ToString("HH:mm") · @item.DurationMinutes dk</strong>
+                                            <span>@(string.IsNullOrWhiteSpace(item.MemberName) ? "İsimsiz üye" : item.MemberName)</span>
+                                            <span>@item.StatusName</span>
+                                        </a>
+                                    }
+                                </div>
+                            }
+                        </section>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="admin-form-card">
+                    <h2>Yeni ders planla</h2>
+                    @if (Model.Members.Count == 0)
+                    {
+                        <p class="text-muted mb-0">Henüz size atanmış üye yok. Atama yönetici panelinden yapılır.</p>
+                    }
+                    else
+                    {
+                        <form asp-action="Create" method="post" class="d-grid gap-3">
+                            <input type="hidden" name="Week" value="@Model.WeekStart.ToString("yyyy-MM-dd")" />
+                            <div>
+                                <label class="form-label" for="MemberProfileId">Üye</label>
+                                <select class="form-select" id="MemberProfileId" name="MemberProfileId" required>
+                                    <option value="">Üye seçin</option>
+                                    @foreach (var member in Model.Members)
+                                    { <option value="@member.Id">@member.Name — @(member.IsUnlimited ? "Sınırsız" : $"{member.RemainingCredits} ders")</option> }
+                                </select>
+                            </div>
+                            <div>
+                                <label class="form-label" for="StartsAt">Tarih ve saat</label>
+                                <input class="form-control" type="datetime-local" id="StartsAt" name="StartsAt" required />
+                            </div>
+                            <div>
+                                <label class="form-label" for="DurationMinutes">Süre (dakika)</label>
+                                <input class="form-control" type="number" min="15" max="240" step="15" value="60" id="DurationMinutes" name="DurationMinutes" required />
+                            </div>
+                            <div>
+                                <label class="form-label" for="Note">Not</label>
+                                <textarea class="form-control" maxlength="600" id="Note" name="Note" rows="3"></textarea>
+                            </div>
+                            <button class="btn btn-dark" type="submit">Takvime ekle</button>
+                        </form>
+                    }
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="admin-form-card">
+                    <h2>Ders programı</h2>
+                    @if (Model.Sessions.Count == 0)
+                    { <p class="text-muted mb-0">Seçili tarih aralığında ders bulunmuyor.</p> }
+                    else
+                    {
+                        <div class="d-grid gap-3">
+                            @foreach (var session in Model.Sessions)
+                            {
+                                var latestPostponement = session.History
+                                    .FirstOrDefault(item => item.Status == PersonalTrainingSessionStatus.Postponed);
+                                <article class="border rounded-3 p-3" id="session-@session.Id">
+                                    <div class="d-flex flex-wrap justify-content-between gap-2 mb-2">
+                                        <div>
+                                            <strong>@(string.IsNullOrWhiteSpace(session.MemberName) ? "İsimsiz üye" : session.MemberName)</strong>
+                                            <div class="text-muted small">@session.StartsAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm") · @session.DurationMinutes dk · Kalan: @(session.IsUnlimited ? "Sınırsız" : session.RemainingCredits)</div>
+                                        </div>
+                                        <span class="admin-status">@session.StatusName</span>
+                                    </div>
+                                    @if (!string.IsNullOrWhiteSpace(session.Note))
+                                    {
+                                        <div class="bg-light border rounded-2 p-2 mb-2">
+                                            <small class="text-muted d-block">İlk ders notu</small>
+                                            <span class="small">@session.Note</span>
+                                        </div>
+                                    }
+                                    @if (latestPostponement is not null)
+                                    {
+                                        <div class="alert alert-info py-2 px-3 mb-2 small">
+                                            <strong>Ertelendi:</strong>
+                                            @latestPostponement.PreviousStartsAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+                                            → @latestPostponement.NewStartsAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+                                        </div>
+                                    }
+                                    <details class="mb-3">
+                                        <summary class="small fw-semibold" style="cursor:pointer">
+                                            Ders detayları ve geçmiş (@session.History.Count işlem)
+                                        </summary>
+                                        <div class="border-start ps-3 mt-2 d-grid gap-2 small">
+                                            <div>
+                                                <strong>Ders oluşturuldu</strong>
+                                                <div class="text-muted">@session.CreatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</div>
+                                            </div>
+                                            @foreach (var history in session.History)
+                                            {
+                                                <div>
+                                                    <strong>@history.StatusName</strong>
+                                                    <div class="text-muted">
+                                                        İşlem: @history.ChangedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+                                                    </div>
+                                                    @if (history.Status == PersonalTrainingSessionStatus.Postponed)
+                                                    {
+                                                        <div>
+                                                            Eski tarih: @history.PreviousStartsAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")<br />
+                                                            Yeni tarih: @history.NewStartsAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+                                                        </div>
+                                                    }
+                                                    @if (!string.IsNullOrWhiteSpace(history.Note))
+                                                    {
+                                                        <div>İşlem notu: @history.Note</div>
+                                                    }
+                                                </div>
+                                            }
+                                        </div>
+                                    </details>
+                                    @if (session.Status == PersonalTrainingSessionStatus.Scheduled)
+                                    {
+                                        <form asp-action="Update" method="post" class="row g-2 align-items-end">
+                                            <input type="hidden" name="Id" value="@session.Id" />
+                                            <input type="hidden" name="Week" value="@Model.WeekStart.ToString("yyyy-MM-dd")" />
+                                            <div class="col-sm-3">
+                                                <label class="form-label small">İşlem</label>
+                                                <select class="form-select form-select-sm" name="Status" required>
+                                                    <option value="Completed">Tamamlandı</option>
+                                                    <option value="Cancelled">İptal edildi</option>
+                                                    <option value="NoShow">Gelmedi</option>
+                                                    <option value="Postponed">Ertelendi</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-sm-4">
+                                                <label class="form-label small">Yeni tarih (ertelemede)</label>
+                                                <input class="form-control form-control-sm" type="datetime-local" name="PostponedStartsAt" />
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <label class="form-label small">İşlem notu</label>
+                                                <input class="form-control form-control-sm" maxlength="600" name="Note" />
+                                            </div>
+                                            <div class="col-sm-2"><button class="btn btn-dark btn-sm w-100" type="submit">Kaydet</button></div>
+                                        </form>
+                                    }
+                                </article>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

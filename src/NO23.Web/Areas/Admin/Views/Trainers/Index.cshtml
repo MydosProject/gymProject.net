@@ -5,6 +5,11 @@
 
 <section class="admin-trainers-page">
 
+    @if (TempData["InvitationWarning"] is string invitationWarning)
+    {
+        <div class="alert alert-warning">@invitationWarning</div>
+    }
+
     <header class="admin-trainers-head">
 
         <div>
@@ -192,7 +197,7 @@
 
                             <td data-label="Panel">
 
-                                @if (trainer.HasPanelAccount)
+                                @if (trainer.HasPanelAccount && trainer.HasPassword)
                                 {
                                     <span class="admin-trainer-panel-status is-linked">
 
@@ -203,6 +208,16 @@
                                         Hesap bağlı
 
                                     </span>
+                                }
+                                else if (trainer.HasPanelAccount)
+                                {
+                                    <div>
+                                        <span class="admin-trainer-panel-status is-linked">Davet bekliyor</span>
+                                        <form asp-action="ResendInvitation" method="post" class="mt-2">
+                                            <input type="hidden" name="id" value="@trainer.Id" />
+                                            <button class="admin-trainer-panel-action" type="submit">Daveti yeniden gönder →</button>
+                                        </form>
+                                    </div>
                                 }
                                 else
                                 {

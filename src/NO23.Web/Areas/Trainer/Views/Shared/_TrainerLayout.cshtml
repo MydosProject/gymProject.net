@@ -141,6 +141,16 @@
                         Antrenman
                     </p>
 
+                    <a class="admin-nav-link trainer-nav-link @ActiveClass("Calendar")"
+                       asp-area="Trainer" asp-controller="Calendar" asp-action="Index">
+                        <span class="admin-nav-index trainer-nav-index">01</span>
+                        <span class="trainer-nav-copy">
+                            <strong>Takvimim</strong>
+                            <small>Birebir ders programı</small>
+                        </span>
+                        <span class="trainer-nav-arrow" aria-hidden="true">→</span>
+                    </a>
+
                     <a class="admin-nav-link trainer-nav-link
                               @ActiveClass("PersonalTrainingRequests")"
                        asp-area="Trainer"

@@ -14,5 +14,7 @@ public class KitchenDashboardViewModel
 
     public IReadOnlyList<KitchenFilterOptionViewModel> TagFilters { get; init; } = [];
 
+    public IReadOnlyList<string> MemberAllergenNames { get; init; } = [];
+
     public IReadOnlyList<KitchenSubscriptionPlanViewModel> SubscriptionPlans { get; init; } = [];
 }
