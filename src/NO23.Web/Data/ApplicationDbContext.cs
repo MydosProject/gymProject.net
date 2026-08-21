@@ -38,6 +38,12 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<KitchenSubscription> KitchenSubscriptions => Set<KitchenSubscription>();
 
+    public DbSet<KitchenSubscriptionMealSelection> KitchenSubscriptionMealSelections =>
+        Set<KitchenSubscriptionMealSelection>();
+
+    public DbSet<KitchenMealSlotPrice> KitchenMealSlotPrices =>
+        Set<KitchenMealSlotPrice>();
+
     public DbSet<KitchenSubscriptionPackage> KitchenSubscriptionPackages =>
         Set<KitchenSubscriptionPackage>();
 

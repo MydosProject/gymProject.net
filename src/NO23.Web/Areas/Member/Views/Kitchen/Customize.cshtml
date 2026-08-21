@@ -1,0 +1,358 @@
+@using NO23.Web.Domain.Enums
+@model NO23.Web.ViewModels.Member.KitchenCustomizeViewModel
+
+@{
+    ViewData["Title"] = "Kitchen Planını Özelleştir";
+
+    decimal fullDailyPrice = Model.MealOptions.Sum(option => option.DailyPrice);
+    decimal packageDiscountRatio = Model.PackageDays switch
+    {
+        5 => 1m,
+        10 => 7900m / 8500m,
+        20 => 14500m / 17000m,
+        30 => 19900m / 25500m,
+        _ => 1m
+    };
+}
+
+<section class="member-kitchen-customize-page">
+    <div class="container">
+
+        <header class="member-kitchen-customize-hero">
+            <div>
+                <p class="member-kitchen-customize-eyebrow">
+                    NO23 KITCHEN / PLANLA
+                </p>
+
+                <h1>
+                    Günlük öğünlerini
+                    <span>sen seç.</span>
+                </h1>
+
+                <p>
+                    @Model.PackageName için her gün almak istediğin
+                    öğünleri belirle. Seçimin paket süresinin tamamına
+                    uygulanır.
+                </p>
+            </div>
+
+            <div class="member-kitchen-customize-package">
+                <span>Paket süresi</span>
+                <strong>@Model.PackageDays gün</strong>
+                <small>@Model.PackageName</small>
+            </div>
+        </header>
+
+        <section class="member-kitchen-customize-target">
+            <div>
+                <span>Kişisel günlük hedefin</span>
+                <strong>
+                    @Model.DailyCalories
+                    <small>kcal</small>
+                </strong>
+            </div>
+
+            <dl>
+                <div>
+                    <dt>Protein</dt>
+                    <dd>@Model.ProteinGrams g</dd>
+                </div>
+
+                <div>
+                    <dt>Karbonhidrat</dt>
+                    <dd>@Model.CarbohydrateGrams g</dd>
+                </div>
+
+                <div>
+                    <dt>Yağ</dt>
+                    <dd>@Model.FatGrams g</dd>
+                </div>
+            </dl>
+        </section>
+
+        <form asp-area="Member"
+              asp-controller="Kitchen"
+              asp-action="Subscribe"
+              method="post"
+              class="member-kitchen-customize-form"
+              id="kitchenCustomizeForm">
+
+            @Html.AntiForgeryToken()
+
+            <input type="hidden"
+                   name="plan"
+                   value="@Model.Plan" />
+
+            <section class="member-kitchen-customize-selection">
+                <div class="member-kitchen-customize-section-head">
+                    <div>
+                        <span>01 / ÖĞÜNLER</span>
+                        <h2>Hangi öğünleri almak istiyorsun?</h2>
+                    </div>
+
+                    <p>
+                        Seçtiğin öğünler @Model.PackageDays gün boyunca
+                        günlük planına uygulanır.
+                    </p>
+                </div>
+
+                <div class="member-kitchen-meal-option-grid">
+                    @for (var index = 0; index < Model.MealOptions.Count; index++)
+                    {
+                        var option = Model.MealOptions[index];
+
+                        <label class="member-kitchen-meal-option">
+                            <input type="checkbox"
+                                   name="selectedMealSlots"
+                                   value="@option.MealSlot"
+                                   checked="@option.IsSelected"
+                                   data-meal-option
+                                   data-price="@option.DailyPrice.ToString(
+                                       System.Globalization.CultureInfo.InvariantCulture)"
+                                   data-calories="@option.TargetCalories" />
+
+                            <span class="member-kitchen-meal-option-check"
+                                  aria-hidden="true"></span>
+
+                            <span class="member-kitchen-meal-option-copy">
+                                <small>
+                                    @((index + 1).ToString("00"))
+                                </small>
+
+                                <strong>@option.DisplayName</strong>
+
+                                <span>
+                                    Yaklaşık @option.TargetCalories kcal
+                                </span>
+                            </span>
+
+                            <span class="member-kitchen-meal-option-price">
+                                @option.DailyPrice.ToString("N0") ₺
+                                <small>/ gün</small>
+                            </span>
+                        </label>
+                    }
+                </div>
+            </section>
+
+            <section class="member-kitchen-customize-summary">
+                <div class="member-kitchen-customize-summary-copy">
+                    <span>02 / PLAN ÖZETİ</span>
+                    <h2>Kitchen planın</h2>
+
+                    <p>
+                        Kişisel günlük enerji hedefin değişmez.
+                        Buradaki değer, NO23 Kitchen'ın seçtiğin
+                        öğünlerle karşılayacağı yaklaşık enerji miktarıdır.
+                    </p>
+                </div>
+
+                <div class="member-kitchen-customize-summary-card">
+                    <dl>
+                        <div>
+                            <dt>Seçilen öğün</dt>
+                            <dd>
+                                <strong data-selected-count>
+                                    @Model.MealOptions.Count
+                                </strong>
+                                <span>öğün / gün</span>
+                            </dd>
+                        </div>
+
+                        <div>
+                            <dt>Kitchen tarafından karşılanan</dt>
+                            <dd>
+                                <strong data-covered-calories>
+                                    @Model.MealOptions.Sum(option => option.TargetCalories)
+                                </strong>
+                                <span>kcal / gün</span>
+                            </dd>
+                        </div>
+
+                        <div>
+                            <dt>Günlük öğün bedeli</dt>
+                            <dd>
+                                <strong data-daily-price>
+                                    @fullDailyPrice.ToString("N0")
+                                </strong>
+                                <span>₺ / gün</span>
+                            </dd>
+                        </div>
+                    </dl>
+
+                    <div class="member-kitchen-customize-total">
+                        <span>@Model.PackageDays günlük toplam</span>
+
+                        <strong>
+                            <span data-package-price>
+                                @(
+                                    fullDailyPrice *
+                                    Model.PackageDays *
+                                    packageDiscountRatio
+                                ).ToString("N0")
+                            </span>
+                            ₺
+                        </strong>
+
+                        @if (packageDiscountRatio < 1m)
+                        {
+                            <small>
+                                Paket süresine özel indirim uygulanmıştır.
+                            </small>
+                        }
+                    </div>
+
+                    <p class="member-kitchen-customize-error"
+                       data-meal-error
+                       hidden>
+                        Devam etmek için en az bir öğün seçmelisin.
+                    </p>
+
+                    <button type="submit"
+                            class="member-kitchen-customize-submit">
+                        Ödemeye Devam Et
+                        <span aria-hidden="true">→</span>
+                    </button>
+                </div>
+            </section>
+        </form>
+
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        (() => {
+            const form =
+                document.getElementById(
+                    "kitchenCustomizeForm"
+                );
+
+            if (!form) {
+                return;
+            }
+
+            const options =
+                Array.from(
+                    form.querySelectorAll(
+                        "[data-meal-option]"
+                    )
+                );
+
+            const countElement =
+                form.querySelector(
+                    "[data-selected-count]"
+                );
+
+            const caloriesElement =
+                form.querySelector(
+                    "[data-covered-calories]"
+                );
+
+            const dailyPriceElement =
+                form.querySelector(
+                    "[data-daily-price]"
+                );
+
+            const packagePriceElement =
+                form.querySelector(
+                    "[data-package-price]"
+                );
+
+            const errorElement =
+                form.querySelector(
+                    "[data-meal-error]"
+                );
+
+            const packageDays =
+                @Model.PackageDays;
+
+            const packageDiscountRatio =
+                @packageDiscountRatio.ToString(
+                    System.Globalization.CultureInfo.InvariantCulture
+                );
+
+            const numberFormatter =
+                new Intl.NumberFormat("tr-TR", {
+                    maximumFractionDigits: 0
+                });
+
+            const updateSummary = () => {
+                const selected =
+                    options.filter(
+                        option => option.checked
+                    );
+
+                const dailyPrice =
+                    selected.reduce(
+                        (total, option) =>
+                            total +
+                            Number(
+                                option.dataset.price
+                            ),
+                        0
+                    );
+
+                const coveredCalories =
+                    selected.reduce(
+                        (total, option) =>
+                            total +
+                            Number(
+                                option.dataset.calories
+                            ),
+                        0
+                    );
+
+                const packagePrice =
+                    dailyPrice *
+                    packageDays *
+                    packageDiscountRatio;
+
+                countElement.textContent =
+                    selected.length.toString();
+
+                caloriesElement.textContent =
+                    numberFormatter.format(
+                        coveredCalories
+                    );
+
+                dailyPriceElement.textContent =
+                    numberFormatter.format(
+                        dailyPrice
+                    );
+
+                packagePriceElement.textContent =
+                    numberFormatter.format(
+                        packagePrice
+                    );
+
+                errorElement.hidden =
+                    selected.length > 0;
+            };
+
+            options.forEach(option => {
+                option.addEventListener(
+                    "change",
+                    updateSummary
+                );
+            });
+
+            form.addEventListener(
+                "submit",
+                event => {
+                    const selectedCount =
+                        options.filter(
+                            option => option.checked
+                        ).length;
+
+                    if (selectedCount === 0) {
+                        event.preventDefault();
+                        errorElement.hidden = false;
+                    }
+                }
+            );
+
+            updateSummary();
+        })();
+    </script>
+}

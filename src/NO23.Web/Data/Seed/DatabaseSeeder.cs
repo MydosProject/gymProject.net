@@ -37,6 +37,7 @@ public static class DatabaseSeeder
         await SeedMembershipPackagesAsync(dbContext);
         await SeedClassOperationsAsync(dbContext);
         await SeedKitchenSubscriptionPackagesAsync(dbContext);
+        await SeedKitchenMealSlotPricesAsync(dbContext);
         await SeedKitchenMenuItemsAsync(dbContext);
         await SeedKitchenStockAsync(dbContext);
         await SeedShopProductsAsync(dbContext);
@@ -362,6 +363,24 @@ public static class DatabaseSeeder
                 subscription.PackageNameSnapshot = defaultPackage.Name;
                 subscription.UpdatedAtUtc = DateTime.UtcNow;
             }
+        }
+
+        await dbContext.SaveChangesAsync();
+    }
+
+    private static async Task SeedKitchenMealSlotPricesAsync(ApplicationDbContext dbContext)
+    {
+        foreach (var defaultPrice in KitchenMealSlotPriceSeed.Defaults)
+        {
+            var exists = await dbContext.KitchenMealSlotPrices
+                .AnyAsync(price => price.MealSlot == defaultPrice.MealSlot);
+
+            if (exists)
+            {
+                continue;
+            }
+
+            dbContext.KitchenMealSlotPrices.Add(defaultPrice);
         }
 
         await dbContext.SaveChangesAsync();
