@@ -85,7 +85,7 @@ public class ForgotPasswordModel(
                                         <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                                             <tr>
                                                 <td>
-                                                    <div style="display:inline-block; padding:7px 11px; border:1px solid rgba(200,255,50,.38); border-radius:999px; color:#c8ff32; font-size:12px; font-weight:700; letter-spacing:1.8px;">
+                                                    <div style="display:inline-block; padding:7px 11px; border:1px solid rgba(201,161,91,.38); border-radius:999px; color:#c9a15b; font-size:12px; font-weight:700; letter-spacing:1.8px;">
                                                         NO23
                                                     </div>
                                                 </td>
@@ -118,7 +118,7 @@ public class ForgotPasswordModel(
 
                                         <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 26px;">
                                             <tr>
-                                                <td style="background:#c8ff32; border-radius:999px;">
+                                                <td style="background:#c9a15b; border-radius:999px;">
                                                     <a href="{encodedUrl}" style="display:inline-block; padding:15px 24px; color:#090909; font-size:14px; font-weight:800; letter-spacing:.3px; text-decoration:none;">
                                                         Parolamı yenile
                                                     </a>
@@ -138,7 +138,7 @@ public class ForgotPasswordModel(
 
                                         <p style="margin:24px 0 0; color:#77776f; font-size:12px; line-height:1.7;">
                                             Buton çalışmazsa bu bağlantıyı tarayıcına kopyalayabilirsin:<br>
-                                            <a href="{encodedUrl}" style="color:#5f7f08; word-break:break-all; text-decoration:underline;">{encodedUrl}</a>
+                                            <a href="{encodedUrl}" style="color:#c9a15b; word-break:break-all; text-decoration:underline;">{encodedUrl}</a>
                                         </p>
                                     </td>
                                 </tr>

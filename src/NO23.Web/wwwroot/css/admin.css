@@ -3203,9 +3203,21 @@ body.no23-admin-body {
    ========================================================= */
 
 .trainer-panel-body {
+    --admin-ink: #10130f;
+    --admin-ink-soft: #181c17;
+    --admin-ink-muted: #252a23;
+    --admin-lime: #c9a15b;
+    --admin-lime-soft: #f2e5cc;
+    --trainer-accent: #c9a15b;
+    --trainer-accent-root: #c9a15b;
+    --trainer-accent-hover: #d8b56f;
+    --trainer-accent-dark: #a98245;
+    --trainer-ink: #10130f;
+    --trainer-bg: #0a0c0a;
+    --trainer-surface: #f4f3ed;
     margin: 0;
     min-height: 100vh;
-    background: #0a0c0a;
+    background: var(--trainer-bg);
     color: #f5f5f0;
 }
 
@@ -3214,10 +3226,10 @@ body.no23-admin-body {
     background:
         radial-gradient(
             circle at 85% 10%,
-            rgba(185, 255, 0, 0.055),
+            rgba(201, 161, 91, 0.055),
             transparent 28%
         ),
-        #0a0c0a;
+        var(--trainer-bg);
 }
 
 /* Sidebar */
@@ -3227,7 +3239,7 @@ body.no23-admin-body {
         linear-gradient(
             180deg,
             #101310 0%,
-            #0a0c0a 100%
+            var(--trainer-bg) 100%
         );
     border-right: 1px solid rgba(255, 255, 255, 0.07);
 }
@@ -3253,7 +3265,7 @@ body.no23-admin-body {
     place-items: center;
     border-radius: 12px;
     color: #0b0d09;
-    background: #baff00;
+    background: var(--trainer-accent);
     font-size: 0.78rem;
     font-weight: 950;
     letter-spacing: -0.04em;
@@ -3283,13 +3295,13 @@ body.no23-admin-body {
 .trainer-sidebar-intro {
     margin: 1rem;
     padding: 0.9rem;
-    border: 1px solid rgba(186, 255, 0, 0.1);
+    border: 1px solid rgba(201, 161, 91, 0.1);
     border-radius: 14px;
-    background: rgba(186, 255, 0, 0.025);
+    background: rgba(201, 161, 91, 0.025);
 }
 
 .trainer-sidebar-intro span {
-    color: #baff00;
+    color: var(--trainer-accent);
     font-size: 0.52rem;
     font-weight: 900;
     letter-spacing: 0.14em;
@@ -3348,9 +3360,9 @@ body.no23-admin-body {
 }
 
 .trainer-nav-link.is-active {
-    border-color: rgba(186, 255, 0, 0.16);
+    border-color: rgba(201, 161, 91, 0.16);
     color: #fff;
-    background: rgba(186, 255, 0, 0.07);
+    background: rgba(201, 161, 91, 0.07);
 }
 
 .trainer-nav-index {
@@ -3366,9 +3378,9 @@ body.no23-admin-body {
 }
 
 .trainer-nav-link.is-active .trainer-nav-index {
-    border-color: #baff00;
+    border-color: var(--trainer-accent);
     color: #0b0d09;
-    background: #baff00;
+    background: var(--trainer-accent);
 }
 
 .trainer-nav-copy {
@@ -3394,7 +3406,7 @@ body.no23-admin-body {
 }
 
 .trainer-nav-link.is-active .trainer-nav-arrow {
-    color: #baff00;
+    color: var(--trainer-accent);
 }
 
 /* Sidebar Footer */
@@ -3420,7 +3432,7 @@ body.no23-admin-body {
     place-items: center;
     border-radius: 50%;
     color: #111;
-    background: #baff00;
+    background: var(--trainer-accent);
     font-size: 0.72rem;
     font-weight: 950;
 }
@@ -3461,8 +3473,8 @@ body.no23-admin-body {
 }
 
 .trainer-logout:hover {
-    border-color: rgba(186, 255, 0, 0.22);
-    color: #baff00;
+    border-color: rgba(201, 161, 91, 0.22);
+    color: var(--trainer-accent);
 }
 
 /* Topbar */
@@ -3477,7 +3489,7 @@ body.no23-admin-body {
 
 .trainer-topbar-kicker {
     margin: 0 0 0.1rem;
-    color: #baff00;
+    color: var(--trainer-accent);
     font-size: 0.5rem;
     font-weight: 900;
     letter-spacing: 0.14em;
@@ -3502,7 +3514,7 @@ body.no23-admin-body {
 
 .trainer-user-avatar {
     color: #111;
-    background: #baff00;
+    background: var(--trainer-accent);
 }
 
 .trainer-user-copy strong {
@@ -3596,6 +3608,41 @@ body.no23-admin-body {
    TRAINER DASHBOARD - CONTENT SECTIONS
    ========================================================= */
 
+.trainer-dashboard-page {
+    --dashboard-accent: var(--trainer-accent-root);
+    --dashboard-ink: var(--trainer-ink);
+}
+
+.trainer-dashboard-page .admin-dashboard-hero {
+    border-color: rgba(201, 161, 91, .18);
+    background:
+        linear-gradient(rgba(255, 255, 255, .035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, .035) 1px, transparent 1px),
+        radial-gradient(circle at 88% 20%, rgba(201, 161, 91, .15), transparent 34%),
+        #0d110d;
+}
+
+.trainer-dashboard-page .admin-dashboard-hero-panel {
+    background: linear-gradient(145deg, rgba(201, 161, 91, .035), rgba(201, 161, 91, .13));
+}
+
+.trainer-dashboard-page .admin-dashboard-metric-card {
+    background:
+        radial-gradient(circle at 100% 100%, rgba(201, 161, 91, .09), transparent 38%),
+        #fff;
+}
+
+.trainer-dashboard-page .admin-dashboard-metric-card:hover,
+.trainer-dashboard-page .admin-dashboard-metric-card:focus-visible {
+    border-color: rgba(201, 161, 91, .58);
+}
+
+.trainer-dashboard-page .admin-dashboard-metric-top span,
+.trainer-dashboard-page .admin-dashboard-metric-footer b,
+.trainer-dashboard-page .admin-dashboard-shortcuts a > span {
+    color: var(--trainer-accent);
+}
+
 .trainer-dashboard-section {
     margin-top: 3rem;
 }
@@ -3611,7 +3658,7 @@ body.no23-admin-body {
 .trainer-dashboard-section-head small {
     display: block;
     margin-bottom: 0.3rem;
-    color: #baff00;
+    color: var(--trainer-accent);
     font-size: 0.54rem;
     font-weight: 900;
     letter-spacing: 0.14em;
@@ -3644,14 +3691,14 @@ body.no23-admin-body {
 
 .trainer-dashboard-link:hover {
     color: #111;
-    background: #baff00;
+    background: var(--trainer-accent);
 }
 
 .trainer-dashboard-panel {
     overflow: hidden;
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 18px;
-    background: #f4f3ed;
+    background: var(--trainer-surface);
 }
 
 .trainer-dashboard-table-wrap {
@@ -3714,8 +3761,8 @@ body.no23-admin-body {
 }
 
 .trainer-status-badge.is-pending {
-    color: #516600;
-    background: rgba(186, 255, 0, 0.25);
+    color: #6f5527;
+    background: rgba(201, 161, 91, 0.25);
 }
 
 .trainer-status-badge.is-scheduled {
@@ -3748,7 +3795,7 @@ body.no23-admin-body {
     place-items: center;
     border-radius: 12px;
     color: #111;
-    background: #baff00;
+    background: var(--trainer-accent);
     font-size: 0.66rem;
     font-weight: 950;
 }
@@ -3842,10 +3889,10 @@ body.no23-admin-body {
 
 .trainer-status-message {
     padding: 0.85rem 1rem;
-    border: 1px solid rgba(186, 255, 0, 0.18);
+    border: 1px solid rgba(201, 161, 91, 0.18);
     border-radius: 12px;
-    color: #dfffa0;
-    background: rgba(186, 255, 0, 0.06);
+    color: #f2e5cc;
+    background: rgba(201, 161, 91, 0.06);
     font-size: 0.7rem;
     font-weight: 750;
 }
@@ -3861,7 +3908,7 @@ body.no23-admin-body {
 
 .trainer-page-eyebrow {
     margin: 0 0 0.35rem;
-    color: #baff00;
+    color: var(--trainer-accent);
     font-size: 0.54rem;
     font-weight: 900;
     letter-spacing: 0.15em;
@@ -3902,7 +3949,7 @@ body.no23-admin-body {
 }
 
 .trainer-page-count strong {
-    color: #baff00;
+    color: var(--trainer-accent);
     font-size: 2.5rem;
     font-weight: 950;
     line-height: 1;
@@ -3912,7 +3959,7 @@ body.no23-admin-body {
     overflow: hidden;
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 18px;
-    background: #f4f3ed;
+    background: var(--trainer-surface);
 }
 
 .trainer-request-table-wrap {
@@ -3956,7 +4003,7 @@ body.no23-admin-body {
 }
 
 .trainer-request-table tbody tr:hover {
-    background: rgba(186, 255, 0, 0.035);
+    background: rgba(201, 161, 91, 0.035);
 }
 
 .trainer-request-table td > strong,
@@ -4007,14 +4054,14 @@ body.no23-admin-body {
 }
 
 .trainer-request-action.is-primary {
-    border-color: #baff00;
+    border-color: var(--trainer-accent);
     color: #111;
-    background: #baff00;
+    background: var(--trainer-accent);
 }
 
 .trainer-request-action.is-primary:hover {
     border-color: #111;
-    background: #d0ff57;
+    background: var(--trainer-accent-hover);
 }
 
 .trainer-request-empty {
@@ -4033,7 +4080,7 @@ body.no23-admin-body {
     place-items: center;
     border-radius: 13px;
     color: #111;
-    background: #baff00;
+    background: var(--trainer-accent);
     font-size: 0.65rem;
     font-weight: 950;
 }
@@ -4164,7 +4211,7 @@ body.no23-admin-body {
 }
 
 .trainer-back-link:hover {
-    color: #baff00;
+    color: var(--trainer-accent);
 }
 
 .trainer-request-manage-head h1 {
@@ -4226,7 +4273,7 @@ body.no23-admin-body {
     overflow: hidden;
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 18px;
-    background: #f4f3ed;
+    background: var(--trainer-surface);
 }
 
 .trainer-request-card-head {
@@ -4366,9 +4413,9 @@ body.no23-admin-body {
 
 .trainer-request-form-field input:focus,
 .trainer-request-form-field textarea:focus {
-    border-color: #8fbf00;
+    border-color: var(--trainer-accent-dark);
     background: #fff;
-    box-shadow: 0 0 0 3px rgba(186, 255, 0, 0.15);
+    box-shadow: 0 0 0 3px rgba(201, 161, 91, 0.15);
 }
 
 .trainer-request-form-field small {
@@ -4405,14 +4452,14 @@ body.no23-admin-body {
     justify-content: space-between;
     gap: 0.7rem;
     padding: 0.65rem 0.8rem;
-    border: 1px solid #baff00;
+    border: 1px solid var(--trainer-accent);
     color: #111;
-    background: #baff00;
+    background: var(--trainer-accent);
 }
 
 .trainer-request-submit:hover {
     border-color: #111;
-    background: #d0ff57;
+    background: var(--trainer-accent-hover);
 }
 
 .trainer-request-reject {
@@ -4531,7 +4578,7 @@ body.no23-admin-body {
     overflow: hidden;
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 18px;
-    background: #f4f3ed;
+    background: var(--trainer-surface);
 }
 
 .trainer-class-table-wrap {
@@ -4575,7 +4622,7 @@ body.no23-admin-body {
 }
 
 .trainer-class-table tbody tr:hover {
-    background: rgba(186, 255, 0, 0.035);
+    background: rgba(201, 161, 91, 0.035);
 }
 
 .trainer-class-name {
@@ -4633,7 +4680,7 @@ body.no23-admin-body {
     place-items: center;
     border-radius: 13px;
     color: #111;
-    background: #baff00;
+    background: var(--trainer-accent);
     font-size: 0.65rem;
     font-weight: 950;
 }
@@ -4735,7 +4782,7 @@ body.no23-admin-body {
     overflow: hidden;
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 18px;
-    background: #f4f3ed;
+    background: var(--trainer-surface);
 }
 
 .trainer-conversation-panel {
@@ -4779,7 +4826,7 @@ body.no23-admin-body {
     place-items: center;
     border-radius: 9px;
     color: #111;
-    background: #baff00;
+    background: var(--trainer-accent);
     font-size: 0.62rem;
     font-weight: 950;
 }
@@ -4803,12 +4850,12 @@ body.no23-admin-body {
 
 .trainer-conversation-item:hover {
     color: #111;
-    background: rgba(186, 255, 0, 0.08);
+    background: rgba(201, 161, 91, 0.08);
 }
 
 .trainer-conversation-item.is-active {
     color: #111;
-    background: #baff00;
+    background: var(--trainer-accent);
 }
 
 .trainer-conversation-item-top {
@@ -4857,7 +4904,7 @@ body.no23-admin-body {
 
 .trainer-chat-panel {
     min-width: 0;
-    background: #f4f3ed;
+    background: var(--trainer-surface);
 }
 
 .trainer-chat-card {
@@ -4917,8 +4964,8 @@ body.no23-admin-body {
 }
 
 .trainer-chat-status .is-open {
-    color: #355200;
-    background: rgba(186, 255, 0, 0.28);
+    color: #6f5527;
+    background: rgba(201, 161, 91, 0.28);
 }
 
 .trainer-chat-status .is-closed {
@@ -4936,7 +4983,7 @@ body.no23-admin-body {
             rgba(255, 255, 255, 0.35),
             rgba(255, 255, 255, 0.35)
         ),
-        #f4f3ed;
+        var(--trainer-surface);
 }
 
 .trainer-message-list {
@@ -4969,7 +5016,7 @@ body.no23-admin-body {
     border-color: rgba(17, 17, 17, 0.08);
     border-bottom-right-radius: 4px;
     color: #111;
-    background: #baff00;
+    background: var(--trainer-accent);
 }
 
 .trainer-message-row.is-theirs .trainer-message-bubble {
@@ -5007,7 +5054,7 @@ body.no23-admin-body {
     place-items: center;
     border-radius: 12px;
     color: #111;
-    background: #baff00;
+    background: var(--trainer-accent);
     font-size: 0.6rem;
     font-weight: 950;
 }
@@ -5069,8 +5116,8 @@ body.no23-admin-body {
 }
 
 .trainer-chat-composer textarea:focus {
-    border-color: #8fbf00;
-    box-shadow: 0 0 0 3px rgba(186, 255, 0, 0.14);
+    border-color: var(--trainer-accent-dark);
+    box-shadow: 0 0 0 3px rgba(201, 161, 91, 0.14);
 }
 
 .trainer-chat-composer button {
@@ -5080,10 +5127,10 @@ body.no23-admin-body {
     justify-content: space-between;
     gap: 0.6rem;
     padding: 0.65rem 0.75rem;
-    border: 1px solid #baff00;
+    border: 1px solid var(--trainer-accent);
     border-radius: 11px;
     color: #111;
-    background: #baff00;
+    background: var(--trainer-accent);
     font-size: 0.6rem;
     font-weight: 950;
     cursor: pointer;
@@ -5092,7 +5139,7 @@ body.no23-admin-body {
 
 .trainer-chat-composer button:hover {
     border-color: #111;
-    background: #d0ff57;
+    background: var(--trainer-accent-hover);
 }
 
 .trainer-chat-readonly {
@@ -5121,7 +5168,7 @@ body.no23-admin-body {
     min-height: 150px;
     padding: 1.35rem;
     border-radius: 18px;
-    background: #f4f3ed;
+    background: var(--trainer-surface);
 }
 
 .trainer-message-empty > span {
@@ -5131,7 +5178,7 @@ body.no23-admin-body {
     place-items: center;
     border-radius: 13px;
     color: #111;
-    background: #baff00;
+    background: var(--trainer-accent);
     font-size: 0.65rem;
     font-weight: 950;
 }
@@ -6539,7 +6586,7 @@ body.no23-admin-body {
 
 .trainer-topbar .no23-notification-button {
     border-color: rgba(255, 255, 255, 0.14);
-    color: #baff00;
+    color: var(--trainer-accent);
     background: rgba(255, 255, 255, 0.06);
 }
 
@@ -6549,6 +6596,13 @@ body.no23-admin-body {
     color: #111;
     background: #baff00;
     transform: translateY(-1px);
+}
+
+.trainer-topbar .no23-notification-button:hover,
+.trainer-topbar .no23-notification-button[aria-expanded="true"] {
+    border-color: var(--trainer-accent);
+    color: #111;
+    background: var(--trainer-accent);
 }
 
 .no23-notification-count {
@@ -6569,7 +6623,7 @@ body.no23-admin-body {
 }
 
 .trainer-topbar .no23-notification-count {
-    border-color: #0a0c0a;
+    border-color: var(--trainer-bg);
 }
 
 .no23-notification-menu {
@@ -6626,6 +6680,11 @@ body.no23-admin-body {
     color: #baff00;
 }
 
+.trainer-topbar .no23-notification-head span,
+.trainer-topbar .no23-notification-head button:hover {
+    color: var(--trainer-accent);
+}
+
 .no23-notification-empty {
     padding: 1.1rem;
     color: rgba(17, 17, 17, 0.5);
@@ -6662,6 +6721,10 @@ body.no23-admin-body {
     background: #f3f8e4;
 }
 
+.trainer-topbar .no23-notification-item:hover {
+    background: rgba(201, 161, 91, 0.09);
+}
+
 .no23-notification-marker {
     width: 8px;
     height: 8px;
@@ -6673,6 +6736,11 @@ body.no23-admin-body {
 .no23-notification-item.is-unread .no23-notification-marker {
     background: #baff00;
     box-shadow: 0 0 0 4px rgba(186, 255, 0, 0.16);
+}
+
+.trainer-topbar .no23-notification-item.is-unread .no23-notification-marker {
+    background: var(--trainer-accent);
+    box-shadow: 0 0 0 4px rgba(201, 161, 91, 0.16);
 }
 
 .no23-notification-copy {

@@ -6,7 +6,7 @@
   --no23-cream: #f4f2ec;
   --no23-text: #171717;
   --no23-muted: #a6a6a6;
-  --no23-accent: #c8ff32;
+  --no23-accent: #c9a15b;
   --no23-accent-dark: #a8dc18;
   --no23-border: rgba(255, 255, 255, 0.12);
   --no23-radius: 18px;
@@ -309,7 +309,7 @@
   background:
     linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    radial-gradient(circle at 82% 32%, rgba(200, 255, 50, 0.15), transparent 30%),
+    radial-gradient(circle at 82% 32%, rgba(201, 161, 91, 0.15), transparent 30%),
     linear-gradient(115deg, #030504, #0b100a);
   background-size: 72px 72px, 72px 72px, auto, auto;
 }
@@ -351,7 +351,7 @@
   padding: 1.8rem;
   border: 1px solid var(--no23-border);
   border-radius: 24px;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(200, 255, 50, 0.035));
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(201, 161, 91, 0.035));
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.25);
 }
 
@@ -412,7 +412,7 @@
 
 .privacy-navigation .privacy-kicker,
 .privacy-policy-copy .privacy-kicker {
-  color: #78a100;
+  color: var(--no23-accent);
 }
 
 .privacy-navigation a {
@@ -432,7 +432,7 @@
 }
 
 .privacy-navigation a span {
-  color: #78a100;
+  color: var(--no23-accent);
   font-variant-numeric: tabular-nums;
 }
 
@@ -476,7 +476,7 @@
 }
 
 .privacy-policy-block > span {
-  color: #78a100;
+  color: var(--no23-accent);
   font-size: 0.72rem;
   font-weight: 900;
   letter-spacing: 0.08em;
@@ -560,7 +560,7 @@
   background:
     linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    radial-gradient(circle at 76% 42%, rgba(200, 255, 50, 0.13), transparent 34%),
+    radial-gradient(circle at 76% 42%, rgba(201, 161, 91, 0.13), transparent 34%),
     linear-gradient(115deg, #020403, #0a0f08);
   background-size: 72px 72px, 72px 72px, auto, auto;
 }
@@ -709,7 +709,7 @@
   background:
     linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    radial-gradient(circle at 84% 28%, rgba(200, 255, 50, 0.14), transparent 32%),
+    radial-gradient(circle at 84% 28%, rgba(201, 161, 91, 0.14), transparent 32%),
     linear-gradient(110deg, #030604, #071008);
   background-size: 72px 72px, 72px 72px, auto, auto;
 }
@@ -776,7 +776,7 @@
   padding: 1.6rem;
   border: 1px solid var(--classes-border);
   border-radius: 24px;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(200, 255, 50, 0.035));
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(201, 161, 91, 0.035));
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.24);
 }
 
@@ -963,7 +963,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  color: #6e9400;
+  color: #c9a15b;
   font-size: 0.66rem;
   font-weight: 850;
   letter-spacing: 0.12em;
@@ -973,8 +973,8 @@
 .class-card-meta small {
   padding: 0.25rem 0.48rem;
   border-radius: 999px;
-  color: #466000;
-  background: rgba(200, 255, 50, 0.42);
+  color: var(--no23-black);
+  background: rgba(201, 161, 91, 0.42);
 }
 
 .class-card-content h3 {
@@ -1071,7 +1071,7 @@
 
 .class-session-row small {
   min-width: 64px;
-  color: #6e9400;
+  color: #c9a15b;
   font-weight: 850;
   text-align: right;
 }
@@ -1096,7 +1096,7 @@
 }
 
 .classes-empty-state > span {
-  color: #79a600;
+  color: #c9a15b;
   font-size: 2.8rem;
 }
 
@@ -1283,6 +1283,7 @@
 
 /* Public trainers */
 .trainers-page {
+  --no23-accent: #c9a15b;
   --trainer-bg: #050806;
   --trainer-surface: #111411;
   --trainer-border: rgba(255, 255, 255, 0.12);
@@ -1293,12 +1294,12 @@
 
 .trainers-page .container { max-width: 1320px; }
 .trainers-kicker { margin: 0 0 1.25rem; color: var(--no23-accent); font-size: .78rem; font-weight: 800; letter-spacing: .24em; text-transform: uppercase; }
-.trainers-hero { min-height: 520px; padding: 4rem 0; background: radial-gradient(circle at 84% 28%, rgba(183, 255, 0, .13), transparent 34%), linear-gradient(110deg, #030604, #071008); }
+.trainers-hero { min-height: 520px; padding: 4rem 0; background: radial-gradient(circle at 84% 28%, rgba(201, 161, 91, .13), transparent 34%), linear-gradient(110deg, #030604, #071008); }
 .trainers-hero-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(320px, .75fr); align-items: center; gap: 3.5rem; }
 .trainers-hero h1 { max-width: 760px; margin: 0; font-size: clamp(3.2rem, 5.6vw, 5.6rem); font-weight: 900; line-height: .9; letter-spacing: -.07em; }
 .trainers-hero h1 span { color: var(--no23-accent); }
 .trainers-lead { max-width: 620px; margin: 1.5rem 0 1.8rem; color: var(--trainer-muted); font-size: 1rem; line-height: 1.65; }
-.trainers-hero-card { min-height: 340px; display: flex; flex-direction: column; padding: 1.7rem; border: 1px solid var(--trainer-border); border-radius: 26px; background: linear-gradient(145deg, rgba(255,255,255,.08), rgba(183,255,0,.04)); }
+.trainers-hero-card { min-height: 340px; display: flex; flex-direction: column; padding: 1.7rem; border: 1px solid var(--trainer-border); border-radius: 26px; background: linear-gradient(145deg, rgba(255,255,255,.08), rgba(201,161,91,.04)); }
 .trainers-hero-card-top { display: flex; justify-content: space-between; color: rgba(255,255,255,.55); font-size: .75rem; font-weight: 800; letter-spacing: .2em; }
 .trainers-hero-card-top strong { color: var(--no23-accent); font-size: 2.2rem; line-height: 1; }
 .trainers-hero-card h2 { margin: auto 0; font-size: clamp(2.2rem, 3.2vw, 3.4rem); font-weight: 900; line-height: .94; letter-spacing: -.055em; }
@@ -1326,7 +1327,7 @@
 .trainer-card-certificates strong { font-size: .78rem; font-weight: 600; }
 .trainer-card-footer { display: flex; align-items: flex-end; justify-content: space-between; gap: .8rem; margin-top: auto; padding-top: .85rem; }
 .trainer-class-tags { display: flex; flex-wrap: wrap; gap: .4rem; }
-.trainer-class-tags span { padding: .45rem .65rem; border: 1px solid rgba(183,255,0,.24); border-radius: 999px; color: var(--no23-accent); font-size: .62rem; font-weight: 800; text-transform: uppercase; }
+.trainer-class-tags span { padding: .45rem .65rem; border: 1px solid rgba(201,161,91,.24); border-radius: 999px; color: var(--no23-accent); font-size: .62rem; font-weight: 800; text-transform: uppercase; }
 .trainer-card-footer a { flex: 0 0 auto; color: #fff; font-size: .72rem; font-weight: 800; letter-spacing: .08em; text-decoration: none; text-transform: uppercase; }
 .trainer-card-footer a span { color: var(--no23-accent); }
 .trainers-empty-state { display: flex; align-items: center; gap: 1.5rem; margin-top: 2rem; padding: 2rem; border: 1px solid var(--trainer-border); border-radius: 24px; }
@@ -1361,11 +1362,13 @@
 }
 
 /* About page - NO23 visual system */
-.about-no23-page{background:#090909;color:#fff;overflow:hidden}.about-no23-page .about-no23-kicker{margin:0 0 1rem;color:var(--no23-accent);font-size:.76rem;font-weight:800;letter-spacing:.2em;text-transform:uppercase}.about-no23-hero{position:relative;padding:5rem 0;background:radial-gradient(circle at 84% 42%,rgba(200,255,50,.12),transparent 30%),linear-gradient(115deg,#050706 0%,#090b09 62%,#10170b 100%);border-bottom:1px solid var(--no23-border)}.about-no23-hero:before{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:72px 72px;content:"";pointer-events:none}.about-no23-hero-grid{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(320px,.75fr);gap:5rem;align-items:center}.about-no23-hero-copy h1{max-width:860px;margin:0;color:#fff;font-size:clamp(3rem,5.3vw,5.35rem);font-weight:900;letter-spacing:-.065em;line-height:.94}.about-no23-hero-copy h1 span{color:var(--no23-accent)}.about-no23-lead{max-width:680px;margin:1.7rem 0 0;color:#b9bdb8;font-size:1.08rem;line-height:1.75}.about-no23-actions{display:flex;flex-wrap:wrap;gap:.8rem;margin-top:2rem}.about-no23-system-card{padding:2rem;background:rgba(20,23,20,.94);border:1px solid rgba(255,255,255,.13);border-radius:24px;box-shadow:0 24px 70px rgba(0,0,0,.26)}.about-no23-system-top{display:flex;align-items:center;justify-content:space-between;color:#939893;font-size:.7rem;font-weight:800;letter-spacing:.17em}.about-no23-system-top strong{color:var(--no23-accent);font-size:2rem;letter-spacing:-.05em}.about-no23-system-card h2{margin:2.2rem 0 1.8rem;color:#fff;font-size:clamp(1.8rem,2.4vw,2.6rem);font-weight:850;letter-spacing:-.045em;line-height:1.05}.about-no23-system-card ol{padding:0;margin:0;list-style:none;border-top:1px solid var(--no23-border)}.about-no23-system-card li{display:grid;grid-template-columns:36px 1fr auto;gap:.65rem;align-items:center;padding:.9rem 0;border-bottom:1px solid var(--no23-border)}.about-no23-system-card li span{color:var(--no23-accent);font-size:.7rem;font-weight:800}.about-no23-system-card li strong{color:#fff;font-size:.9rem;text-transform:uppercase}.about-no23-system-card li small{color:#7f847f;font-size:.72rem}
+.about-no23-page{background:#090909;color:#fff;overflow:hidden}.about-no23-page .about-no23-kicker{margin:0 0 1rem;color:var(--no23-accent);font-size:.76rem;font-weight:800;letter-spacing:.2em;text-transform:uppercase}.about-no23-hero{position:relative;padding:5rem 0;background:radial-gradient(circle at 84% 42%,rgba(201,161,91,.12),transparent 30%),linear-gradient(115deg,#050706 0%,#090b09 62%,#10170b 100%);border-bottom:1px solid var(--no23-border)}.about-no23-hero:before{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:72px 72px;content:"";pointer-events:none}.about-no23-hero-grid{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(320px,.75fr);gap:5rem;align-items:center}.about-no23-hero-copy h1{max-width:860px;margin:0;color:#fff;font-size:clamp(3rem,5.3vw,5.35rem);font-weight:900;letter-spacing:-.065em;line-height:.94}.about-no23-hero-copy h1 span{color:var(--no23-accent)}.about-no23-lead{max-width:680px;margin:1.7rem 0 0;color:#b9bdb8;font-size:1.08rem;line-height:1.75}.about-no23-actions{display:flex;flex-wrap:wrap;gap:.8rem;margin-top:2rem}.about-no23-system-card{padding:2rem;background:rgba(20,23,20,.94);border:1px solid rgba(255,255,255,.13);border-radius:24px;box-shadow:0 24px 70px rgba(0,0,0,.26)}.about-no23-system-top{display:flex;align-items:center;justify-content:space-between;color:#939893;font-size:.7rem;font-weight:800;letter-spacing:.17em}.about-no23-system-top strong{color:var(--no23-accent);font-size:2rem;letter-spacing:-.05em}.about-no23-system-card h2{margin:2.2rem 0 1.8rem;color:#fff;font-size:clamp(1.8rem,2.4vw,2.6rem);font-weight:850;letter-spacing:-.045em;line-height:1.05}.about-no23-system-card ol{padding:0;margin:0;list-style:none;border-top:1px solid var(--no23-border)}.about-no23-system-card li{display:grid;grid-template-columns:36px 1fr auto;gap:.65rem;align-items:center;padding:.9rem 0;border-bottom:1px solid var(--no23-border)}.about-no23-system-card li span{color:var(--no23-accent);font-size:.7rem;font-weight:800}.about-no23-system-card li strong{color:#fff;font-size:.9rem;text-transform:uppercase}.about-no23-system-card li small{color:#7f847f;font-size:.72rem}
 
-.about-no23-story,.about-no23-reasons{padding:4.5rem 0;background:var(--no23-cream);color:var(--no23-text)}.about-no23-section-heading{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr);gap:4rem;align-items:end;padding-bottom:2rem;border-bottom:1px solid rgba(23,23,23,.14)}.about-no23-section-heading h2{max-width:790px;margin:0;color:#111;font-size:clamp(2.25rem,4vw,4rem);font-weight:900;letter-spacing:-.06em;line-height:.98}.about-no23-section-heading>p{margin:0;color:#6f716d;font-size:1rem;line-height:1.7}.about-no23-principles{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:2rem}.about-no23-principles article,.about-no23-reasons-grid article{padding:1.6rem;background:#fff;border:1px solid rgba(23,23,23,.1);border-radius:18px}.about-no23-principles span,.about-no23-reasons-grid span{color:#79a600;font-size:.75rem;font-weight:850}.about-no23-principles h3,.about-no23-reasons-grid h3{margin:2.5rem 0 .45rem;color:#111;font-size:1.45rem;font-weight:850;letter-spacing:-.035em}.about-no23-principles p,.about-no23-reasons-grid p{margin:0;color:#747570;font-size:.9rem;line-height:1.55}
+.about-no23-story,.about-no23-reasons{padding:4.5rem 0;background:var(--no23-cream);color:var(--no23-text)}.about-no23-section-heading{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr);gap:4rem;align-items:end;padding-bottom:2rem;border-bottom:1px solid rgba(23,23,23,.14)}.about-no23-section-heading h2{max-width:790px;margin:0;color:#111;font-size:clamp(2.25rem,4vw,4rem);font-weight:900;letter-spacing:-.06em;line-height:.98}.about-no23-section-heading>p{margin:0;color:#6f716d;font-size:1rem;line-height:1.7}.about-no23-principles{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:2rem}.about-no23-principles article,.about-no23-reasons-grid article{padding:1.6rem;background:#fff;border:1px solid rgba(23,23,23,.1);border-radius:18px}.about-no23-principles span,.about-no23-reasons-grid span{color:#c9a15b;font-size:.75rem;font-weight:850}.about-no23-principles h3,.about-no23-reasons-grid h3{margin:2.5rem 0 .45rem;color:#111;font-size:1.45rem;font-weight:850;letter-spacing:-.035em}.about-no23-principles p,.about-no23-reasons-grid p{margin:0;color:#747570;font-size:.9rem;line-height:1.55}
 
 .about-no23-purpose{padding:4.5rem 0;background:#090b09}.about-no23-purpose-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem}.about-no23-purpose-card{min-height:330px;display:flex;flex-direction:column;justify-content:space-between;padding:2rem;background:#151815;border:1px solid var(--no23-border);border-radius:22px}.about-no23-purpose-card-accent{background:var(--no23-accent);border-color:var(--no23-accent)}.about-no23-purpose-card>span{color:var(--no23-accent);font-size:.73rem;font-weight:850;letter-spacing:.17em}.about-no23-purpose-card-accent>span,.about-no23-purpose-card-accent h2,.about-no23-purpose-card-accent p{color:#090909}.about-no23-purpose-card h2{max-width:650px;margin:auto 0 1rem;color:#fff;font-size:clamp(2rem,3.4vw,3.4rem);font-weight:900;letter-spacing:-.055em;line-height:1}.about-no23-purpose-card p{max-width:610px;margin:0;color:#a9aca8;line-height:1.65}.about-no23-reasons-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:2rem}.about-no23-reasons-grid article{min-height:205px}.about-no23-reasons-grid h3{margin-top:2rem}
+
+.about-no23-purpose-card-accent p{color:#2b2112}
 
 .about-no23-ecosystem{padding:4rem 0;background:#0b0d0b;border-top:1px solid var(--no23-border)}.about-no23-ecosystem-grid{display:grid;grid-template-columns:repeat(4,1fr);margin-top:1.5rem;border:1px solid var(--no23-border);border-radius:20px;overflow:hidden}.about-no23-ecosystem-grid article{min-height:170px;padding:1.5rem;border-right:1px solid var(--no23-border)}.about-no23-ecosystem-grid article:last-child{border-right:0}.about-no23-ecosystem-grid span{color:var(--no23-accent);font-size:.72rem;font-weight:850}.about-no23-ecosystem-grid h3{margin:3rem 0 .35rem;color:#fff;font-size:1.25rem;font-weight:850}.about-no23-ecosystem-grid p{margin:0;color:#808580;font-size:.86rem}.about-no23-cta{padding:3.5rem 0;background:var(--no23-accent)}.about-no23-cta-inner{display:flex;align-items:center;justify-content:space-between;gap:2rem}.about-no23-cta .about-no23-kicker,.about-no23-cta h2{color:#090909}.about-no23-cta h2{margin:0;font-size:clamp(2.2rem,4vw,4rem);font-weight:900;letter-spacing:-.055em}.about-no23-cta .no23-primary-button{background:#090909;color:#fff}
 
@@ -2727,7 +2730,7 @@ section[id] {
 .btn-link.nav-link:focus,
 .form-control:focus,
 .form-check-input:focus {
-  box-shadow: 0 0 0 0.2rem rgba(200, 255, 50, 0.35);
+  box-shadow: 0 0 0 0.2rem rgba(201, 161, 91, 0.35);
 }
 
 a:focus-visible,
@@ -2847,7 +2850,7 @@ button:focus-visible {
 }
 
 .no23-navbar .navbar-toggler:focus {
-  box-shadow: 0 0 0 0.2rem rgba(200, 255, 50, 0.25);
+  box-shadow: 0 0 0 0.2rem rgba(201, 161, 91, 0.25);
 }
 
 /* Footer */
@@ -2976,7 +2979,7 @@ button:focus-visible {
   overflow: hidden;
   color: #fff;
   background:
-    radial-gradient(circle at 88% 18%, rgba(197, 255, 32, 0.12), transparent 26rem),
+    radial-gradient(circle at 88% 18%, rgba(201, 161, 91, 0.12), transparent 26rem),
     #070a07;
 }
 
@@ -2997,11 +3000,11 @@ button:focus-visible {
   right: -11rem;
   width: 44rem;
   height: 44rem;
-  border: 1px solid rgba(197, 255, 32, 0.2);
+  border: 1px solid rgba(201, 161, 91, 0.2);
   border-radius: 50%;
   box-shadow:
-    0 0 0 8rem rgba(197, 255, 32, 0.025),
-    0 0 0 16rem rgba(197, 255, 32, 0.018);
+    0 0 0 8rem rgba(201, 161, 91, 0.025),
+    0 0 0 16rem rgba(201, 161, 91, 0.018);
   pointer-events: none;
 }
 
@@ -3015,7 +3018,7 @@ button:focus-visible {
 
 .member-account-kicker {
   margin: 0 0 1rem;
-  color: #c5ff20;
+  color: #c9a15b;
   font-size: 0.68rem;
   font-weight: 900;
   letter-spacing: 0.2em;
@@ -3031,7 +3034,7 @@ button:focus-visible {
 }
 
 .member-account-hero h1 span {
-  color: #c5ff20;
+  color: #c9a15b;
 }
 
 .member-account-hero > div > p:last-child {
@@ -3054,7 +3057,7 @@ button:focus-visible {
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 26px;
   background:
-    radial-gradient(circle at 100% 0, rgba(197, 255, 32, 0.13), transparent 17rem),
+    radial-gradient(circle at 100% 0, rgba(201, 161, 91, 0.13), transparent 17rem),
     rgba(20, 24, 19, 0.9);
 }
 
@@ -3068,7 +3071,7 @@ button:focus-visible {
   color: #080b07;
   font-size: 1.2rem;
   font-weight: 950;
-  background: #c5ff20;
+  background: #c9a15b;
 }
 
 .member-account-identity div {
@@ -3078,7 +3081,7 @@ button:focus-visible {
 
 .member-account-identity small,
 .member-goals-score > span {
-  color: #c5ff20;
+  color: #c9a15b;
   font-size: 0.61rem;
   font-weight: 900;
   letter-spacing: 0.15em;
@@ -3097,7 +3100,7 @@ button:focus-visible {
   position: absolute;
   right: 1.4rem;
   bottom: 0.75rem;
-  color: rgba(197, 255, 32, 0.12);
+  color: rgba(201, 161, 91, 0.12);
   font-size: 4rem;
   line-height: 1;
 }
@@ -3131,7 +3134,7 @@ button:focus-visible {
   flex-direction: column;
   color: #fff;
   background:
-    radial-gradient(circle at 100% 0, rgba(197, 255, 32, 0.1), transparent 20rem),
+    radial-gradient(circle at 100% 0, rgba(201, 161, 91, 0.1), transparent 20rem),
     #111510;
 }
 
@@ -3145,14 +3148,14 @@ button:focus-visible {
 }
 
 .member-account-card-head > span {
-  color: #7aa113;
+  color: #c9a15b;
   font-size: 0.76rem;
   font-weight: 950;
 }
 
 .member-account-card-head p {
   margin: 0 0 0.35rem;
-  color: #7aa113;
+  color: #c9a15b;
   font-size: 0.62rem;
   font-weight: 900;
   letter-spacing: 0.14em;
@@ -3192,7 +3195,7 @@ button:focus-visible {
 
 .member-account-fields label > span,
 .member-goal-field > span {
-  color: #719510;
+  color: var(--member-accent);
   font-size: 0.62rem;
   font-weight: 900;
   letter-spacing: 0.13em;
@@ -3215,8 +3218,8 @@ button:focus-visible {
 
 .member-account-fields input:focus,
 .member-goal-field textarea:focus {
-  border-color: #89b414;
-  box-shadow: 0 0 0 3px rgba(137, 180, 20, 0.12);
+  border-color: #c9a15b;
+  box-shadow: 0 0 0 3px rgba(201, 161, 91, 0.12);
 }
 
 .member-account-fields label > small,
@@ -3246,11 +3249,11 @@ button:focus-visible {
   font-weight: 950;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  background: #c5ff20;
+  background: #c9a15b;
 }
 
 .member-account-submit:hover {
-  background: #b7ef18;
+  background: #c9a15b;
 }
 
 .member-account-summary dl {
@@ -3288,7 +3291,7 @@ button:focus-visible {
   margin-top: auto;
   padding: 1rem 0 0.15rem;
   border-top: 1px solid rgba(255, 255, 255, 0.12);
-  color: #c5ff20;
+  color: #c9a15b;
   font-size: 0.66rem;
   font-weight: 900;
   letter-spacing: 0.12em;
@@ -3329,7 +3332,7 @@ button:focus-visible {
 }
 
 .member-goals-score b {
-  color: #c5ff20;
+  color: #c9a15b;
   font-size: 2.8rem;
   line-height: 1;
 }
@@ -3355,7 +3358,7 @@ button:focus-visible {
 }
 
 .member-goal-note span {
-  color: #7aa113;
+  color: #c9a15b;
   font-size: 1.4rem;
   font-weight: 950;
 }
@@ -3369,7 +3372,7 @@ button:focus-visible {
 
 .member-goals-audience {
   margin: 1.35rem 0 0.6rem;
-  color: #c5ff20;
+  color: #c9a15b;
   font-size: 0.65rem;
   font-weight: 900;
   letter-spacing: 0.12em;
@@ -3389,9 +3392,9 @@ button:focus-visible {
   justify-content: space-between;
   margin-top: 1.2rem;
   padding: 1rem;
-  border: 1px solid rgba(197, 255, 32, 0.2);
+  border: 1px solid rgba(201, 161, 91, 0.2);
   border-radius: 15px;
-  background: rgba(197, 255, 32, 0.05);
+  background: rgba(201, 161, 91, 0.05);
 }
 
 .member-goals-credit span {
@@ -3402,7 +3405,7 @@ button:focus-visible {
 }
 
 .member-goals-credit strong {
-  color: #c5ff20;
+  color: #c9a15b;
   font-size: 2rem;
   line-height: 0.85;
 }
@@ -3441,7 +3444,7 @@ button:focus-visible {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: #c5ff20;
+  background: #c9a15b;
   content: "";
 }
 
@@ -3452,7 +3455,7 @@ button:focus-visible {
   border-radius: 28px;
   color: #fff;
   background:
-    radial-gradient(circle at 100% 0, rgba(197, 255, 32, 0.1), transparent 18rem),
+    radial-gradient(circle at 100% 0, rgba(201, 161, 91, 0.1), transparent 18rem),
     #111510;
 }
 
@@ -3477,7 +3480,7 @@ button:focus-visible {
 }
 
 .member-goals-empty a {
-  color: #c5ff20;
+  color: #c9a15b;
   font-weight: 850;
   text-decoration: none;
 }
@@ -3507,7 +3510,7 @@ button:focus-visible {
 }
 
 .member-challenge-card-head span {
-  color: #587000;
+  color: var(--member-accent);
   font-size: 0.6rem;
   font-weight: 950;
   text-transform: uppercase;
@@ -3536,7 +3539,7 @@ button:focus-visible {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: #587000;
+  background: var(--member-accent);
 }
 
 .member-challenge-stats {
@@ -3609,7 +3612,7 @@ button:focus-visible {
   border: 0;
   border-radius: 14px;
   color: #10130f;
-  background: #c5ff20;
+  background: #c9a15b;
   font-size: 0.72rem;
   font-weight: 950;
 }
@@ -3645,7 +3648,7 @@ button:focus-visible {
   grid-row: 1;
   color: #fff;
   background:
-    radial-gradient(circle at 100% 0, rgba(197, 255, 32, 0.1), transparent 19rem),
+    radial-gradient(circle at 100% 0, rgba(201, 161, 91, 0.1), transparent 19rem),
     #111510;
 }
 
@@ -3675,10 +3678,10 @@ button:focus-visible {
 .member-settings-membership-status span {
   width: fit-content;
   padding: 0.4rem 0.55rem;
-  border: 1px solid rgba(113, 149, 16, 0.18);
+  border: 1px solid rgba(201, 161, 91, 0.18);
   border-radius: 999px;
-  color: #597600;
-  background: rgba(197, 255, 32, 0.16);
+  color: #c9a15b;
+  background: rgba(201, 161, 91, 0.16);
   font-size: 0.56rem;
   font-weight: 950;
   letter-spacing: 0.08em;
@@ -3708,7 +3711,7 @@ button:focus-visible {
 }
 
 .member-settings-membership-dates dt {
-  color: #719510;
+  color: var(--member-accent);
   font-size: 0.56rem;
   font-weight: 950;
   letter-spacing: 0.1em;
@@ -3778,7 +3781,7 @@ button:focus-visible {
 
 .member-settings-package-market-head span,
 .member-settings-package-option span {
-  color: #719510;
+  color: var(--member-accent);
   font-size: 0.56rem;
   font-weight: 950;
   letter-spacing: 0.1em;
@@ -3886,7 +3889,7 @@ button:focus-visible {
   width: min(100%, 440px);
   gap: 1.2rem;
   padding: 1.35rem;
-  border: 1px solid rgba(197, 255, 32, 0.24);
+  border: 1px solid rgba(201, 161, 91, 0.24);
   border-radius: 24px;
   color: #0c0f0b;
   background: #f4f2eb;
@@ -3894,7 +3897,7 @@ button:focus-visible {
 }
 
 .member-confirm-dialog-panel span {
-  color: #719510;
+  color: var(--member-accent);
   font-size: 0.58rem;
   font-weight: 950;
   letter-spacing: 0.12em;
@@ -3998,9 +4001,9 @@ button:focus-visible {
 
 .member-settings-list article > small.is-secure,
 .member-settings-list article > a:hover {
-  border-color: rgba(197, 255, 32, 0.3);
-  color: #c5ff20;
-  background: rgba(197, 255, 32, 0.06);
+  border-color: rgba(201, 161, 91, 0.3);
+  color: #c9a15b;
+  background: rgba(201, 161, 91, 0.06);
 }
 
 .member-settings-list article > small.is-warning {
@@ -4021,9 +4024,9 @@ button:focus-visible {
   height: 24px;
   flex: 0 0 auto;
   place-items: center;
-  border: 1px solid rgba(197, 255, 32, 0.3);
+  border: 1px solid rgba(201, 161, 91, 0.3);
   border-radius: 50%;
-  color: #c5ff20;
+  color: #c9a15b;
   font-size: 0.68rem;
   font-weight: 900;
 }
@@ -4052,7 +4055,7 @@ button:focus-visible {
 }
 
 .member-settings-fields label > span {
-  color: #719510;
+  color: var(--member-accent);
   font-size: 0.62rem;
   font-weight: 900;
   letter-spacing: 0.13em;
@@ -4073,8 +4076,8 @@ button:focus-visible {
 }
 
 .member-settings-fields input:focus {
-  border-color: #89b414;
-  box-shadow: 0 0 0 3px rgba(137, 180, 20, 0.12);
+  border-color: #c9a15b;
+  box-shadow: 0 0 0 3px rgba(201, 161, 91, 0.12);
 }
 
 .member-settings-fields label > small {
@@ -4092,7 +4095,7 @@ button:focus-visible {
 }
 
 .member-password-rules > span {
-  color: #719510;
+  color: var(--member-accent);
   font-size: 0.58rem;
   font-weight: 900;
   letter-spacing: 0.13em;
@@ -4121,7 +4124,7 @@ button:focus-visible {
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: #89b414;
+  background: #c9a15b;
   content: "";
 }
 
@@ -4284,7 +4287,7 @@ button:focus-visible {
       rgba(2, 5, 3, 0.08) 48%,
       rgba(2, 5, 3, 0.74) 100%
     ),
-    radial-gradient(circle at 76% 42%, rgba(200, 255, 50, 0.09), transparent 34%);
+    radial-gradient(circle at 76% 42%, rgba(201, 161, 91, 0.09), transparent 34%);
 }
 
 .hero-grid {
@@ -4505,7 +4508,7 @@ button:focus-visible {
 
 .quick-access-heading .section-kicker {
   margin-bottom: 0.75rem;
-  color: #688a00;
+  color: #c9a15b;
 }
 
 .quick-access-heading h2 {
@@ -4552,7 +4555,7 @@ button:focus-visible {
 
 .quick-access-number {
   margin-bottom: auto;
-  color: #688a00;
+  color: #c9a15b;
   font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -4693,7 +4696,7 @@ button:focus-visible {
   padding: 3.75rem 0;
   overflow: hidden;
   background:
-    radial-gradient(circle at 10% 10%, rgba(200, 255, 50, 0.07), transparent 24%),
+    radial-gradient(circle at 10% 10%, rgba(201, 161, 91, 0.07), transparent 24%),
     var(--no23-black);
   color: var(--no23-white);
 }
@@ -4764,7 +4767,7 @@ button:focus-visible {
 }
 
 .service-card:hover {
-  border-color: rgba(200, 255, 50, 0.58);
+  border-color: rgba(201, 161, 91, 0.58);
   transform: translateY(-4px);
 }
 
@@ -5020,7 +5023,7 @@ button:focus-visible {
 }
 
 .service-card-light .service-number {
-  color: #688a00;
+  color: #c9a15b;
 }
 
 .service-card-light .service-category {
@@ -5056,16 +5059,16 @@ button:focus-visible {
 }
 
 .service-card-kitchen {
-  border-color: rgba(200, 255, 50, 0.34);
+  border-color: rgba(201, 161, 91, 0.34);
   background:
-    radial-gradient(circle at 90% 10%, rgba(200, 255, 50, 0.16), transparent 36%),
-    #12170f;
+    radial-gradient(circle at 90% 10%, rgba(201, 161, 91, 0.16), transparent 36%),
+    var(--no23-black-soft);
 }
 
 .service-card-community {
-  border-color: rgba(200, 255, 50, 0.24);
+  border-color: rgba(201, 161, 91, 0.24);
   background:
-    linear-gradient(145deg, rgba(200, 255, 50, 0.08), transparent 48%),
+    linear-gradient(145deg, rgba(201, 161, 91, 0.08), transparent 48%),
     var(--no23-black-soft);
 }
 
@@ -5135,7 +5138,7 @@ button:focus-visible {
 .memberships-section {
   padding: 3.75rem 0;
   background:
-    radial-gradient(circle at 90% 10%, rgba(200, 255, 50, 0.12), transparent 23%),
+    radial-gradient(circle at 90% 10%, rgba(201, 161, 91, 0.12), transparent 23%),
     var(--no23-cream);
 }
 
@@ -5149,7 +5152,7 @@ button:focus-visible {
 
 .memberships-heading .section-kicker {
   margin-bottom: 0.8rem;
-  color: #688a00;
+  color: #c9a15b;
 }
 
 .memberships-heading h2 {
@@ -5205,7 +5208,7 @@ button:focus-visible {
 }
 
 .membership-order {
-  color: #688a00;
+  color: #c9a15b;
   font-size: 0.7rem;
   font-weight: 900;
   letter-spacing: 0.1em;
@@ -5262,7 +5265,7 @@ button:focus-visible {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background-color: #7c9f0b;
+  background-color: var(--no23-accent);
   content: "";
 }
 
@@ -5292,7 +5295,7 @@ button:focus-visible {
 .membership-card-featured {
   border-color: var(--no23-black);
   background:
-    radial-gradient(circle at 90% 10%, rgba(200, 255, 50, 0.13), transparent 32%),
+    radial-gradient(circle at 90% 10%, rgba(201, 161, 91, 0.13), transparent 32%),
     var(--no23-black);
   color: var(--no23-white);
 }
@@ -5350,10 +5353,10 @@ button:focus-visible {
 /* ELITE paketi */
 
 .membership-card-elite {
-  border-color: #b8c48c;
+  border-color: rgba(201, 161, 91, 0.45);
   background:
-    linear-gradient(145deg, rgba(200, 255, 50, 0.23), transparent 55%),
-    #e5e8d8;
+    linear-gradient(145deg, rgba(201, 161, 91, 0.23), transparent 55%),
+    var(--no23-cream);
 }
 
 .membership-card-elite .membership-button {
@@ -5363,8 +5366,8 @@ button:focus-visible {
 
 .membership-card-elite .membership-button:hover,
 .membership-card-elite .membership-button:focus {
-  border-color: #688a00;
-  background-color: #688a00;
+  border-color: #c9a15b;
+  background-color: #c9a15b;
 }
 
 /* Üyelik bilgi bandı */
@@ -5476,7 +5479,7 @@ button:focus-visible {
   background:
     radial-gradient(
       circle at 12% 18%,
-      rgba(200, 255, 50, 0.13),
+      rgba(201, 161, 91, 0.13),
       transparent 26%
     ),
     linear-gradient(135deg, #080808 0%, #10110d 48%, #080808 100%);
@@ -5507,11 +5510,11 @@ button:focus-visible {
   right: -20rem;
   width: 54rem;
   height: 54rem;
-  border: 1px solid rgba(200, 255, 50, 0.22);
+  border: 1px solid rgba(201, 161, 91, 0.22);
   border-radius: 50%;
   box-shadow:
-    0 0 0 8rem rgba(200, 255, 50, 0.025),
-    0 0 0 16rem rgba(200, 255, 50, 0.018);
+    0 0 0 8rem rgba(201, 161, 91, 0.025),
+    0 0 0 16rem rgba(201, 161, 91, 0.018);
 }
 
 .no23-register-shell {
@@ -5538,7 +5541,7 @@ button:focus-visible {
   background:
     radial-gradient(
       circle at 90% 10%,
-      rgba(200, 255, 50, 0.2),
+      rgba(201, 161, 91, 0.2),
       transparent 32%
     ),
     linear-gradient(155deg, #151b0c 0%, #0b0b0b 56%, #101010 100%);
@@ -5741,9 +5744,9 @@ button:focus-visible {
 
 .no23-form-control:focus,
 .no23-form-select:focus {
-  border-color: #8ab600;
+  border-color: #c9a15b;
   background-color: var(--no23-white);
-  box-shadow: 0 0 0 0.22rem rgba(200, 255, 50, 0.3);
+  box-shadow: 0 0 0 0.22rem rgba(201, 161, 91, 0.3);
 }
 
 .no23-password-field {
@@ -5783,14 +5786,14 @@ button:focus-visible {
 
 .no23-password-toggle:hover,
 .no23-password-toggle:focus-visible {
-  border-color: rgba(137, 180, 20, 0.45);
+  border-color: rgba(201, 161, 91, 0.45);
   color: #0b0d0b;
-  background: #c8ff32;
-  box-shadow: 0 10px 22px rgba(137, 180, 20, 0.2);
+  background: #c9a15b;
+  box-shadow: 0 10px 22px rgba(201, 161, 91, 0.2);
 }
 
 .no23-password-toggle:focus-visible {
-  outline: 2px solid rgba(137, 180, 20, 0.42);
+  outline: 2px solid rgba(201, 161, 91, 0.42);
   outline-offset: 2px;
 }
 
@@ -5827,13 +5830,13 @@ button:focus-visible {
 
 .no23-package-field {
   padding: 1rem;
-  border: 1px solid rgba(138, 182, 0, 0.28);
+  border: 1px solid rgba(201, 161, 91, 0.28);
   border-radius: 15px;
-  background-color: rgba(200, 255, 50, 0.09);
+  background-color: rgba(201, 161, 91, 0.09);
 }
 
 .no23-package-field .no23-form-select {
-  border-color: rgba(138, 182, 0, 0.34);
+  border-color: rgba(201, 161, 91, 0.34);
   background-color: var(--no23-white);
   font-weight: 750;
 }
@@ -5910,13 +5913,13 @@ button:focus-visible {
   color: var(--no23-text);
   font-weight: 850;
   text-decoration: underline;
-  text-decoration-color: var(--no23-accent-dark);
+  text-decoration-color: var(--no23-accent);
   text-underline-offset: 4px;
 }
 
 .register-login-link a:hover,
 .register-login-link a:focus {
-  color: #688a00;
+  color: #c9a15b;
 }
 
 @media (max-width: 991.98px) {
@@ -6004,7 +6007,7 @@ button:focus-visible {
    ========================================================= */
 
    .member-dashboard-page {
-    --member-accent: #c5ff20;
+    --member-accent: #c9a15b;
     --member-dark: #070907;
     --member-card: #121412;
     --member-border: rgba(255, 255, 255, 0.11);
@@ -6014,7 +6017,7 @@ button:focus-visible {
     overflow: hidden;
     color: #fff;
     background:
-      radial-gradient(circle at 88% 2%, rgba(128, 170, 31, 0.2), transparent 30rem),
+      radial-gradient(circle at 88% 2%, rgba(201, 161, 91, 0.2), transparent 30rem),
       #070907;
   }
 
@@ -6035,11 +6038,11 @@ button:focus-visible {
     right: -10rem;
     width: 42rem;
     height: 42rem;
-    border: 1px solid rgba(197, 255, 32, 0.16);
+    border: 1px solid rgba(201, 161, 91, 0.16);
     border-radius: 50%;
     box-shadow:
-      0 0 0 7rem rgba(197, 255, 32, 0.025),
-      0 0 0 14rem rgba(197, 255, 32, 0.018);
+      0 0 0 7rem rgba(201, 161, 91, 0.025),
+      0 0 0 14rem rgba(201, 161, 91, 0.018);
     pointer-events: none;
   }
 
@@ -6138,8 +6141,8 @@ button:focus-visible {
   }
 
   .member-dashboard-alert-success {
-    border-color: rgba(197, 255, 32, 0.35);
-    background: rgba(197, 255, 32, 0.08);
+    border-color: rgba(201, 161, 91, 0.35);
+    background: rgba(201, 161, 91, 0.08);
   }
 
   .member-dashboard-alert-success > span {
@@ -6396,12 +6399,12 @@ button:focus-visible {
     border: 1px solid var(--member-border);
     border-radius: 26px;
     background:
-      radial-gradient(circle at 100% 0, rgba(197, 255, 32, 0.09), transparent 16rem),
+      radial-gradient(circle at 100% 0, rgba(201, 161, 91, 0.09), transparent 16rem),
       var(--member-card);
   }
 
   .member-session-card-reserved {
-    border-color: rgba(197, 255, 32, 0.45);
+    border-color: rgba(201, 161, 91, 0.45);
   }
 
   .member-session-card-top,
@@ -6445,7 +6448,7 @@ button:focus-visible {
   .member-session-status.available,
   .member-session-status.reserved {
     color: var(--member-accent);
-    border-color: rgba(197, 255, 32, 0.35);
+    border-color: rgba(201, 161, 91, 0.35);
   }
 
   .member-session-status.full {
@@ -6676,7 +6679,7 @@ button:focus-visible {
    ========================================================= */
 
 .kitchen-page {
-  --kitchen-accent: #c5ff20;
+  --kitchen-accent: #c9a15b;
   --kitchen-dark: #070907;
   --kitchen-card: #121411;
   --kitchen-cream: #f3f1e9;
@@ -6687,7 +6690,7 @@ button:focus-visible {
   overflow: hidden;
   color: #fff;
   background:
-    radial-gradient(circle at 88% 3%, rgba(139, 183, 35, 0.2), transparent 32rem),
+    radial-gradient(circle at 88% 3%, rgba(201, 161, 91, 0.2), transparent 32rem),
     #070907;
 }
 
@@ -6708,11 +6711,11 @@ button:focus-visible {
   right: -12rem;
   width: 45rem;
   height: 45rem;
-  border: 1px solid rgba(197, 255, 32, 0.14);
+  border: 1px solid rgba(201, 161, 91, 0.14);
   border-radius: 50%;
   box-shadow:
-    0 0 0 8rem rgba(197, 255, 32, 0.025),
-    0 0 0 16rem rgba(197, 255, 32, 0.015);
+    0 0 0 8rem rgba(201, 161, 91, 0.025),
+    0 0 0 16rem rgba(201, 161, 91, 0.015);
   pointer-events: none;
 }
 
@@ -6815,10 +6818,10 @@ button:focus-visible {
   flex-direction: column;
   justify-content: space-between;
   padding: 1.45rem;
-  border: 1px solid rgba(197, 255, 32, 0.2);
+  border: 1px solid rgba(201, 161, 91, 0.2);
   border-radius: 26px;
   background:
-    radial-gradient(circle at 100% 0, rgba(197, 255, 32, 0.14), transparent 18rem),
+    radial-gradient(circle at 100% 0, rgba(201, 161, 91, 0.14), transparent 18rem),
     rgba(22, 27, 17, 0.9);
   box-shadow: 0 35px 80px rgba(0, 0, 0, 0.26);
   backdrop-filter: blur(14px);
@@ -6919,8 +6922,8 @@ button:focus-visible {
 }
 
 .kitchen-alert-success {
-  border-color: rgba(197, 255, 32, 0.35);
-  background: rgba(197, 255, 32, 0.08);
+  border-color: rgba(201, 161, 91, 0.35);
+  background: rgba(201, 161, 91, 0.08);
 }
 
 .kitchen-alert-success > span {
@@ -6994,7 +6997,7 @@ button:focus-visible {
 .kitchen-result-panel {
   color: #fff;
   background:
-    radial-gradient(circle at 100% 0, rgba(197, 255, 32, 0.1), transparent 24rem),
+    radial-gradient(circle at 100% 0, rgba(201, 161, 91, 0.1), transparent 24rem),
     #111310;
 }
 
@@ -7016,7 +7019,7 @@ button:focus-visible {
 }
 
 .kitchen-panel-heading > span {
-  color: #759a12;
+  color: var(--kitchen-accent);
   font-size: 0.72rem;
   font-weight: 900;
 }
@@ -7106,8 +7109,8 @@ button:focus-visible {
 
 .kitchen-form-field input:focus,
 .kitchen-form-field select:focus {
-  border-color: #85ad17;
-  box-shadow: 0 0 0 4px rgba(133, 173, 23, 0.12);
+  border-color: var(--kitchen-accent);
+  box-shadow: 0 0 0 4px rgba(201, 161, 91, 0.12);
 }
 
 .kitchen-form-field > span {
@@ -7140,7 +7143,7 @@ button:focus-visible {
 
 .kitchen-calculate-button:hover {
   transform: translateY(-2px);
-  background: #d1ff4b;
+  background: var(--kitchen-accent);
 }
 
 .kitchen-result-placeholder {
@@ -7158,11 +7161,11 @@ button:focus-visible {
   height: 155px;
   margin-bottom: 1.5rem;
   place-items: center;
-  border: 1px solid rgba(197, 255, 32, 0.28);
+  border: 1px solid rgba(201, 161, 91, 0.28);
   border-radius: 50%;
   box-shadow:
-    0 0 0 2.5rem rgba(197, 255, 32, 0.035),
-    0 0 0 5rem rgba(197, 255, 32, 0.02);
+    0 0 0 2.5rem rgba(201, 161, 91, 0.035),
+    0 0 0 5rem rgba(201, 161, 91, 0.02);
 }
 
 .kitchen-result-rings span {
@@ -7191,9 +7194,9 @@ button:focus-visible {
   gap: 1rem;
   margin-bottom: 1rem;
   padding: 1rem 1.1rem;
-  border: 1px solid rgba(197, 255, 32, 0.22);
+  border: 1px solid rgba(201, 161, 91, 0.22);
   border-radius: 15px;
-  background: rgba(197, 255, 32, 0.06);
+  background: rgba(201, 161, 91, 0.06);
 }
 
 .kitchen-result-goal span {
@@ -7335,7 +7338,7 @@ button:focus-visible {
 
 .kitchen-plan-card:hover {
   transform: translateY(-3px);
-  border-color: rgba(197, 255, 32, 0.4);
+  border-color: rgba(201, 161, 91, 0.4);
 }
 
 .kitchen-plan-days {
@@ -7347,7 +7350,7 @@ button:focus-visible {
   font-weight: 850;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  background: rgba(197, 255, 32, 0.08);
+  background: rgba(201, 161, 91, 0.08);
 }
 
 .kitchen-plan-card h4 {
@@ -7387,7 +7390,7 @@ button:focus-visible {
   border: 1px solid var(--kitchen-border);
   border-radius: 24px;
   background:
-    radial-gradient(circle at 100% 0, rgba(197, 255, 32, 0.08), transparent 20rem),
+    radial-gradient(circle at 100% 0, rgba(201, 161, 91, 0.08), transparent 20rem),
     rgba(255, 255, 255, 0.025);
 }
 
@@ -7418,7 +7421,7 @@ button:focus-visible {
 }
 
 .kitchen-filter-panel-heading strong {
-  color: rgba(197, 255, 32, 0.16);
+  color: rgba(201, 161, 91, 0.16);
   font-size: 2.7rem;
   font-weight: 950;
   line-height: 0.8;
@@ -7458,7 +7461,7 @@ button:focus-visible {
 }
 
 .kitchen-filter-search input:focus {
-  border-color: rgba(197, 255, 32, 0.6);
+  border-color: rgba(201, 161, 91, 0.6);
   background: rgba(0, 0, 0, 0.34);
 }
 
@@ -7494,9 +7497,9 @@ button:focus-visible {
 
 .kitchen-filter-summary button {
   padding: 0.55rem 0.75rem;
-  border: 1px solid rgba(197, 255, 32, 0.3);
+  border: 1px solid rgba(201, 161, 91, 0.3);
   border-radius: 999px;
-  background: rgba(197, 255, 32, 0.08);
+  background: rgba(201, 161, 91, 0.08);
   color: var(--kitchen-accent);
   font-size: 0.6rem;
   font-weight: 850;
@@ -7573,7 +7576,7 @@ button:focus-visible {
 
 .kitchen-tag-filter-button.active {
   color: var(--kitchen-accent);
-  background: rgba(197, 255, 32, 0.1);
+  background: rgba(201, 161, 91, 0.1);
 }
 
 .kitchen-menu-grid {
@@ -7599,7 +7602,7 @@ button:focus-visible {
 
 .kitchen-menu-card:hover {
   transform: translateY(-5px);
-  border-color: rgba(197, 255, 32, 0.35);
+  border-color: rgba(201, 161, 91, 0.35);
 }
 
 .kitchen-menu-visual {
@@ -7744,7 +7747,7 @@ button:focus-visible {
 
 .kitchen-menu-tags span {
   padding: 0.35rem 0.5rem;
-  border: 1px solid rgba(197, 255, 32, 0.18);
+  border: 1px solid rgba(201, 161, 91, 0.18);
   border-radius: 999px;
   color: var(--kitchen-accent);
   font-size: 0.58rem;
@@ -8030,7 +8033,7 @@ button:focus-visible {
    ========================================================= */
 
 .shop-page {
-  --shop-accent: #c5ff20;
+  --shop-accent: #c9a15b;
   --shop-dark: #070907;
   --shop-card: #121412;
   --shop-card-soft: #171a17;
@@ -8041,7 +8044,7 @@ button:focus-visible {
   padding: 3.5rem 0 4.5rem;
   color: #fff;
   background:
-    radial-gradient(circle at 92% 4%, rgba(197, 255, 32, 0.13), transparent 31rem),
+    radial-gradient(circle at 92% 4%, rgba(201, 161, 91, 0.13), transparent 31rem),
     var(--shop-dark);
 }
 
@@ -8063,11 +8066,11 @@ button:focus-visible {
   right: -14rem;
   width: 42rem;
   height: 42rem;
-  border: 1px solid rgba(197, 255, 32, 0.14);
+  border: 1px solid rgba(201, 161, 91, 0.14);
   border-radius: 50%;
   box-shadow:
-    0 0 0 7rem rgba(197, 255, 32, 0.022),
-    0 0 0 14rem rgba(197, 255, 32, 0.015);
+    0 0 0 7rem rgba(201, 161, 91, 0.022),
+    0 0 0 14rem rgba(201, 161, 91, 0.015);
   pointer-events: none;
 }
 
@@ -8085,7 +8088,7 @@ button:focus-visible {
 .content-kicker,
 .content-section-kicker {
   margin: 0 0 1rem;
-  color: var(--shop-accent, #c5ff20);
+  color: var(--shop-accent, #c9a15b);
   font-size: 0.74rem;
   font-weight: 850;
   letter-spacing: 0.2em;
@@ -8105,7 +8108,7 @@ button:focus-visible {
 .shop-hero h1 span,
 .content-hero h1 span {
   display: block;
-  color: var(--shop-accent, #c5ff20);
+  color: var(--shop-accent, #c9a15b);
 }
 
 .shop-hero-description,
@@ -8145,9 +8148,9 @@ button:focus-visible {
 
 .shop-primary-link,
 .content-primary-link {
-  border-color: var(--shop-accent, #c5ff20);
+  border-color: var(--shop-accent, #c9a15b);
   color: #070907;
-  background: var(--shop-accent, #c5ff20);
+  background: var(--shop-accent, #c9a15b);
 }
 
 .shop-secondary-link,
@@ -8167,8 +8170,8 @@ button:focus-visible {
 
 .shop-secondary-link:hover,
 .content-secondary-link:hover {
-  color: var(--shop-accent, #c5ff20);
-  border-color: var(--shop-accent, #c5ff20);
+  color: var(--shop-accent, #c9a15b);
+  border-color: var(--shop-accent, #c9a15b);
   transform: translateY(-2px);
 }
 
@@ -8290,8 +8293,8 @@ button:focus-visible {
 }
 
 .shop-alert-success {
-  border-color: rgba(197, 255, 32, 0.35);
-  background: rgba(197, 255, 32, 0.08);
+  border-color: rgba(201, 161, 91, 0.35);
+  background: rgba(201, 161, 91, 0.08);
 }
 
 .shop-alert-success > span {
@@ -8612,7 +8615,7 @@ button:focus-visible {
   flex-direction: column;
   padding: 1.3rem;
   background:
-    radial-gradient(circle at 100% 0, rgba(197, 255, 32, 0.09), transparent 16rem),
+    radial-gradient(circle at 100% 0, rgba(201, 161, 91, 0.09), transparent 16rem),
     var(--shop-card);
 }
 
@@ -8961,8 +8964,8 @@ button:focus-visible {
 .shop-form-field input:focus,
 .shop-form-field select:focus,
 .shop-form-field textarea:focus {
-  border-color: #7ba300;
-  box-shadow: 0 0 0 3px rgba(123, 163, 0, 0.12);
+  border-color: var(--shop-accent);
+  box-shadow: 0 0 0 3px rgba(201, 161, 91, 0.12);
 }
 
 .shop-form-field > span {
@@ -9027,7 +9030,7 @@ button:focus-visible {
 
 .shop-empty-state > span,
 .content-empty-state > span {
-  color: var(--shop-accent, #c5ff20);
+  color: var(--shop-accent, #c9a15b);
   font-size: 3rem;
   font-weight: 950;
 }
@@ -9050,7 +9053,7 @@ button:focus-visible {
    ========================================================= */
 
 .content-page {
-  --content-accent: #c5ff20;
+  --content-accent: #c9a15b;
   --content-dark: #070907;
   --content-card: #121412;
   --content-border: rgba(255, 255, 255, 0.11);
@@ -9069,11 +9072,11 @@ button:focus-visible {
   right: -14rem;
   width: 44rem;
   height: 44rem;
-  border: 1px solid rgba(197, 255, 32, 0.13);
+  border: 1px solid rgba(201, 161, 91, 0.13);
   border-radius: 50%;
   box-shadow:
-    0 0 0 7rem rgba(197, 255, 32, 0.02),
-    0 0 0 14rem rgba(197, 255, 32, 0.014);
+    0 0 0 7rem rgba(201, 161, 91, 0.02),
+    0 0 0 14rem rgba(201, 161, 91, 0.014);
   pointer-events: none;
 }
 
@@ -9106,7 +9109,7 @@ button:focus-visible {
   border: 1px solid var(--content-border);
   border-radius: 26px;
   background:
-    radial-gradient(circle at 100% 0, rgba(197, 255, 32, 0.1), transparent 18rem),
+    radial-gradient(circle at 100% 0, rgba(201, 161, 91, 0.1), transparent 18rem),
     var(--content-card);
 }
 
@@ -9388,7 +9391,7 @@ button:focus-visible {
   gap: 1.2rem;
   margin-top: 1rem;
   padding: 0.7rem 0;
-  border-bottom: 1px solid rgba(197, 255, 32, 0.34);
+  border-bottom: 1px solid rgba(201, 161, 91, 0.34);
   color: var(--content-accent);
   font-size: 0.65rem;
   font-weight: 850;
@@ -9412,7 +9415,7 @@ button:focus-visible {
   min-height: 100vh;
   padding-top: 3rem;
   background:
-    radial-gradient(circle at 86% 8%, rgba(197, 255, 32, 0.11), transparent 31rem),
+    radial-gradient(circle at 86% 8%, rgba(201, 161, 91, 0.11), transparent 31rem),
     #070907;
 }
 
@@ -9477,7 +9480,7 @@ button:focus-visible {
   justify-content: space-between;
   padding: 1.25rem;
   overflow: hidden;
-  border: 1px solid rgba(197, 255, 32, 0.24);
+  border: 1px solid rgba(201, 161, 91, 0.24);
   border-radius: 22px;
   color: #070907;
   background: var(--content-accent);
@@ -9554,7 +9557,7 @@ button:focus-visible {
   align-items: center;
   justify-content: center;
   border-right: 1px solid rgba(17, 19, 15, 0.12);
-  color: #739411;
+  color: #c9a15b;
   font-size: 1rem;
   font-weight: 900;
 }
@@ -9565,7 +9568,7 @@ button:focus-visible {
 
 .community-detail-article-heading p {
   margin: 0 0 0.45rem;
-  color: #739411;
+  color: #c9a15b;
   font-size: 0.63rem;
   font-weight: 850;
   letter-spacing: 0.13em;
@@ -9601,7 +9604,7 @@ button:focus-visible {
   border: 1px solid var(--content-border);
   border-radius: 20px;
   background:
-    radial-gradient(circle at 100% 0, rgba(197, 255, 32, 0.09), transparent 15rem),
+    radial-gradient(circle at 100% 0, rgba(201, 161, 91, 0.09), transparent 15rem),
     var(--content-card);
 }
 
@@ -9610,9 +9613,9 @@ button:focus-visible {
   gap: 0.45rem;
   margin-top: 1rem;
   padding: 0.9rem;
-  border: 1px solid rgba(197, 255, 32, 0.24);
+  border: 1px solid rgba(201, 161, 91, 0.24);
   border-radius: 16px;
-  background: rgba(197, 255, 32, 0.055);
+  background: rgba(201, 161, 91, 0.055);
 }
 
 .community-detail-goal span {
@@ -9707,7 +9710,7 @@ button:focus-visible {
 
 .blog-page {
   background:
-    linear-gradient(180deg, rgba(197, 255, 32, 0.035), transparent 34rem),
+    linear-gradient(180deg, rgba(201, 161, 91, 0.035), transparent 34rem),
     #070907;
 }
 
@@ -9865,7 +9868,7 @@ button:focus-visible {
 
 .blog-tag-list span {
   padding: 0.42rem 0.62rem;
-  border: 1px solid rgba(197, 255, 32, 0.18);
+  border: 1px solid rgba(201, 161, 91, 0.18);
   border-radius: 999px;
   color: var(--content-accent);
   font-size: 0.58rem;
@@ -9887,7 +9890,7 @@ button:focus-visible {
   border: 1px solid var(--content-border);
   border-radius: 24px;
   background:
-    radial-gradient(circle at 100% 0, rgba(197, 255, 32, 0.07), transparent 15rem),
+    radial-gradient(circle at 100% 0, rgba(201, 161, 91, 0.07), transparent 15rem),
     var(--content-card);
 }
 
@@ -9949,7 +9952,7 @@ button:focus-visible {
   gap: 1.25rem;
   margin-top: 1.4rem;
   padding: 0.7rem 0;
-  border-bottom: 1px solid rgba(197, 255, 32, 0.34);
+  border-bottom: 1px solid rgba(201, 161, 91, 0.34);
   color: var(--content-accent);
   font-size: 0.67rem;
   font-weight: 850;
@@ -9977,7 +9980,7 @@ button:focus-visible {
   min-height: 100vh;
   padding-top: 4.5rem;
   background:
-    radial-gradient(circle at 88% 8%, rgba(197, 255, 32, 0.11), transparent 31rem),
+    radial-gradient(circle at 88% 8%, rgba(201, 161, 91, 0.11), transparent 31rem),
     #070907;
 }
 
@@ -10042,7 +10045,7 @@ button:focus-visible {
   justify-content: space-between;
   padding: 1.6rem;
   overflow: hidden;
-  border: 1px solid rgba(197, 255, 32, 0.24);
+  border: 1px solid rgba(201, 161, 91, 0.24);
   border-radius: 28px;
   color: #070907;
   background: var(--content-accent);
@@ -10117,7 +10120,7 @@ button:focus-visible {
   align-items: center;
   justify-content: center;
   border-right: 1px solid rgba(17, 19, 15, 0.12);
-  color: #739411;
+  color: #c9a15b;
   font-size: 1rem;
   font-weight: 900;
 }
@@ -10128,7 +10131,7 @@ button:focus-visible {
 
 .blog-detail-article-heading p {
   margin: 0 0 0.45rem;
-  color: #739411;
+  color: #c9a15b;
   font-size: 0.63rem;
   font-weight: 850;
   letter-spacing: 0.13em;
@@ -10164,7 +10167,7 @@ button:focus-visible {
   border: 1px solid var(--content-border);
   border-radius: 24px;
   background:
-    radial-gradient(circle at 100% 0, rgba(197, 255, 32, 0.09), transparent 15rem),
+    radial-gradient(circle at 100% 0, rgba(201, 161, 91, 0.09), transparent 15rem),
     var(--content-card);
 }
 
@@ -10227,7 +10230,7 @@ button:focus-visible {
 
 .stories-page {
   background:
-    radial-gradient(circle at 86% 5%, rgba(197, 255, 32, 0.1), transparent 30rem),
+    radial-gradient(circle at 86% 5%, rgba(201, 161, 91, 0.1), transparent 30rem),
     #070907;
 }
 
@@ -10397,9 +10400,9 @@ button:focus-visible {
   gap: 0.35rem;
   margin-top: 1.5rem;
   padding: 1.2rem;
-  border: 1px solid rgba(197, 255, 32, 0.24);
+  border: 1px solid rgba(201, 161, 91, 0.24);
   border-radius: 15px;
-  background: rgba(197, 255, 32, 0.055);
+  background: rgba(201, 161, 91, 0.055);
 }
 
 .story-metric span {
@@ -10438,7 +10441,7 @@ button:focus-visible {
   gap: 1.2rem;
   margin-top: 1.1rem;
   padding: 0.7rem 0;
-  border-bottom: 1px solid rgba(197, 255, 32, 0.34);
+  border-bottom: 1px solid rgba(201, 161, 91, 0.34);
   color: #fff;
   font-size: 0.67rem;
   font-weight: 850;
@@ -10462,7 +10465,7 @@ button:focus-visible {
   min-height: 100vh;
   padding-top: 4.5rem;
   background:
-    radial-gradient(circle at 86% 7%, rgba(197, 255, 32, 0.11), transparent 31rem),
+    radial-gradient(circle at 86% 7%, rgba(201, 161, 91, 0.11), transparent 31rem),
     #070907;
 }
 
@@ -10526,7 +10529,7 @@ button:focus-visible {
   justify-content: space-between;
   padding: 1.6rem;
   overflow: hidden;
-  border: 1px solid rgba(197, 255, 32, 0.24);
+  border: 1px solid rgba(201, 161, 91, 0.24);
   border-radius: 28px;
   color: #070907;
   background: var(--content-accent);
@@ -10628,7 +10631,7 @@ button:focus-visible {
   align-items: center;
   justify-content: center;
   border-right: 1px solid rgba(17, 19, 15, 0.12);
-  color: #739411;
+  color: #c9a15b;
   font-size: 1rem;
   font-weight: 900;
 }
@@ -10639,7 +10642,7 @@ button:focus-visible {
 
 .story-detail-article-heading p {
   margin: 0 0 0.45rem;
-  color: #739411;
+  color: #c9a15b;
   font-size: 0.63rem;
   font-weight: 850;
   letter-spacing: 0.13em;
@@ -10675,7 +10678,7 @@ button:focus-visible {
   border: 1px solid var(--content-border);
   border-radius: 24px;
   background:
-    radial-gradient(circle at 100% 0, rgba(197, 255, 32, 0.09), transparent 15rem),
+    radial-gradient(circle at 100% 0, rgba(201, 161, 91, 0.09), transparent 15rem),
     var(--content-card);
 }
 
@@ -10684,9 +10687,9 @@ button:focus-visible {
   gap: 0.45rem;
   margin-top: 1.5rem;
   padding: 1.15rem;
-  border: 1px solid rgba(197, 255, 32, 0.24);
+  border: 1px solid rgba(201, 161, 91, 0.24);
   border-radius: 16px;
-  background: rgba(197, 255, 32, 0.055);
+  background: rgba(201, 161, 91, 0.055);
 }
 
 .story-detail-result span {
@@ -11131,7 +11134,7 @@ button:focus-visible {
 .no23-faq-section {
   padding: 4.75rem 0;
   background:
-    radial-gradient(circle at 12% 10%, rgba(200, 255, 50, 0.15), transparent 24%),
+    radial-gradient(circle at 12% 10%, rgba(201, 161, 91, 0.15), transparent 24%),
     #eceae3;
   color: var(--no23-text);
 }
@@ -11148,7 +11151,7 @@ button:focus-visible {
 
 .no23-faq-heading .section-kicker {
   margin-bottom: 0.8rem;
-  color: #688a00;
+  color: #c9a15b;
 }
 
 .no23-faq-heading h2 {
@@ -11218,7 +11221,7 @@ button:focus-visible {
 }
 
 .no23-faq-number {
-  color: #688a00;
+  color: #c9a15b;
   font-size: 0.67rem;
   font-weight: 900;
   letter-spacing: 0.1em;
@@ -11260,7 +11263,7 @@ button:focus-visible {
 }
 
 .no23-faq-item[open] .no23-faq-toggle {
-  border-color: rgba(200, 255, 50, 0.38);
+  border-color: rgba(201, 161, 91, 0.38);
   color: var(--no23-accent);
 }
 
@@ -11287,7 +11290,7 @@ button:focus-visible {
   padding: 4.75rem 0 5rem;
   overflow: hidden;
   background:
-    radial-gradient(circle at 86% 16%, rgba(200, 255, 50, 0.11), transparent 27%),
+    radial-gradient(circle at 86% 16%, rgba(201, 161, 91, 0.11), transparent 27%),
     #090b09;
   color: #fff;
 }
@@ -11472,7 +11475,7 @@ button:focus-visible {
   background-image:
     linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
-    radial-gradient(circle at 77% 46%, rgba(200, 255, 50, 0.18), transparent 22%);
+    radial-gradient(circle at 77% 46%, rgba(201, 161, 91, 0.18), transparent 22%);
   background-size: 48px 48px, 48px 48px, auto;
   pointer-events: none;
 }
@@ -11480,7 +11483,7 @@ button:focus-visible {
 .no23-contact-location-grid::before,
 .no23-contact-location-grid::after {
   position: absolute;
-  border: 1px solid rgba(200, 255, 50, 0.23);
+  border: 1px solid rgba(201, 161, 91, 0.23);
   border-radius: 999px;
   content: "";
 }
@@ -11639,7 +11642,7 @@ button:focus-visible {
 
 .member-panel-shortcuts a:hover,
 .member-panel-shortcuts a:focus-visible {
-  background: rgba(200, 255, 50, 0.08);
+  background: rgba(201, 161, 91, 0.08);
 }
 
 .member-panel-shortcuts a.is-active {
@@ -11677,7 +11680,7 @@ button:focus-visible {
   overflow-y: auto;
   border-right: 1px solid rgba(255, 255, 255, 0.1);
   background:
-    radial-gradient(circle at 90% 8%, rgba(200, 255, 50, 0.1), transparent 27%),
+    radial-gradient(circle at 90% 8%, rgba(201, 161, 91, 0.1), transparent 27%),
     #0d100d;
   transition: width 220ms ease, transform 220ms ease;
 }
@@ -11769,7 +11772,7 @@ button:focus-visible {
   flex: 0 0 auto;
   border-radius: 50%;
   background: var(--no23-accent);
-  box-shadow: 0 0 0 5px rgba(200, 255, 50, 0.08);
+  box-shadow: 0 0 0 5px rgba(201, 161, 91, 0.08);
 }
 
 .member-sidebar-nav {
@@ -11872,8 +11875,8 @@ button:focus-visible {
 
 .member-sidebar-link:hover,
 .member-sidebar-link:focus-visible {
-  border-color: rgba(200, 255, 50, 0.16);
-  background: rgba(200, 255, 50, 0.06);
+  border-color: rgba(201, 161, 91, 0.16);
+  background: rgba(201, 161, 91, 0.06);
   color: #fff;
 }
 
@@ -11907,7 +11910,7 @@ button:focus-visible {
 }
 
 .member-sidebar-link.is-disabled .member-sidebar-index {
-  color: rgba(200, 255, 50, 0.32);
+  color: rgba(201, 161, 91, 0.32);
 }
 
 .member-sidebar-badge {
@@ -12226,7 +12229,7 @@ button:focus-visible {
 
 .member-account-menu .dropdown-item:hover,
 .member-account-menu .dropdown-item:focus {
-  background: rgba(200, 255, 50, 0.08);
+  background: rgba(201, 161, 91, 0.08);
   color: var(--no23-accent);
 }
 
@@ -12335,7 +12338,7 @@ button:focus-visible {
 }
 
 .member-reservations-page {
-  --member-accent: #c5ff20;
+  --member-accent: #c9a15b;
   --member-card: #111411;
   --member-border: rgba(255, 255, 255, 0.11);
   position: relative;
@@ -12363,8 +12366,8 @@ button:focus-visible {
 
 .member-reservations-glow {
   background:
-    radial-gradient(circle at 83% 6%, rgba(197, 255, 32, 0.14), transparent 27%),
-    radial-gradient(circle at 12% 48%, rgba(197, 255, 32, 0.05), transparent 23%);
+    radial-gradient(circle at 83% 6%, rgba(201, 161, 91, 0.14), transparent 27%),
+    radial-gradient(circle at 12% 48%, rgba(201, 161, 91, 0.05), transparent 23%);
 }
 
 .member-reservations-page .container {
@@ -12458,7 +12461,7 @@ button:focus-visible {
 
 .member-coming-pill {
   padding: 0.5rem 0.8rem;
-  border: 1px solid rgba(197, 255, 32, 0.35);
+  border: 1px solid rgba(201, 161, 91, 0.35);
   border-radius: 999px;
   color: var(--member-accent);
   font-size: 0.58rem;
@@ -12487,7 +12490,7 @@ button:focus-visible {
   border: 1px solid var(--member-border);
   border-radius: 20px;
   background:
-    radial-gradient(circle at 100% 0, rgba(197, 255, 32, 0.09), transparent 34%),
+    radial-gradient(circle at 100% 0, rgba(201, 161, 91, 0.09), transparent 34%),
     var(--member-card);
   color: #fff;
   text-decoration: none;
@@ -13059,7 +13062,7 @@ button:focus-visible {
 }
 
 .member-cart-drawer .shop-form-field label small {
-  color: rgba(200, 255, 50, 0.72);
+  color: rgba(201, 161, 91, 0.72);
   opacity: 1;
 }
 
@@ -13081,7 +13084,7 @@ button:focus-visible {
 .member-cart-drawer .shop-form-field textarea:focus {
   border-color: var(--no23-accent);
   background: #fff;
-  box-shadow: 0 0 0 3px rgba(200, 255, 50, 0.16);
+  box-shadow: 0 0 0 3px rgba(201, 161, 91, 0.16);
 }
 
 .member-cart-drawer .shop-checkout-button {
@@ -13089,7 +13092,7 @@ button:focus-visible {
   border: 1px solid var(--no23-accent);
   background: var(--no23-accent);
   color: #090b09;
-  box-shadow: 0 12px 30px rgba(200, 255, 50, 0.14);
+  box-shadow: 0 12px 30px rgba(201, 161, 91, 0.14);
 }
 
 .member-cart-drawer .shop-checkout-button:hover:not(:disabled),
@@ -13123,7 +13126,7 @@ button:focus-visible {
 @keyframes member-cart-pulse {
   40% {
     border-color: var(--no23-accent);
-    box-shadow: 0 0 0 8px rgba(200, 255, 50, 0.08);
+    box-shadow: 0 0 0 8px rgba(201, 161, 91, 0.08);
     transform: translateY(-2px);
   }
 }
@@ -13135,7 +13138,7 @@ button:focus-visible {
   z-index: 1110;
   max-width: min(360px, calc(100vw - 2rem));
   padding: 0.85rem 1rem;
-  border: 1px solid rgba(200, 255, 50, 0.35);
+  border: 1px solid rgba(201, 161, 91, 0.35);
   border-radius: 12px;
   background: #151a13;
   color: #fff;
@@ -13221,7 +13224,7 @@ button:focus-visible {
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 26px;
   background:
-    radial-gradient(circle at 86% 8%, rgba(200, 255, 50, 0.13), transparent 25%),
+    radial-gradient(circle at 86% 8%, rgba(201, 161, 91, 0.13), transparent 25%),
     #111411;
   box-shadow: 0 30px 85px rgba(0, 0, 0, 0.28);
 }
@@ -13262,7 +13265,7 @@ button:focus-visible {
   height: 7px;
   border-radius: 50%;
   background: var(--no23-accent);
-  box-shadow: 0 0 0 5px rgba(200, 255, 50, 0.1);
+  box-shadow: 0 0 0 5px rgba(201, 161, 91, 0.1);
 }
 
 .kitchen-subscription-title {
@@ -13564,7 +13567,7 @@ button:focus-visible {
 .kitchen-meal-day-status {
   justify-self: end;
   padding: 0.35rem 0.55rem;
-  border: 1px solid rgba(190, 255, 28, 0.38);
+  border: 1px solid rgba(201, 161, 91, 0.38);
   border-radius: 999px;
   color: var(--no23-accent);
   font-size: 0.58rem;
@@ -13885,7 +13888,7 @@ button:focus-visible {
   overflow: hidden;
   padding: 4.5rem 0 5.5rem;
   background:
-    radial-gradient(circle at 84% 9%, rgba(200, 255, 50, 0.12), transparent 26%),
+    radial-gradient(circle at 84% 9%, rgba(201, 161, 91, 0.12), transparent 26%),
     #080a08;
   color: #fff;
 }
@@ -13909,9 +13912,9 @@ button:focus-visible {
   right: -8rem;
   width: 470px;
   height: 470px;
-  border: 1px solid rgba(200, 255, 50, 0.14);
+  border: 1px solid rgba(201, 161, 91, 0.14);
   border-radius: 50%;
-  box-shadow: 0 0 0 80px rgba(200, 255, 50, 0.02);
+  box-shadow: 0 0 0 80px rgba(201, 161, 91, 0.02);
   pointer-events: none;
 }
 
@@ -14153,7 +14156,7 @@ button:focus-visible {
 }
 
 .member-order-identity p {
-  color: #6c8e0a;
+  color: var(--member-accent);
   font-size: 0.62rem;
   font-weight: 900;
   letter-spacing: 0.1em;
@@ -14209,7 +14212,7 @@ button:focus-visible {
 
 .member-order-statuses .is-delivery,
 .member-order-statuses .is-preparing {
-  border-color: #c8ff32;
+  border-color: #c9a15b;
   background: #efffc7;
   color: #526e00;
 }
@@ -14296,7 +14299,7 @@ button:focus-visible {
 }
 
 .member-order-items summary > strong {
-  color: #6c8e0a;
+  color: var(--member-accent);
   font-size: 0.72rem;
 }
 
@@ -14453,6 +14456,79 @@ button:focus-visible {
   min-height: 470px;
 }
 
+.public-kitchen-hero .kitchen-hero-card {
+  border-color: rgba(201, 161, 91, 0.2);
+  background:
+    radial-gradient(circle at 100% 0, rgba(201, 161, 91, 0.14), transparent 18rem),
+    rgba(18, 18, 18, 0.9);
+}
+
+.public-kitchen-hero .kitchen-hero-card-top span,
+.public-kitchen-hero .kitchen-hero-card li span {
+  color: #c9a15b;
+}
+
+.public-shop-hero .shop-hero-card {
+  min-height: 350px;
+  border-color: rgba(201, 161, 91, 0.2);
+  background:
+    radial-gradient(circle at 100% 0, rgba(201, 161, 91, 0.14), transparent 18rem),
+    rgba(18, 18, 18, 0.9);
+  box-shadow: 0 35px 80px rgba(0, 0, 0, 0.26);
+  backdrop-filter: blur(14px);
+}
+
+.public-shop-hero .shop-hero-card-top span {
+  color: var(--shop-accent, #c9a15b);
+  font-size: 0.68rem;
+  font-weight: 850;
+}
+
+.public-shop-hero .shop-hero-card-top strong {
+  color: rgba(255, 255, 255, 0.09);
+  font-size: 3.2rem;
+  font-weight: 950;
+  line-height: 0.75;
+}
+
+.public-shop-hero .shop-hero-card-content p {
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.73rem;
+  font-weight: 750;
+  letter-spacing: 0.12em;
+}
+
+.public-shop-hero .shop-hero-card-content h2 {
+  font-size: clamp(1.95rem, 2.3vw, 2.6rem);
+  font-weight: 900;
+  line-height: 0.98;
+}
+
+.public-shop-hero .shop-hero-card ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.public-shop-hero .shop-hero-card li {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.public-shop-hero .shop-hero-card li span {
+  color: var(--shop-accent, #c9a15b);
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
 .public-product-order-link,
 .public-product-disabled {
   display: flex;
@@ -14462,7 +14538,7 @@ button:focus-visible {
   gap: 1.5rem;
   margin-top: 1rem;
   padding: 0.8rem 1rem;
-  border: 1px solid #c5ff20;
+  border: 1px solid #c9a15b;
   border-radius: 12px;
   color: #080a07;
   font-size: 0.67rem;
@@ -14470,7 +14546,7 @@ button:focus-visible {
   letter-spacing: 0.09em;
   text-decoration: none;
   text-transform: uppercase;
-  background: #c5ff20;
+  background: #c9a15b;
   transition:
     transform 180ms ease,
     color 180ms ease,
@@ -14500,7 +14576,7 @@ button:focus-visible {
 }
 
 .public-stock-in {
-  color: #c5ff20 !important;
+  color: #c9a15b !important;
 }
 
 .public-stock-out {
@@ -14519,7 +14595,7 @@ button:focus-visible {
 }
 
 .public-commerce-empty > span {
-  color: #c5ff20;
+  color: #c9a15b;
   font-size: 4rem;
   font-weight: 950;
 }
@@ -14547,7 +14623,7 @@ button:focus-visible {
 
 .public-order-page,
 .public-confirmation-page {
-  --public-order-accent: #c5ff20;
+  --public-order-accent: #c9a15b;
   --public-order-dark: #070907;
   --public-order-panel: #111410;
   --public-order-cream: #f3f1e9;
@@ -14556,8 +14632,8 @@ button:focus-visible {
   overflow: hidden;
   color: #fff;
   background:
-    radial-gradient(circle at 5% 5%, rgba(197, 255, 32, 0.08), transparent 30rem),
-    radial-gradient(circle at 95% 5%, rgba(197, 255, 32, 0.12), transparent 34rem),
+    radial-gradient(circle at 5% 5%, rgba(201, 161, 91, 0.08), transparent 30rem),
+    radial-gradient(circle at 95% 5%, rgba(201, 161, 91, 0.12), transparent 34rem),
     var(--public-order-dark);
 }
 
@@ -14655,7 +14731,7 @@ button:focus-visible {
   padding: 1rem;
   color: #fff;
   background:
-    radial-gradient(circle at 100% 0, rgba(197, 255, 32, 0.13), transparent 23rem),
+    radial-gradient(circle at 100% 0, rgba(201, 161, 91, 0.13), transparent 23rem),
     #111410;
 }
 
@@ -14792,7 +14868,7 @@ button:focus-visible {
 }
 
 .public-order-form-heading span {
-  color: #719511;
+  color: var(--public-order-accent);
   font-size: 0.68rem;
   font-weight: 900;
 }
@@ -14857,7 +14933,7 @@ button:focus-visible {
   min-height: 16px;
   align-items: center;
   justify-content: space-between;
-  color: #759a12;
+  color: var(--public-order-accent);
   font-size: 0.58rem;
   font-weight: 900;
   letter-spacing: 0.1em;
@@ -14895,8 +14971,8 @@ button:focus-visible {
 .public-order-field input:focus,
 .public-order-field textarea:focus,
 .public-order-field select:focus {
-  border-color: #8ab216;
-  box-shadow: 0 0 0 4px rgba(138, 178, 22, 0.12);
+  border-color: var(--public-order-accent);
+  box-shadow: 0 0 0 4px rgba(201, 161, 91, 0.12);
 }
 
 .public-order-field input::placeholder,
@@ -14941,7 +15017,7 @@ button:focus-visible {
 
 .public-order-submit:hover:not(:disabled) {
   transform: translateY(-2px);
-  background: #d4ff59;
+  background: var(--public-order-accent);
 }
 
 .public-order-submit:disabled {
@@ -15051,14 +15127,14 @@ button:focus-visible {
   display: inline-flex;
   margin-bottom: 1.2rem;
   padding: 0.5rem 0.75rem;
-  border: 1px solid rgba(197, 255, 32, 0.35);
+  border: 1px solid rgba(201, 161, 91, 0.35);
   border-radius: 999px;
   color: var(--public-order-accent);
   font-size: 0.63rem;
   font-weight: 900;
   letter-spacing: 0.11em;
   text-transform: uppercase;
-  background: rgba(197, 255, 32, 0.08);
+  background: rgba(201, 161, 91, 0.08);
 }
 
 .public-confirmation-copy h1 {
@@ -15099,7 +15175,7 @@ button:focus-visible {
   padding: 1.5rem;
   color: #fff;
   background:
-    radial-gradient(circle at 100% 0, rgba(197, 255, 32, 0.14), transparent 16rem),
+    radial-gradient(circle at 100% 0, rgba(201, 161, 91, 0.14), transparent 16rem),
     #111410;
 }
 
@@ -15148,7 +15224,7 @@ button:focus-visible {
 }
 
 .public-confirmation-receipt .public-confirmation-total {
-  color: #6d9110;
+  color: var(--public-order-accent);
   font-size: 1.2rem;
   font-weight: 950;
 }
@@ -15168,7 +15244,7 @@ button:focus-visible {
 }
 
 .public-confirmation-receipt footer strong {
-  color: #7ba313;
+  color: var(--public-order-accent);
   font-size: 2.2rem;
   line-height: 0.8;
 }
@@ -15316,10 +15392,10 @@ button:focus-visible {
   margin-top: 4rem;
   padding: 3.5rem clamp(1rem, 3vw, 2.5rem);
   overflow: hidden;
-  border: 1px solid rgba(197, 255, 32, 0.13);
+  border: 1px solid rgba(201, 161, 91, 0.13);
   border-radius: 30px;
   background:
-    radial-gradient(circle at 100% 0, rgba(197, 255, 32, 0.1), transparent 25rem),
+    radial-gradient(circle at 100% 0, rgba(201, 161, 91, 0.1), transparent 25rem),
     rgba(255, 255, 255, 0.018);
 }
 
@@ -15359,13 +15435,13 @@ button:focus-visible {
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 26px;
   background:
-    radial-gradient(circle at 100% 0, rgba(197, 255, 32, 0.13), transparent 17rem),
+    radial-gradient(circle at 100% 0, rgba(201, 161, 91, 0.13), transparent 17rem),
     rgba(20, 24, 19, 0.9);
 }
 
 .member-calorie-tracking-score > span {
   grid-column: 1 / -1;
-  color: #c5ff20;
+  color: #c9a15b;
   font-size: 0.61rem;
   font-weight: 900;
   letter-spacing: 0.15em;
@@ -15391,7 +15467,7 @@ button:focus-visible {
 }
 
 .member-calorie-tracking-score b {
-  color: #c5ff20;
+  color: #c9a15b;
   font-size: 2.8rem;
   line-height: 1;
 }
@@ -15462,12 +15538,12 @@ button:focus-visible {
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 26px;
   background:
-    radial-gradient(circle at 100% 0, rgba(197, 255, 32, 0.14), transparent 19rem),
+    radial-gradient(circle at 100% 0, rgba(201, 161, 91, 0.14), transparent 19rem),
     rgba(20, 24, 19, 0.9);
 }
 
 .member-community-flow > span {
-  color: #c5ff20;
+  color: #c9a15b;
   font-size: 0.61rem;
   font-weight: 900;
   letter-spacing: 0.15em;
@@ -15493,7 +15569,7 @@ button:focus-visible {
 }
 
 .member-community-flow li b {
-  color: #c5ff20;
+  color: #c9a15b;
   font-size: 0.65rem;
   letter-spacing: 0.08em;
 }
@@ -15504,9 +15580,9 @@ button:focus-visible {
   gap: 1rem;
   margin-bottom: 1.25rem;
   padding: 1.15rem 1.3rem;
-  border: 1px solid rgba(197, 255, 32, 0.23);
+  border: 1px solid rgba(201, 161, 91, 0.23);
   border-radius: 20px;
-  background: rgba(197, 255, 32, 0.055);
+  background: rgba(201, 161, 91, 0.055);
 }
 
 .member-community-access-note > span {
@@ -15515,9 +15591,9 @@ button:focus-visible {
   height: 28px;
   flex: 0 0 auto;
   place-items: center;
-  border: 1px solid rgba(197, 255, 32, 0.5);
+  border: 1px solid rgba(201, 161, 91, 0.5);
   border-radius: 50%;
-  color: #c5ff20;
+  color: #c9a15b;
   font-size: 0.72rem;
   font-weight: 900;
 }
@@ -15540,7 +15616,7 @@ button:focus-visible {
   border: 1px solid rgba(255, 255, 255, 0.13);
   border-radius: 28px;
   background:
-    radial-gradient(circle at 100% 0, rgba(197, 255, 32, 0.08), transparent 25rem),
+    radial-gradient(circle at 100% 0, rgba(201, 161, 91, 0.08), transparent 25rem),
     rgba(17, 21, 16, 0.96);
 }
 
@@ -15559,7 +15635,7 @@ button:focus-visible {
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 23px;
   background:
-    linear-gradient(140deg, rgba(197, 255, 32, 0.055), transparent 45%),
+    linear-gradient(140deg, rgba(201, 161, 91, 0.055), transparent 45%),
     #0d110d;
 }
 
@@ -15571,7 +15647,7 @@ button:focus-visible {
 
 .member-community-card-top > span {
   align-self: start;
-  color: #c5ff20;
+  color: #c9a15b;
   font-size: 0.61rem;
   font-weight: 900;
   letter-spacing: 0.13em;
@@ -15581,7 +15657,7 @@ button:focus-visible {
 .member-community-card-top strong {
   grid-row: 1 / 3;
   grid-column: 2;
-  color: #c5ff20;
+  color: #c9a15b;
   font-size: 2.4rem;
   font-weight: 950;
   line-height: 0.85;
@@ -15604,7 +15680,7 @@ button:focus-visible {
 
 .member-community-card-copy p {
   margin: 0 0 0.55rem;
-  color: #7fa313;
+  color: var(--member-accent);
   font-size: 0.6rem;
   font-weight: 900;
   letter-spacing: 0.08em;
@@ -15634,7 +15710,7 @@ button:focus-visible {
 
 .member-community-card-goal small,
 .member-community-reward span {
-  color: #7fa313;
+  color: var(--member-accent);
   font-size: 0.55rem;
   font-weight: 900;
   letter-spacing: 0.12em;
@@ -15724,15 +15800,15 @@ button:focus-visible {
 
 .member-community-card-actions button,
 .member-community-card-actions a.is-primary {
-  border-color: #c5ff20;
+  border-color: #c9a15b;
   color: #090c08;
-  background: #c5ff20;
+  background: #c9a15b;
 }
 
 .member-community-card-actions a:hover,
 .member-community-card-actions a:focus-visible {
-  border-color: #c5ff20;
-  color: #c5ff20;
+  border-color: #c9a15b;
+  color: #c9a15b;
 }
 
 .member-community-card-actions a.is-primary:hover,
@@ -16556,6 +16632,7 @@ button:focus-visible {
    ========================================================= */
 
 #personal-training {
+  --member-accent: #c9a15b;
   scroll-margin-top: 7rem;
 }
 
@@ -16729,7 +16806,7 @@ button:focus-visible {
 
 #personal-training .member-trainer-option:hover,
 #personal-training .member-trainer-option:focus-visible {
-  border-color: rgba(197, 255, 32, 0.58);
+  border-color: rgba(201, 161, 91, 0.58);
   transform: translateY(-2px);
 }
 
@@ -16738,7 +16815,7 @@ button:focus-visible {
   background:
     radial-gradient(
       circle at 100% 0,
-      rgba(197, 255, 32, 0.16),
+      rgba(201, 161, 91, 0.16),
       transparent 38%
     ),
     rgba(255, 255, 255, 0.055);
@@ -16757,10 +16834,10 @@ button:focus-visible {
   place-items: center;
   width: 48px;
   height: 48px;
-  border: 1px solid rgba(197, 255, 32, 0.28);
+  border: 1px solid rgba(201, 161, 91, 0.28);
   border-radius: 14px;
   color: var(--member-accent);
-  background: rgba(197, 255, 32, 0.06);
+  background: rgba(201, 161, 91, 0.06);
   font-size: 1.05rem;
   font-weight: 950;
 }
@@ -16833,7 +16910,7 @@ button:focus-visible {
   background:
     radial-gradient(
       circle at 100% 0,
-      rgba(197, 255, 32, 0.07),
+      rgba(201, 161, 91, 0.07),
       transparent 35%
     ),
     rgba(255, 255, 255, 0.035);
@@ -16923,7 +17000,7 @@ button:focus-visible {
 #personal-training .member-personal-form textarea:focus {
   border-color: var(--member-accent);
   background: rgba(255, 255, 255, 0.065);
-  box-shadow: 0 0 0 3px rgba(197, 255, 32, 0.08);
+  box-shadow: 0 0 0 3px rgba(201, 161, 91, 0.08);
 }
 
 .member-personal-selected-control {
@@ -16931,9 +17008,9 @@ button:focus-visible {
   grid-template-columns: 36px minmax(0, 1fr);
   align-items: center;
   overflow: hidden;
-  border: 1px solid rgba(197, 255, 32, 0.2);
+  border: 1px solid rgba(201, 161, 91, 0.2);
   border-radius: 10px;
-  background: rgba(197, 255, 32, 0.045);
+  background: rgba(201, 161, 91, 0.045);
 }
 
 .member-personal-selected-control > span {
@@ -16947,7 +17024,7 @@ button:focus-visible {
 
 #personal-training .member-personal-selected-control input {
   border: 0;
-  border-left: 1px solid rgba(197, 255, 32, 0.14);
+  border-left: 1px solid rgba(201, 161, 91, 0.14);
   border-radius: 0;
   background: transparent;
   opacity: 1;
@@ -17000,7 +17077,7 @@ button:focus-visible {
 
 #personal-training .member-personal-submit:hover:not(:disabled),
 #personal-training .member-personal-submit:focus-visible:not(:disabled) {
-  background: #dcff7b;
+  background: #d8b56f;
   transform: translateY(-1px);
 }
 
@@ -17088,10 +17165,10 @@ button:focus-visible {
 .member-personal-status {
   flex: 0 0 auto;
   padding: 0.35rem 0.55rem;
-  border: 1px solid rgba(197, 255, 32, 0.22);
+  border: 1px solid rgba(201, 161, 91, 0.22);
   border-radius: 999px;
   color: var(--member-accent);
-  background: rgba(197, 255, 32, 0.06);
+  background: rgba(201, 161, 91, 0.06);
   font-size: 0.55rem;
   font-weight: 900;
   letter-spacing: 0.08em;
@@ -17291,7 +17368,7 @@ button:focus-visible {
     pointer-events: none;
     background: radial-gradient(
         circle,
-        rgba(185, 255, 0, .14),
+        rgba(201, 161, 91, .14),
         transparent 70%
     );
     filter: blur(10px);
@@ -17325,7 +17402,7 @@ button:focus-visible {
 
 .member-progress-hero-card {
     padding: 1.3rem;
-    border: 1px solid rgba(185, 255, 0, .15);
+    border: 1px solid rgba(201, 161, 91, .15);
     border-radius: 20px;
     background: rgba(20, 22, 18, .82);
     backdrop-filter: blur(16px);
@@ -17564,7 +17641,7 @@ button:focus-visible {
 
 .member-progress-water-copy {
     padding: .9rem;
-    border: 1px dashed rgba(185, 255, 0, .18);
+    border: 1px dashed rgba(201, 161, 91, .18);
     border-radius: 14px;
 }
 
@@ -17607,13 +17684,13 @@ button:focus-visible {
     min-width: 220px;
     min-height: 48px;
     padding: .8rem 1rem;
-    border: 1px solid rgba(200, 255, 50, .8);
+    border: 1px solid rgba(201, 161, 91, .8);
     border-radius: 13px;
     color: #050805;
     background:
-        linear-gradient(135deg, #dfff4d 0%, var(--no23-accent, #c8ff32) 100%);
+        linear-gradient(135deg, #c9a15b 0%, var(--no23-accent, #c9a15b) 100%);
     box-shadow:
-        0 14px 34px rgba(200, 255, 50, .18),
+        0 14px 34px rgba(201, 161, 91, .18),
         inset 0 1px 0 rgba(255, 255, 255, .45);
     cursor: pointer;
     font-size: .72rem;
@@ -17631,9 +17708,9 @@ button:focus-visible {
 .member-progress-submit:hover:not(:disabled),
 .member-progress-submit:focus-visible:not(:disabled) {
     transform: translateY(-2px);
-    border-color: #efff9d;
+    border-color: #c9a15b;
     box-shadow:
-        0 18px 42px rgba(200, 255, 50, .26),
+        0 18px 42px rgba(201, 161, 91, .26),
         inset 0 1px 0 rgba(255, 255, 255, .62);
     filter: saturate(1.08);
 }
@@ -17885,7 +17962,7 @@ button:focus-visible {
 
 .member-kitchen-checkout-kicker {
     margin: 0 0 0.55rem;
-    color: #baff00;
+    color: #c9a15b;
     font-size: 0.62rem;
     font-weight: 900;
     letter-spacing: 0.16em;
@@ -17922,7 +17999,7 @@ button:focus-visible {
 }
 
 .member-kitchen-checkout-price strong {
-    color: #baff00;
+    color: #c9a15b;
     font-size: 2rem;
 }
 
@@ -17931,9 +18008,9 @@ button:focus-visible {
     align-items: flex-start;
     gap: 0.85rem;
     padding: 1rem 1.1rem;
-    border: 1px solid rgba(186, 255, 0, 0.16);
+    border: 1px solid rgba(201, 161, 91, 0.16);
     border-radius: 16px;
-    background: rgba(186, 255, 0, 0.045);
+    background: rgba(201, 161, 91, 0.045);
 }
 
 .member-kitchen-checkout-note-icon {
@@ -17942,9 +18019,9 @@ button:focus-visible {
     width: 28px;
     height: 28px;
     place-items: center;
-    border: 1px solid rgba(186, 255, 0, 0.32);
+    border: 1px solid rgba(201, 161, 91, 0.32);
     border-radius: 50%;
-    color: #baff00;
+    color: #c9a15b;
     font-size: 0.7rem;
     font-weight: 900;
 }
@@ -17980,7 +18057,7 @@ button:focus-visible {
 
 .member-kitchen-checkout-form-head p {
     margin: 0 0 0.25rem;
-    color: #baff00;
+    color: #c9a15b;
     font-size: 0.6rem;
     font-weight: 900;
     letter-spacing: 0.15em;
@@ -18028,7 +18105,7 @@ button:focus-visible {
 }
 
 .member-kitchen-checkout-field > span {
-    color: #baff00;
+    color: #c9a15b;
     font-size: 0.62rem;
     font-weight: 850;
     letter-spacing: 0.1em;
@@ -18062,9 +18139,9 @@ button:focus-visible {
 
 .member-kitchen-checkout-field input:focus,
 .member-kitchen-checkout-field textarea:focus {
-    border-color: rgba(186, 255, 0, 0.55);
+    border-color: rgba(201, 161, 91, 0.55);
     background: rgba(255, 255, 255, 0.05);
-    box-shadow: 0 0 0 3px rgba(186, 255, 0, 0.08);
+    box-shadow: 0 0 0 3px rgba(201, 161, 91, 0.08);
 }
 
 .member-kitchen-checkout-field small {
@@ -18113,7 +18190,7 @@ button:focus-visible {
     border: 0 !important;
     border-radius: 13px;
 
-    background: #baff00 !important;
+    background: #c9a15b !important;
     color: #0b0d09 !important;
 
     font-size: 0.72rem;
@@ -18128,13 +18205,13 @@ button:focus-visible {
 }
 
 .member-kitchen-checkout-submit:hover {
-    background: #c8ff33 !important;
+    background: #c9a15b !important;
     color: #0b0d09 !important;
     transform: translateY(-2px);
 }
 
 .member-kitchen-checkout-submit:focus-visible {
-    outline: 3px solid rgba(186, 255, 0, 0.32);
+    outline: 3px solid rgba(201, 161, 91, 0.32);
     outline-offset: 3px;
 }
 
@@ -18789,7 +18866,7 @@ button:focus-visible {
 
 .member-messages-eyebrow {
     margin: 0 0 0.35rem;
-    color: var(--no23-accent, #baff00);
+    color: var(--no23-accent, #c9a15b);
     font-size: 0.54rem;
     font-weight: 900;
     letter-spacing: 0.15em;
@@ -18830,7 +18907,7 @@ button:focus-visible {
 }
 
 .member-messages-count strong {
-    color: var(--no23-accent, #baff00);
+    color: var(--no23-accent, #c9a15b);
     font-size: 2.4rem;
     font-weight: 950;
     line-height: 1;
@@ -18899,7 +18976,7 @@ button:focus-visible {
     place-items: center;
     border-radius: 9px;
     color: #111;
-    background: var(--no23-accent, #baff00);
+    background: var(--no23-accent, #c9a15b);
     font-size: 0.62rem;
     font-weight: 950;
 }
@@ -18923,12 +19000,12 @@ button:focus-visible {
 
 .member-conversation-item:hover {
     color: #111;
-    background: rgba(186, 255, 0, 0.08);
+    background: rgba(201, 161, 91, 0.08);
 }
 
 .member-conversation-item.is-active {
     color: #111;
-    background: var(--no23-accent, #baff00);
+    background: var(--no23-accent, #c9a15b);
 }
 
 .member-conversation-item-top {
@@ -19038,7 +19115,7 @@ button:focus-visible {
 
 .member-chat-status .is-open {
     color: #355200;
-    background: rgba(186, 255, 0, 0.28);
+    background: rgba(201, 161, 91, 0.28);
 }
 
 .member-chat-status .is-closed {
@@ -19083,7 +19160,7 @@ button:focus-visible {
 .member-message-row.is-mine .member-message-bubble {
     border-bottom-right-radius: 4px;
     color: #111;
-    background: var(--no23-accent, #baff00);
+    background: var(--no23-accent, #c9a15b);
 }
 
 .member-message-row.is-theirs .member-message-bubble {
@@ -19121,7 +19198,7 @@ button:focus-visible {
     place-items: center;
     border-radius: 12px;
     color: #111;
-    background: var(--no23-accent, #baff00);
+    background: var(--no23-accent, #c9a15b);
     font-size: 0.6rem;
     font-weight: 950;
 }
@@ -19182,8 +19259,8 @@ button:focus-visible {
 }
 
 .member-chat-composer textarea:focus {
-    border-color: #8fbf00;
-    box-shadow: 0 0 0 3px rgba(186, 255, 0, 0.14);
+    border-color: #c9a15b;
+    box-shadow: 0 0 0 3px rgba(201, 161, 91, 0.14);
 }
 
 .member-chat-composer button {
@@ -19193,10 +19270,10 @@ button:focus-visible {
     justify-content: space-between;
     gap: 0.6rem;
     padding: 0.65rem 0.75rem;
-    border: 1px solid var(--no23-accent, #baff00);
+    border: 1px solid var(--no23-accent, #c9a15b);
     border-radius: 11px;
     color: #111;
-    background: var(--no23-accent, #baff00);
+    background: var(--no23-accent, #c9a15b);
     font-size: 0.6rem;
     font-weight: 950;
     cursor: pointer;
@@ -19235,7 +19312,7 @@ button:focus-visible {
     place-items: center;
     border-radius: 13px;
     color: #111;
-    background: var(--no23-accent, #baff00);
+    background: var(--no23-accent, #c9a15b);
     font-size: 0.65rem;
     font-weight: 950;
 }
@@ -19261,7 +19338,7 @@ button:focus-visible {
     padding: 0.65rem 0.8rem;
     border-radius: 10px;
     color: #111;
-    background: var(--no23-accent, #baff00);
+    background: var(--no23-accent, #c9a15b);
     font-size: 0.6rem;
     font-weight: 900;
     text-decoration: none;
@@ -19486,7 +19563,7 @@ button:focus-visible {
     place-items: center;
     border: 1px solid rgba(255, 255, 255, 0.14);
     border-radius: 10px;
-    color: #baff00;
+    color: #c9a15b;
     background: rgba(255, 255, 255, 0.06);
     font-size: 0.85rem;
     font-weight: 950;
@@ -19500,9 +19577,9 @@ button:focus-visible {
 
 .no23-notification-button:hover,
 .no23-notification-button[aria-expanded="true"] {
-    border-color: #baff00;
+    border-color: #c9a15b;
     color: #111;
-    background: #baff00;
+    background: #c9a15b;
     transform: translateY(-1px);
 }
 
@@ -19550,7 +19627,7 @@ button:focus-visible {
 }
 
 .no23-notification-head span {
-    color: #baff00;
+    color: #c9a15b;
     font-size: 0.5rem;
     font-weight: 950;
     letter-spacing: 0.14em;
@@ -19574,7 +19651,7 @@ button:focus-visible {
 }
 
 .no23-notification-head button:hover {
-    color: #baff00;
+    color: #c9a15b;
 }
 
 .no23-notification-empty {
@@ -19608,7 +19685,7 @@ button:focus-visible {
 }
 
 .no23-notification-item:hover {
-    background: #f3f8e4;
+    background: rgba(201, 161, 91, 0.09);
 }
 
 .no23-notification-marker {
@@ -19620,8 +19697,8 @@ button:focus-visible {
 }
 
 .no23-notification-item.is-unread .no23-notification-marker {
-    background: #baff00;
-    box-shadow: 0 0 0 4px rgba(186, 255, 0, 0.16);
+    background: #c9a15b;
+    box-shadow: 0 0 0 4px rgba(201, 161, 91, 0.16);
 }
 
 .no23-notification-copy {
