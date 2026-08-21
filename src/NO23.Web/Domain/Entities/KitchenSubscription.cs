@@ -55,7 +55,5 @@ public class KitchenSubscription
 
     public ICollection<Order> Orders { get; set; } = [];
 
-    public ICollection<KitchenSubscriptionMealSelection> MealSelections { get; set; } = [];
-
     public KitchenMealPlan? MealPlan { get; set; }
 }

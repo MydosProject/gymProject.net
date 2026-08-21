@@ -991,42 +991,6 @@ namespace NO23.Web.Data.Migrations
                     b.ToTable("KitchenMealPlanItems");
                 });
 
-            modelBuilder.Entity("NO23.Web.Domain.Entities.KitchenMealSlotPrice", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<decimal>("DailyPrice")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("numeric(10,2)");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true);
-
-                    b.Property<string>("MealSlot")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
-
-                    b.Property<DateTime?>("UpdatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MealSlot")
-                        .IsUnique();
-
-                    b.ToTable("KitchenMealSlotPrices");
-                });
-
             modelBuilder.Entity("NO23.Web.Domain.Entities.KitchenMenuItem", b =>
                 {
                     b.Property<int>("Id")
@@ -1419,41 +1383,6 @@ namespace NO23.Web.Data.Migrations
                     b.ToTable("KitchenSubscriptions");
                 });
 
-            modelBuilder.Entity("NO23.Web.Domain.Entities.KitchenSubscriptionMealSelection", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("CalorieRatioSnapshot")
-                        .HasPrecision(5, 4)
-                        .HasColumnType("numeric(5,4)");
-
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<decimal>("DailyPriceSnapshot")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("numeric(10,2)");
-
-                    b.Property<int>("KitchenSubscriptionId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("MealSlot")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("KitchenSubscriptionId", "MealSlot")
-                        .IsUnique();
-
-                    b.ToTable("KitchenSubscriptionMealSelections");
-                });
-
             modelBuilder.Entity("NO23.Web.Domain.Entities.KitchenSubscriptionPackage", b =>
                 {
                     b.Property<int>("Id")
@@ -1656,6 +1585,68 @@ namespace NO23.Web.Data.Migrations
                     b.ToTable("MemberProgressEntries");
                 });
 
+            modelBuilder.Entity("NO23.Web.Domain.Entities.MembershipPackageChangeRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AdminNote")
+                        .HasMaxLength(1200)
+                        .HasColumnType("character varying(1200)");
+
+                    b.Property<int>("CurrentMembershipPackageId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MemberProfileId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("RequestedAtUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<int>("RequestedMembershipPackageId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("ResolvedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ResolvedByUserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasDefaultValue("Pending");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CurrentMembershipPackageId");
+
+                    b.HasIndex("MemberProfileId", "Status");
+
+                    b.HasIndex("MemberProfileId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_MembershipPackageChangeRequests_MemberProfileId_Pending")
+                        .HasFilter("\"Status\" = 'Pending'");
+
+                    b.HasIndex("RequestedAtUtc");
+
+                    b.HasIndex("RequestedMembershipPackageId");
+
+                    b.HasIndex("ResolvedByUserId");
+
+                    b.HasIndex("Status");
+
+                    b.ToTable("MembershipPackageChangeRequests");
+                });
+
             modelBuilder.Entity("NO23.Web.Domain.Entities.MembershipPackage", b =>
                 {
                     b.Property<int>("Id")
@@ -1737,68 +1728,6 @@ namespace NO23.Web.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("MembershipPackages");
-                });
-
-            modelBuilder.Entity("NO23.Web.Domain.Entities.MembershipPackageChangeRequest", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("AdminNote")
-                        .HasMaxLength(1200)
-                        .HasColumnType("character varying(1200)");
-
-                    b.Property<int>("CurrentMembershipPackageId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("MemberProfileId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("RequestedAtUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<int>("RequestedMembershipPackageId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("ResolvedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("ResolvedByUserId")
-                        .HasMaxLength(450)
-                        .HasColumnType("character varying(450)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(40)
-                        .HasColumnType("character varying(40)")
-                        .HasDefaultValue("Pending");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CurrentMembershipPackageId");
-
-                    b.HasIndex("MemberProfileId")
-                        .IsUnique()
-                        .HasDatabaseName("IX_MembershipPackageChangeRequests_MemberProfileId_Pending")
-                        .HasFilter("\"Status\" = 'Pending'");
-
-                    b.HasIndex("RequestedAtUtc");
-
-                    b.HasIndex("RequestedMembershipPackageId");
-
-                    b.HasIndex("ResolvedByUserId");
-
-                    b.HasIndex("Status");
-
-                    b.HasIndex("MemberProfileId", "Status");
-
-                    b.ToTable("MembershipPackageChangeRequests");
                 });
 
             modelBuilder.Entity("NO23.Web.Domain.Entities.Order", b =>
@@ -2779,17 +2708,6 @@ namespace NO23.Web.Data.Migrations
                     b.Navigation("MemberProfile");
                 });
 
-            modelBuilder.Entity("NO23.Web.Domain.Entities.KitchenSubscriptionMealSelection", b =>
-                {
-                    b.HasOne("NO23.Web.Domain.Entities.KitchenSubscription", "KitchenSubscription")
-                        .WithMany("MealSelections")
-                        .HasForeignKey("KitchenSubscriptionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("KitchenSubscription");
-                });
-
             modelBuilder.Entity("NO23.Web.Domain.Entities.MemberProfile", b =>
                 {
                     b.HasOne("NO23.Web.Domain.Entities.ApplicationUser", "ApplicationUser")
@@ -3071,8 +2989,6 @@ namespace NO23.Web.Data.Migrations
             modelBuilder.Entity("NO23.Web.Domain.Entities.KitchenSubscription", b =>
                 {
                     b.Navigation("MealPlan");
-
-                    b.Navigation("MealSelections");
 
                     b.Navigation("Orders");
                 });

@@ -561,21 +561,28 @@
                     <div class="kitchen-plan-grid">
                         @foreach (var plan in Model.SubscriptionPlans)
                         {
-                            <a asp-area="Member"
-                               asp-controller="Kitchen"
-                               asp-action="Customize"
-                               asp-route-plan="@plan.Plan"
-                               class="kitchen-plan-card">
+                            <form asp-area="Member"
+                                  asp-controller="Kitchen"
+                                  asp-action="Subscribe"
+                                  asp-antiforgery="true"
+                                  method="post"
+                                  class="kitchen-plan-card">
+                                <input type="hidden" name="plan" value="@plan.Plan" />
+                                <input type="hidden" name="input.HeightCm" value="@Model.CalculatorInput.HeightCm" />
+                                <input type="hidden" name="input.WeightKg" value="@Model.CalculatorInput.WeightKg" />
+                                <input type="hidden" name="input.Age" value="@Model.CalculatorInput.Age" />
+                                <input type="hidden" name="input.Gender" value="@Model.CalculatorInput.Gender" />
+                                <input type="hidden" name="input.ActivityLevel" value="@Model.CalculatorInput.ActivityLevel" />
+                                <input type="hidden" name="input.Goal" value="@Model.CalculatorInput.Goal" />
 
                                 <span class="kitchen-plan-days">@plan.Days gün · @plan.UnitPrice.ToString("C0")</span>
                                 <h4>@plan.Name</h4>
                                 <p>@plan.Description</p>
-
-                                <span class="kitchen-plan-card-action">
-                                    Planı Özelleştir
+                                <button type="submit">
+                                    Paketi Satın Al
                                     <span aria-hidden="true">→</span>
-                                </span>
-                            </a>
+                                </button>
+                            </form>
                         }
                     </div>
                     }

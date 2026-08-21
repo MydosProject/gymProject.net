@@ -97,112 +97,11 @@ public class KitchenController(
         return LocalRedirect($"{Url.Action(nameof(Index))}#calculator");
     }
 
-    [HttpGet]
-    public async Task<IActionResult> Customize(KitchenSubscriptionPlan plan)
-    {
-        var calculatorResult = GetStoredCalculatorResult();
-
-        if (calculatorResult is null)
-        {
-            TempData["ErrorMessage"] =
-                "Öğünlerini seçmeden önce kalori hesaplamasını tamamlamalısın.";
-
-            return LocalRedirect($"{Url.Action(nameof(Index))}#calculator");
-        }
-
-        var subscriptionPackage =
-            await dbContext.KitchenSubscriptionPackages
-                .AsNoTracking()
-                .FirstOrDefaultAsync(package =>
-                    package.Plan == plan &&
-                    package.IsActive);
-
-        if (subscriptionPackage is null ||
-            subscriptionPackage.Days <= 0)
-        {
-            TempData["ErrorMessage"] =
-                "Seçilen Kitchen paketi şu anda kullanılamıyor.";
-
-            return RedirectToAction(nameof(Index));
-        }
-
-        var slotPrices =
-            await dbContext.KitchenMealSlotPrices
-                .AsNoTracking()
-                .Where(price => price.IsActive)
-                .ToListAsync();
-
-        var calorieRatios =
-            new Dictionary<KitchenMealSlot, decimal>
-            {
-                [KitchenMealSlot.Breakfast] = 0.20m,
-                [KitchenMealSlot.MorningSnack] = 0.10m,
-                [KitchenMealSlot.Lunch] = 0.30m,
-                [KitchenMealSlot.AfternoonSnack] = 0.10m,
-                [KitchenMealSlot.Dinner] = 0.30m
-            };
-
-        var displayNames =
-            new Dictionary<KitchenMealSlot, string>
-            {
-                [KitchenMealSlot.Breakfast] = "Kahvaltı",
-                [KitchenMealSlot.MorningSnack] = "Ara Öğün 1",
-                [KitchenMealSlot.Lunch] = "Öğle Yemeği",
-                [KitchenMealSlot.AfternoonSnack] = "Ara Öğün 2",
-                [KitchenMealSlot.Dinner] = "Akşam Yemeği"
-            };
-
-        var mealOptions =
-            calorieRatios
-                .Select(pair =>
-                {
-                    var slotPrice =
-                        slotPrices.FirstOrDefault(price =>
-                            price.MealSlot == pair.Key);
-
-                    return new KitchenMealSelectionOptionViewModel
-                    {
-                        MealSlot = pair.Key,
-                        DisplayName = displayNames[pair.Key],
-                        DailyPrice = slotPrice?.DailyPrice ?? 0m,
-                        CalorieRatio = pair.Value,
-                        TargetCalories =
-                            (int)Math.Round(
-                                calculatorResult.DailyCalories * pair.Value),
-                        IsSelected = true
-                    };
-                })
-                .ToList();
-
-        if (mealOptions.Any(option => option.DailyPrice <= 0))
-        {
-            TempData["ErrorMessage"] =
-                "Kitchen öğün fiyatları eksik veya geçersiz.";
-
-            return RedirectToAction(nameof(Index));
-        }
-
-        var model =
-            new KitchenCustomizeViewModel
-            {
-                Plan = subscriptionPackage.Plan,
-                PackageName = subscriptionPackage.Name,
-                PackageDays = subscriptionPackage.Days,
-                DailyCalories = calculatorResult.DailyCalories,
-                ProteinGrams = calculatorResult.ProteinGrams,
-                CarbohydrateGrams = calculatorResult.CarbohydrateGrams,
-                FatGrams = calculatorResult.FatGrams,
-                MealOptions = mealOptions
-            };
-
-        return View(model);
-    }
-
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Subscribe(
         KitchenSubscriptionPlan plan,
-        List<KitchenMealSlot> selectedMealSlots)
+        CalorieCalculatorInputViewModel input)
     {
         var userId =
             User.FindFirstValue(
@@ -213,42 +112,19 @@ public class KitchenController(
             return Challenge();
         }
 
-        var calculatorInput =
-            GetStoredCalculatorInput();
-
-        var calculatorResult =
-            GetStoredCalculatorResult();
-
-        if (calculatorInput is null ||
-            calculatorResult is null)
+        if (!ModelState.IsValid)
         {
             TempData["ErrorMessage"] =
-                "Paket satın almadan önce kalori hesaplamasını tamamlamalısın.";
+                "Paket satın almak için önce geçerli kalori bilgilerini girmelisin.";
 
-            return LocalRedirect(
-                $"{Url.Action(nameof(Index))}#calculator");
+            return View(
+                "Index",
+                await BuildDashboardAsync(input, null));
         }
 
-        var selectedSlots =
-            selectedMealSlots
-                .Where(Enum.IsDefined)
-                .Distinct()
-                .ToList();
-
-        if (selectedSlots.Count == 0)
-        {
-            TempData["ErrorMessage"] =
-                "Devam etmek için en az bir öğün seçmelisin.";
-
-            return RedirectToAction(
-                nameof(Customize),
-                new { plan });
-        }
-
-        var profile =
-            await dbContext.MemberProfiles
-                .FirstOrDefaultAsync(member =>
-                    member.ApplicationUserId == userId);
+        var profile = await dbContext.MemberProfiles
+            .FirstOrDefaultAsync(member =>
+                member.ApplicationUserId == userId);
 
         if (profile is null)
         {
@@ -258,8 +134,24 @@ public class KitchenController(
             return RedirectToAction(nameof(Index));
         }
 
+        var calculationRequest =
+            new CalorieCalculationRequest
+            {
+                HeightCm = input.HeightCm,
+                WeightKg = input.WeightKg,
+                Age = input.Age,
+                Gender = input.Gender,
+                ActivityLevel = input.ActivityLevel,
+                Goal = input.Goal
+            };
+
+        var result =
+            calorieCalculator.Calculate(
+                calculationRequest);
+
         var subscriptionPackage =
-            await dbContext.KitchenSubscriptionPackages
+            await dbContext
+                .KitchenSubscriptionPackages
                 .AsNoTracking()
                 .FirstOrDefaultAsync(package =>
                     package.Plan == plan &&
@@ -273,98 +165,12 @@ public class KitchenController(
             return RedirectToAction(nameof(Index));
         }
 
-        if (subscriptionPackage.Days <= 0 ||
-            subscriptionPackage.UnitPrice <= 0)
+        if (subscriptionPackage.Days <= 0)
         {
             TempData["ErrorMessage"] =
-                "Seçilen Kitchen paketinin fiyat veya gün bilgisi geçerli değil.";
+                "Seçilen Kitchen paketinin gün sayısı geçerli değil.";
 
             return RedirectToAction(nameof(Index));
-        }
-
-        var activeSlotPrices =
-            await dbContext.KitchenMealSlotPrices
-                .AsNoTracking()
-                .Where(price => price.IsActive)
-                .ToListAsync();
-
-        var selectedSlotPrices =
-            activeSlotPrices
-                .Where(price =>
-                    selectedSlots.Contains(price.MealSlot))
-                .ToList();
-
-        if (selectedSlotPrices.Count != selectedSlots.Count ||
-            selectedSlotPrices.Any(price => price.DailyPrice <= 0))
-        {
-            TempData["ErrorMessage"] =
-                "Seçtiğin öğünlerden birinin fiyat bilgisi geçersiz veya kullanılamıyor.";
-
-            return RedirectToAction(
-                nameof(Customize),
-                new { plan });
-        }
-
-        var fullDailyPrice =
-            activeSlotPrices
-                .Where(price => price.DailyPrice > 0)
-                .Sum(price => price.DailyPrice);
-
-        if (fullDailyPrice <= 0)
-        {
-            TempData["ErrorMessage"] =
-                "Kitchen öğün fiyatları şu anda hesaplanamıyor.";
-
-            return RedirectToAction(nameof(Index));
-        }
-
-        var selectedDailyPrice =
-            selectedSlotPrices.Sum(price =>
-                price.DailyPrice);
-
-        // Tam öğün seçildiğinde mevcut paket fiyatını korur.
-        // Daha az öğünde aynı paket indirim oranını seçilen öğün toplamına uygular.
-        var packageDiscountRatio =
-            subscriptionPackage.UnitPrice /
-            (fullDailyPrice * subscriptionPackage.Days);
-
-        var calculatedPackagePrice =
-            Math.Round(
-                selectedDailyPrice *
-                subscriptionPackage.Days *
-                packageDiscountRatio,
-                2,
-                MidpointRounding.AwayFromZero);
-
-        if (calculatedPackagePrice <= 0)
-        {
-            TempData["ErrorMessage"] =
-                "Kitchen paket fiyatı hesaplanamadı.";
-
-            return RedirectToAction(
-                nameof(Customize),
-                new { plan });
-        }
-
-        var calorieRatios =
-            new Dictionary<KitchenMealSlot, decimal>
-            {
-                [KitchenMealSlot.Breakfast] = 0.20m,
-                [KitchenMealSlot.MorningSnack] = 0.10m,
-                [KitchenMealSlot.Lunch] = 0.30m,
-                [KitchenMealSlot.AfternoonSnack] = 0.10m,
-                [KitchenMealSlot.Dinner] = 0.30m
-            };
-
-        if (selectedSlots.Any(slot =>
-                !calorieRatios.ContainsKey(slot)))
-        {
-            TempData["ErrorMessage"] =
-                "Geçersiz bir öğün seçimi gönderildi.";
-
-            return RedirectToAction(
-                nameof(Customize),
-                new { plan });
         }
 
         var today =
@@ -389,6 +195,7 @@ public class KitchenController(
             return RedirectToAction(nameof(Index));
         }
 
+       
         var startsOn =
             DateOnly.FromDateTime(
                 DateTime.Today.AddDays(1));
@@ -412,40 +219,40 @@ public class KitchenController(
                     subscriptionPackage.Name,
 
                 PackagePriceSnapshot =
-                    calculatedPackagePrice,
+                    subscriptionPackage.UnitPrice,
 
                 PackageDaysSnapshot =
                     subscriptionPackage.Days,
 
                 Goal =
-                    calculatorInput.Goal,
+                    input.Goal,
 
                 SourceHeightCm =
-                    calculatorInput.HeightCm,
+                    input.HeightCm,
 
                 SourceWeightKg =
-                    calculatorInput.WeightKg,
+                    input.WeightKg,
 
                 SourceAge =
-                    calculatorInput.Age,
+                    input.Age,
 
                 SourceGender =
-                    calculatorInput.Gender,
+                    input.Gender,
 
                 SourceActivityLevel =
-                    calculatorInput.ActivityLevel,
+                    input.ActivityLevel,
 
                 DailyCalories =
-                    calculatorResult.DailyCalories,
+                    result.DailyCalories,
 
                 ProteinGrams =
-                    calculatorResult.ProteinGrams,
+                    result.ProteinGrams,
 
                 CarbohydrateGrams =
-                    calculatorResult.CarbohydrateGrams,
+                    result.CarbohydrateGrams,
 
                 FatGrams =
-                    calculatorResult.FatGrams,
+                    result.FatGrams,
 
                 StartsOn =
                     startsOn,
@@ -454,22 +261,6 @@ public class KitchenController(
                     startsOn.AddDays(
                         subscriptionPackage.Days - 1)
             };
-
-        foreach (var slotPrice in selectedSlotPrices)
-        {
-            subscription.MealSelections.Add(
-                new KitchenSubscriptionMealSelection
-                {
-                    MealSlot =
-                        slotPrice.MealSlot,
-
-                    DailyPriceSnapshot =
-                        slotPrice.DailyPrice,
-
-                    CalorieRatioSnapshot =
-                        calorieRatios[slotPrice.MealSlot]
-                });
-        }
 
         dbContext.KitchenSubscriptions.Add(
             subscription);

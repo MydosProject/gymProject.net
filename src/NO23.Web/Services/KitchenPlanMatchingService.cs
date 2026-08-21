@@ -28,7 +28,6 @@ public class KitchenPlanMatchingService(ApplicationDbContext dbContext)
         }
 
         var subscription = await dbContext.KitchenSubscriptions
-            .Include(item => item.MealSelections)
             .FirstOrDefaultAsync(item => item.Id == kitchenSubscriptionId);
 
         if (subscription is null)
@@ -169,16 +168,7 @@ public static class KitchenPlanMatcher
                 []);
         }
 
-        var slots = GetSelectedSlots(subscription);
-
-        if (slots.Length == 0)
-        {
-            return new KitchenPlanMatch(
-                KitchenMealPlanStatus.Failed,
-                "Kitchen planı için seçili öğün bulunamadı.",
-                []);
-        }
-
+        var slots = GetSlots(subscription.Plan);
         var candidatesBySlot = new List<IReadOnlyList<MealCandidate>>();
 
         foreach (var slot in slots)
@@ -220,7 +210,7 @@ public static class KitchenPlanMatcher
             {
                 return new KitchenPlanMatch(
                     KitchenMealPlanStatus.Failed,
-                    "Seçilen öğünler için aynı gün içinde tekrar etmeyen yeterli Kitchen ürünü bulunamadı.",
+                    "Aynı gün içinde tekrar etmeyen 5 öğünlük Kitchen planı için yeterli ürün bulunamadı.",
                     []);
             }
 
@@ -328,20 +318,10 @@ public static class KitchenPlanMatcher
         var carbohydrate = candidates.Sum(candidate => candidate.TotalCarbohydrateGrams);
         var fat = candidates.Sum(candidate => candidate.TotalFatGrams);
 
-        var selectedCalorieRatio = candidates
-            .Select(candidate => candidate.Slot)
-            .Distinct()
-            .Sum(GetSlotCalorieRatio);
-
-        var targetCalories = subscription.DailyCalories * selectedCalorieRatio;
-        var targetProtein = subscription.ProteinGrams * selectedCalorieRatio;
-        var targetCarbohydrate = subscription.CarbohydrateGrams * selectedCalorieRatio;
-        var targetFat = subscription.FatGrams * selectedCalorieRatio;
-
-        var calorieScore = (double)GetDifferenceRatio(calories, targetCalories) * 6;
-        var proteinScore = GetMacroScore(protein, targetProtein, penalizeDeficit: true) * 3;
-        var carbohydrateScore = GetMacroScore(carbohydrate, targetCarbohydrate, penalizeDeficit: false);
-        var fatScore = GetMacroScore(fat, targetFat, penalizeDeficit: false);
+        var calorieScore = (double)GetDifferenceRatio(calories, subscription.DailyCalories) * 6;
+        var proteinScore = GetMacroScore(protein, subscription.ProteinGrams, penalizeDeficit: true) * 3;
+        var carbohydrateScore = GetMacroScore(carbohydrate, subscription.CarbohydrateGrams, penalizeDeficit: false);
+        var fatScore = GetMacroScore(fat, subscription.FatGrams, penalizeDeficit: false);
         var repetitionPenalty = candidates.Count(candidate => previousMenuItemKeys.Contains(GetMenuItemKey(candidate.Item))) * 0.2;
         var goalBonus = candidates.Sum(candidate => GetGoalBonus(candidate.Item, subscription.Goal));
 
@@ -389,20 +369,6 @@ public static class KitchenPlanMatcher
             KitchenMealSlot.Dinner => 0.30m,
             _ => throw new ArgumentOutOfRangeException(nameof(slot), slot, null)
         };
-    }
-
-    private static KitchenMealSlot[] GetSelectedSlots(KitchenSubscription subscription)
-    {
-        if (subscription.MealSelections.Count == 0)
-        {
-            return GetSlots(subscription.Plan);
-        }
-
-        return subscription.MealSelections
-            .Select(selection => selection.MealSlot)
-            .Distinct()
-            .OrderBy(slot => slot)
-            .ToArray();
     }
 
     private static KitchenMealSlot[] GetSlots(KitchenSubscriptionPlan plan)
