@@ -47,6 +47,36 @@ public class ClassSessionFlowTests
     }
 
     [Fact]
+    public async Task CancelByAdminAsync_CancelsReservationAndRestoresCredit()
+    {
+        await using var dbContext = CreateDbContext();
+        var profile = await SeedMemberAsync(dbContext);
+        var session = await SeedClassSessionAsync(
+            dbContext,
+            isGroupClassActive: true,
+            startsAtUtc: DateTime.UtcNow.AddDays(1),
+            status: ClassSessionStatus.Scheduled);
+        var service = new ClassReservationService(dbContext);
+        var reserveResult = await service.ReserveAsync(
+            profile.ApplicationUserId,
+            session.Id);
+        var reservation = await dbContext.ClassReservations.SingleAsync();
+
+        var result = await service.CancelByAdminAsync(
+            session.Id,
+            reservation.Id);
+
+        Assert.True(reserveResult.Succeeded);
+        Assert.True(result.Succeeded);
+        Assert.Equal(ClassReservationStatus.Cancelled, reservation.Status);
+        Assert.Equal(4, profile.RemainingClassCredits);
+        Assert.NotNull(reservation.CancelledAtUtc);
+        Assert.Equal(
+            "Yönetici tarafından ders listesinden çıkarıldı.",
+            reservation.CancellationReason);
+    }
+
+    [Fact]
     public async Task GroupClassEdit_DeactivatesClassWithoutCancellingFutureSessions()
     {
         await using var dbContext = CreateDbContext();

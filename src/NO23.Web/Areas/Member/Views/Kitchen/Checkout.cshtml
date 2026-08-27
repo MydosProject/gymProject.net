@@ -1,3 +1,4 @@
+@using NO23.Web.Domain.Enums
 @model NO23.Web.ViewModels.Member.KitchenCheckoutViewModel
 
 @{
@@ -37,13 +38,11 @@
                 </span>
 
                 <div>
-                    <strong>Teslimat tercihini daha sonra belirleyebilirsin.</strong>
+                    <strong>Teslimat yöntemini şimdi seçebilirsin.</strong>
 
                     <p>
-                        Bu adımda yalnızca ödeme, iletişim ve adres bilgilerini
-                        tamamlıyorsun. Beslenme planın oluştuktan sonra her gün için
-                        NO23'ten teslim alma veya adresine teslim seçeneklerinden
-                        birini seçebilirsin.
+                        Adresine teslim veya NO23 Sports Club'dan teslim alma
+                        seçeneklerinden sana uygun olanı belirle.
                     </p>
                 </div>
             </div>
@@ -52,7 +51,8 @@
                   asp-controller="Kitchen"
                   asp-action="Checkout"
                   method="post"
-                  class="member-kitchen-checkout-form">
+                  class="member-kitchen-checkout-form"
+                  data-turkey-location-root>
 
                 <input asp-for="KitchenSubscriptionId"
                        type="hidden" />
@@ -62,6 +62,13 @@
                      role="alert">
                 </div>
 
+                @if (!Model.IsPaymentAvailable)
+                {
+                    <div class="alert alert-warning" role="status">
+                        Online ödeme şu anda kullanılamıyor. Paket siparişi geçici olarak durduruldu.
+                    </div>
+                }
+
                 <div class="member-kitchen-checkout-form-head">
                     <div>
                         <p>TESLİMAT BİLGİLERİ</p>
@@ -70,6 +77,30 @@
 
                     <span>01</span>
                 </div>
+
+                <fieldset class="shop-delivery-method member-kitchen-checkout-delivery-method"
+                          data-delivery-method-root>
+                    <legend>Teslimat yöntemi</legend>
+                    <label>
+                        <input asp-for="DeliveryMethod"
+                               type="radio"
+                               value="@OrderDeliveryMethod.AddressDelivery" />
+                        <span>
+                            Adrese teslim
+                            <small>Seçeceğin il ve ilçedeki adresine gönderilir.</small>
+                        </span>
+                    </label>
+                    <label>
+                        <input asp-for="DeliveryMethod"
+                               type="radio"
+                               value="@OrderDeliveryMethod.ClubPickup" />
+                        <span>
+                            Salondan teslim
+                            <small>@Model.ClubPickupDisplayName</small>
+                        </span>
+                    </label>
+                    <span asp-validation-for="DeliveryMethod"></span>
+                </fieldset>
 
                 <div class="member-kitchen-checkout-grid">
 
@@ -91,7 +122,8 @@
                         <small asp-validation-for="PhoneNumber"></small>
                     </label>
 
-                    <label class="member-kitchen-checkout-field is-wide">
+                    <label class="member-kitchen-checkout-field is-wide"
+                           data-address-delivery-field>
                         <span>Adres</span>
 
                         <textarea asp-for="AddressLine"
@@ -101,31 +133,33 @@
                         <small asp-validation-for="AddressLine"></small>
                     </label>
 
-                    <label class="member-kitchen-checkout-field">
-                        <span>İlçe</span>
+                    <label class="member-kitchen-checkout-field"
+                           data-address-delivery-field>
+                        <span>İl</span>
 
-                        <input asp-for="District"
-                               autocomplete="address-level2" />
-
-                        <small asp-validation-for="District"></small>
-                    </label>
-
-                    <label class="member-kitchen-checkout-field">
-                        <span>Şehir</span>
-
-                        <input asp-for="City"
-                               autocomplete="address-level1" />
+                        <select asp-for="City"
+                                autocomplete="address-level1"
+                                data-turkey-city
+                                data-selected-value="@Model.City">
+                            <option value="">İl seçin</option>
+                        </select>
 
                         <small asp-validation-for="City"></small>
                     </label>
 
-                    <label class="member-kitchen-checkout-field">
-                        <span>Posta Kodu</span>
+                    <label class="member-kitchen-checkout-field"
+                           data-address-delivery-field>
+                        <span>İlçe</span>
 
-                        <input asp-for="PostalCode"
-                               autocomplete="postal-code" />
+                        <select asp-for="District"
+                                autocomplete="address-level2"
+                                data-turkey-district
+                                data-selected-value="@Model.District"
+                                disabled>
+                            <option value="">Önce il seçin</option>
+                        </select>
 
-                        <small asp-validation-for="PostalCode"></small>
+                        <small asp-validation-for="District"></small>
                     </label>
 
                 </div>
@@ -137,8 +171,9 @@
                     </div>
 
                     <button type="submit"
-                            class="member-kitchen-checkout-submit">
-                        Ödeme Adımına Devam Et
+                            class="member-kitchen-checkout-submit"
+                            disabled="@(!Model.IsPaymentAvailable)">
+                        @(Model.IsPaymentAvailable ? "Ödeme Adımına Devam Et" : "Ödeme Kullanılamıyor")
                         <span aria-hidden="true">→</span>
                     </button>
                 </div>

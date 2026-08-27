@@ -133,7 +133,11 @@
                                     </span>
                                     <span>
                                         <small>Kapasite</small>
-                                        <strong>@(item.Capacity?.ToString() ?? "Sınırsız")</strong>
+                                        <strong>
+                                            @(item.Capacity.HasValue
+                                                ? $"{item.ReservedCount} / {item.Capacity}"
+                                                : $"{item.ReservedCount} katılımcı")
+                                        </strong>
                                     </span>
                                 </div>
 
@@ -141,7 +145,7 @@
                                    asp-controller="Community"
                                    asp-action="EventDetails"
                                    asp-route-slug="@item.Slug">
-                                    Detayları Gör
+                                    @(item.IsReserved ? "Rezervasyonunu Gör" : "Rezervasyon Yap")
                                     <span aria-hidden="true">→</span>
                                 </a>
                             </div>

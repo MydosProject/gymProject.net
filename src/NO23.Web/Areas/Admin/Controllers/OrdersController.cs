@@ -33,10 +33,21 @@ public class OrdersController(
                 order.Type,
                 order.Status,
                 order.PaymentStatus,
+                order.DeliveryMethod,
                 DeliveryDate = order.DeliveryDate,
                 DeliveryTimeSlot = order.DeliveryTimeSlot,
                 Total = order.Total,
-                ItemCount = order.Items.Sum(item => item.Quantity)
+                ItemCount = order.Items.Sum(item => item.Quantity),
+                Items = order.Items
+                    .OrderBy(item => item.Id)
+                    .Select(item => new
+                    {
+                        item.ProductName,
+                        item.Quantity,
+                        item.RemovedIngredientNames,
+                        item.AddedIngredientNames
+                    })
+                    .ToList()
             })
             .ToListAsync();
 
@@ -60,8 +71,18 @@ public class OrdersController(
                     order.PaymentStatus),
                 DeliveryDate = order.DeliveryDate,
                 DeliveryTimeSlot = order.DeliveryTimeSlot,
+                DeliveryMethod = order.DeliveryMethod.GetDisplayName(),
                 Total = order.Total,
-                ItemCount = order.ItemCount
+                ItemCount = order.ItemCount,
+                Items = order.Items
+                    .Select(item => new OrderListItemDetailViewModel
+                    {
+                        ProductName = item.ProductName,
+                        Quantity = item.Quantity,
+                        RemovedIngredientNames = item.RemovedIngredientNames,
+                        AddedIngredientNames = item.AddedIngredientNames
+                    })
+                    .ToList()
             })
             .ToList();
 

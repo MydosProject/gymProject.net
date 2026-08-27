@@ -686,7 +686,7 @@
 
             document.addEventListener("submit", async (event) => {
                 const form = event.target.closest(
-                    ".shop-add-form, [data-member-cart-mutation], [data-member-cart-checkout]"
+                    ".shop-add-form, .shop-kitchen-order-form, [data-member-cart-mutation], [data-member-cart-checkout]"
                 );
 
                 if (!form || !window.fetch) {
@@ -728,6 +728,11 @@
                     
                     updateCartCount(payload.itemCount ?? 0);
                     showCartToast(payload.message);
+
+                    if (form.matches(".shop-kitchen-order-form")) {
+                        await openCart(submitButton);
+                        return;
+                    }
 
                     if (
                         form.matches("[data-member-cart-mutation]") ||

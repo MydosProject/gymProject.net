@@ -18,6 +18,14 @@ public class CommunityEventCardViewModel
 
     public int? Capacity { get; init; }
 
+    public int ReservedCount { get; init; }
+
+    public bool IsReserved { get; init; }
+
+    public int? RemainingCapacity => Capacity.HasValue
+        ? Math.Max(0, Capacity.Value - ReservedCount)
+        : null;
+
     public bool IsMembersOnly { get; init; }
 
     public string? ImageUrl { get; init; }

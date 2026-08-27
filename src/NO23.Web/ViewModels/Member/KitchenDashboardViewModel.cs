@@ -17,4 +17,6 @@ public class KitchenDashboardViewModel
     public IReadOnlyList<string> MemberAllergenNames { get; init; } = [];
 
     public IReadOnlyList<KitchenSubscriptionPlanViewModel> SubscriptionPlans { get; init; } = [];
+
+    public string ClubPickupDisplayName { get; init; } = "NO23 Sports Club";
 }

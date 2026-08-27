@@ -10,7 +10,9 @@ using NO23.Web.Domain.Entities;
 using NO23.Web.Domain.Enums;
 using NO23.Web.Services;
 using NO23.Web.ViewModels.Member;
+using NO23.Web.ViewModels;
 using NO23.Web.Services.Payments;
+using Microsoft.Extensions.Options;
 
 namespace NO23.Web.Areas.Member.Controllers;
 
@@ -20,8 +22,13 @@ public class KitchenController(
     ApplicationDbContext dbContext,
     CalorieCalculatorService calorieCalculator,
     CommerceService commerceService,
-    IyzicoPaymentService iyzicoPaymentService) : Controller
+    IyzicoPaymentService iyzicoPaymentService,
+    IOptions<IyzicoOptions> paymentOptions,
+    IOptions<ClubPickupOptions> clubPickupOptions) : Controller
 {
+    private readonly IyzicoOptions paymentSettings = paymentOptions.Value;
+    private readonly ClubPickupOptions clubPickupSettings = clubPickupOptions.Value;
+
     private const string CalculatorInputSessionKey = "NO23.Kitchen.CalculatorInput";
     private const string CalculatorResultSessionKey = "NO23.Kitchen.CalculatorResult";
     private static readonly CultureInfo TurkishCulture = CultureInfo.GetCultureInfo("tr-TR");
@@ -339,6 +346,12 @@ public class KitchenController(
                 PackagePrice =
                     subscription.PackagePriceSnapshot,
 
+                IsPaymentAvailable =
+                    paymentSettings.Enabled,
+
+                ClubPickupDisplayName =
+                    clubPickupSettings.EffectiveDisplayName,
+
                 FullName =
                     fullName.Trim(),
 
@@ -386,6 +399,19 @@ public class KitchenController(
         model.PackagePrice =
             subscription.PackagePriceSnapshot;
 
+        model.IsPaymentAvailable =
+            paymentSettings.Enabled;
+
+        model.ClubPickupDisplayName =
+            clubPickupSettings.EffectiveDisplayName;
+
+        if (!paymentSettings.Enabled)
+        {
+            ModelState.AddModelError(
+                string.Empty,
+                "Online ödeme şu anda kullanılamıyor. Lütfen daha sonra tekrar dene.");
+        }
+
         if (!ModelState.IsValid)
         {
             return View(model);
@@ -398,6 +424,9 @@ public class KitchenController(
                     subscription.Id,
                     new DeliveryDetails
                     {
+                        DeliveryMethod =
+                            model.DeliveryMethod,
+
                         FullName =
                             model.FullName,
 
@@ -1132,6 +1161,16 @@ public class KitchenController(
         var memberAllergenNames = await dbContext.KitchenAllergens.AsNoTracking()
             .Where(x => memberAllergenIds.Contains(x.Id)).OrderBy(x => x.DisplayOrder)
             .Select(x => x.Name).ToListAsync();
+        var activeIngredients = await dbContext.KitchenIngredients
+            .AsNoTracking()
+            .Where(item => item.IsActive)
+            .OrderBy(item => item.Name)
+            .Select(item => new KitchenCustomizationOptionViewModel
+            {
+                Id = item.Id,
+                Name = item.Name
+            })
+            .ToListAsync();
         var rawItems = await dbContext.KitchenMenuItems
             .AsNoTracking()
             .Where(item => item.IsActive)
@@ -1149,6 +1188,14 @@ public class KitchenController(
                 item.FatGrams,
                 item.Ingredients,
                 item.Tags,
+                RecipeIngredients = item.RecipeIngredients
+                    .OrderBy(recipe => recipe.KitchenIngredient.Name)
+                    .Select(recipe => new KitchenCustomizationOptionViewModel
+                    {
+                        Id = recipe.KitchenIngredientId,
+                        Name = recipe.KitchenIngredient.Name
+                    })
+                    .ToList(),
                 Allergens = item.MenuItemAllergens.OrderBy(x => x.KitchenAllergen.DisplayOrder)
                     .Select(x => new { x.KitchenAllergenId, x.KitchenAllergen.Name }).ToList()
             })
@@ -1175,6 +1222,11 @@ public class KitchenController(
                     MatchingAllergenNames = item.Allergens
                         .Where(x => memberAllergenIds.Contains(x.KitchenAllergenId))
                         .Select(x => x.Name).ToList(),
+                    RemovableIngredients = item.RecipeIngredients,
+                    AdditionalIngredients = activeIngredients
+                        .Where(ingredient => !item.RecipeIngredients
+                            .Any(recipe => recipe.Id == ingredient.Id))
+                        .ToList(),
                     Tags = string.Join(", ", tagList),
                     TagList = tagList
                 };
@@ -1185,6 +1237,7 @@ public class KitchenController(
         {
             MenuItems = menuItems,
             MemberAllergenNames = memberAllergenNames,
+            ClubPickupDisplayName = clubPickupSettings.EffectiveDisplayName,
             CategoryFilters = BuildCategoryFilters(menuItems),
             TagFilters = BuildTagFilters(menuItems)
         };

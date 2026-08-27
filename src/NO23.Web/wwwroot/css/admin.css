@@ -14,6 +14,37 @@
     --admin-sidebar-width: 250px;
 }
 
+.admin-order-items summary {
+  cursor: pointer;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.admin-order-items > div {
+  display: grid;
+  min-width: 220px;
+  gap: 0.45rem;
+  margin-top: 0.5rem;
+}
+
+.admin-order-items p,
+.admin-order-items small {
+  display: block;
+  margin: 0;
+}
+
+.admin-order-items p {
+  padding-top: 0.45rem;
+  border-top: 1px solid rgba(17, 17, 17, 0.1);
+  font-size: 0.72rem;
+}
+
+.admin-order-items small {
+  margin-top: 0.2rem;
+  color: #686868;
+  line-height: 1.4;
+}
+
 /* =========================================================
    NO23 ADMIN / CONTROL ROOM THEME
    Scoped to the Admin Area so member and trainer surfaces
@@ -1316,6 +1347,71 @@ body.no23-admin-body {
 .admin-capacity.is-full {
     color: #a34432;
     background: #fff0ec;
+}
+
+.admin-session-participant-row > td {
+    padding: 0 1rem 1rem;
+    border-top: 0;
+}
+
+.admin-session-participants {
+    border: 1px solid #e2e2df;
+    background: #f8f8f5;
+}
+
+.admin-session-participants summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: .75rem 1rem;
+    cursor: pointer;
+    list-style: none;
+    font-size: .78rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.admin-session-participants summary::-webkit-details-marker {
+    display: none;
+}
+
+.admin-session-participants summary strong {
+    color: #6b6b66;
+    font-size: .72rem;
+}
+
+.admin-session-participant-list {
+    border-top: 1px solid #e2e2df;
+}
+
+.admin-session-participant-list article {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.25rem;
+    padding: .9rem 1rem;
+}
+
+.admin-session-participant-list article + article {
+    border-top: 1px solid #e2e2df;
+}
+
+.admin-session-participant-list article > div {
+    display: grid;
+    gap: .15rem;
+}
+
+.admin-session-participant-list span,
+.admin-session-participant-list small {
+    color: #686862;
+}
+
+.admin-session-participants-empty {
+    margin: 0;
+    padding: 1rem;
+    border-top: 1px solid #e2e2df;
+    color: #686862;
 }
 
 .admin-order-no {

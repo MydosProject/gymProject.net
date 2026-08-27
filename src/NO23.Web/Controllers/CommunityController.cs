@@ -13,11 +13,20 @@ namespace NO23.Web.Controllers;
 
 public class CommunityController(
     ApplicationDbContext dbContext,
-    CommunityChallengeProgressService challengeProgressService) : Controller
+    CommunityChallengeProgressService challengeProgressService,
+    CommunityEventReservationService eventReservationService) : Controller
 {
     public async Task<IActionResult> Index()
     {
         var nowUtc = DateTime.UtcNow;
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var currentMemberProfileId = string.IsNullOrWhiteSpace(currentUserId)
+            ? null
+            : await dbContext.MemberProfiles
+                .AsNoTracking()
+                .Where(profile => profile.ApplicationUserId == currentUserId)
+                .Select(profile => (int?)profile.Id)
+                .FirstOrDefaultAsync();
         var eventRows = await dbContext.CommunityEvents
             .AsNoTracking()
             .Where(item => item.Status != CommunityEventStatus.Cancelled)
@@ -34,6 +43,12 @@ public class CommunityController(
                 item.EndsAtUtc,
                 item.Location,
                 item.Capacity,
+                ReservedCount = item.Reservations.Count(reservation =>
+                    reservation.Status == CommunityEventReservationStatus.Reserved),
+                IsReserved = currentMemberProfileId.HasValue &&
+                    item.Reservations.Any(reservation =>
+                        reservation.MemberProfileId == currentMemberProfileId.Value &&
+                        reservation.Status == CommunityEventReservationStatus.Reserved),
                 item.IsMembersOnly,
                 item.ImageUrl
             })
@@ -55,6 +70,8 @@ public class CommunityController(
                 StartsAtUtc = item.StartsAtUtc,
                 Location = item.Location,
                 Capacity = item.Capacity,
+                ReservedCount = item.ReservedCount,
+                IsReserved = item.IsReserved,
                 IsMembersOnly = item.IsMembersOnly,
                 ImageUrl = item.ImageUrl
             })
@@ -121,12 +138,12 @@ public class CommunityController(
         }
 
         var normalizedSlug = slug.Trim();
-        var eventItem = await dbContext.CommunityEvents
+        var eventRow = await dbContext.CommunityEvents
             .AsNoTracking()
             .Where(item =>
                 item.Status != CommunityEventStatus.Cancelled &&
                 item.Slug == normalizedSlug)
-            .Select(item => new CommunityEventDetailViewModel
+            .Select(item => new
             {
                 Id = item.Id,
                 Title = item.Title,
@@ -138,20 +155,23 @@ public class CommunityController(
                 EndsAtUtc = item.EndsAtUtc,
                 Location = item.Location,
                 Capacity = item.Capacity,
+                item.Status,
+                ReservedCount = item.Reservations.Count(reservation =>
+                    reservation.Status == CommunityEventReservationStatus.Reserved),
                 IsMembersOnly = item.IsMembersOnly,
                 ImageUrl = item.ImageUrl
             })
             .SingleOrDefaultAsync();
 
-        if (eventItem is null)
+        if (eventRow is null)
         {
             return NotFound();
         }
 
         var eventStatus = CommunityEventLifecycle.GetEffectiveStatus(
-            CommunityEventStatus.Scheduled,
-            eventItem.StartsAtUtc,
-            eventItem.EndsAtUtc,
+            eventRow.Status,
+            eventRow.StartsAtUtc,
+            eventRow.EndsAtUtc,
             DateTime.UtcNow);
 
         if (!CommunityEventLifecycle.IsPubliclyOpen(eventStatus))
@@ -159,7 +179,96 @@ public class CommunityController(
             return NotFound();
         }
 
-        return View(eventItem);
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var currentMemberProfileId = string.IsNullOrWhiteSpace(currentUserId)
+            ? null
+            : await dbContext.MemberProfiles
+                .AsNoTracking()
+                .Where(profile => profile.ApplicationUserId == currentUserId)
+                .Select(profile => (int?)profile.Id)
+                .FirstOrDefaultAsync();
+        var isReserved = currentMemberProfileId.HasValue &&
+            await dbContext.CommunityEventReservations
+                .AsNoTracking()
+                .AnyAsync(reservation =>
+                    reservation.CommunityEventId == eventRow.Id &&
+                    reservation.MemberProfileId == currentMemberProfileId.Value &&
+                    reservation.Status == CommunityEventReservationStatus.Reserved);
+        var remainingCapacity = eventRow.Capacity.HasValue
+            ? Math.Max(0, eventRow.Capacity.Value - eventRow.ReservedCount)
+            : (int?)null;
+        var isFull = remainingCapacity == 0;
+        var canReserve = currentMemberProfileId.HasValue &&
+            !isReserved &&
+            !isFull &&
+            CommunityEventLifecycle.IsReservationOpen(
+                eventRow.Status,
+                eventRow.StartsAtUtc,
+                eventRow.EndsAtUtc,
+                DateTime.UtcNow);
+
+        return View(new CommunityEventDetailViewModel
+        {
+            Id = eventRow.Id,
+            Title = eventRow.Title,
+            Slug = eventRow.Slug,
+            Summary = eventRow.Summary,
+            Description = eventRow.Description,
+            Type = eventRow.Type,
+            StartsAtUtc = eventRow.StartsAtUtc,
+            EndsAtUtc = eventRow.EndsAtUtc,
+            Location = eventRow.Location,
+            Capacity = eventRow.Capacity,
+            ReservedCount = eventRow.ReservedCount,
+            RemainingCapacity = remainingCapacity,
+            IsMembersOnly = eventRow.IsMembersOnly,
+            ImageUrl = eventRow.ImageUrl,
+            IsReserved = isReserved,
+            CanReserve = canReserve,
+            ReservationMessage = GetEventReservationMessage(
+                User.Identity?.IsAuthenticated == true,
+                currentMemberProfileId.HasValue,
+                isReserved,
+                isFull)
+        });
+    }
+
+    [HttpPost("/Community/Events/{slug}/Reserve")]
+    [Authorize(Roles = ApplicationRoles.Member)]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ReserveEvent(string slug)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Challenge();
+        }
+
+        var result = await eventReservationService.ReserveAsync(userId, slug);
+        TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] =
+            result.Message;
+
+        return RedirectToAction(nameof(EventDetails), new { slug });
+    }
+
+    [HttpPost("/Community/Events/{slug}/CancelReservation")]
+    [Authorize(Roles = ApplicationRoles.Member)]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CancelEventReservation(string slug)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Challenge();
+        }
+
+        var result = await eventReservationService.CancelAsync(userId, slug);
+        TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] =
+            result.Message;
+
+        return RedirectToAction(nameof(EventDetails), new { slug });
     }
 
     [HttpGet("/Community/Challenges/{slug}")]
@@ -334,6 +443,30 @@ public class CommunityController(
         }
 
         return null;
+    }
+
+    private static string? GetEventReservationMessage(
+        bool isAuthenticated,
+        bool hasMemberProfile,
+        bool isReserved,
+        bool isFull)
+    {
+        if (isReserved)
+        {
+            return "Bu etkinlikte yerin ayrıldı.";
+        }
+
+        if (!isAuthenticated)
+        {
+            return "Rezervasyon yapmak için üye girişi yapmalısın.";
+        }
+
+        if (!hasMemberProfile)
+        {
+            return "Etkinlik rezervasyonu için aktif bir üye profili gerekir.";
+        }
+
+        return isFull ? "Etkinlik kontenjanı dolu." : null;
     }
 
     private static string GetMemberName(Domain.Entities.ApplicationUser user)

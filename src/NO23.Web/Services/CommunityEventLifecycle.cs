@@ -37,4 +37,18 @@ public static class CommunityEventLifecycle
     {
         return effectiveStatus == CommunityEventStatus.Scheduled;
     }
+
+    public static bool IsReservationOpen(
+        CommunityEventStatus storedStatus,
+        DateTime startsAtUtc,
+        DateTime? endsAtUtc,
+        DateTime nowUtc)
+    {
+        return startsAtUtc > nowUtc &&
+               GetEffectiveStatus(
+                   storedStatus,
+                   startsAtUtc,
+                   endsAtUtc,
+                   nowUtc) == CommunityEventStatus.Scheduled;
+    }
 }

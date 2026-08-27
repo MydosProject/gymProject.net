@@ -24,18 +24,30 @@ public class RegisterModel(
     public IReadOnlyList<PackageOption> PackageOptions { get; private set; } = [];
     public IReadOnlyList<ServiceOption> ServiceOptions { get; private set; } = [];
 
-    public async Task OnGetAsync(
+    public async Task<IActionResult> OnGetAsync(
         string? package = null,
         int? option = null,
         string? returnUrl = null)
     {
+        if (User.Identity?.IsAuthenticated == true)
+        {
+            return LocalRedirect(Url.Content("~/plans/membership"));
+        }
+
         ReturnUrl = returnUrl;
         await LoadPackageOptionsAsync(package, option);
+
+        return Page();
     }
 
     public async Task<IActionResult> OnPostAsync(
         string? returnUrl = null)
     {
+        if (User.Identity?.IsAuthenticated == true)
+        {
+            return LocalRedirect(Url.Content("~/plans/membership"));
+        }
+
         ReturnUrl = returnUrl ?? ReturnUrl;
         var postedPackageCode = Input.PackageCode;
         var postedOptionId = Input.PackageOptionId;
@@ -46,11 +58,28 @@ public class RegisterModel(
         var selectedPackage =
             await FindSelectedPackageAsync(Input.PackageCode);
 
+        MembershipPackageOption? selectedOption = null;
+
         if (selectedPackage is null)
         {
             ModelState.AddModelError(
                 nameof(Input.PackageCode),
                 "Geçerli bir üyelik paketi seçmelisin.");
+        }
+        else if (Input.PackageOptionId.HasValue)
+        {
+            selectedOption = await dbContext.MembershipPackageOptions
+                .FirstOrDefaultAsync(option =>
+                    option.Id == Input.PackageOptionId.Value &&
+                    option.MembershipPackageId == selectedPackage.Id &&
+                    option.IsActive);
+
+            if (selectedOption is null)
+            {
+                ModelState.AddModelError(
+                    nameof(Input.PackageOptionId),
+                    "Seçtiğin hizmet seçeneği bu üyelik paketi için geçerli değil.");
+            }
         }
 
         if (!ModelState.IsValid)
@@ -91,9 +120,10 @@ public class RegisterModel(
         {
             ApplicationUserId = user.Id,
             MembershipPackageId = selectedPackage!.Id,
+            MembershipPackageOptionId = selectedOption?.Id,
             FitnessGoal = Input.FitnessGoal,
             RemainingClassCredits =
-                CalculateInitialClassCredits(selectedPackage)
+                CalculateInitialClassCredits(selectedPackage, selectedOption)
         });
 
         await dbContext.SaveChangesAsync();
@@ -182,8 +212,14 @@ public class RegisterModel(
     }
 
     private static int CalculateInitialClassCredits(
-        MembershipPackage package)
+        MembershipPackage package,
+        MembershipPackageOption? option)
     {
+        if (option is not null)
+        {
+            return option.GroupClassCreditCount;
+        }
+
         return package.WeeklyClassLimit.HasValue
             ? package.WeeklyClassLimit.Value * 4
             : 0;

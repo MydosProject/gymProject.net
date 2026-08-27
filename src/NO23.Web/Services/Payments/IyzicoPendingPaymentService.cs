@@ -68,6 +68,8 @@ public sealed class IyzicoPendingPaymentService(
             await dbContext.Orders
                 .Include(order => order.Items)
                     .ThenInclude(item => item.ShopProduct)
+                .Include(order => order.Items)
+                    .ThenInclude(item => item.ShopProductVariant)
                 .Include(order => order.PaymentTransactions)
                 .Where(order =>
                     order.Status == OrderStatus.Pending &&
@@ -107,6 +109,9 @@ public sealed class IyzicoPendingPaymentService(
                 .Include(payment => payment.Order)
                     .ThenInclude(order => order.Items)
                         .ThenInclude(item => item.ShopProduct)
+                .Include(payment => payment.Order)
+                    .ThenInclude(order => order.Items)
+                        .ThenInclude(item => item.ShopProductVariant)
                 .FirstOrDefaultAsync(
                     payment =>
                         payment.Id == paymentTransactionId,

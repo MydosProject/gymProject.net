@@ -26,6 +26,10 @@ public class KitchenMenuItemCardViewModel
 
     public IReadOnlyList<string> MatchingAllergenNames { get; init; } = [];
 
+    public IReadOnlyList<KitchenCustomizationOptionViewModel> RemovableIngredients { get; init; } = [];
+
+    public IReadOnlyList<KitchenCustomizationOptionViewModel> AdditionalIngredients { get; init; } = [];
+
     public bool HasAllergenConflict => MatchingAllergenNames.Count > 0;
 
     public string? Tags { get; init; }

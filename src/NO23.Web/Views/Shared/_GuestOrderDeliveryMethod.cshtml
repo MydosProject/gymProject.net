@@ -1,0 +1,33 @@
+@using NO23.Web.Domain.Enums
+@model NO23.Web.ViewModels.GuestOrders.GuestOrderPageViewModel
+
+<fieldset class="public-order-delivery-method"
+          data-delivery-method-root>
+    <legend>Teslimat yöntemi</legend>
+
+    <div class="public-order-delivery-options">
+        <label>
+            <input type="radio"
+                   name="input.DeliveryMethod"
+                   value="@OrderDeliveryMethod.AddressDelivery"
+                   checked="@(Model.Input.DeliveryMethod == OrderDeliveryMethod.AddressDelivery ? "checked" : null)" />
+            <span>
+                <strong>Adrese teslim</strong>
+                <small>Belirlediğin adrese teslim edilir.</small>
+            </span>
+        </label>
+
+        <label>
+            <input type="radio"
+                   name="input.DeliveryMethod"
+                   value="@OrderDeliveryMethod.ClubPickup"
+                   checked="@(Model.Input.DeliveryMethod == OrderDeliveryMethod.ClubPickup ? "checked" : null)" />
+            <span>
+                <strong>Salondan teslim</strong>
+                <small>@Model.ClubPickupDisplayName</small>
+            </span>
+        </label>
+    </div>
+
+    @Html.ValidationMessage("input.DeliveryMethod", null, new { @class = "public-order-error" })
+</fieldset>

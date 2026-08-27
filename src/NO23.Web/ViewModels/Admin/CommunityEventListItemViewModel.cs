@@ -16,5 +16,7 @@ public class CommunityEventListItemViewModel
 
     public int? Capacity { get; init; }
 
+    public int ReservedCount { get; init; }
+
     public int DisplayOrder { get; init; }
 }

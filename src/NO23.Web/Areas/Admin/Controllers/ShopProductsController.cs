@@ -28,7 +28,14 @@ public class ShopProductsController(ApplicationDbContext dbContext) : Controller
                 StockQuantity = product.StockQuantity,
                 MinimumStockQuantity = product.MinimumStockQuantity,
                 IsActive = product.IsActive,
-                DisplayOrder = product.DisplayOrder
+                DisplayOrder = product.DisplayOrder,
+                VariantSummaries = product.Variants
+                    .Where(variant => variant.IsActive)
+                    .OrderBy(variant => variant.DisplayOrder)
+                    .ThenBy(variant => variant.Size)
+                    .Select(variant =>
+                        variant.Size + " (" + variant.StockQuantity + ")")
+                    .ToList()
             })
             .ToListAsync();
 
@@ -51,6 +58,8 @@ public class ShopProductsController(ApplicationDbContext dbContext) : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(ShopProductFormViewModel model)
     {
+        ValidateVariants(model);
+
         if (!ModelState.IsValid)
         {
             return View(model);
@@ -72,6 +81,7 @@ public class ShopProductsController(ApplicationDbContext dbContext) : Controller
     {
         var product = await dbContext.ShopProducts
             .AsNoTracking()
+            .Include(item => item.Variants)
             .FirstOrDefaultAsync(item => item.Id == id);
 
         if (product is null)
@@ -91,6 +101,8 @@ public class ShopProductsController(ApplicationDbContext dbContext) : Controller
             return BadRequest();
         }
 
+        ValidateVariants(model);
+
         if (!ModelState.IsValid)
         {
             return View(model);
@@ -104,14 +116,25 @@ public class ShopProductsController(ApplicationDbContext dbContext) : Controller
             return View(model);
         }
 
-        var product = await dbContext.ShopProducts.FindAsync(id);
+        var product = await dbContext.ShopProducts
+            .Include(item => item.Variants)
+            .FirstOrDefaultAsync(item => item.Id == id);
 
         if (product is null)
         {
             return NotFound();
         }
 
+        if (model.Variants
+            .Where(variant => variant.Id > 0)
+            .Any(variant => product.Variants.All(item => item.Id != variant.Id)))
+        {
+            return BadRequest();
+        }
+
         ApplyFormModel(product, model);
+        SynchronizeVariants(product, model.Variants);
+        SynchronizeAggregateStock(product, model.StockQuantity);
         await dbContext.SaveChangesAsync();
 
         return RedirectToAction(nameof(Index));
@@ -119,8 +142,20 @@ public class ShopProductsController(ApplicationDbContext dbContext) : Controller
 
     private static ShopProduct MapToEntity(ShopProductFormViewModel model)
     {
-        var product = new ShopProduct();
+        var product = new ShopProduct
+        {
+            Variants = model.Variants
+                .Select((variant, index) => new ShopProductVariant
+                {
+                    Size = variant.Size.Trim(),
+                    StockQuantity = variant.StockQuantity,
+                    IsActive = variant.IsActive,
+                    DisplayOrder = index + 1
+                })
+                .ToList()
+        };
         ApplyFormModel(product, model);
+        SynchronizeAggregateStock(product, model.StockQuantity);
         return product;
     }
 
@@ -131,7 +166,6 @@ public class ShopProductsController(ApplicationDbContext dbContext) : Controller
         product.Description = model.Description?.Trim();
         product.Category = model.Category.Trim();
         product.UnitPrice = model.UnitPrice;
-        product.StockQuantity = model.StockQuantity;
         product.MinimumStockQuantity = model.MinimumStockQuantity;
         product.ImageUrl = model.ImageUrl?.Trim();
         product.Tags = model.Tags?.Trim();
@@ -156,6 +190,88 @@ public class ShopProductsController(ApplicationDbContext dbContext) : Controller
             Tags = product.Tags,
             IsActive = product.IsActive,
             DisplayOrder = product.DisplayOrder
+            ,
+            Variants = product.Variants
+                .OrderBy(variant => variant.DisplayOrder)
+                .ThenBy(variant => variant.Size)
+                .Select(variant => new ShopProductVariantFormViewModel
+                {
+                    Id = variant.Id,
+                    Size = variant.Size,
+                    StockQuantity = variant.StockQuantity,
+                    IsActive = variant.IsActive
+                })
+                .ToList()
         };
+    }
+
+    private void ValidateVariants(ShopProductFormViewModel model)
+    {
+        var duplicateSizes = model.Variants
+            .Where(variant => !string.IsNullOrWhiteSpace(variant.Size))
+            .GroupBy(
+                variant => variant.Size.Trim(),
+                StringComparer.Create(
+                    System.Globalization.CultureInfo.GetCultureInfo("tr-TR"),
+                    ignoreCase: true))
+            .Where(group => group.Count() > 1)
+            .Select(group => group.Key)
+            .ToList();
+
+        if (duplicateSizes.Count > 0)
+        {
+            ModelState.AddModelError(
+                nameof(model.Variants),
+                $"Aynı beden birden fazla eklenemez: {string.Join(", ", duplicateSizes)}.");
+        }
+    }
+
+    private static void SynchronizeVariants(
+        ShopProduct product,
+        IReadOnlyList<ShopProductVariantFormViewModel> submittedVariants)
+    {
+        var submittedList = submittedVariants.ToList();
+        var submittedById = submittedVariants
+            .Where(variant => variant.Id > 0)
+            .ToDictionary(variant => variant.Id);
+
+        foreach (var existingVariant in product.Variants)
+        {
+            if (!submittedById.TryGetValue(existingVariant.Id, out var submitted))
+            {
+                existingVariant.IsActive = false;
+                existingVariant.StockQuantity = 0;
+                existingVariant.UpdatedAtUtc = DateTime.UtcNow;
+                continue;
+            }
+
+            existingVariant.Size = submitted.Size.Trim();
+            existingVariant.StockQuantity = submitted.StockQuantity;
+            existingVariant.IsActive = submitted.IsActive;
+            existingVariant.DisplayOrder = submittedList.IndexOf(submitted) + 1;
+            existingVariant.UpdatedAtUtc = DateTime.UtcNow;
+        }
+
+        foreach (var submitted in submittedVariants.Where(variant => variant.Id == 0))
+        {
+            product.Variants.Add(new ShopProductVariant
+            {
+                Size = submitted.Size.Trim(),
+                StockQuantity = submitted.StockQuantity,
+                IsActive = submitted.IsActive,
+                DisplayOrder = submittedList.IndexOf(submitted) + 1
+            });
+        }
+    }
+
+    private static void SynchronizeAggregateStock(
+        ShopProduct product,
+        int stockWithoutVariants)
+    {
+        product.StockQuantity = product.Variants.Count == 0
+            ? stockWithoutVariants
+            : product.Variants
+                .Where(variant => variant.IsActive)
+                .Sum(variant => variant.StockQuantity);
     }
 }

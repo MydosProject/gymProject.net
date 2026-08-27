@@ -16,7 +16,33 @@ public class ClassSessionListItemViewModel
 
     public int ReservedCount { get; init; }
 
+    public IReadOnlyList<ClassSessionParticipantViewModel> Participants { get; init; } = [];
+
     public string Status { get; init; } = string.Empty;
 
     public bool IsScheduled { get; init; }
+}
+
+public class ClassSessionParticipantViewModel
+{
+    public int ReservationId { get; init; }
+
+    public string? FirstName { get; init; }
+
+    public string? LastName { get; init; }
+
+    public string Email { get; init; } = string.Empty;
+
+    public string PackageName { get; init; } = string.Empty;
+
+    public DateTime ReservedAtUtc { get; init; }
+
+    public string DisplayName
+    {
+        get
+        {
+            var fullName = $"{FirstName} {LastName}".Trim();
+            return string.IsNullOrWhiteSpace(fullName) ? Email : fullName;
+        }
+    }
 }

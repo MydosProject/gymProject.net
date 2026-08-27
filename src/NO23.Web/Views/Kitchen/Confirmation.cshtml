@@ -133,6 +133,22 @@
                         <dd>@Model.Quantity</dd>
                     </div>
 
+                    @if (!string.IsNullOrWhiteSpace(Model.RemovedIngredientNames))
+                    {
+                        <div>
+                            <dt>Çıkarılacak</dt>
+                            <dd>@Model.RemovedIngredientNames</dd>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(Model.AddedIngredientNames))
+                    {
+                        <div>
+                            <dt>Ekstra</dt>
+                            <dd>@Model.AddedIngredientNames</dd>
+                        </div>
+                    }
+
                     <div>
                         <dt>Toplam</dt>
                         <dd class="public-confirmation-total">
@@ -143,6 +159,7 @@
                     <div>
                         <dt>Teslimat</dt>
                         <dd>
+                            @Model.DeliveryMethodText<br />
                             @Model.DeliveryDate.ToString("dd.MM.yyyy")
                             /
                             @Model.DeliveryTimeSlot

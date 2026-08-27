@@ -5,7 +5,9 @@ using NO23.Web.Data;
 using NO23.Web.Domain.Enums;
 using NO23.Web.Services;
 using NO23.Web.ViewModels.GuestOrders;
+using NO23.Web.ViewModels;
 using NO23.Web.Services.Payments;
+using Microsoft.Extensions.Options;
 
 namespace NO23.Web.Controllers;
 
@@ -13,8 +15,13 @@ namespace NO23.Web.Controllers;
 public class KitchenController(
     ApplicationDbContext dbContext,
     CommerceService commerceService,
-    IyzicoPaymentService iyzicoPaymentService) : Controller
+    IyzicoPaymentService iyzicoPaymentService,
+    IOptions<IyzicoOptions> paymentOptions,
+    IOptions<ClubPickupOptions> clubPickupOptions) : Controller
 {
+    private readonly IyzicoOptions paymentSettings = paymentOptions.Value;
+    private readonly ClubPickupOptions clubPickupSettings = clubPickupOptions.Value;
+
     public async Task<IActionResult> Index()
     {
         var menuItems = await dbContext.KitchenMenuItems
@@ -77,6 +84,13 @@ public class KitchenController(
     if (model is null)
     {
         return NotFound();
+    }
+
+    if (!paymentSettings.Enabled)
+    {
+        ModelState.AddModelError(
+            string.Empty,
+            "Online ödeme şu anda kullanılamıyor. Lütfen daha sonra tekrar dene.");
     }
 
     if (!ModelState.IsValid)
@@ -172,9 +186,12 @@ public class KitchenController(
             OrderNumber = order.OrderNumber,
             ProductName = orderItem.ProductName,
             Quantity = orderItem.Quantity,
+            RemovedIngredientNames = orderItem.RemovedIngredientNames,
+            AddedIngredientNames = orderItem.AddedIngredientNames,
             Total = order.Total,
             DeliveryDate = order.DeliveryDate.Value,
             DeliveryTimeSlot = order.DeliveryTimeSlot,
+            DeliveryMethodText = GetDeliveryMethodLabel(order.DeliveryMethod),
             PaymentStatus = order.PaymentStatus,
             PaymentStatusText = GetPaymentStatusLabel(order.PaymentStatus)
         });
@@ -199,14 +216,39 @@ public class KitchenController(
                 CarbohydrateGrams = item.CarbohydrateGrams,
                 FatGrams = item.FatGrams,
                 Ingredients = item.Ingredients,
+                RemovableIngredients = item.RecipeIngredients
+                    .OrderBy(recipe => recipe.KitchenIngredient.Name)
+                    .Select(recipe => new KitchenCustomizationOptionViewModel
+                    {
+                        Id = recipe.KitchenIngredientId,
+                        Name = recipe.KitchenIngredient.Name
+                    })
+                    .ToList(),
                 AllergenNames = item.MenuItemAllergens.OrderBy(x => x.KitchenAllergen.DisplayOrder)
                     .Select(x => x.KitchenAllergen.Name).ToList()
             })
             .FirstOrDefaultAsync();
 
-        return menuItem is null
-            ? null
-            : new GuestOrderPageViewModel
+        if (menuItem is null)
+        {
+            return null;
+        }
+
+        var recipeIngredientIds = menuItem.RemovableIngredients
+            .Select(item => item.Id)
+            .ToList();
+        var additionalIngredients = await dbContext.KitchenIngredients
+            .AsNoTracking()
+            .Where(item => item.IsActive && !recipeIngredientIds.Contains(item.Id))
+            .OrderBy(item => item.Name)
+            .Select(item => new KitchenCustomizationOptionViewModel
+            {
+                Id = item.Id,
+                Name = item.Name
+            })
+            .ToListAsync();
+
+        return new GuestOrderPageViewModel
             {
                 ItemId = menuItem.ItemId,
                 ItemName = menuItem.ItemName,
@@ -219,6 +261,10 @@ public class KitchenController(
                 FatGrams = menuItem.FatGrams,
                 Ingredients = menuItem.Ingredients,
                 Allergens = string.Join(", ", menuItem.AllergenNames),
+                RemovableIngredients = menuItem.RemovableIngredients,
+                AdditionalIngredients = additionalIngredients,
+                IsPaymentAvailable = paymentSettings.Enabled,
+                ClubPickupDisplayName = clubPickupSettings.EffectiveDisplayName,
                 Input = input ?? new GuestOrderInputViewModel()
             };
     }
@@ -248,4 +294,9 @@ public class KitchenController(
         _ => status.ToString()
         };
     }
+
+    private static string GetDeliveryMethodLabel(OrderDeliveryMethod method) =>
+        method == OrderDeliveryMethod.ClubPickup
+            ? "Salondan teslim"
+            : "Adrese teslim";
 }

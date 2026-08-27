@@ -30,7 +30,22 @@ public class OrderListItemViewModel
 
     public string? DeliveryTimeSlot { get; init; }
 
+    public string DeliveryMethod { get; init; } = string.Empty;
+
     public decimal Total { get; init; }
 
     public int ItemCount { get; init; }
+
+    public IReadOnlyList<OrderListItemDetailViewModel> Items { get; init; } = [];
+}
+
+public class OrderListItemDetailViewModel
+{
+    public string ProductName { get; init; } = string.Empty;
+
+    public int Quantity { get; init; }
+
+    public string? RemovedIngredientNames { get; init; }
+
+    public string? AddedIngredientNames { get; init; }
 }

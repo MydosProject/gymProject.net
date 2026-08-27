@@ -26,6 +26,16 @@
     <div class="content-page-orbit" aria-hidden="true"></div>
 
     <div class="container position-relative">
+        @if (TempData["SuccessMessage"] is string successMessage)
+        {
+            <div class="alert alert-success" role="status">@successMessage</div>
+        }
+
+        @if (TempData["ErrorMessage"] is string errorMessage)
+        {
+            <div class="alert alert-danger" role="alert">@errorMessage</div>
+        }
+
         <header class="community-detail-hero">
             <div class="community-detail-hero-copy">
                 <div class="community-detail-meta">
@@ -78,13 +88,13 @@
                 <dl>
                     <div>
                         <dt>Başlangıç</dt>
-                        <dd>@Model.StartsAtUtc.ToString("dd.MM.yyyy · HH:mm")</dd>
+                        <dd>@Model.StartsAtUtc.ToLocalTime().ToString("dd.MM.yyyy · HH:mm")</dd>
                     </div>
                     @if (Model.EndsAtUtc.HasValue)
                     {
                         <div>
                             <dt>Bitiş</dt>
-                            <dd>@Model.EndsAtUtc.Value.ToString("dd.MM.yyyy · HH:mm")</dd>
+                            <dd>@Model.EndsAtUtc.Value.ToLocalTime().ToString("dd.MM.yyyy · HH:mm")</dd>
                         </div>
                     }
                     <div>
@@ -93,13 +103,62 @@
                     </div>
                     <div>
                         <dt>Kapasite</dt>
-                        <dd>@(Model.Capacity?.ToString() ?? "Sınırsız")</dd>
+                        <dd>
+                            @(Model.Capacity.HasValue
+                                ? $"{Model.ReservedCount} / {Model.Capacity} · {Model.RemainingCapacity} yer kaldı"
+                                : $"Sınırsız · {Model.ReservedCount} katılımcı")
+                        </dd>
                     </div>
                     <div>
                         <dt>Katılım</dt>
                         <dd>@(Model.IsMembersOnly ? "Üyelere özel" : "Herkese açık")</dd>
                     </div>
                 </dl>
+
+                <div class="community-event-reservation">
+                    @if (Model.IsReserved)
+                    {
+                        <p class="is-success">Bu etkinlikte yerin ayrıldı.</p>
+                        <form asp-controller="Community"
+                              asp-action="CancelEventReservation"
+                              asp-route-slug="@Model.Slug"
+                              method="post">
+                            @Html.AntiForgeryToken()
+                            <button type="submit"
+                                    class="community-event-reservation-button is-secondary"
+                                    onclick="return confirm('Etkinlik rezervasyonunu iptal etmek istiyor musun?');">
+                                Rezervasyonu İptal Et
+                            </button>
+                        </form>
+                    }
+                    else if (Model.CanReserve)
+                    {
+                        <form asp-controller="Community"
+                              asp-action="ReserveEvent"
+                              asp-route-slug="@Model.Slug"
+                              method="post">
+                            @Html.AntiForgeryToken()
+                            <button type="submit"
+                                    class="community-event-reservation-button">
+                                Etkinliğe Katıl / Rezervasyon Yap
+                            </button>
+                        </form>
+                    }
+                    else if (User.Identity?.IsAuthenticated != true)
+                    {
+                        <p>@Model.ReservationMessage</p>
+                        <a class="community-event-reservation-button"
+                           asp-area="Identity"
+                           asp-page="/Account/Login"
+                           asp-route-returnUrl="@Context.Request.Path">
+                            Üye Girişi Yap
+                        </a>
+                    }
+                    else if (!string.IsNullOrWhiteSpace(Model.ReservationMessage))
+                    {
+                        <p>@Model.ReservationMessage</p>
+                    }
+                </div>
 
                 <a class="community-detail-back"
                    asp-controller="Community"

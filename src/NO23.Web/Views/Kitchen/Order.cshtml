@@ -62,7 +62,8 @@
                   asp-area=""
                   asp-controller="Kitchen"
                   asp-action="PlaceOrder"
-                  method="post">
+                  method="post"
+                  data-turkey-location-root>
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="menuItemId" value="@Model.ItemId" />
 
@@ -71,7 +72,72 @@
                     <h2>Siparişini tamamla.</h2>
                 </div>
 
+                <partial name="_GuestOrderDeliveryMethod" model="Model" />
+
                 <div asp-validation-summary="ModelOnly" class="public-order-validation"></div>
+
+                @if (!Model.IsPaymentAvailable)
+                {
+                    <div class="public-order-stock-warning">
+                        Online ödeme şu anda kullanılamıyor. Sipariş oluşturma geçici olarak durduruldu.
+                    </div>
+                }
+
+                @if (Model.RemovableIngredients.Count > 0 ||
+                     Model.AdditionalIngredients.Count > 0)
+                {
+                    <details class="public-kitchen-customization">
+                        <summary>
+                            <span>Öğünü özelleştir</span>
+                            <small>İsteğe bağlı</small>
+                        </summary>
+
+                        <div class="public-kitchen-customization-body">
+                            @if (Model.RemovableIngredients.Count > 0)
+                            {
+                                <fieldset>
+                                    <legend>Çıkarılacak malzemeler</legend>
+                                    <div class="public-kitchen-customization-options">
+                                        @foreach (var ingredient in Model.RemovableIngredients)
+                                        {
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="input.RemovedKitchenIngredientIds"
+                                                       value="@ingredient.Id"
+                                                       checked="@(Model.Input.RemovedKitchenIngredientIds.Contains(ingredient.Id) ? "checked" : null)" />
+                                                <span>@ingredient.Name</span>
+                                            </label>
+                                        }
+                                    </div>
+                                </fieldset>
+                            }
+
+                            @if (Model.AdditionalIngredients.Count > 0)
+                            {
+                                <fieldset>
+                                    <legend>Ekstra eklenecek malzemeler</legend>
+                                    <div class="public-kitchen-customization-options">
+                                        @foreach (var ingredient in Model.AdditionalIngredients)
+                                        {
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="input.AddedKitchenIngredientIds"
+                                                       value="@ingredient.Id"
+                                                       checked="@(Model.Input.AddedKitchenIngredientIds.Contains(ingredient.Id) ? "checked" : null)" />
+                                                <span>@ingredient.Name</span>
+                                            </label>
+                                        }
+                                    </div>
+                                </fieldset>
+                            }
+
+                            <p>
+                                Bu seçimler ücret değiştirmeyen mutfak hazırlık talebidir.
+                                Alerjen bilgisi menü bazlıdır; malzeme çıkarmak alerjen uyarısını kaldırmaz.
+                            </p>
+                        </div>
+                    </details>
+                }
 
                 <div class="public-order-form-grid">
                     <div class="public-order-field public-order-field-quantity">
@@ -94,25 +160,34 @@
                         <input id="guestPhone" name="input.PhoneNumber" value="@Model.Input.PhoneNumber" autocomplete="tel" placeholder="05__ ___ __ __" />
                         @Html.ValidationMessage("input.PhoneNumber", null, new { @class = "public-order-error" })
                     </div>
-                    <div class="public-order-field public-order-field-wide">
+                    <div class="public-order-field public-order-field-wide"
+                         data-address-delivery-field>
                         <label for="guestAddress">Adres</label>
                         <textarea id="guestAddress" name="input.AddressLine" rows="3" placeholder="Teslimat adresiniz">@Model.Input.AddressLine</textarea>
                         @Html.ValidationMessage("input.AddressLine", null, new { @class = "public-order-error" })
                     </div>
-                    <div class="public-order-field">
-                        <label for="guestDistrict">İlçe</label>
-                        <input id="guestDistrict" name="input.District" value="@Model.Input.District" placeholder="İlçe" />
-                        @Html.ValidationMessage("input.District", null, new { @class = "public-order-error" })
-                    </div>
-                    <div class="public-order-field">
-                        <label for="guestCity">Şehir</label>
-                        <input id="guestCity" name="input.City" value="@Model.Input.City" placeholder="Şehir" />
+                    <div class="public-order-field" data-address-delivery-field>
+                        <label for="guestCity">İl</label>
+                        <select id="guestCity"
+                                name="input.City"
+                                autocomplete="address-level1"
+                                data-turkey-city
+                                data-selected-value="@Model.Input.City">
+                            <option value="">İl seçin</option>
+                        </select>
                         @Html.ValidationMessage("input.City", null, new { @class = "public-order-error" })
                     </div>
-                    <div class="public-order-field">
-                        <label for="guestPostalCode">Posta Kodu</label>
-                        <input id="guestPostalCode" name="input.PostalCode" value="@Model.Input.PostalCode" placeholder="Posta kodu" />
-                        @Html.ValidationMessage("input.PostalCode", null, new { @class = "public-order-error" })
+                    <div class="public-order-field" data-address-delivery-field>
+                        <label for="guestDistrict">İlçe</label>
+                        <select id="guestDistrict"
+                                name="input.District"
+                                autocomplete="address-level2"
+                                data-turkey-district
+                                data-selected-value="@Model.Input.District"
+                                disabled>
+                            <option value="">Önce il seçin</option>
+                        </select>
+                        @Html.ValidationMessage("input.District", null, new { @class = "public-order-error" })
                     </div>
                     <div class="public-order-field">
                         <label for="guestDeliveryDate">Teslimat Tarihi</label>
@@ -136,8 +211,10 @@
                     </div>
                 </div>
 
-                <button class="public-order-submit" type="submit">
-                    <span>Siparişi Oluştur</span>
+                <button class="public-order-submit"
+                        type="submit"
+                        disabled="@(!Model.IsPaymentAvailable)">
+                    <span>@(Model.IsPaymentAvailable ? "Ödemeye Geç" : "Ödeme Kullanılamıyor")</span>
                     <strong>@Model.UnitPrice.ToString("C0")</strong>
                 </button>
             </form>

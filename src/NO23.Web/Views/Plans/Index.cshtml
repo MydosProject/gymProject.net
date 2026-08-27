@@ -1,13 +1,110 @@
 @model NO23.Web.ViewModels.Plans.ServicePackageCatalogViewModel
 @using NO23.Web.Domain.Enums
-@{ViewData["Title"]=Model.CategoryTitle;}
+
+@{
+    ViewData["Title"] = Model.CategoryTitle;
+}
+
 <section class="service-catalog-page service-catalog-@Model.Category.ToString().ToLowerInvariant()">
-<div class="service-catalog-grid-bg" aria-hidden="true"></div><div class="container position-relative">
-<header class="service-catalog-hero"><p class="section-kicker">NO23 / @Model.CategoryTitle.ToUpperInvariant()</p><h1>@Model.CategoryTitle</h1><h2>@Model.Headline</h2><p>@Model.Description</p></header>
-<nav class="service-catalog-tabs" aria-label="Paket kategorileri"><a asp-action="Index" asp-route-category="membership" class="@(Model.Category==ServicePackageCategory.Membership?"active":"")">Membership</a><a asp-action="Index" asp-route-category="personal-training" class="@(Model.Category==ServicePackageCategory.PersonalTraining?"active":"")">Personal Training</a><a asp-action="Index" asp-route-category="group-classes" class="@(Model.Category==ServicePackageCategory.GroupClasses?"active":"")">Grup Dersleri</a><a asp-action="Index" asp-route-category="kids-club" class="@(Model.Category==ServicePackageCategory.KidsClub?"active":"")">Kids Club</a></nav>
-<div class="service-catalog-cards">
-@foreach(var package in Model.Packages){<article class="service-package-card @(package.IsFeatured?"is-featured":"")">@if(package.IsFeatured){<span class="service-package-badge">En çok tercih edilen</span>}<div class="service-package-head"><small>@Model.CategoryTitle</small><h3>@package.Name</h3><strong>@package.Subtitle</strong></div><p>@package.Description</p><ul>@foreach(var feature in package.Features){<li>@feature</li>}</ul>
-<div class="service-package-variants">@foreach(var variant in package.Variants){<div class="service-variant @(variant.IsRecommended?"is-recommended":"")"><div><strong>@variant.Name</strong><small>@variant.Rights</small></div><div><b>@variant.Price</b><small>@variant.PriceNote</small></div></div>}</div>
-@if(Model.Category==ServicePackageCategory.Membership && package.MembershipCode is not null){<a asp-area="Identity" asp-page="/Account/Register" asp-route-package="@package.MembershipCode">Başvuru Yap <span>→</span></a>}else{<a asp-controller="Home" asp-action="Index" asp-fragment="contact">Bilgi Al <span>→</span></a>}</article>}
-</div><div class="service-catalog-footer"><div><strong>Kararsız mısın?</strong><span>Hedefine uygun paketi birlikte belirleyelim.</span></div><a asp-controller="Home" asp-action="Index" asp-fragment="contact">Planını Bul →</a></div>
-</div></section>
+    <div class="service-catalog-grid-bg" aria-hidden="true"></div>
+    <div class="container position-relative">
+        <header class="service-catalog-hero">
+            <p class="section-kicker">NO23 / @Model.CategoryTitle.ToUpperInvariant()</p>
+            <h1>@Model.CategoryTitle</h1>
+            <h2>@Model.Headline</h2>
+            <p>@Model.Description</p>
+        </header>
+
+        <nav class="service-catalog-tabs" aria-label="Paket kategorileri">
+            <a asp-action="Index" asp-route-category="membership"
+               class="@(Model.Category == ServicePackageCategory.Membership ? "active" : null)">Membership</a>
+            <a asp-action="Index" asp-route-category="personal-training"
+               class="@(Model.Category == ServicePackageCategory.PersonalTraining ? "active" : null)">Personal Training</a>
+            <a asp-action="Index" asp-route-category="group-classes"
+               class="@(Model.Category == ServicePackageCategory.GroupClasses ? "active" : null)">Grup Dersleri</a>
+            <a asp-action="Index" asp-route-category="kids-club"
+               class="@(Model.Category == ServicePackageCategory.KidsClub ? "active" : null)">Kids Club</a>
+        </nav>
+
+        <div class="service-catalog-cards">
+            @foreach (var package in Model.Packages)
+            {
+                var hasRecommendedVariant = package.Variants.Any(variant => variant.IsRecommended);
+
+                <article class="service-package-card @(package.IsFeatured ? "is-featured" : null)">
+                    @if (package.IsFeatured)
+                    {
+                        <span class="service-package-badge">En çok tercih edilen</span>
+                    }
+
+                    <div class="service-package-head">
+                        <small>@Model.CategoryTitle</small>
+                        <h3>@package.Name</h3>
+                        <strong>@package.Subtitle</strong>
+                    </div>
+                    <p>@package.Description</p>
+                    <ul>
+                        @foreach (var feature in package.Features)
+                        {
+                            <li>@feature</li>
+                        }
+                    </ul>
+
+                    @if (package.Variants.Count > 0)
+                    {
+                        <form asp-controller="Plans"
+                              asp-action="Apply"
+                              method="get"
+                              class="service-package-application-form">
+                            <input type="hidden" name="package" value="@package.Slug" />
+                            <fieldset class="service-package-variants">
+                                <legend>Başvurmak istediğin seçeneği belirle</legend>
+
+                                @for (var index = 0; index < package.Variants.Count; index++)
+                                {
+                                    var variant = package.Variants[index];
+                                    var isSelected = variant.IsRecommended ||
+                                        (!hasRecommendedVariant && index == 0);
+
+                                    <label class="service-variant @(variant.IsRecommended ? "is-recommended" : null)">
+                                        <input type="radio"
+                                               name="variant"
+                                               value="@variant.Id"
+                                               checked="@(isSelected ? "checked" : null)"
+                                               required />
+                                        <span class="service-variant-check" aria-hidden="true"></span>
+                                        <span class="service-variant-copy">
+                                            <strong>@variant.Name</strong>
+                                            <small>@variant.Rights</small>
+                                        </span>
+                                        <span class="service-variant-price">
+                                            <b>@variant.Price</b>
+                                            <small>@variant.PriceNote</small>
+                                        </span>
+                                    </label>
+                                }
+                            </fieldset>
+
+                            <button type="submit" class="service-package-submit">
+                                Başvuru Yap
+                                <span aria-hidden="true">→</span>
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <p class="service-package-unavailable">Bu paket için aktif seçenek bulunmuyor.</p>
+                    }
+                </article>
+            }
+        </div>
+
+        <div class="service-catalog-footer">
+            <div>
+                <strong>Kararsız mısın?</strong>
+                <span>Hedefine uygun paketi birlikte belirleyelim.</span>
+            </div>
+            <a asp-controller="Home" asp-action="Index" asp-fragment="contact">Planını Bul →</a>
+        </div>
+    </div>
+</section>

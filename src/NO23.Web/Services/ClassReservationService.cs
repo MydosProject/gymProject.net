@@ -131,6 +131,44 @@ public class ClassReservationService(ApplicationDbContext dbContext)
         await dbContext.SaveChangesAsync();
         return ReservationResult.Ok();
     }
+
+    public async Task<ReservationResult> CancelByAdminAsync(
+        int classSessionId,
+        int reservationId)
+    {
+        var reservation = await dbContext.ClassReservations
+            .Include(item => item.MemberProfile)
+            .ThenInclude(profile => profile.MembershipPackage)
+            .FirstOrDefaultAsync(item =>
+                item.Id == reservationId &&
+                item.ClassSessionId == classSessionId);
+
+        if (reservation is null)
+        {
+            return ReservationResult.Fail("Rezervasyon bulunamadı.");
+        }
+
+        if (reservation.Status != ClassReservationStatus.Reserved)
+        {
+            return ReservationResult.Fail("Bu rezervasyon zaten aktif değil.");
+        }
+
+        var nowUtc = DateTime.UtcNow;
+        reservation.Status = ClassReservationStatus.Cancelled;
+        reservation.CancelledAtUtc = nowUtc;
+        reservation.CancellationReason =
+            "Yönetici tarafından ders listesinden çıkarıldı.";
+
+        if (reservation.MemberProfile.MembershipPackage.WeeklyClassLimit is not null)
+        {
+            reservation.MemberProfile.RemainingClassCredits++;
+        }
+
+        reservation.MemberProfile.UpdatedAtUtc = nowUtc;
+
+        await dbContext.SaveChangesAsync();
+        return ReservationResult.Ok();
+    }
 }
 
 public record ReservationResult(bool Succeeded, string? ErrorMessage)

@@ -1,11 +1,19 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using NO23.Web.Data;
+using NO23.Web.Services.Payments;
 using NO23.Web.ViewModels.Member;
 
 namespace NO23.Web.Services;
 
-public class MemberCartQueryService(ApplicationDbContext dbContext)
+public class MemberCartQueryService(
+    ApplicationDbContext dbContext,
+    IOptions<IyzicoOptions> paymentOptions,
+    IOptions<ClubPickupOptions> clubPickupOptions)
 {
+    private readonly IyzicoOptions paymentSettings = paymentOptions.Value;
+    private readonly ClubPickupOptions clubPickupSettings = clubPickupOptions.Value;
+
     public async Task<int> GetItemCountAsync(string userId)
     {
         return await dbContext.CartItems
@@ -29,6 +37,8 @@ public class MemberCartQueryService(ApplicationDbContext dbContext)
                 Id = item.Id,
                 ItemType = item.ItemType.ToString(),
                 ProductName = item.ProductName,
+                RemovedIngredientNames = item.RemovedIngredientNames,
+                AddedIngredientNames = item.AddedIngredientNames,
                 UnitPrice = item.UnitPrice,
                 Quantity = item.Quantity,
                 LineTotal = item.UnitPrice * item.Quantity
@@ -38,7 +48,9 @@ public class MemberCartQueryService(ApplicationDbContext dbContext)
         return new MemberCartPanelViewModel
         {
             CartItems = items,
-            CheckoutInput = checkoutInput ?? new CheckoutInputViewModel()
+            CheckoutInput = checkoutInput ?? new CheckoutInputViewModel(),
+            IsPaymentAvailable = paymentSettings.Enabled,
+            ClubPickupDisplayName = clubPickupSettings.EffectiveDisplayName
         };
     }
 }

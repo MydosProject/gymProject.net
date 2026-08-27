@@ -13,6 +13,45 @@ Proje dört temel kullanıcı deneyiminden oluşur:
 - Antrenörlerin kişisel antrenman takvimlerini yönetebildiği antrenör paneli
 - Kulüp operasyonlarının yönetildiği admin paneli
 
+## V3 Sürüm Notları
+
+Yayın tarihi: 27 Ağustos 2026
+
+### Ticaret ve sipariş deneyimi
+
+- Mağaza ürünlerine beden, renk, stok ve fiyat farkı destekleyen ürün varyantları eklendi.
+- Sepet ve sipariş kalemleri seçilen ürün varyantını koruyacak şekilde güncellendi.
+- Kargo ve salondan teslim seçenekleri hem ziyaretçi hem üye sipariş akışlarına eklendi.
+- Salondan teslim seçeneği, yönetilebilir şube adı ve adres bilgileriyle yapılandırılabilir hale getirildi.
+- Türkiye il ve ilçe verileriyle adres girişleri iyileştirildi.
+- Admin sipariş listesine teslimat yöntemi ve teslimat bilgileri eklendi.
+
+### Üyelik ve hizmet paketleri
+
+- Ziyaretçilerin üyelik ve hizmet paketleri için başvuru gönderebildiği yeni başvuru akışı eklendi.
+- Başvuruların admin panelinden görüntülenmesi ve durumlarının yönetilmesi sağlandı.
+- Paket kataloğu ve başvuru formları mobil kullanıma uygun hale getirildi.
+
+### Etkinlik ve ders yönetimi
+
+- Topluluk etkinliklerine kapasite kontrollü rezervasyon ve rezervasyon iptali eklendi.
+- Etkinlik yaşam döngüsü, doluluk bilgisi ve kullanıcı rezervasyon durumu ekranlara yansıtıldı.
+- Admin ders listesine kapasite, rezervasyon ve katılım bilgileri eklendi.
+- Ders rezervasyon kontrolleri ve ilgili test kapsamı genişletildi.
+
+### Kitchen ve kullanıcı deneyimi
+
+- Kitchen siparişlerine porsiyon, malzeme çıkarma ve özel not seçenekleri eklendi.
+- Ürün, Kitchen, sepet ve ödeme ekranlarının mobil görünümü yenilendi.
+- Üye ve ziyaretçi sipariş akışlarındaki doğrulamalar ve teslimat özetleri iyileştirildi.
+- Blog, başarı hikâyeleri, galeri, topluluk ve plan sayfalarında responsive arayüz düzenlemeleri yapıldı.
+
+### Altyapı ve doğrulama
+
+- Yeni özellikler için Entity Framework Core migration ve veritabanı yapılandırmaları eklendi.
+- Ürün varyantı, teslimat yöntemi, etkinlik rezervasyonu, Kitchen özelleştirmesi ve paket başvurusu testleri eklendi.
+- Iyzico ve şubeden teslim ayarları kaynak kod dışında secret veya environment variable üzerinden yapılandırılabilir hale getirildi.
+
 ## V2 ile Gelen Yenilikler
 
 - Antrenörlere üye atama, panel hesabı oluşturma ve kişisel antrenman
@@ -144,13 +183,42 @@ Git kurulu olmalıdır.
    Email__Smtp__FromAddress=<GMAIL_EPOSTA>
    ```
 
-8. Veritabanı migration'larını uygulayın:
+8. iyzico sandbox ödeme ekranını kullanmak için sandbox hesabınıza ait bilgileri
+   kaynak koda veya `.env` dosyasına yazmadan user-secrets ile tanımlayın:
+
+   ```bash
+   dotnet user-secrets set "Iyzico:Enabled" "true" --project src/NO23.Web/NO23.Web.csproj
+   dotnet user-secrets set "Iyzico:ApiKey" "<IYZICO_SANDBOX_API_KEY>" --project src/NO23.Web/NO23.Web.csproj
+   dotnet user-secrets set "Iyzico:SecretKey" "<IYZICO_SANDBOX_SECRET_KEY>" --project src/NO23.Web/NO23.Web.csproj
+   dotnet user-secrets set "Iyzico:CallbackUrl" "https://<HTTPS_TUNNEL_HOST>/payment/iyzico/callback" --project src/NO23.Web/NO23.Web.csproj
+   ```
+
+   Callback adresi iyzico tarafından erişilebilir bir HTTPS adresi olmalıdır.
+   Yerel HTTP adresi doğrudan callback olarak kullanılamaz; uygulamanın yerel
+   portunu güvenilir bir HTTPS geliştirme tüneli üzerinden yayınlayın. Ayarlar
+   eksikken online ödeme butonu güvenli biçimde devre dışı kalır ve sipariş ya
+   da stok hareketi oluşturulmaz.
+
+   Salondan teslim seçeneğini açmak için gerçek şube bilgilerini yapılandırın:
+
+   ```bash
+   dotnet user-secrets set "ClubPickup:Enabled" "true" --project src/NO23.Web/NO23.Web.csproj
+   dotnet user-secrets set "ClubPickup:DisplayName" "<SUBE_ADI>" --project src/NO23.Web/NO23.Web.csproj
+   dotnet user-secrets set "ClubPickup:AddressLine" "<SUBE_ACIK_ADRESI>" --project src/NO23.Web/NO23.Web.csproj
+   dotnet user-secrets set "ClubPickup:District" "<SUBE_ILCESI>" --project src/NO23.Web/NO23.Web.csproj
+   dotnet user-secrets set "ClubPickup:City" "<SUBE_SEHRI>" --project src/NO23.Web/NO23.Web.csproj
+   ```
+
+   Şube bilgileri eksikse seçenek ekranda hazırlık durumunda gösterilir ve
+   backend salondan teslim siparişi oluşturmaz.
+
+9. Veritabanı migration'larını uygulayın:
 
    ```bash
    dotnet ef database update --project src/NO23.Web/NO23.Web.csproj
    ```
 
-9. Uygulamayı çalıştırın:
+10. Uygulamayı çalıştırın:
 
    ```bash
    dotnet run --project src/NO23.Web/NO23.Web.csproj

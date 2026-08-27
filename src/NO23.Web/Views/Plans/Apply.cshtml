@@ -1,0 +1,106 @@
+@model NO23.Web.ViewModels.Plans.PlanApplicationPageViewModel
+
+@{
+    ViewData["Title"] = "Paket Başvurusu";
+}
+
+<section class="plan-application-page">
+    <div class="service-catalog-grid-bg" aria-hidden="true"></div>
+    <div class="container position-relative">
+        <a class="plan-application-back"
+           asp-controller="Plans"
+           asp-action="Index"
+           asp-route-category="@Model.CategoryRoute">
+            ← Paketlere dön
+        </a>
+
+        <div class="plan-application-layout">
+            <header class="plan-application-summary">
+                <p class="section-kicker">NO23 / @Model.PackageCategory.ToUpperInvariant()</p>
+                <h1>Başvurunu<br /><span>tamamla.</span></h1>
+                <p>
+                    Seçtiğin paket ekibimize iletilir. NO23 ekibi program ve
+                    başlangıç detayları için seninle iletişime geçer.
+                </p>
+
+                <article class="plan-application-selection">
+                    <small>SEÇİLİ PAKET</small>
+                    <h2>@Model.PackageName</h2>
+                    <div>
+                        <strong>@Model.VariantName</strong>
+                        <b>@Model.VariantPrice</b>
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(Model.VariantRights))
+                    {
+                        <p>@Model.VariantRights</p>
+                    }
+                </article>
+            </header>
+
+            <form asp-controller="Plans"
+                  asp-action="Apply"
+                  method="post"
+                  class="plan-application-form">
+                <input asp-for="Input.ServicePackageId" type="hidden" />
+                <input asp-for="Input.ServicePackageVariantId" type="hidden" />
+
+                <div class="plan-application-form-head">
+                    <div>
+                        <span>01 / İLETİŞİM</span>
+                        <h2>Bilgilerini bırak.</h2>
+                    </div>
+                    <strong aria-hidden="true">23</strong>
+                </div>
+
+                <div asp-validation-summary="ModelOnly"
+                     class="plan-application-validation"
+                     role="alert"></div>
+
+                <label class="plan-application-field">
+                    <span>Ad Soyad</span>
+                    <input asp-for="Input.FullName" autocomplete="name" />
+                    <small asp-validation-for="Input.FullName"></small>
+                </label>
+
+                <div class="plan-application-form-grid">
+                    <label class="plan-application-field">
+                        <span>E-posta</span>
+                        <input asp-for="Input.Email" autocomplete="email" />
+                        <small asp-validation-for="Input.Email"></small>
+                    </label>
+
+                    <label class="plan-application-field">
+                        <span>Telefon</span>
+                        <input asp-for="Input.PhoneNumber" autocomplete="tel" />
+                        <small asp-validation-for="Input.PhoneNumber"></small>
+                    </label>
+                </div>
+
+                <label class="plan-application-field">
+                    <span>
+                        Notun
+                        <em>İsteğe bağlı</em>
+                    </span>
+                    <textarea asp-for="Input.Notes"
+                              rows="4"
+                              placeholder="Hedefin, uygun olduğun saatler veya eklemek istediklerin"></textarea>
+                    <small asp-validation-for="Input.Notes"></small>
+                </label>
+
+                <button type="submit" class="plan-application-submit">
+                    Başvuruyu Gönder
+                    <span aria-hidden="true">→</span>
+                </button>
+
+                <p class="plan-application-note">
+                    Bu adımda ödeme alınmaz. Başvurun yalnızca iletişim ve
+                    planlama amacıyla kaydedilir.
+                </p>
+            </form>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

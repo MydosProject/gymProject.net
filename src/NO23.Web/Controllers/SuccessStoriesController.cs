@@ -21,11 +21,13 @@ public class SuccessStoriesController(ApplicationDbContext dbContext) : Controll
                 Title = item.Title,
                 Slug = item.Slug,
                 Summary = item.Summary,
+                Story = item.Story,
                 AchievementMetric = item.AchievementMetric,
                 BeforeImageUrl = item.BeforeImageUrl,
                 AfterImageUrl = item.AfterImageUrl,
                 VideoUrl = item.VideoUrl,
-                PublishedAtUtc = item.PublishedAtUtc
+                PublishedAtUtc = item.PublishedAtUtc,
+                CreatedAtUtc = item.CreatedAtUtc
             })
             .ToListAsync();
 

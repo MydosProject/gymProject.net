@@ -6,6 +6,10 @@ public class MemberCartPanelViewModel
 
     public CheckoutInputViewModel CheckoutInput { get; init; } = new();
 
+    public bool IsPaymentAvailable { get; init; }
+
+    public string ClubPickupDisplayName { get; init; } = "NO23 Sports Club";
+
     public int TotalItemCount => CartItems.Sum(item => item.Quantity);
 
     public decimal CartSubtotal => CartItems.Sum(item => item.LineTotal);

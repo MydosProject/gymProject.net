@@ -16,6 +16,15 @@ public class OrderItemConfiguration : IEntityTypeConfiguration<OrderItem>
             .HasMaxLength(140)
             .IsRequired();
 
+        builder.Property(item => item.SelectedSize)
+            .HasMaxLength(50);
+
+        builder.Property(item => item.RemovedIngredientNames)
+            .HasMaxLength(3000);
+
+        builder.Property(item => item.AddedIngredientNames)
+            .HasMaxLength(3000);
+
         builder.Property(item => item.UnitPrice)
             .HasPrecision(10, 2);
 
@@ -35,6 +44,11 @@ public class OrderItemConfiguration : IEntityTypeConfiguration<OrderItem>
         builder.HasOne(item => item.ShopProduct)
             .WithMany(product => product.OrderItems)
             .HasForeignKey(item => item.ShopProductId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(item => item.ShopProductVariant)
+            .WithMany(variant => variant.OrderItems)
+            .HasForeignKey(item => item.ShopProductVariantId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

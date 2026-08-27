@@ -20,6 +20,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<ServicePackageVariant> ServicePackageVariants => Set<ServicePackageVariant>();
 
+    public DbSet<ServicePackageApplication> ServicePackageApplications =>
+        Set<ServicePackageApplication>();
+
     public DbSet<MemberProfile> MemberProfiles => Set<MemberProfile>();
 
     public DbSet<Trainer> Trainers => Set<Trainer>();
@@ -82,6 +85,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<ShopProduct> ShopProducts => Set<ShopProduct>();
 
+    public DbSet<ShopProductVariant> ShopProductVariants =>
+        Set<ShopProductVariant>();
+
     public DbSet<ShoppingCart> ShoppingCarts => Set<ShoppingCart>();
 
     public DbSet<CartItem> CartItems => Set<CartItem>();
@@ -93,6 +99,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<PaymentTransaction> PaymentTransactions => Set<PaymentTransaction>();
 
     public DbSet<CommunityEvent> CommunityEvents => Set<CommunityEvent>();
+
+    public DbSet<CommunityEventReservation> CommunityEventReservations =>
+        Set<CommunityEventReservation>();
 
     public DbSet<CommunityChallenge> CommunityChallenges => Set<CommunityChallenge>();
 

@@ -8,6 +8,10 @@ public class CartItemViewModel
 
     public string ProductName { get; init; } = string.Empty;
 
+    public string? RemovedIngredientNames { get; init; }
+
+    public string? AddedIngredientNames { get; init; }
+
     public decimal UnitPrice { get; init; }
 
     public int Quantity { get; init; }

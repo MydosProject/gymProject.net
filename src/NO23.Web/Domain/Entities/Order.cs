@@ -20,6 +20,9 @@ public class Order
 
     public PaymentStatus PaymentStatus { get; set; } = PaymentStatus.Pending;
 
+    public OrderDeliveryMethod DeliveryMethod { get; set; } =
+        OrderDeliveryMethod.AddressDelivery;
+
     public int? KitchenSubscriptionId { get; set; }
 
     public KitchenSubscription? KitchenSubscription { get; set; }

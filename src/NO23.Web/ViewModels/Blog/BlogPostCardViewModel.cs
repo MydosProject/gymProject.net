@@ -10,6 +10,8 @@ public class BlogPostCardViewModel
 
     public string Summary { get; init; } = string.Empty;
 
+    public string Content { get; init; } = string.Empty;
+
     public string Category { get; init; } = string.Empty;
 
     public string? Tags { get; init; }
@@ -17,4 +19,6 @@ public class BlogPostCardViewModel
     public string? CoverImageUrl { get; init; }
 
     public DateTime? PublishedAtUtc { get; init; }
+
+    public DateTime CreatedAtUtc { get; init; }
 }

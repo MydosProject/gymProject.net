@@ -16,6 +16,7 @@
     var isMembershipSection =
         currentController.Equals("Members", StringComparison.OrdinalIgnoreCase) ||
         currentController.Equals("ServicePackages", StringComparison.OrdinalIgnoreCase) ||
+        currentController.Equals("ServicePackageApplications", StringComparison.OrdinalIgnoreCase) ||
         currentController.Equals("MembershipPackageOptions", StringComparison.OrdinalIgnoreCase) ||
         currentController.Equals("MembershipPackages", StringComparison.OrdinalIgnoreCase);
 
@@ -149,7 +150,7 @@
 
                 <div class="admin-nav-group">
                     <p class="admin-nav-title">Kulüp</p>
-                    <a class="admin-nav-link has-submenu @ActiveClass("Members", "MembershipPackages", "MembershipPackageOptions", "ServicePackages")"
+                    <a class="admin-nav-link has-submenu @ActiveClass("Members", "MembershipPackages", "MembershipPackageOptions", "ServicePackages", "ServicePackageApplications")"
                        asp-area="Admin"
                        asp-controller="Members"
                        asp-action="Index"
@@ -178,6 +179,12 @@
                         <a class="admin-nav-sublink @ActiveClass("ServicePackages")"
                            asp-area="Admin" asp-controller="ServicePackages" asp-action="Index">
                             Paket Kataloğu
+                        </a>
+                        <a class="admin-nav-sublink @ActiveClass("ServicePackageApplications")"
+                           asp-area="Admin"
+                           asp-controller="ServicePackageApplications"
+                           asp-action="Index">
+                            Paket Başvuruları
                         </a>
                     </div>
                     <a class="admin-nav-link @ActiveClass("Trainers")" asp-area="Admin" asp-controller="Trainers" asp-action="Index">

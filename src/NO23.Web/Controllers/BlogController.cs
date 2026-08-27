@@ -20,10 +20,12 @@ public class BlogController(ApplicationDbContext dbContext) : Controller
                 Title = item.Title,
                 Slug = item.Slug,
                 Summary = item.Summary,
+                Content = item.Content,
                 Category = item.Category,
                 Tags = item.Tags,
                 CoverImageUrl = item.CoverImageUrl,
-                PublishedAtUtc = item.PublishedAtUtc
+                PublishedAtUtc = item.PublishedAtUtc,
+                CreatedAtUtc = item.CreatedAtUtc
             })
             .ToListAsync();
 

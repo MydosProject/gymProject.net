@@ -19,4 +19,6 @@ public class ShopProductListItemViewModel
     public bool IsActive { get; init; }
 
     public int DisplayOrder { get; init; }
+
+    public IReadOnlyList<string> VariantSummaries { get; init; } = [];
 }

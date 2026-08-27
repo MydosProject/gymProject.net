@@ -161,6 +161,25 @@
                                           method="post"
                                           class="shop-add-form">
                                         <input type="hidden" name="productId" value="@product.Id" />
+                                        @if (product.Variants.Count > 0)
+                                        {
+                                            <label class="shop-size-field">
+                                                <span>Beden</span>
+                                                <select name="shopProductVariantId"
+                                                        data-shop-size-select
+                                                        required>
+                                                    <option value="">Seçin</option>
+                                                    @foreach (var variant in product.Variants)
+                                                    {
+                                                        <option value="@variant.Id"
+                                                                data-stock="@variant.StockQuantity"
+                                                                disabled="@(variant.StockQuantity <= 0)">
+                                                            @variant.Size @(variant.StockQuantity <= 0 ? "· Tükendi" : null)
+                                                        </option>
+                                                    }
+                                                </select>
+                                            </label>
+                                        }
                                         <div class="shop-quantity-control"
                                              data-quantity-control>
                                             <button type="button"
@@ -272,14 +291,60 @@
                                 </div>
                             </div>
 
-                            <div class="shop-kitchen-card-footer">
-                                <strong>@item.UnitPrice.ToString("N0") ₺</strong>
+                            <form asp-action="AddKitchenMenuItem"
+                                  asp-antiforgery="true"
+                                  method="post"
+                                  class="shop-kitchen-order-form">
+                                <input type="hidden" name="menuItemId" value="@item.Id" />
 
-                                <form asp-action="AddKitchenMenuItem"
-                                      asp-antiforgery="true"
-                                      method="post"
-                                      class="shop-add-form">
-                                    <input type="hidden" name="menuItemId" value="@item.Id" />
+                                @if (!item.HasAllergenConflict &&
+                                     (item.RemovableIngredients.Count > 0 ||
+                                      item.AdditionalIngredients.Count > 0))
+                                {
+                                    <details class="shop-kitchen-customization">
+                                        <summary>Malzeme ekle / çıkar <span>İsteğe bağlı</span></summary>
+                                        <div>
+                                            @if (item.RemovableIngredients.Count > 0)
+                                            {
+                                                <fieldset>
+                                                    <legend>Çıkar</legend>
+                                                    @foreach (var ingredient in item.RemovableIngredients)
+                                                    {
+                                                        <label>
+                                                            <input type="checkbox"
+                                                                   name="removedKitchenIngredientIds"
+                                                                   value="@ingredient.Id" />
+                                                            <span>@ingredient.Name</span>
+                                                        </label>
+                                                    }
+                                                </fieldset>
+                                            }
+                                            @if (item.AdditionalIngredients.Count > 0)
+                                            {
+                                                <fieldset>
+                                                    <legend>Ekstra ekle</legend>
+                                                    @foreach (var ingredient in item.AdditionalIngredients)
+                                                    {
+                                                        <label>
+                                                            <input type="checkbox"
+                                                                   name="addedKitchenIngredientIds"
+                                                                   value="@ingredient.Id" />
+                                                            <span>@ingredient.Name</span>
+                                                        </label>
+                                                    }
+                                                </fieldset>
+                                            }
+                                            <p>
+                                                Ücreti değiştirmeyen hazırlık talebidir. Alerjen uyarısı menü bazında kalır.
+                                            </p>
+                                        </div>
+                                    </details>
+                                }
+
+                                <div class="shop-kitchen-card-footer">
+                                    <strong>@item.UnitPrice.ToString("N0") ₺</strong>
+
+                                    <div class="shop-add-form">
                                     <div class="shop-quantity-control"
                                          data-quantity-control>
                                         <button type="button"
@@ -319,8 +384,9 @@
                                         @(item.HasAllergenConflict ? "Alerjinle Uyuşmuyor" : "Sepete Ekle")
                                         <span aria-hidden="true">+</span>
                                     </button>
-                                </form>
-                            </div>
+                                    </div>
+                                </div>
+                            </form>
                         </article>
                     }
                 </div>
@@ -346,8 +412,11 @@
                         return;
                     }
 
+                    const form = control.closest("form");
+                    const sizeSelect = form?.querySelector("[data-shop-size-select]");
+                    const submitButton = form?.querySelector('button[type="submit"]');
                     const minimum = Number.parseInt(input.min, 10) || 1;
-                    const maximum = Number.parseInt(input.max, 10) ||
+                    let maximum = Number.parseInt(input.max, 10) ||
                         Number.MAX_SAFE_INTEGER;
 
                     const normalizeValue = () => {
@@ -385,6 +454,20 @@
                         increaseButton.disabled = input.disabled ||
                             Number.isNaN(parsedValue) ||
                             parsedValue >= maximum;
+                    });
+
+                    sizeSelect?.addEventListener("change", () => {
+                        const selectedOption = sizeSelect.selectedOptions[0];
+                        const selectedStock = Number.parseInt(
+                            selectedOption?.dataset.stock ?? "0",
+                            10);
+                        maximum = selectedStock > 0 ? selectedStock : 1;
+                        input.max = maximum.toString();
+                        input.disabled = selectedStock <= 0;
+                        if (submitButton) {
+                            submitButton.disabled = selectedStock <= 0;
+                        }
+                        normalizeValue();
                     });
 
                     normalizeValue();

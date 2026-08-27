@@ -17,4 +17,15 @@ public class ShopProductCardViewModel
     public string? ImageUrl { get; init; }
 
     public string? Tags { get; init; }
+
+    public IReadOnlyList<ShopProductVariantOptionViewModel> Variants { get; init; } = [];
+}
+
+public class ShopProductVariantOptionViewModel
+{
+    public int Id { get; init; }
+
+    public string Size { get; init; } = string.Empty;
+
+    public int StockQuantity { get; init; }
 }

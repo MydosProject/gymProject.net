@@ -26,6 +26,16 @@
             <article><span>Rezervasyon</span><strong>@totalReservations</strong><small>Toplam katılımcı</small></article>
         </div>
 
+        @if (TempData["SuccessMessage"] is string successMessage)
+        {
+            <div class="alert alert-success" role="status">@successMessage</div>
+        }
+
+        @if (TempData["ErrorMessage"] is string errorMessage)
+        {
+            <div class="alert alert-danger" role="alert">@errorMessage</div>
+        }
+
         <div class="table-responsive admin-table-card admin-session-table">
             <table class="table align-middle mb-0">
                 <thead>
@@ -74,6 +84,56 @@
                                 <td data-label="Kalan"><span class="admin-capacity @(remainingCapacity == 0 ? "is-full" : null)">@remainingCapacity yer</span></td>
                                 <td data-label="Durum"><span class="badge @(isScheduled ? "text-bg-success" : "text-bg-secondary")">@session.Status</span></td>
                                 <td class="text-end" data-label="İşlem"><a class="btn btn-sm btn-outline-dark" asp-action="Edit" asp-route-id="@session.Id">Düzenle</a></td>
+                            </tr>
+                            <tr class="admin-session-participant-row">
+                                <td colspan="9">
+                                    <details class="admin-session-participants">
+                                        <summary>
+                                            <span>Katılımcılar</span>
+                                            <strong>@session.Participants.Count kişi</strong>
+                                        </summary>
+
+                                        @if (session.Participants.Count == 0)
+                                        {
+                                            <p class="admin-session-participants-empty">
+                                                Bu seansa henüz kayıt yaptıran üye yok.
+                                            </p>
+                                        }
+                                        else
+                                        {
+                                            <div class="admin-session-participant-list">
+                                                @foreach (var participant in session.Participants)
+                                                {
+                                                    <article>
+                                                        <div>
+                                                            <strong>@participant.DisplayName</strong>
+                                                            <span>@participant.Email</span>
+                                                            <small>
+                                                                @participant.PackageName ·
+                                                                @participant.ReservedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm") tarihinde kaydoldu
+                                                            </small>
+                                                        </div>
+                                                        <form asp-area="Admin"
+                                                              asp-controller="ClassSessions"
+                                                              asp-action="RemoveReservation"
+                                                              asp-route-id="@session.Id"
+                                                              method="post"
+                                                              onsubmit="return confirm('Bu katılımcı ders listesinden çıkarılsın mı?');">
+                                                            @Html.AntiForgeryToken()
+                                                            <input type="hidden"
+                                                                   name="reservationId"
+                                                                   value="@participant.ReservationId" />
+                                                            <button type="submit"
+                                                                    class="btn btn-sm btn-outline-danger">
+                                                                Listeden çıkar
+                                                            </button>
+                                                        </form>
+                                                    </article>
+                                                }
+                                            </div>
+                                        }
+                                    </details>
+                                </td>
                             </tr>
                         }
                     }

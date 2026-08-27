@@ -59,7 +59,8 @@
                   asp-area=""
                   asp-controller="Shop"
                   asp-action="PlaceOrder"
-                  method="post">
+                  method="post"
+                  data-turkey-location-root>
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="productId" value="@Model.ItemId" />
 
@@ -68,13 +69,41 @@
                     <h2>Siparişini tamamla.</h2>
                 </div>
 
+                <partial name="_GuestOrderDeliveryMethod" model="Model" />
+
                 @if (isOutOfStock)
                 {
                     <div class="public-order-stock-warning">Bu ürün şu anda stokta yok.</div>
                 }
+                else if (!Model.IsPaymentAvailable)
+                {
+                    <div class="public-order-stock-warning">
+                        Online ödeme şu anda kullanılamıyor. Sipariş oluşturma geçici olarak durduruldu.
+                    </div>
+                }
                 <div asp-validation-summary="ModelOnly" class="public-order-validation"></div>
 
                 <div class="public-order-form-grid">
+                    @if (Model.ShopVariants.Count > 0)
+                    {
+                        <div class="public-order-field public-order-field-wide">
+                            <label for="guestShopProductVariant">Beden</label>
+                            <select id="guestShopProductVariant"
+                                    name="input.ShopProductVariantId"
+                                    required>
+                                <option value="">Beden seçin</option>
+                                @foreach (var variant in Model.ShopVariants)
+                                {
+                                    <option value="@variant.Id"
+                                            disabled="@(variant.StockQuantity <= 0)"
+                                            selected="@(variant.Id == Model.Input.ShopProductVariantId ? "selected" : null)">
+                                        @variant.Size · @(variant.StockQuantity > 0 ? $"{variant.StockQuantity} adet" : "Tükendi")
+                                    </option>
+                                }
+                            </select>
+                            @Html.ValidationMessage("input.ShopProductVariantId", null, new { @class = "public-order-error" })
+                        </div>
+                    }
                     <div class="public-order-field public-order-field-quantity">
                         <label for="guestQuantity">Adet</label>
                         <input id="guestQuantity" name="input.Quantity" type="number" min="1" max="99" value="@Model.Input.Quantity" />
@@ -95,25 +124,34 @@
                         <input id="guestPhone" name="input.PhoneNumber" value="@Model.Input.PhoneNumber" autocomplete="tel" placeholder="05__ ___ __ __" />
                         @Html.ValidationMessage("input.PhoneNumber", null, new { @class = "public-order-error" })
                     </div>
-                    <div class="public-order-field public-order-field-wide">
+                    <div class="public-order-field public-order-field-wide"
+                         data-address-delivery-field>
                         <label for="guestAddress">Adres</label>
                         <textarea id="guestAddress" name="input.AddressLine" rows="3" placeholder="Teslimat adresiniz">@Model.Input.AddressLine</textarea>
                         @Html.ValidationMessage("input.AddressLine", null, new { @class = "public-order-error" })
                     </div>
-                    <div class="public-order-field">
-                        <label for="guestDistrict">İlçe</label>
-                        <input id="guestDistrict" name="input.District" value="@Model.Input.District" placeholder="İlçe" />
-                        @Html.ValidationMessage("input.District", null, new { @class = "public-order-error" })
-                    </div>
-                    <div class="public-order-field">
-                        <label for="guestCity">Şehir</label>
-                        <input id="guestCity" name="input.City" value="@Model.Input.City" placeholder="Şehir" />
+                    <div class="public-order-field" data-address-delivery-field>
+                        <label for="guestCity">İl</label>
+                        <select id="guestCity"
+                                name="input.City"
+                                autocomplete="address-level1"
+                                data-turkey-city
+                                data-selected-value="@Model.Input.City">
+                            <option value="">İl seçin</option>
+                        </select>
                         @Html.ValidationMessage("input.City", null, new { @class = "public-order-error" })
                     </div>
-                    <div class="public-order-field">
-                        <label for="guestPostalCode">Posta Kodu</label>
-                        <input id="guestPostalCode" name="input.PostalCode" value="@Model.Input.PostalCode" placeholder="Posta kodu" />
-                        @Html.ValidationMessage("input.PostalCode", null, new { @class = "public-order-error" })
+                    <div class="public-order-field" data-address-delivery-field>
+                        <label for="guestDistrict">İlçe</label>
+                        <select id="guestDistrict"
+                                name="input.District"
+                                autocomplete="address-level2"
+                                data-turkey-district
+                                data-selected-value="@Model.Input.District"
+                                disabled>
+                            <option value="">Önce il seçin</option>
+                        </select>
+                        @Html.ValidationMessage("input.District", null, new { @class = "public-order-error" })
                     </div>
                     <div class="public-order-field">
                         <label for="guestDeliveryDate">Teslimat Tarihi</label>
@@ -137,8 +175,14 @@
                     </div>
                 </div>
 
-                <button class="public-order-submit" type="submit" disabled="@isOutOfStock">
-                    <span>@(isOutOfStock ? "Stokta Yok" : "Siparişi Oluştur")</span>
+                <button class="public-order-submit"
+                        type="submit"
+                        disabled="@(isOutOfStock || !Model.IsPaymentAvailable)">
+                    <span>@(isOutOfStock
+                        ? "Stokta Yok"
+                        : Model.IsPaymentAvailable
+                            ? "Ödemeye Geç"
+                            : "Ödeme Kullanılamıyor")</span>
                     <strong>@Model.UnitPrice.ToString("C0")</strong>
                 </button>
             </form>

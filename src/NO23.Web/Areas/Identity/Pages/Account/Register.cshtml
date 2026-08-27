@@ -163,6 +163,24 @@
                         </div>
 
                         <div class="col-12">
+                            <div class="no23-form-field no23-package-option-field">
+                                <label asp-for="Input.PackageOptionId"></label>
+                                <select asp-for="Input.PackageOptionId"
+                                        class="form-select no23-form-select"
+                                        data-package-option-select>
+                                    @foreach (var option in Model.ServiceOptions)
+                                    {
+                                        <option value="@option.Id"
+                                                data-package-code="@option.PackageCode">
+                                            @option.Name — @option.DurationDays gün
+                                        </option>
+                                    }
+                                </select>
+                                <span asp-validation-for="Input.PackageOptionId"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
                             <div class="no23-form-field">
                                 <label asp-for="Input.FitnessGoal"></label>
                                 <input asp-for="Input.FitnessGoal"
@@ -216,4 +234,43 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        (() => {
+            const packageSelect = document.getElementById("Input_PackageCode");
+            const optionSelect = document.querySelector("[data-package-option-select]");
+
+            if (!packageSelect || !optionSelect) {
+                return;
+            }
+
+            const options = Array.from(optionSelect.options);
+
+            function syncPackageOptions() {
+                const packageCode = packageSelect.value.toUpperCase();
+                let firstVisibleOption = null;
+
+                options.forEach(option => {
+                    const isVisible = option.dataset.packageCode?.toUpperCase() === packageCode;
+                    option.hidden = !isVisible;
+                    option.disabled = !isVisible;
+
+                    if (isVisible && !firstVisibleOption) {
+                        firstVisibleOption = option;
+                    }
+                });
+
+                const selectedOption = optionSelect.selectedOptions[0];
+                if (!selectedOption || selectedOption.disabled) {
+                    optionSelect.value = firstVisibleOption?.value ?? "";
+                }
+
+                optionSelect.closest(".no23-package-option-field")?.toggleAttribute(
+                    "hidden",
+                    !firstVisibleOption);
+            }
+
+            packageSelect.addEventListener("change", syncPackageOptions);
+            syncPackageOptions();
+        })();
+    </script>
 }

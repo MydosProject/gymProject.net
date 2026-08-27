@@ -25,6 +25,8 @@ builder.Services.Configure<SmtpEmailOptions>(
     builder.Configuration.GetSection("Email:Smtp"));
 builder.Services.Configure<PasswordResetOptions>(
     builder.Configuration.GetSection("Email:PasswordReset"));
+builder.Services.Configure<ClubPickupOptions>(
+    builder.Configuration.GetSection(ClubPickupOptions.SectionName));
 
 builder.Services
     .AddOptions<IyzicoOptions>()
@@ -164,7 +166,9 @@ builder.Services.AddScoped<CalorieCalculatorService>();
 builder.Services.AddScoped<KitchenPlanMatchingService>();
 builder.Services.AddScoped<KitchenProductionPlanningService>();
 builder.Services.AddScoped<CommunityChallengeProgressService>();
+builder.Services.AddScoped<CommunityEventReservationService>();
 builder.Services.AddScoped<MemberProgressTrackingService>();
+builder.Services.AddSingleton<TurkeyLocationCatalog>();
 builder.Services.AddScoped<CommerceService>();
 builder.Services.AddScoped<OrderWorkflowService>();
 builder.Services.AddScoped<MemberCartQueryService>();
@@ -208,6 +212,7 @@ app.UseHttpsRedirection();
 app.UseRouting();
 app.UseSession();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.Use(async (context, next) =>

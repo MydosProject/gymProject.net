@@ -215,6 +215,9 @@ public sealed class IyzicoPaymentService(
             .Include(payment => payment.Order)
                 .ThenInclude(order => order.Items)
                     .ThenInclude(item => item.ShopProduct)
+            .Include(payment => payment.Order)
+                .ThenInclude(order => order.Items)
+                    .ThenInclude(item => item.ShopProductVariant)
             .FirstOrDefaultAsync(
                 payment =>
                     payment.Provider == ProviderName &&
@@ -625,6 +628,8 @@ public sealed class IyzicoPaymentService(
                 .ThenInclude(member => member!.ApplicationUser)
             .Include(order => order.Items)
                 .ThenInclude(item => item.ShopProduct)
+            .Include(order => order.Items)
+                .ThenInclude(item => item.ShopProductVariant)
             .Include(order => order.Items)
                 .ThenInclude(item => item.KitchenMenuItem)
             .Include(order => order.PaymentTransactions)

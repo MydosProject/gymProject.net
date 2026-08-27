@@ -10,11 +10,17 @@ public class GuestOrderConfirmationViewModel
 
     public int Quantity { get; init; }
 
+    public string? RemovedIngredientNames { get; init; }
+
+    public string? AddedIngredientNames { get; init; }
+
     public decimal Total { get; init; }
 
     public DateOnly DeliveryDate { get; init; }
 
     public string DeliveryTimeSlot { get; init; } = string.Empty;
+
+    public string DeliveryMethodText { get; init; } = "Adrese teslim";
 
     public PaymentStatus PaymentStatus { get; init; }
 

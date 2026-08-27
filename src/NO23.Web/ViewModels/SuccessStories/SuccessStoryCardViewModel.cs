@@ -12,6 +12,8 @@ public class SuccessStoryCardViewModel
 
     public string Summary { get; init; } = string.Empty;
 
+    public string Story { get; init; } = string.Empty;
+
     public string? AchievementMetric { get; init; }
 
     public string? BeforeImageUrl { get; init; }
@@ -21,4 +23,6 @@ public class SuccessStoryCardViewModel
     public string? VideoUrl { get; init; }
 
     public DateTime? PublishedAtUtc { get; init; }
+
+    public DateTime CreatedAtUtc { get; init; }
 }

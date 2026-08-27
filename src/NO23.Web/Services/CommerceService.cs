@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using NO23.Web.Data;
 using NO23.Web.Domain.Entities;
 using NO23.Web.Domain.Enums;
@@ -7,11 +8,17 @@ using NO23.Web.ViewModels.GuestOrders;
 namespace NO23.Web.Services;
 
 public class CommerceService
-(ApplicationDbContext dbContext)
+(ApplicationDbContext dbContext, IOptions<ClubPickupOptions>? clubPickupOptions = null)
 {
     private const decimal DeliveryFee = 0;
+    private readonly ClubPickupOptions clubPickupSettings =
+        clubPickupOptions?.Value ?? new ClubPickupOptions();
 
-    public async Task<CommerceResult> AddShopProductToCartAsync(string userId, int productId, int quantity)
+    public async Task<CommerceResult> AddShopProductToCartAsync(
+        string userId,
+        int productId,
+        int quantity,
+        int? shopProductVariantId = null)
     {
         if (quantity <= 0)
         {
@@ -26,6 +33,7 @@ public class CommerceService
         }
 
         var product = await dbContext.ShopProducts
+            .Include(item => item.Variants)
             .FirstOrDefaultAsync(item => item.Id == productId && item.IsActive);
 
         if (product is null)
@@ -33,7 +41,29 @@ public class CommerceService
             return CommerceResult.Fail("Ürün bulunamadı.");
         }
 
-        if (product.StockQuantity < quantity)
+        var activeVariants = product.Variants
+            .Where(variant => variant.IsActive)
+            .ToList();
+        ShopProductVariant? selectedVariant = null;
+
+        if (activeVariants.Count > 0)
+        {
+            selectedVariant = activeVariants.FirstOrDefault(variant =>
+                variant.Id == shopProductVariantId);
+
+            if (selectedVariant is null)
+            {
+                return CommerceResult.Fail("Geçerli bir beden seçmelisin.");
+            }
+        }
+        else if (shopProductVariantId.HasValue)
+        {
+            return CommerceResult.Fail("Bu ürün için beden seçimi geçerli değil.");
+        }
+
+        var availableStock = selectedVariant?.StockQuantity ?? product.StockQuantity;
+
+        if (availableStock < quantity)
         {
             return CommerceResult.Fail("Ürün stoğu yetersiz.");
         }
@@ -41,7 +71,12 @@ public class CommerceService
         var cart = await GetOrCreateCartAsync(profile.Id);
         var existingItem = cart.Items.FirstOrDefault(item =>
             item.ItemType == CartItemType.ShopProduct &&
-            item.ShopProductId == product.Id);
+            item.ShopProductId == product.Id &&
+            item.ShopProductVariantId == selectedVariant?.Id);
+
+        var productName = GetShopProductDisplayName(
+            product.Name,
+            selectedVariant?.Size);
 
         if (existingItem is null)
         {
@@ -49,21 +84,25 @@ public class CommerceService
             {
                 ItemType = CartItemType.ShopProduct,
                 ShopProductId = product.Id,
-                ProductName = product.Name,
+                ShopProductVariantId = selectedVariant?.Id,
+                ShopProductVariant = selectedVariant,
+                SelectedSize = selectedVariant?.Size,
+                ProductName = productName,
                 UnitPrice = product.UnitPrice,
                 Quantity = quantity
             });
         }
         else
         {
-            if (product.StockQuantity < existingItem.Quantity + quantity)
+            if (availableStock < existingItem.Quantity + quantity)
             {
                 return CommerceResult.Fail("Ürün stoğu yetersiz.");
             }
 
             existingItem.Quantity += quantity;
             existingItem.UnitPrice = product.UnitPrice;
-            existingItem.ProductName = product.Name;
+            existingItem.SelectedSize = selectedVariant?.Size;
+            existingItem.ProductName = productName;
             existingItem.UpdatedAtUtc = DateTime.UtcNow;
         }
 
@@ -73,7 +112,12 @@ public class CommerceService
         return CommerceResult.Ok(cart.Id);
     }
 
-    public async Task<CommerceResult> AddKitchenMenuItemToCartAsync(string userId, int menuItemId, int quantity)
+    public async Task<CommerceResult> AddKitchenMenuItemToCartAsync(
+        string userId,
+        int menuItemId,
+        int quantity,
+        IReadOnlyCollection<int>? removedKitchenIngredientIds = null,
+        IReadOnlyCollection<int>? addedKitchenIngredientIds = null)
     {
         if (quantity <= 0)
         {
@@ -90,6 +134,8 @@ public class CommerceService
         var menuItem = await dbContext.KitchenMenuItems
             .Include(item => item.MenuItemAllergens)
                 .ThenInclude(item => item.KitchenAllergen)
+            .Include(item => item.RecipeIngredients)
+                .ThenInclude(item => item.KitchenIngredient)
             .FirstOrDefaultAsync(item => item.Id == menuItemId && item.IsActive);
 
         if (menuItem is null)
@@ -102,10 +148,22 @@ public class CommerceService
             return CommerceResult.Fail(
                 $"Bu öğün profilinde seçili olan şu alerjenleri içeriyor: {string.Join(", ", conflictNames)}.");
 
+        var customization = await ResolveKitchenCustomizationAsync(
+            menuItem,
+            removedKitchenIngredientIds,
+            addedKitchenIngredientIds);
+
+        if (!customization.Succeeded)
+        {
+            return CommerceResult.Fail(customization.ErrorMessage!);
+        }
+
         var cart = await GetOrCreateCartAsync(profile.Id);
         var existingItem = cart.Items.FirstOrDefault(item =>
             item.ItemType == CartItemType.KitchenMenuItem &&
-            item.KitchenMenuItemId == menuItem.Id);
+            item.KitchenMenuItemId == menuItem.Id &&
+            item.RemovedIngredientNames == customization.RemovedIngredientNames &&
+            item.AddedIngredientNames == customization.AddedIngredientNames);
 
         if (existingItem is null)
         {
@@ -114,6 +172,8 @@ public class CommerceService
                 ItemType = CartItemType.KitchenMenuItem,
                 KitchenMenuItemId = menuItem.Id,
                 ProductName = menuItem.Name,
+                RemovedIngredientNames = customization.RemovedIngredientNames,
+                AddedIngredientNames = customization.AddedIngredientNames,
                 UnitPrice = menuItem.UnitPrice,
                 Quantity = quantity
             });
@@ -161,6 +221,13 @@ public class CommerceService
 
     public async Task<CommerceResult> CreateOneTimeOrderFromCartAsync(string userId, DeliveryDetails deliveryDetails)
     {
+        var deliveryResult = NormalizeDeliveryDetails(deliveryDetails);
+
+        if (!deliveryResult.Succeeded)
+        {
+            return deliveryResult;
+        }
+
         var profile = await GetMemberProfileAsync(userId);
 
         if (profile is null)
@@ -171,6 +238,9 @@ public class CommerceService
         var cart = await dbContext.ShoppingCarts
             .Include(item => item.Items)
             .ThenInclude(item => item.ShopProduct)
+            .ThenInclude(product => product!.Variants)
+            .Include(item => item.Items)
+            .ThenInclude(item => item.ShopProductVariant)
             .Include(item => item.Items)
             .ThenInclude(item => item.KitchenMenuItem)
             .FirstOrDefaultAsync(item => item.MemberProfileId == profile.Id);
@@ -193,7 +263,26 @@ public class CommerceService
 
         foreach (var cartItem in cart.Items.Where(item => item.ItemType == CartItemType.ShopProduct))
         {
-            if (cartItem.ShopProduct is null || cartItem.ShopProduct.StockQuantity < cartItem.Quantity)
+            if (cartItem.ShopProduct is null)
+            {
+                return CommerceResult.Fail($"{cartItem.ProductName} için yeterli stok yok.");
+            }
+
+            var hasActiveVariants = cartItem.ShopProduct.Variants
+                .Any(variant => variant.IsActive);
+
+            if (hasActiveVariants &&
+                (cartItem.ShopProductVariant is null ||
+                 !cartItem.ShopProductVariant.IsActive))
+            {
+                return CommerceResult.Fail(
+                    $"{cartItem.ShopProduct.Name} için beden seçimini yenilemelisin.");
+            }
+
+            var availableStock = cartItem.ShopProductVariant?.StockQuantity
+                ?? cartItem.ShopProduct.StockQuantity;
+
+            if (availableStock < cartItem.Quantity)
             {
                 return CommerceResult.Fail($"{cartItem.ProductName} için yeterli stok yok.");
             }
@@ -203,8 +292,14 @@ public class CommerceService
 
         foreach (var cartItem in cart.Items.Where(item => item.ItemType == CartItemType.ShopProduct))
         {
-              cartItem.ShopProduct!.StockQuantity -= cartItem.Quantity;
-              cartItem.ShopProduct.UpdatedAtUtc = DateTime.UtcNow;
+            cartItem.ShopProduct!.StockQuantity -= cartItem.Quantity;
+            cartItem.ShopProduct.UpdatedAtUtc = DateTime.UtcNow;
+
+            if (cartItem.ShopProductVariant is not null)
+            {
+                cartItem.ShopProductVariant.StockQuantity -= cartItem.Quantity;
+                cartItem.ShopProductVariant.UpdatedAtUtc = DateTime.UtcNow;
+            }
         }
 
         dbContext.Orders.Add(order);
@@ -308,6 +403,7 @@ public class CommerceService
         }
 
         var product = await dbContext.ShopProducts
+            .Include(item => item.Variants)
             .FirstOrDefaultAsync(item => item.Id == productId && item.IsActive);
 
         if (product is null)
@@ -315,16 +411,51 @@ public class CommerceService
             return CommerceResult.Fail("Ürün bulunamadı.");
         }
 
-        if (product.StockQuantity < quantity)
+        var activeVariants = product.Variants
+            .Where(variant => variant.IsActive)
+            .ToList();
+        ShopProductVariant? selectedVariant = null;
+
+        if (activeVariants.Count > 0)
+        {
+            selectedVariant = activeVariants.FirstOrDefault(variant =>
+                variant.Id == input.ShopProductVariantId);
+
+            if (selectedVariant is null)
+            {
+                return CommerceResult.Fail("Geçerli bir beden seçmelisin.");
+            }
+        }
+        else if (input.ShopProductVariantId.HasValue)
+        {
+            return CommerceResult.Fail("Bu ürün için beden seçimi geçerli değil.");
+        }
+
+        var availableStock = selectedVariant?.StockQuantity ?? product.StockQuantity;
+
+        if (availableStock < quantity)
         {
             return CommerceResult.Fail("Ürün stoğu yetersiz.");
+        }
+
+        var deliveryDetails = BuildDeliveryDetails(input);
+        var deliveryResult = NormalizeDeliveryDetails(deliveryDetails);
+
+        if (!deliveryResult.Succeeded)
+        {
+            return deliveryResult;
         }
 
         var orderItem = new OrderItem
         {
             ItemType = CartItemType.ShopProduct,
             ShopProductId = product.Id,
-            ProductName = product.Name,
+            ShopProductVariantId = selectedVariant?.Id,
+            ShopProductVariant = selectedVariant,
+            SelectedSize = selectedVariant?.Size,
+            ProductName = GetShopProductDisplayName(
+                product.Name,
+                selectedVariant?.Size),
             UnitPrice = product.UnitPrice,
             Quantity = quantity,
             LineTotal = product.UnitPrice * quantity
@@ -332,11 +463,17 @@ public class CommerceService
 
         var order = BuildGuestOrder(
             input.Email,
-            BuildDeliveryDetails(input),
+            deliveryDetails,
             orderItem);
 
         product.StockQuantity -= quantity;
         product.UpdatedAtUtc = DateTime.UtcNow;
+
+        if (selectedVariant is not null)
+        {
+            selectedVariant.StockQuantity -= quantity;
+            selectedVariant.UpdatedAtUtc = DateTime.UtcNow;
+        }
 
         dbContext.Orders.Add(order);
         await dbContext.SaveChangesAsync();
@@ -355,6 +492,8 @@ public class CommerceService
         }
 
         var menuItem = await dbContext.KitchenMenuItems
+            .Include(item => item.RecipeIngredients)
+                .ThenInclude(item => item.KitchenIngredient)
             .FirstOrDefaultAsync(item => item.Id == menuItemId && item.IsActive);
 
         if (menuItem is null)
@@ -362,11 +501,31 @@ public class CommerceService
             return CommerceResult.Fail("Kitchen menü ürünü bulunamadı.");
         }
 
+        var customization = await ResolveKitchenCustomizationAsync(
+            menuItem,
+            input.RemovedKitchenIngredientIds,
+            input.AddedKitchenIngredientIds);
+
+        if (!customization.Succeeded)
+        {
+            return CommerceResult.Fail(customization.ErrorMessage!);
+        }
+
+        var deliveryDetails = BuildDeliveryDetails(input);
+        var deliveryResult = NormalizeDeliveryDetails(deliveryDetails);
+
+        if (!deliveryResult.Succeeded)
+        {
+            return deliveryResult;
+        }
+
         var orderItem = new OrderItem
         {
             ItemType = CartItemType.KitchenMenuItem,
             KitchenMenuItemId = menuItem.Id,
             ProductName = menuItem.Name,
+            RemovedIngredientNames = customization.RemovedIngredientNames,
+            AddedIngredientNames = customization.AddedIngredientNames,
             UnitPrice = menuItem.UnitPrice,
             Quantity = quantity,
             LineTotal = menuItem.UnitPrice * quantity
@@ -374,7 +533,7 @@ public class CommerceService
 
         var order = BuildGuestOrder(
             input.Email,
-            BuildDeliveryDetails(input),
+            deliveryDetails,
             orderItem);
 
         dbContext.Orders.Add(order);
@@ -432,6 +591,10 @@ public class CommerceService
             ItemType = item.ItemType,
             KitchenMenuItemId = item.KitchenMenuItemId,
             ShopProductId = item.ShopProductId,
+            ShopProductVariantId = item.ShopProductVariantId,
+            SelectedSize = item.SelectedSize,
+            RemovedIngredientNames = item.RemovedIngredientNames,
+            AddedIngredientNames = item.AddedIngredientNames,
             ProductName = item.ProductName,
             UnitPrice = item.UnitPrice,
             Quantity = item.Quantity,
@@ -468,6 +631,7 @@ public class CommerceService
             Type = orderType,
             Status = OrderStatus.Pending,
             PaymentStatus = PaymentStatus.Pending,
+            DeliveryMethod = deliveryDetails.DeliveryMethod,
             KitchenSubscriptionId = kitchenSubscriptionId,
             DeliveryFullName = deliveryDetails.FullName.Trim(),
             DeliveryPhoneNumber = deliveryDetails.PhoneNumber.Trim(),
@@ -489,6 +653,7 @@ public class CommerceService
     {
         return new DeliveryDetails
         {
+            DeliveryMethod = input.DeliveryMethod,
             FullName = input.FullName,
             PhoneNumber = input.PhoneNumber,
             AddressLine = input.AddressLine,
@@ -501,8 +666,138 @@ public class CommerceService
         };
     }
 
+    private CommerceResult NormalizeDeliveryDetails(
+        DeliveryDetails deliveryDetails)
+    {
+        if (deliveryDetails.DeliveryMethod ==
+            OrderDeliveryMethod.ClubPickup)
+        {
+            deliveryDetails.AddressLine =
+                clubPickupSettings.EffectiveAddressLine;
+            deliveryDetails.District =
+                clubPickupSettings.EffectiveDistrict;
+            deliveryDetails.City =
+                clubPickupSettings.EffectiveCity;
+            deliveryDetails.PostalCode =
+                clubPickupSettings.PostalCode?.Trim();
+
+            return CommerceResult.Ok();
+        }
+
+        if (deliveryDetails.DeliveryMethod !=
+            OrderDeliveryMethod.AddressDelivery)
+        {
+            return CommerceResult.Fail(
+                "Geçerli bir teslimat yöntemi seçmelisin.");
+        }
+
+        if (string.IsNullOrWhiteSpace(deliveryDetails.AddressLine) ||
+            string.IsNullOrWhiteSpace(deliveryDetails.District) ||
+            string.IsNullOrWhiteSpace(deliveryDetails.City))
+        {
+            return CommerceResult.Fail(
+                "Adres teslimatı için adres, şehir ve ilçe bilgileri zorunludur.");
+        }
+
+        return CommerceResult.Ok();
+    }
+
     private static string GenerateOrderNumber()
     {
         return $"NO23-{DateTime.UtcNow:yyyyMMddHHmmss}-{Random.Shared.Next(1000, 9999)}";
+    }
+
+    private static string GetShopProductDisplayName(
+        string productName,
+        string? selectedSize)
+    {
+        return string.IsNullOrWhiteSpace(selectedSize)
+            ? productName
+            : $"{productName} · {selectedSize}";
+    }
+
+    private async Task<KitchenCustomizationResult> ResolveKitchenCustomizationAsync(
+        KitchenMenuItem menuItem,
+        IReadOnlyCollection<int>? removedKitchenIngredientIds,
+        IReadOnlyCollection<int>? addedKitchenIngredientIds)
+    {
+        var removedIds = (removedKitchenIngredientIds ?? [])
+            .Where(id => id > 0)
+            .Distinct()
+            .ToList();
+        var addedIds = (addedKitchenIngredientIds ?? [])
+            .Where(id => id > 0)
+            .Distinct()
+            .ToList();
+
+        if (removedIds.Count > 20 || addedIds.Count > 20)
+        {
+            return KitchenCustomizationResult.Fail(
+                "Bir sipariş satırında en fazla 20 malzeme seçebilirsin.");
+        }
+
+        var recipeIngredients = menuItem.RecipeIngredients
+            .Where(item => item.KitchenIngredient is not null)
+            .ToList();
+        var recipeIngredientIds = recipeIngredients
+            .Select(item => item.KitchenIngredientId)
+            .ToHashSet();
+
+        if (removedIds.Any(id => !recipeIngredientIds.Contains(id)))
+        {
+            return KitchenCustomizationResult.Fail(
+                "Yalnızca öğünün mevcut reçetesindeki malzemeleri çıkarabilirsin.");
+        }
+
+        if (addedIds.Any(recipeIngredientIds.Contains))
+        {
+            return KitchenCustomizationResult.Fail(
+                "Öğünde zaten bulunan bir malzeme ekstra olarak eklenemez.");
+        }
+
+        var addedIngredients = addedIds.Count == 0
+            ? []
+            : await dbContext.KitchenIngredients
+                .AsNoTracking()
+                .Where(item => item.IsActive && addedIds.Contains(item.Id))
+                .OrderBy(item => item.Name)
+                .ToListAsync();
+
+        if (addedIngredients.Count != addedIds.Count)
+        {
+            return KitchenCustomizationResult.Fail(
+                "Eklemek istediğin malzemelerden biri artık kullanılamıyor.");
+        }
+
+        var removedNames = recipeIngredients
+            .Where(item => removedIds.Contains(item.KitchenIngredientId))
+            .Select(item => item.KitchenIngredient.Name)
+            .OrderBy(name => name)
+            .ToList();
+        var addedNames = addedIngredients
+            .Select(item => item.Name)
+            .ToList();
+
+        return KitchenCustomizationResult.Ok(
+            JoinIngredientNames(removedNames),
+            JoinIngredientNames(addedNames));
+    }
+
+    private static string? JoinIngredientNames(IReadOnlyCollection<string> names) =>
+        names.Count == 0 ? null : string.Join(", ", names);
+
+    private sealed record KitchenCustomizationResult(
+        bool Succeeded,
+        string? RemovedIngredientNames,
+        string? AddedIngredientNames,
+        string? ErrorMessage)
+    {
+        public static KitchenCustomizationResult Ok(
+            string? removedIngredientNames,
+            string? addedIngredientNames) =>
+            new(true, removedIngredientNames, addedIngredientNames, null);
+
+        public static KitchenCustomizationResult Fail(string errorMessage) =>
+            new(false, null, null, errorMessage);
     }
 }

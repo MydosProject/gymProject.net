@@ -95,7 +95,10 @@
                         <a class="blog-read-link"
                            asp-controller="Blog"
                            asp-action="Details"
-                           asp-route-slug="@featuredPost.Slug">
+                           asp-route-slug="@featuredPost.Slug"
+                           data-content-modal-open="blog-modal-@featuredPost.Id"
+                           aria-haspopup="dialog"
+                           aria-controls="blog-modal-@featuredPost.Id">
                             Yazıyı Oku
                             <span aria-hidden="true">↗</span>
                         </a>
@@ -145,7 +148,10 @@
                                 <a class="blog-read-link"
                                    asp-controller="Blog"
                                    asp-action="Details"
-                                   asp-route-slug="@item.Slug">
+                                   asp-route-slug="@item.Slug"
+                                   data-content-modal-open="blog-modal-@item.Id"
+                                   aria-haspopup="dialog"
+                                   aria-controls="blog-modal-@item.Id">
                                     Yazıyı Oku
                                     <span aria-hidden="true">↗</span>
                                 </a>
@@ -156,4 +162,67 @@
             }
         }
     </div>
+
+    @foreach (var item in Model)
+    {
+        var publishedAt = item.PublishedAtUtc ?? item.CreatedAtUtc;
+        var paragraphs = item.Content
+            .Replace("\r\n", "\n")
+            .Split("\n\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        <dialog id="blog-modal-@item.Id"
+                class="content-reading-modal blog-reading-modal"
+                aria-labelledby="blog-modal-title-@item.Id"
+                data-content-modal>
+            <article class="content-reading-modal-panel">
+                <button type="button"
+                        class="content-reading-modal-close"
+                        aria-label="Yazıyı kapat"
+                        data-content-modal-close>×</button>
+
+                <header class="content-reading-modal-header">
+                    <div>
+                        <p class="content-section-kicker">NO23 / BLOG</p>
+                        <div class="content-reading-modal-meta">
+                            <span>@GetCategoryName(item.Category)</span>
+                            <time datetime="@publishedAt.ToString("yyyy-MM-dd")">
+                                @publishedAt.ToString("dd.MM.yyyy")
+                            </time>
+                        </div>
+                        <h2 id="blog-modal-title-@item.Id">@item.Title</h2>
+                        <p>@item.Summary</p>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(item.CoverImageUrl))
+                    {
+                        <img src="@item.CoverImageUrl" alt="" loading="lazy" />
+                    }
+                    else
+                    {
+                        <div class="content-reading-modal-mark" aria-hidden="true">23</div>
+                    }
+                </header>
+
+                <div class="content-reading-modal-body">
+                    @foreach (var paragraph in paragraphs)
+                    {
+                        <p>@paragraph</p>
+                    }
+                </div>
+
+                <footer class="content-reading-modal-footer">
+                    @if (!string.IsNullOrWhiteSpace(item.Tags))
+                    {
+                        <div class="blog-tag-list" aria-label="Etiketler">
+                            @foreach (var tag in item.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                            {
+                                <span>#@tag.Trim()</span>
+                            }
+                        </div>
+                    }
+                    <button type="button" data-content-modal-close>Kapat</button>
+                </footer>
+            </article>
+        </dialog>
+    }
 </section>

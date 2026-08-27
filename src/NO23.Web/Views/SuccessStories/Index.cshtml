@@ -128,7 +128,10 @@
                                 <a class="story-read-link"
                                    asp-controller="SuccessStories"
                                    asp-action="Details"
-                                   asp-route-slug="@item.Slug">
+                                   asp-route-slug="@item.Slug"
+                                   data-content-modal-open="story-modal-@item.Id"
+                                   aria-haspopup="dialog"
+                                   aria-controls="story-modal-@item.Id">
                                     Hikâyeyi Oku
                                     <span aria-hidden="true">→</span>
                                 </a>
@@ -139,4 +142,95 @@
             }
         </section>
     </div>
+
+    @foreach (var item in Model)
+    {
+        var publishedAt = item.PublishedAtUtc ?? item.CreatedAtUtc;
+        var paragraphs = item.Story
+            .Replace("\r\n", "\n")
+            .Split("\n\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var hasImages = !string.IsNullOrWhiteSpace(item.BeforeImageUrl) ||
+                        !string.IsNullOrWhiteSpace(item.AfterImageUrl);
+
+        <dialog id="story-modal-@item.Id"
+                class="content-reading-modal story-reading-modal"
+                aria-labelledby="story-modal-title-@item.Id"
+                data-content-modal>
+            <article class="content-reading-modal-panel">
+                <button type="button"
+                        class="content-reading-modal-close"
+                        aria-label="Hikâyeyi kapat"
+                        data-content-modal-close>×</button>
+
+                <header class="content-reading-modal-header">
+                    <div>
+                        <p class="content-section-kicker">NO23 / REAL PROGRESS</p>
+                        <div class="content-reading-modal-meta">
+                            <span>@item.MemberName</span>
+                            <time datetime="@publishedAt.ToString("yyyy-MM-dd")">
+                                @publishedAt.ToString("dd.MM.yyyy")
+                            </time>
+                        </div>
+                        <h2 id="story-modal-title-@item.Id">@item.Title</h2>
+                        <p>@item.Summary</p>
+                    </div>
+
+                    @if (hasImages)
+                    {
+                        <div class="story-reading-modal-images">
+                            @if (!string.IsNullOrWhiteSpace(item.BeforeImageUrl))
+                            {
+                                <figure>
+                                    <img src="@item.BeforeImageUrl"
+                                         alt="@item.MemberName değişim öncesi"
+                                         loading="lazy" />
+                                    <figcaption>Başlangıç</figcaption>
+                                </figure>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(item.AfterImageUrl))
+                            {
+                                <figure>
+                                    <img src="@item.AfterImageUrl"
+                                         alt="@item.MemberName güncel durum"
+                                         loading="lazy" />
+                                    <figcaption>Şimdi</figcaption>
+                                </figure>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="content-reading-modal-mark" aria-hidden="true">23</div>
+                    }
+                </header>
+
+                @if (!string.IsNullOrWhiteSpace(item.AchievementMetric))
+                {
+                    <div class="story-reading-modal-metric">
+                        <span>Sonuç</span>
+                        <strong>@item.AchievementMetric</strong>
+                    </div>
+                }
+
+                <div class="content-reading-modal-body">
+                    @foreach (var paragraph in paragraphs)
+                    {
+                        <p>@paragraph</p>
+                    }
+                </div>
+
+                <footer class="content-reading-modal-footer">
+                    @if (!string.IsNullOrWhiteSpace(item.VideoUrl))
+                    {
+                        <a href="@item.VideoUrl"
+                           target="_blank"
+                           rel="noopener noreferrer">
+                            Video hikâyeyi izle <span aria-hidden="true">↗</span>
+                        </a>
+                    }
+                    <button type="button" data-content-modal-close>Kapat</button>
+                </footer>
+            </article>
+        </dialog>
+    }
 </section>

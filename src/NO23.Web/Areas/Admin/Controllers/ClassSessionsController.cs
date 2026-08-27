@@ -16,6 +16,7 @@ namespace NO23.Web.Areas.Admin.Controllers;
 [Authorize(Roles = ApplicationRoles.Admin)]
 public class ClassSessionsController(
     ApplicationDbContext dbContext,
+    ClassReservationService classReservationService,
     UserNotificationRealtimeService notificationService) : Controller
 {
     public async Task<IActionResult> Index()
@@ -36,6 +37,20 @@ public class ClassSessionsController(
                 StartsAtUtc = session.StartsAtUtc,
                 Capacity = session.CapacityOverride ?? session.GroupClass.Capacity,
                 ReservedCount = session.Reservations.Count(reservation => reservation.Status == ClassReservationStatus.Reserved),
+                Participants = session.Reservations
+                    .Where(reservation =>
+                        reservation.Status == ClassReservationStatus.Reserved)
+                    .OrderBy(reservation => reservation.ReservedAtUtc)
+                    .Select(reservation => new ClassSessionParticipantViewModel
+                    {
+                        ReservationId = reservation.Id,
+                        FirstName = reservation.MemberProfile.ApplicationUser.FirstName,
+                        LastName = reservation.MemberProfile.ApplicationUser.LastName,
+                        Email = reservation.MemberProfile.ApplicationUser.Email ?? string.Empty,
+                        PackageName = reservation.MemberProfile.MembershipPackage.Name,
+                        ReservedAtUtc = reservation.ReservedAtUtc
+                    })
+                    .ToList(),
                 session.Status
             })
             .ToListAsync();
@@ -50,6 +65,7 @@ public class ClassSessionsController(
                 StartsAtUtc = session.StartsAtUtc,
                 Capacity = session.Capacity,
                 ReservedCount = session.ReservedCount,
+                Participants = session.Participants,
                 Status = ClassSessionLifecycle
                     .GetEffectiveStatus(session.Status, session.StartsAtUtc, nowUtc)
                     .GetDisplayName(),
@@ -205,6 +221,24 @@ public class ClassSessionsController(
         }
 
         await CancelSessionAsync(session);
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RemoveReservation(
+        int id,
+        int reservationId)
+    {
+        var result = await classReservationService.CancelByAdminAsync(
+            id,
+            reservationId);
+
+        TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] =
+            result.Succeeded
+                ? "Katılımcı ders listesinden çıkarıldı; varsa ders hakkı iade edildi."
+                : result.ErrorMessage;
 
         return RedirectToAction(nameof(Index));
     }

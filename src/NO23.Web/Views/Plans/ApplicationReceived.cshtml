@@ -1,0 +1,41 @@
+@{
+    ViewData["Title"] = "Başvurun Alındı";
+    var packageName = ViewData["PackageName"]?.ToString();
+    var variantName = ViewData["VariantName"]?.ToString();
+}
+
+<section class="plan-application-page plan-application-result-page">
+    <div class="service-catalog-grid-bg" aria-hidden="true"></div>
+    <div class="container position-relative">
+        <div class="plan-application-result">
+            <span aria-hidden="true">✓</span>
+            <p class="section-kicker">NO23 / BAŞVURU</p>
+            <h1>Başvurunu aldık.</h1>
+            @if (!string.IsNullOrWhiteSpace(packageName))
+            {
+                <p>
+                    <strong>@packageName</strong>
+                    @if (!string.IsNullOrWhiteSpace(variantName))
+                    {
+                        <text> / @variantName</text>
+                    }
+                    seçimin ekibimize iletildi.
+                </p>
+            }
+            else
+            {
+                <p>Seçimin ekibimize iletildi.</p>
+            }
+            <p>Program ve başlangıç detayları için seninle iletişime geçeceğiz.</p>
+            <div class="plan-application-result-actions">
+                <a asp-controller="Plans" asp-action="Index" asp-route-category="membership">
+                    Paketlere Dön
+                    <span aria-hidden="true">→</span>
+                </a>
+                <a asp-controller="Home" asp-action="Index">
+                    Ana Sayfa
+                </a>
+            </div>
+        </div>
+    </div>
+</section>

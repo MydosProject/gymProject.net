@@ -22,6 +22,16 @@ public class CommunityEventDetailViewModel
 
     public int? Capacity { get; init; }
 
+    public int ReservedCount { get; init; }
+
+    public int? RemainingCapacity { get; init; }
+
+    public bool IsReserved { get; init; }
+
+    public bool CanReserve { get; init; }
+
+    public string? ReservationMessage { get; init; }
+
     public bool IsMembersOnly { get; init; }
 
     public string? ImageUrl { get; init; }

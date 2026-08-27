@@ -27,6 +27,10 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
             .HasConversion<string>()
             .HasMaxLength(40);
 
+        builder.Property(order => order.DeliveryMethod)
+            .HasConversion<string>()
+            .HasMaxLength(40);
+
         builder.Property(order => order.GuestEmail)
             .HasMaxLength(256);
 

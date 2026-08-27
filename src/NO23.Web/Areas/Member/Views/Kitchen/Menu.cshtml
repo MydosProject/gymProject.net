@@ -59,6 +59,24 @@
                 </p>
             </div>
 
+            <div class="kitchen-menu-order-info" role="note">
+                <div>
+                    <span aria-hidden="true">01</span>
+                    <p>
+                        <strong>Öğününü seç ve sipariş ver.</strong>
+                        Teslimat yöntemini, ürünü sepete ekledikten sonra sağ üstteki
+                        <em>Sepet</em> alanından belirleyebilirsin.
+                    </p>
+                </div>
+                <ul aria-label="Teslimat seçenekleri">
+                    <li>Adrese teslim</li>
+                    <li>
+                        Salondan teslim
+                        <small>@Model.ClubPickupDisplayName</small>
+                    </li>
+                </ul>
+            </div>
+
             <div class="kitchen-filter-panel" data-kitchen-filter-panel>
                 <div class="kitchen-filter-panel-heading">
                     <div>
@@ -229,6 +247,85 @@
                                             </p>
                                         }
                                     </div>
+
+                                    <form asp-area="Member"
+                                          asp-controller="Shop"
+                                          asp-action="AddKitchenMenuItem"
+                                          asp-antiforgery="true"
+                                          method="post"
+                                          class="shop-kitchen-order-form kitchen-menu-order-form">
+                                        <input type="hidden"
+                                               name="menuItemId"
+                                               value="@item.Id" />
+
+                                        @if (!item.HasAllergenConflict &&
+                                             (item.RemovableIngredients.Count > 0 ||
+                                              item.AdditionalIngredients.Count > 0))
+                                        {
+                                            <details class="shop-kitchen-customization kitchen-menu-customization">
+                                                <summary>
+                                                    Malzemeleri düzenle
+                                                    <span>İsteğe bağlı</span>
+                                                </summary>
+                                                <div>
+                                                    @if (item.RemovableIngredients.Count > 0)
+                                                    {
+                                                        <fieldset>
+                                                            <legend>Çıkarılacaklar</legend>
+                                                            @foreach (var ingredient in item.RemovableIngredients)
+                                                            {
+                                                                <label>
+                                                                    <input type="checkbox"
+                                                                           name="removedKitchenIngredientIds"
+                                                                           value="@ingredient.Id" />
+                                                                    <span>@ingredient.Name</span>
+                                                                </label>
+                                                            }
+                                                        </fieldset>
+                                                    }
+
+                                                    @if (item.AdditionalIngredients.Count > 0)
+                                                    {
+                                                        <fieldset>
+                                                            <legend>Eklenecekler</legend>
+                                                            @foreach (var ingredient in item.AdditionalIngredients)
+                                                            {
+                                                                <label>
+                                                                    <input type="checkbox"
+                                                                           name="addedKitchenIngredientIds"
+                                                                           value="@ingredient.Id" />
+                                                                    <span>@ingredient.Name</span>
+                                                                </label>
+                                                            }
+                                                        </fieldset>
+                                                    }
+
+                                                    <p>
+                                                        Bu seçimler ücret değiştirmeyen mutfak hazırlık talebidir.
+                                                    </p>
+                                                </div>
+                                            </details>
+                                        }
+
+                                        <div class="kitchen-menu-order-row">
+                                            <label>
+                                                <span>Adet</span>
+                                                <input type="number"
+                                                       name="quantity"
+                                                       value="1"
+                                                       min="1"
+                                                       max="20"
+                                                       inputmode="numeric" />
+                                            </label>
+                                            <button type="submit"
+                                                    disabled="@item.HasAllergenConflict">
+                                                @(item.HasAllergenConflict
+                                                    ? "Alerjen Nedeniyle Eklenemez"
+                                                    : "Sipariş Ver")
+                                                <span aria-hidden="true">→</span>
+                                            </button>
+                                        </div>
+                                    </form>
                                 </div>
                             </article>
                         </div>

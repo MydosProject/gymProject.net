@@ -30,6 +30,8 @@ public class ShopProduct
 
     public DateTime? UpdatedAtUtc { get; set; }
 
+    public ICollection<ShopProductVariant> Variants { get; set; } = [];
+
     public ICollection<CartItem> CartItems { get; set; } = [];
 
     public ICollection<OrderItem> OrderItems { get; set; } = [];

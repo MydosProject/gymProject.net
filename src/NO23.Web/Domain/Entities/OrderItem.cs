@@ -20,6 +20,16 @@ public class OrderItem
 
     public ShopProduct? ShopProduct { get; set; }
 
+    public int? ShopProductVariantId { get; set; }
+
+    public ShopProductVariant? ShopProductVariant { get; set; }
+
+    public string? SelectedSize { get; set; }
+
+    public string? RemovedIngredientNames { get; set; }
+
+    public string? AddedIngredientNames { get; set; }
+
     public string ProductName { get; set; } = string.Empty;
 
     public decimal UnitPrice { get; set; }

@@ -49,6 +49,7 @@ public async Task<IActionResult> Index(
                 order.CreatedAtUtc,
                 order.DeliveryDate,
                 order.DeliveryTimeSlot,
+                order.DeliveryMethod,
                 order.Total,
                 Items = order.Items
                     .OrderBy(item => item.Id)
@@ -56,6 +57,8 @@ public async Task<IActionResult> Index(
                     {
                         item.ProductName,
                         item.ItemType,
+                        item.RemovedIngredientNames,
+                        item.AddedIngredientNames,
                         item.UnitPrice,
                         item.Quantity,
                         item.LineTotal
@@ -75,6 +78,7 @@ public async Task<IActionResult> Index(
                 CreatedAtLocal = order.CreatedAtUtc.ToLocalTime(),
                 DeliveryDate = order.DeliveryDate,
                 DeliveryTimeSlot = order.DeliveryTimeSlot,
+                DeliveryMethod = order.DeliveryMethod.ToString(),
                 Total = order.Total,
                 ItemCount = order.Items.Sum(item => item.Quantity),
                 Items = order.Items
@@ -82,6 +86,8 @@ public async Task<IActionResult> Index(
                     {
                         ProductName = item.ProductName,
                         ItemType = item.ItemType.ToString(),
+                        RemovedIngredientNames = item.RemovedIngredientNames,
+                        AddedIngredientNames = item.AddedIngredientNames,
                         UnitPrice = item.UnitPrice,
                         Quantity = item.Quantity,
                         LineTotal = item.LineTotal

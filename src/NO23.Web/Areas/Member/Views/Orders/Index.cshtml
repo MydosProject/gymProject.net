@@ -207,6 +207,11 @@
                                     else
                                     {
                                         <div>
+                                            <dt>Teslimat yöntemi</dt>
+                                            <dd>@(order.DeliveryMethod == "ClubPickup" ? "Salondan teslim" : "Adrese teslim")</dd>
+                                        </div>
+
+                                        <div>
                                             <dt>Teslimat günü</dt>
                                             <dd>
                                                 @(order.DeliveryDate?.ToString("dd.MM.yyyy") ?? "-")
@@ -244,6 +249,14 @@
                                                 <div>
                                                     <span>@GetItemTypeName(item.ItemType)</span>
                                                     <strong>@item.ProductName</strong>
+                                                    @if (!string.IsNullOrWhiteSpace(item.RemovedIngredientNames))
+                                                    {
+                                                        <small><b>Çıkar:</b> @item.RemovedIngredientNames</small>
+                                                    }
+                                                    @if (!string.IsNullOrWhiteSpace(item.AddedIngredientNames))
+                                                    {
+                                                        <small><b>Ekstra:</b> @item.AddedIngredientNames</small>
+                                                    }
                                                 </div>
 
                                                 <div>
@@ -262,4 +275,3 @@
         </section>
     </div>
 </section>
-

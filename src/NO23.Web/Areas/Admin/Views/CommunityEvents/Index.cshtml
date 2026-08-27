@@ -112,7 +112,9 @@
                                 </td>
 
                                 <td data-label="Kapasite">
-                                    @(item.Capacity?.ToString() ?? "-")
+                                    @(item.Capacity.HasValue
+                                        ? $"{item.ReservedCount} / {item.Capacity}"
+                                        : $"{item.ReservedCount} / sınırsız")
                                 </td>
 
                                 <td class="text-end" data-label="İşlem">

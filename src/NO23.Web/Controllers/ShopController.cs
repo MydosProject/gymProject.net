@@ -6,6 +6,7 @@ using NO23.Web.Domain.Enums;
 using NO23.Web.Services;
 using NO23.Web.ViewModels.GuestOrders;
 using NO23.Web.Services.Payments;
+using Microsoft.Extensions.Options;
 
 namespace NO23.Web.Controllers;
 
@@ -13,8 +14,13 @@ namespace NO23.Web.Controllers;
 public class ShopController(
     ApplicationDbContext dbContext,
     CommerceService commerceService,
-    IyzicoPaymentService iyzicoPaymentService) : Controller
+    IyzicoPaymentService iyzicoPaymentService,
+    IOptions<IyzicoOptions> paymentOptions,
+    IOptions<ClubPickupOptions> clubPickupOptions) : Controller
 {
+    private readonly IyzicoOptions paymentSettings = paymentOptions.Value;
+    private readonly ClubPickupOptions clubPickupSettings = clubPickupOptions.Value;
+
     public async Task<IActionResult> Index()
     {
         var products = await dbContext.ShopProducts
@@ -55,6 +61,23 @@ public class ShopController(
         if (model is null)
         {
             return NotFound();
+        }
+
+        if (!paymentSettings.Enabled)
+        {
+            ModelState.AddModelError(
+                string.Empty,
+                "Online ödeme şu anda kullanılamıyor. Lütfen daha sonra tekrar dene.");
+        }
+
+        if (model.ShopVariants.Count > 0 &&
+            model.ShopVariants.All(variant =>
+                variant.Id != input.ShopProductVariantId ||
+                variant.StockQuantity <= 0))
+        {
+            ModelState.AddModelError(
+                "input.ShopProductVariantId",
+                "Stokta olan bir beden seçmelisin.");
         }
 
         if (!ModelState.IsValid)
@@ -153,6 +176,7 @@ public class ShopController(
             Total = order.Total,
             DeliveryDate = order.DeliveryDate.Value,
             DeliveryTimeSlot = order.DeliveryTimeSlot,
+            DeliveryMethodText = GetDeliveryMethodLabel(order.DeliveryMethod),
             PaymentStatus = order.PaymentStatus,
             PaymentStatusText = GetPaymentStatusLabel(order.PaymentStatus)
         });
@@ -173,7 +197,18 @@ public class ShopController(
                 Category = product.Category,
                 UnitPrice = product.UnitPrice,
                 ImageUrl = product.ImageUrl,
-                StockQuantity = product.StockQuantity
+                StockQuantity = product.StockQuantity,
+                ShopVariants = product.Variants
+                    .Where(variant => variant.IsActive)
+                    .OrderBy(variant => variant.DisplayOrder)
+                    .ThenBy(variant => variant.Size)
+                    .Select(variant => new GuestShopVariantViewModel
+                    {
+                        Id = variant.Id,
+                        Size = variant.Size,
+                        StockQuantity = variant.StockQuantity
+                    })
+                    .ToList()
             })
             .FirstOrDefaultAsync();
 
@@ -188,6 +223,9 @@ public class ShopController(
                 UnitPrice = product.UnitPrice,
                 ImageUrl = product.ImageUrl,
                 StockQuantity = product.StockQuantity,
+                ShopVariants = product.ShopVariants,
+                IsPaymentAvailable = paymentSettings.Enabled,
+                ClubPickupDisplayName = clubPickupSettings.EffectiveDisplayName,
                 Input = input ?? new GuestOrderInputViewModel()
             };
     }
@@ -204,4 +242,9 @@ public class ShopController(
         _ => status.ToString()
         };
     }
+
+    private static string GetDeliveryMethodLabel(OrderDeliveryMethod method) =>
+        method == OrderDeliveryMethod.ClubPickup
+            ? "Salondan teslim"
+            : "Adrese teslim";
 }

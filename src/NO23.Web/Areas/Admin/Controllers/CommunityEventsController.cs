@@ -32,6 +32,8 @@ public class CommunityEventsController(ApplicationDbContext dbContext) : Control
                 EndsAtUtc = item.EndsAtUtc,
                 Location = item.Location,
                 Capacity = item.Capacity,
+                ReservedCount = item.Reservations.Count(reservation =>
+                    reservation.Status == CommunityEventReservationStatus.Reserved),
                 DisplayOrder = item.DisplayOrder
             })
             .ToListAsync();
@@ -48,6 +50,7 @@ public class CommunityEventsController(ApplicationDbContext dbContext) : Control
                 StartsAtUtc = item.StartsAtUtc,
                 Location = item.Location,
                 Capacity = item.Capacity,
+                ReservedCount = item.ReservedCount,
                 DisplayOrder = item.DisplayOrder
             })
             .ToList();
@@ -116,6 +119,18 @@ public class CommunityEventsController(ApplicationDbContext dbContext) : Control
 
         ValidateEventDates(model);
 
+        var reservedCount = await dbContext.CommunityEventReservations
+            .CountAsync(reservation =>
+                reservation.CommunityEventId == id &&
+                reservation.Status == CommunityEventReservationStatus.Reserved);
+
+        if (model.Capacity.HasValue && model.Capacity.Value < reservedCount)
+        {
+            ModelState.AddModelError(
+                nameof(model.Capacity),
+                $"Kapasite mevcut {reservedCount} rezervasyondan düşük olamaz.");
+        }
+
         if (!ModelState.IsValid)
         {
             return View(model);
@@ -127,7 +142,9 @@ public class CommunityEventsController(ApplicationDbContext dbContext) : Control
             return View(model);
         }
 
-        var item = await dbContext.CommunityEvents.FindAsync(id);
+        var item = await dbContext.CommunityEvents
+            .Include(eventItem => eventItem.Reservations)
+            .FirstOrDefaultAsync(eventItem => eventItem.Id == id);
 
         if (item is null)
         {
@@ -135,6 +152,11 @@ public class CommunityEventsController(ApplicationDbContext dbContext) : Control
         }
 
         ApplyFormModel(item, model);
+
+        if (item.Status == CommunityEventStatus.Cancelled)
+        {
+            CancelActiveReservations(item);
+        }
         await dbContext.SaveChangesAsync();
 
         return RedirectToAction(nameof(Index));
@@ -144,7 +166,9 @@ public class CommunityEventsController(ApplicationDbContext dbContext) : Control
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Cancel(int id)
     {
-        var item = await dbContext.CommunityEvents.FindAsync(id);
+        var item = await dbContext.CommunityEvents
+            .Include(eventItem => eventItem.Reservations)
+            .FirstOrDefaultAsync(eventItem => eventItem.Id == id);
 
         if (item is null)
         {
@@ -168,6 +192,7 @@ public class CommunityEventsController(ApplicationDbContext dbContext) : Control
 
         item.Status = CommunityEventStatus.Cancelled;
         item.UpdatedAtUtc = DateTime.UtcNow;
+        CancelActiveReservations(item);
 
         await dbContext.SaveChangesAsync();
 
@@ -240,6 +265,20 @@ public class CommunityEventsController(ApplicationDbContext dbContext) : Control
             ModelState.AddModelError(
                 nameof(model.EndsAtUtc),
                 "Bitis tarihi baslangic tarihinden once olamaz.");
+        }
+    }
+
+    private static void CancelActiveReservations(CommunityEvent item)
+    {
+        var nowUtc = DateTime.UtcNow;
+
+        foreach (var reservation in item.Reservations.Where(reservation =>
+            reservation.Status == CommunityEventReservationStatus.Reserved))
+        {
+            reservation.Status = CommunityEventReservationStatus.Cancelled;
+            reservation.CancelledAtUtc = nowUtc;
+            reservation.CancellationReason =
+                "Etkinlik yönetici tarafından iptal edildi.";
         }
     }
 }

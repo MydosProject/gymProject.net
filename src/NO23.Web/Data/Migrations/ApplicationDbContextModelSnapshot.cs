@@ -311,6 +311,10 @@ namespace NO23.Web.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("AddedIngredientNames")
+                        .HasMaxLength(3000)
+                        .HasColumnType("character varying(3000)");
+
                     b.Property<DateTime>("CreatedAtUtc")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -332,7 +336,18 @@ namespace NO23.Web.Data.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
 
+                    b.Property<string>("RemovedIngredientNames")
+                        .HasMaxLength(3000)
+                        .HasColumnType("character varying(3000)");
+
+                    b.Property<string>("SelectedSize")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
                     b.Property<int?>("ShopProductId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("ShopProductVariantId")
                         .HasColumnType("integer");
 
                     b.Property<int>("ShoppingCartId")
@@ -350,6 +365,8 @@ namespace NO23.Web.Data.Migrations
                     b.HasIndex("KitchenMenuItemId");
 
                     b.HasIndex("ShopProductId");
+
+                    b.HasIndex("ShopProductVariantId");
 
                     b.HasIndex("ShoppingCartId");
 
@@ -682,6 +699,47 @@ namespace NO23.Web.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("CommunityEvents");
+                });
+
+            modelBuilder.Entity("NO23.Web.Domain.Entities.CommunityEventReservation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CancellationReason")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<DateTime?>("CancelledAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("CommunityEventId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MemberProfileId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("ReservedAtUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MemberProfileId");
+
+                    b.HasIndex("CommunityEventId", "MemberProfileId")
+                        .IsUnique();
+
+                    b.ToTable("CommunityEventReservations");
                 });
 
             modelBuilder.Entity("NO23.Web.Domain.Entities.GroupClass", b =>
@@ -1795,6 +1853,11 @@ namespace NO23.Web.Data.Migrations
                         .HasMaxLength(160)
                         .HasColumnType("character varying(160)");
 
+                    b.Property<string>("DeliveryMethod")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
                     b.Property<string>("DeliveryPhoneNumber")
                         .IsRequired()
                         .HasMaxLength(40)
@@ -1876,6 +1939,10 @@ namespace NO23.Web.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("AddedIngredientNames")
+                        .HasMaxLength(3000)
+                        .HasColumnType("character varying(3000)");
+
                     b.Property<string>("ItemType")
                         .IsRequired()
                         .HasMaxLength(40)
@@ -1899,7 +1966,18 @@ namespace NO23.Web.Data.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
 
+                    b.Property<string>("RemovedIngredientNames")
+                        .HasMaxLength(3000)
+                        .HasColumnType("character varying(3000)");
+
+                    b.Property<string>("SelectedSize")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
                     b.Property<int?>("ShopProductId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("ShopProductVariantId")
                         .HasColumnType("integer");
 
                     b.Property<decimal>("UnitPrice")
@@ -1913,6 +1991,8 @@ namespace NO23.Web.Data.Migrations
                     b.HasIndex("OrderId");
 
                     b.HasIndex("ShopProductId");
+
+                    b.HasIndex("ShopProductVariantId");
 
                     b.ToTable("OrderItems");
                 });
@@ -2258,6 +2338,70 @@ namespace NO23.Web.Data.Migrations
                     b.ToTable("ServicePackages");
                 });
 
+            modelBuilder.Entity("NO23.Web.Domain.Entities.ServicePackageApplication", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ApplicationUserId")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("character varying(160)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<int>("ServicePackageId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ServicePackageVariantId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApplicationUserId");
+
+                    b.HasIndex("CreatedAtUtc");
+
+                    b.HasIndex("ServicePackageId");
+
+                    b.HasIndex("ServicePackageVariantId");
+
+                    b.HasIndex("Status");
+
+                    b.ToTable("ServicePackageApplications");
+                });
+
             modelBuilder.Entity("NO23.Web.Domain.Entities.ServicePackageFeature", b =>
                 {
                     b.Property<int>("Id")
@@ -2429,6 +2573,47 @@ namespace NO23.Web.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("ShopProducts");
+                });
+
+            modelBuilder.Entity("NO23.Web.Domain.Entities.ShopProductVariant", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("ShopProductId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Size")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int>("StockQuantity")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShopProductId", "Size")
+                        .IsUnique();
+
+                    b.ToTable("ShopProductVariants");
                 });
 
             modelBuilder.Entity("NO23.Web.Domain.Entities.ShoppingCart", b =>
@@ -2772,6 +2957,11 @@ namespace NO23.Web.Data.Migrations
                         .HasForeignKey("ShopProductId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.HasOne("NO23.Web.Domain.Entities.ShopProductVariant", "ShopProductVariant")
+                        .WithMany("CartItems")
+                        .HasForeignKey("ShopProductVariantId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("NO23.Web.Domain.Entities.ShoppingCart", "ShoppingCart")
                         .WithMany("Items")
                         .HasForeignKey("ShoppingCartId")
@@ -2781,6 +2971,8 @@ namespace NO23.Web.Data.Migrations
                     b.Navigation("KitchenMenuItem");
 
                     b.Navigation("ShopProduct");
+
+                    b.Navigation("ShopProductVariant");
 
                     b.Navigation("ShoppingCart");
                 });
@@ -2841,6 +3033,25 @@ namespace NO23.Web.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("CommunityChallenge");
+
+                    b.Navigation("MemberProfile");
+                });
+
+            modelBuilder.Entity("NO23.Web.Domain.Entities.CommunityEventReservation", b =>
+                {
+                    b.HasOne("NO23.Web.Domain.Entities.CommunityEvent", "CommunityEvent")
+                        .WithMany("Reservations")
+                        .HasForeignKey("CommunityEventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("NO23.Web.Domain.Entities.MemberProfile", "MemberProfile")
+                        .WithMany("CommunityEventReservations")
+                        .HasForeignKey("MemberProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CommunityEvent");
 
                     b.Navigation("MemberProfile");
                 });
@@ -3119,11 +3330,18 @@ namespace NO23.Web.Data.Migrations
                         .HasForeignKey("ShopProductId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.HasOne("NO23.Web.Domain.Entities.ShopProductVariant", "ShopProductVariant")
+                        .WithMany("OrderItems")
+                        .HasForeignKey("ShopProductVariantId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("KitchenMenuItem");
 
                     b.Navigation("Order");
 
                     b.Navigation("ShopProduct");
+
+                    b.Navigation("ShopProductVariant");
                 });
 
             modelBuilder.Entity("NO23.Web.Domain.Entities.PaymentTransaction", b =>
@@ -3196,6 +3414,32 @@ namespace NO23.Web.Data.Migrations
                     b.Navigation("MembershipPackage");
                 });
 
+            modelBuilder.Entity("NO23.Web.Domain.Entities.ServicePackageApplication", b =>
+                {
+                    b.HasOne("NO23.Web.Domain.Entities.ApplicationUser", "ApplicationUser")
+                        .WithMany()
+                        .HasForeignKey("ApplicationUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("NO23.Web.Domain.Entities.ServicePackage", "ServicePackage")
+                        .WithMany()
+                        .HasForeignKey("ServicePackageId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NO23.Web.Domain.Entities.ServicePackageVariant", "ServicePackageVariant")
+                        .WithMany()
+                        .HasForeignKey("ServicePackageVariantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ApplicationUser");
+
+                    b.Navigation("ServicePackage");
+
+                    b.Navigation("ServicePackageVariant");
+                });
+
             modelBuilder.Entity("NO23.Web.Domain.Entities.ServicePackageFeature", b =>
                 {
                     b.HasOne("NO23.Web.Domain.Entities.ServicePackage", "ServicePackage")
@@ -3216,6 +3460,17 @@ namespace NO23.Web.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("ServicePackage");
+                });
+
+            modelBuilder.Entity("NO23.Web.Domain.Entities.ShopProductVariant", b =>
+                {
+                    b.HasOne("NO23.Web.Domain.Entities.ShopProduct", "ShopProduct")
+                        .WithMany("Variants")
+                        .HasForeignKey("ShopProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ShopProduct");
                 });
 
             modelBuilder.Entity("NO23.Web.Domain.Entities.ShoppingCart", b =>
@@ -3314,6 +3569,11 @@ namespace NO23.Web.Data.Migrations
                     b.Navigation("ProgressEntries");
                 });
 
+            modelBuilder.Entity("NO23.Web.Domain.Entities.CommunityEvent", b =>
+                {
+                    b.Navigation("Reservations");
+                });
+
             modelBuilder.Entity("NO23.Web.Domain.Entities.GroupClass", b =>
                 {
                     b.Navigation("Sessions");
@@ -3389,6 +3649,8 @@ namespace NO23.Web.Data.Migrations
 
                     b.Navigation("CommunityChallengeParticipations");
 
+                    b.Navigation("CommunityEventReservations");
+
                     b.Navigation("KitchenSubscriptions");
 
                     b.Navigation("Orders");
@@ -3436,6 +3698,15 @@ namespace NO23.Web.Data.Migrations
                 });
 
             modelBuilder.Entity("NO23.Web.Domain.Entities.ShopProduct", b =>
+                {
+                    b.Navigation("CartItems");
+
+                    b.Navigation("OrderItems");
+
+                    b.Navigation("Variants");
+                });
+
+            modelBuilder.Entity("NO23.Web.Domain.Entities.ShopProductVariant", b =>
                 {
                     b.Navigation("CartItems");
 

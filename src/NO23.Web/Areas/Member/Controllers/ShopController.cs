@@ -6,7 +6,9 @@ using NO23.Web.Data;
 using NO23.Web.Data.Seed;
 using NO23.Web.Services;
 using NO23.Web.ViewModels.Member;
+using NO23.Web.ViewModels;
 using NO23.Web.Services.Payments;
+using Microsoft.Extensions.Options;
 
 namespace NO23.Web.Areas.Member.Controllers;
 
@@ -16,8 +18,11 @@ public class ShopController(
     ApplicationDbContext dbContext,
     CommerceService commerceService,
     MemberCartQueryService cartQueryService,
-    IyzicoPaymentService iyzicoPaymentService) : Controller
+    IyzicoPaymentService iyzicoPaymentService,
+    IOptions<IyzicoOptions> paymentOptions) : Controller
 {
+    private readonly IyzicoOptions paymentSettings = paymentOptions.Value;
+
     public async Task<IActionResult> Index()
     {
         return View(await BuildDashboardAsync(new CheckoutInputViewModel()));
@@ -25,7 +30,10 @@ public class ShopController(
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> AddShopProduct(int productId, int quantity = 1)
+    public async Task<IActionResult> AddShopProduct(
+        int productId,
+        int quantity = 1,
+        int? shopProductVariantId = null)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -34,7 +42,11 @@ public class ShopController(
             return Challenge();
         }
 
-        var result = await commerceService.AddShopProductToCartAsync(userId, productId, quantity);
+        var result = await commerceService.AddShopProductToCartAsync(
+            userId,
+            productId,
+            quantity,
+            shopProductVariantId);
         return await RespondToCartMutationAsync(
             result,
             userId,
@@ -43,7 +55,11 @@ public class ShopController(
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> AddKitchenMenuItem(int menuItemId, int quantity = 1)
+    public async Task<IActionResult> AddKitchenMenuItem(
+        int menuItemId,
+        int quantity = 1,
+        int[]? removedKitchenIngredientIds = null,
+        int[]? addedKitchenIngredientIds = null)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -52,7 +68,12 @@ public class ShopController(
             return Challenge();
         }
 
-        var result = await commerceService.AddKitchenMenuItemToCartAsync(userId, menuItemId, quantity);
+        var result = await commerceService.AddKitchenMenuItemToCartAsync(
+            userId,
+            menuItemId,
+            quantity,
+            removedKitchenIngredientIds,
+            addedKitchenIngredientIds);
         return await RespondToCartMutationAsync(
             result,
             userId,
@@ -81,6 +102,24 @@ public class ShopController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Checkout([Bind(Prefix = "CheckoutInput")] CheckoutInputViewModel input)
     {
+        if (!paymentSettings.Enabled)
+        {
+            var paymentUnavailableResult =
+                CommerceResult.Fail("Online ödeme şu anda kullanılamıyor. Lütfen daha sonra tekrar dene.");
+
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrWhiteSpace(currentUserId))
+            {
+                return Challenge();
+            }
+
+            return await RespondToCartMutationAsync(
+                paymentUnavailableResult,
+                currentUserId,
+                string.Empty);
+        }
+
         if (!ModelState.IsValid)
         {
             if (IsAjaxRequest())
@@ -115,6 +154,7 @@ public class ShopController(
     userId,
     new DeliveryDetails
     {
+        DeliveryMethod = input.DeliveryMethod,
         FullName = input.FullName,
         PhoneNumber = input.PhoneNumber,
         AddressLine = input.AddressLine,
@@ -198,7 +238,18 @@ public class ShopController(
                 StockQuantity = product.StockQuantity,
                 Description = product.Description,
                 ImageUrl = product.ImageUrl,
-                Tags = product.Tags
+                Tags = product.Tags,
+                Variants = product.Variants
+                    .Where(variant => variant.IsActive)
+                    .OrderBy(variant => variant.DisplayOrder)
+                    .ThenBy(variant => variant.Size)
+                    .Select(variant => new ShopProductVariantOptionViewModel
+                    {
+                        Id = variant.Id,
+                        Size = variant.Size,
+                        StockQuantity = variant.StockQuantity
+                    })
+                    .ToList()
             })
             .ToListAsync();
 
@@ -224,6 +275,26 @@ public class ShopController(
                 MatchingAllergenNames = item.MenuItemAllergens
                     .Where(x => x.KitchenAllergen.Members.Any(m => m.MemberProfile.ApplicationUserId == userId))
                     .Select(x => x.KitchenAllergen.Name).ToList(),
+                RemovableIngredients = item.RecipeIngredients
+                    .OrderBy(recipe => recipe.KitchenIngredient.Name)
+                    .Select(recipe => new KitchenCustomizationOptionViewModel
+                    {
+                        Id = recipe.KitchenIngredientId,
+                        Name = recipe.KitchenIngredient.Name
+                    })
+                    .ToList(),
+                AdditionalIngredients = dbContext.KitchenIngredients
+                    .Where(ingredient =>
+                        ingredient.IsActive &&
+                        !item.RecipeIngredients.Any(recipe =>
+                            recipe.KitchenIngredientId == ingredient.Id))
+                    .OrderBy(ingredient => ingredient.Name)
+                    .Select(ingredient => new KitchenCustomizationOptionViewModel
+                    {
+                        Id = ingredient.Id,
+                        Name = ingredient.Name
+                    })
+                    .ToList(),
                 Tags = item.Tags
             })
             .ToListAsync();
@@ -241,6 +312,8 @@ public class ShopController(
                     Id = item.Id,
                     ItemType = item.ItemType.ToString(),
                     ProductName = item.ProductName,
+                    RemovedIngredientNames = item.RemovedIngredientNames,
+                    AddedIngredientNames = item.AddedIngredientNames,
                     UnitPrice = item.UnitPrice,
                     Quantity = item.Quantity,
                     LineTotal = item.UnitPrice * item.Quantity

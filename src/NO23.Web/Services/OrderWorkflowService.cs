@@ -204,6 +204,8 @@ UserNotificationRealtimeService? notificationService = null)
             .Include(order => order.MemberProfile)
             .Include(order => order.Items)
             .ThenInclude(item => item.ShopProduct)
+            .Include(order => order.Items)
+            .ThenInclude(item => item.ShopProductVariant)
             .FirstOrDefaultAsync(order => order.Id == orderId);
     }
 
@@ -222,6 +224,12 @@ UserNotificationRealtimeService? notificationService = null)
     {
         item.ShopProduct!.StockQuantity += item.Quantity;
         item.ShopProduct.UpdatedAtUtc = restoredAtUtc;
+
+        if (item.ShopProductVariant is not null)
+        {
+            item.ShopProductVariant.StockQuantity += item.Quantity;
+            item.ShopProductVariant.UpdatedAtUtc = restoredAtUtc;
+        }
     }
 
     order.StockRestoredAtUtc = restoredAtUtc;

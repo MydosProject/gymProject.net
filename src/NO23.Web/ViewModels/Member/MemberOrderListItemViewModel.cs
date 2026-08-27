@@ -18,6 +18,8 @@ public class MemberOrderListItemViewModel
 
     public string? DeliveryTimeSlot { get; init; }
 
+    public string DeliveryMethod { get; init; } = string.Empty;
+
     public decimal Total { get; init; }
 
     public int ItemCount { get; init; }

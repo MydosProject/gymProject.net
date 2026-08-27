@@ -87,11 +87,12 @@
                                 <td data-label="Durum"><span class="admin-status">@order.Status</span></td>
                                 <td data-label="Ödeme">@order.PaymentStatus</td>
                                 <td data-label="Teslimat">
+                                <strong>@order.DeliveryMethod</strong>
                                 @if (order.DeliveryDate.HasValue)
                                 {
-                                    <strong>
+                                    <small class="admin-cell-note">
                                         @order.DeliveryDate.Value.ToString("dd.MM.yyyy")
-                                    </strong>
+                                    </small>
 
                                     <small class="admin-cell-note">
                                         @(order.DeliveryTimeSlot ?? "-")
@@ -102,7 +103,27 @@
                                     <strong>Paket planından belirlenecek</strong>
                                 }
                                 </td>
-                                <td data-label="Ürün">@order.ItemCount</td>
+                                <td data-label="Ürün">
+                                    <details class="admin-order-items">
+                                        <summary>@order.ItemCount adet</summary>
+                                        <div>
+                                            @foreach (var item in order.Items)
+                                            {
+                                                <p>
+                                                    <strong>@item.Quantity × @item.ProductName</strong>
+                                                    @if (!string.IsNullOrWhiteSpace(item.RemovedIngredientNames))
+                                                    {
+                                                        <small><b>Çıkar:</b> @item.RemovedIngredientNames</small>
+                                                    }
+                                                    @if (!string.IsNullOrWhiteSpace(item.AddedIngredientNames))
+                                                    {
+                                                        <small><b>Ekstra:</b> @item.AddedIngredientNames</small>
+                                                    }
+                                                </p>
+                                            }
+                                        </div>
+                                    </details>
+                                </td>
                                 <td data-label="Toplam"><strong>@order.Total.ToString("C0")</strong></td>
                                 <td class="text-end" data-label="İşlem">
                                     @if (order.AvailablePaymentStatuses.Count == 0 &&

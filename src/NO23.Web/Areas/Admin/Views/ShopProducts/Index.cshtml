@@ -48,7 +48,15 @@
                         {
                             <tr>
                                 <td data-label="Sıra"><span class="admin-order-no">@product.DisplayOrder.ToString("00")</span></td>
-                                <td data-label="Ürün"><strong>@product.Name</strong></td>
+                                <td data-label="Ürün">
+                                    <strong>@product.Name</strong>
+                                    @if (product.VariantSummaries.Count > 0)
+                                    {
+                                        <small class="admin-cell-note">
+                                            @string.Join(" · ", product.VariantSummaries)
+                                        </small>
+                                    }
+                                </td>
                                 <td data-label="SKU"><span class="admin-code">@product.Sku</span></td>
                                 <td data-label="Kategori">@product.Category</td>
                                 <td data-label="Fiyat"><strong>@product.UnitPrice.ToString("C0")</strong></td>

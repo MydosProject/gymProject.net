@@ -51,4 +51,23 @@ public class ShopProductFormViewModel
     [Range(1, 100)]
     [Display(Name = "Display order")]
     public int DisplayOrder { get; set; }
+
+    public List<ShopProductVariantFormViewModel> Variants { get; set; } = [];
+}
+
+public class ShopProductVariantFormViewModel
+{
+    public int Id { get; set; }
+
+    [Required(ErrorMessage = "Beden alanı zorunludur.")]
+    [StringLength(50)]
+    [Display(Name = "Beden")]
+    public string Size { get; set; } = string.Empty;
+
+    [Range(0, 100000)]
+    [Display(Name = "Stok adedi")]
+    public int StockQuantity { get; set; }
+
+    [Display(Name = "Aktif")]
+    public bool IsActive { get; set; } = true;
 }

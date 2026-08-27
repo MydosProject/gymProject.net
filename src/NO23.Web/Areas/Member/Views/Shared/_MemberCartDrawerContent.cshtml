@@ -1,3 +1,4 @@
+@using NO23.Web.Domain.Enums
 @model MemberCartPanelViewModel
 
 @{
@@ -41,6 +42,14 @@ else
                     <small>@GetCartItemTypeName(item.ItemType)</small>
                     <h3>@item.ProductName</h3>
                     <p>@item.Quantity adet · @item.UnitPrice.ToString("N0") ₺</p>
+                    @if (!string.IsNullOrWhiteSpace(item.RemovedIngredientNames))
+                    {
+                        <p class="member-cart-customization"><strong>Çıkar:</strong> @item.RemovedIngredientNames</p>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(item.AddedIngredientNames))
+                    {
+                        <p class="member-cart-customization"><strong>Ekstra:</strong> @item.AddedIngredientNames</p>
+                    }
                 </div>
                 <div>
                     <strong>@item.LineTotal.ToString("N0") ₺</strong>
@@ -77,10 +86,39 @@ else
               asp-antiforgery="true"
               method="post"
               class="shop-delivery-form"
-              data-member-cart-checkout>
+              data-member-cart-checkout
+              data-turkey-location-root>
             <div asp-validation-summary="ModelOnly"
                  class="shop-validation-summary"
                  role="alert"></div>
+
+            @if (!Model.IsPaymentAvailable)
+            {
+                <div class="alert alert-warning" role="status">
+                    Online ödeme şu anda kullanılamıyor. Sipariş oluşturma geçici olarak durduruldu.
+                </div>
+            }
+
+            <fieldset class="shop-delivery-method"
+                      data-delivery-method-root>
+                <legend>Teslimat yöntemi</legend>
+                <label>
+                    <input asp-for="CheckoutInput.DeliveryMethod"
+                           type="radio"
+                           value="@OrderDeliveryMethod.AddressDelivery" />
+                    <span>Adrese teslim</span>
+                </label>
+                <label>
+                    <input asp-for="CheckoutInput.DeliveryMethod"
+                           type="radio"
+                           value="@OrderDeliveryMethod.ClubPickup" />
+                    <span>
+                        Salondan teslim
+                        <small>@Model.ClubPickupDisplayName</small>
+                    </span>
+                </label>
+                <span asp-validation-for="CheckoutInput.DeliveryMethod"></span>
+            </fieldset>
 
             <div class="shop-form-grid">
                 <div class="shop-form-field shop-form-field-wide">
@@ -93,29 +131,34 @@ else
                     <input asp-for="CheckoutInput.PhoneNumber" autocomplete="tel" />
                     <span asp-validation-for="CheckoutInput.PhoneNumber"></span>
                 </div>
-                <div class="shop-form-field shop-form-field-wide">
+                <div class="shop-form-field shop-form-field-wide"
+                     data-address-delivery-field>
                     <label asp-for="CheckoutInput.AddressLine">Adres</label>
                     <textarea asp-for="CheckoutInput.AddressLine"
                               rows="3"
                               autocomplete="street-address"></textarea>
                     <span asp-validation-for="CheckoutInput.AddressLine"></span>
                 </div>
-                <div class="shop-form-field">
-                    <label asp-for="CheckoutInput.District">İlçe</label>
-                    <input asp-for="CheckoutInput.District" autocomplete="address-level2" />
-                    <span asp-validation-for="CheckoutInput.District"></span>
-                </div>
-                <div class="shop-form-field">
-                    <label asp-for="CheckoutInput.City">Şehir</label>
-                    <input asp-for="CheckoutInput.City" autocomplete="address-level1" />
+                <div class="shop-form-field" data-address-delivery-field>
+                    <label asp-for="CheckoutInput.City">İl</label>
+                    <select asp-for="CheckoutInput.City"
+                            autocomplete="address-level1"
+                            data-turkey-city
+                            data-selected-value="@Model.CheckoutInput.City">
+                        <option value="">İl seçin</option>
+                    </select>
                     <span asp-validation-for="CheckoutInput.City"></span>
                 </div>
-                <div class="shop-form-field shop-form-field-wide">
-                    <label asp-for="CheckoutInput.PostalCode">
-                        Posta Kodu <small>İsteğe bağlı</small>
-                    </label>
-                    <input asp-for="CheckoutInput.PostalCode" autocomplete="postal-code" />
-                    <span asp-validation-for="CheckoutInput.PostalCode"></span>
+                <div class="shop-form-field" data-address-delivery-field>
+                    <label asp-for="CheckoutInput.District">İlçe</label>
+                    <select asp-for="CheckoutInput.District"
+                            autocomplete="address-level2"
+                            data-turkey-district
+                            data-selected-value="@Model.CheckoutInput.District"
+                            disabled>
+                        <option value="">Önce il seçin</option>
+                    </select>
+                    <span asp-validation-for="CheckoutInput.District"></span>
                 </div>
                 <div class="shop-form-field">
                     <label asp-for="CheckoutInput.DeliveryDate">Teslimat Tarihi</label>
@@ -140,14 +183,16 @@ else
                 </div>
             </div>
 
-            <button type="submit" class="shop-checkout-button">
-                <span>Siparişi Oluştur</span>
+            <button type="submit"
+                    class="shop-checkout-button"
+                    disabled="@(!Model.IsPaymentAvailable)">
+                <span>@(Model.IsPaymentAvailable ? "Ödemeye Geç" : "Ödeme Kullanılamıyor")</span>
                 <strong>@Model.CartSubtotal.ToString("N0") ₺</strong>
             </button>
 
             <p class="shop-checkout-note">
-                Bu proje kapsamında gerçek ödeme alınmaz. Siparişin yönetim
-                paneline iletilir ve teslimat bilgilerinle kaydedilir.
+                Sipariş kaydı, güvenli iyzico ödeme ekranı başarıyla
+                başlatıldığında tamamlanır.
             </p>
         </form>
     </section>
