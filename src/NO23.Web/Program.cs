@@ -538,8 +538,6 @@ if (app.Environment.IsDevelopment())
     .Produces<CalorieCalculationResponse>();
 }
 
-app.MapStaticAssets();
-
 app.MapHub<TrainerChatHub>(
     "/hubs/trainer-chat");
 
@@ -548,15 +546,12 @@ app.MapHub<UserNotificationHub>(
 
 app.MapControllerRoute(
     name: "areas",
-    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
+    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
-app.MapRazorPages()
-   .WithStaticAssets();
+app.MapRazorPages();
 
 app.Run();

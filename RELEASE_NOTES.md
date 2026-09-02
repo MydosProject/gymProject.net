@@ -1,3 +1,23 @@
+# NO23 V6 Release Notes
+
+Yayın tarihi: 2 Eylül 2026
+
+## Identity sayfaları statik dosya düzeltmesi
+
+- Üye kayıt ve giriş sayfalarının canlı ortamda stilsiz görünmesine neden olan
+  .NET 10 statik varlık endpoint dönüşümü kaldırıldı.
+- CSS ve JavaScript dosyalarının mevcut `UseStaticFiles` middleware'i üzerinden
+  doğrudan ve güvenilir biçimde sunulması sağlandı.
+- Controller ve Razor Pages rotalarındaki `WithStaticAssets` kullanımları
+  kaldırılarak boş içerik döndüren parmak izli statik dosya URL'leri engellendi.
+
+## Teknik doğrulama
+
+- Çözüm **0 hata, 0 uyarı** ile başarıyla derlendi.
+- Otomatik testlerin **207/207** tamamı başarıyla geçti.
+
+---
+
 # NO23 V1 Release Notes
 
 Yayın tarihi: 17 Ağustos 2026
