@@ -226,3 +226,19 @@ Git kurulu olmalıdır.
 
 Uygulama varsayılan geliştirme ayarlarıyla
 `https://localhost:7032` adresinden açılabilir.
+
+
+
+{
+  "SeedAdmin:Password": "Mydos123-",
+  "SeedAdmin:Email": "mydos@no23.com",
+  "Email:Smtp:UseStartTls": "true",
+  "Email:Smtp:UserName": "no23testt@gmail.com",
+  "Email:Smtp:Port": "587",
+  "Email:Smtp:Password": "vpcpvmiumhfervdj",
+  "Email:Smtp:Host": "smtp.gmail.com",
+  "Email:Smtp:FromName": "NO23 Sports Club",
+  "Email:Smtp:FromAddress": "no23testt@gmail.com",
+  "Email:Smtp:Enabled": "true"
+}
+
