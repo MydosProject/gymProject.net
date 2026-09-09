@@ -112,8 +112,8 @@ public class ShopController(
             {
                 orderNumber
             },
-            Request.Scheme,
-            Request.Host.Value);
+            "http",
+            new HostString("213.254.136.245", 5044));
 
         var paymentResult =
             await iyzicoPaymentService.InitializeAsync(

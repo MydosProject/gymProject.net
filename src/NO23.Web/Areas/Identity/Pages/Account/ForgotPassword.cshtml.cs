@@ -12,7 +12,8 @@ namespace NO23.Web.Areas.Identity.Pages.Account;
 
 public class ForgotPasswordModel(
     UserManager<ApplicationUser> userManager,
-    IEmailSender emailSender) : PageModel
+    IEmailSender emailSender,
+    LinkGenerator linkGenerator) : PageModel
 {
     [BindProperty]
     public InputModel Input { get; set; } = new();
@@ -36,15 +37,16 @@ public class ForgotPasswordModel(
             var code = await userManager.GeneratePasswordResetTokenAsync(user);
             code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
 
-            var callbackUrl = Url.Page(
-                "/Account/ResetPassword",
-                pageHandler: null,
+            var callbackUrl = linkGenerator.GetUriByPage(
+                HttpContext,
+                page: "/Account/ResetPassword",
                 values: new
                 {
                     area = "Identity",
                     code
                 },
-                protocol: Request.Scheme);
+                scheme: "http",
+                host: new HostString("213.254.136.245", 5044));
 
             if (!string.IsNullOrWhiteSpace(callbackUrl))
             {

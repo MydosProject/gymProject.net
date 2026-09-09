@@ -19,7 +19,8 @@ namespace NO23.Web.Areas.Admin.Controllers;
 public class TrainersController(
     ApplicationDbContext dbContext,
     UserManager<ApplicationUser> userManager,
-    IEmailSender emailSender) : Controller
+    IEmailSender emailSender,
+    LinkGenerator linkGenerator) : Controller
 {
     public async Task<IActionResult> Index()
     {
@@ -297,9 +298,12 @@ public class TrainersController(
         {
             var code = await userManager.GeneratePasswordResetTokenAsync(user);
             code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-            var callbackUrl = Url.Page(
-                "/Account/ResetPassword", null,
-                new { area = "Identity", code, email = user.Email }, Request.Scheme);
+            var callbackUrl = linkGenerator.GetUriByPage(
+                HttpContext,
+                page: "/Account/ResetPassword",
+                values: new { area = "Identity", code, email = user.Email },
+                scheme: "http",
+                host: new HostString("213.254.136.245", 5044));
             if (string.IsNullOrWhiteSpace(callbackUrl)) return false;
 
             var safeName = HtmlEncoder.Default.Encode(trainerName);
@@ -338,7 +342,19 @@ public class TrainersController(
         ViewData["TrainerName"] = trainer.FirstName + " " + trainer.LastName;
         ViewData["Email"] = trainer.ApplicationUser.Email;
         Response.Headers["Referrer-Policy"] = "no-referrer";
-        return View("InvitationLink", Url.Page("/Account/ResetPassword", null, new { area = "Identity", code, email = trainer.ApplicationUser.Email }, Request.Scheme));
+        var callbackUrl = linkGenerator.GetUriByPage(
+            HttpContext,
+            page: "/Account/ResetPassword",
+            values: new
+            {
+                area = "Identity",
+                code,
+                email = trainer.ApplicationUser.Email
+            },
+            scheme: "http",
+            host: new HostString("213.254.136.245", 5044));
+
+        return View("InvitationLink", callbackUrl);
     }
 
     private void AddIdentityErrors(IdentityResult result)
