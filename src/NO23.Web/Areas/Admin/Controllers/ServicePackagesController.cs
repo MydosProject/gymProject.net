@@ -6,6 +6,7 @@ using NO23.Web.Data.Seed;
 using NO23.Web.Domain.Entities;
 using NO23.Web.Domain.Enums;
 using NO23.Web.ViewModels.Admin;
+using NO23.Web.Services;
 
 namespace NO23.Web.Areas.Admin.Controllers;
 
@@ -47,6 +48,7 @@ public class ServicePackagesController(ApplicationDbContext dbContext) : Control
         { Id = item.Id, Category = item.Category, Slug = item.Slug, Name = item.Name,
           Subtitle = item.Subtitle, Description = item.Description, MembershipPackageId = item.MembershipPackageId,
           IsFeatured = item.IsFeatured, IsActive = item.IsActive, DisplayOrder = item.DisplayOrder,
+          KitchenDiscountPercent = item.KitchenDiscountPercent, CoffeeDiscountPercent = item.CoffeeDiscountPercent, ShopDiscountPercent = item.ShopDiscountPercent, IncludesRecoveryRoom = item.IncludesRecoveryRoom,
           FeaturesText = string.Join(Environment.NewLine, item.Features.OrderBy(x => x.DisplayOrder).Select(x => x.Text)) };
         await PopulateAsync(model); return View(model);
     }
@@ -118,7 +120,7 @@ public class ServicePackagesController(ApplicationDbContext dbContext) : Control
             var variants = await dbContext.ServicePackageVariants.AsNoTracking().Where(x => x.ServicePackageId == model.Id)
                 .OrderBy(x => x.DisplayOrder).ToListAsync();
             model.Variants = variants.Select(x => new ServicePackageVariantListItemViewModel
-            { Id = x.Id, Name = x.Name, Price = x.MonthlyPrice.HasValue ? $"{x.MonthlyPrice:N0} ₺ / ay" : $"{x.TotalPrice:N0} ₺",
+            { Id = x.Id, Name = x.Name, Price = ServicePackageCatalogService.Present(x).Price,
               Rights = Rights(x), IsRecommended = x.IsRecommended, IsActive = x.IsActive }).ToList();
         }
     }
@@ -136,18 +138,24 @@ public class ServicePackagesController(ApplicationDbContext dbContext) : Control
         if (!await dbContext.ServicePackages.AnyAsync(x => x.Id == model.ServicePackageId)) ModelState.AddModelError(string.Empty, "Paket bulunamadı.");
         if (await dbContext.ServicePackageVariants.AnyAsync(x => x.ServicePackageId == model.ServicePackageId && x.Name == model.Name && (!id.HasValue || x.Id != id)))
             ModelState.AddModelError(nameof(model.Name), "Aynı adlı varyant zaten var.");
-        if (model.BillingType == ServicePackageBillingType.MonthlySubscription && !model.MonthlyPrice.HasValue)
-            ModelState.AddModelError(nameof(model.MonthlyPrice), "Aylık abonelikte aylık fiyat zorunludur.");
+        if (!model.PriceOnRequest && model.BillingType == ServicePackageBillingType.MonthlySubscription && model.MonthlyPrice is not > 0)
+            ModelState.AddModelError(nameof(model.MonthlyPrice), "Aylık abonelikte sıfırdan büyük aylık fiyat zorunludur.");
+        if (!model.PriceOnRequest && model.BillingType == ServicePackageBillingType.OneTime && model.TotalPrice <= 0)
+            ModelState.AddModelError(nameof(model.TotalPrice), "Toplam fiyat sıfırdan büyük olmalıdır veya teklif seçeneğini işaretlemelisin.");
+        if (model.BonusMonths > 0 && (model.DurationMonths is not > 0 || !model.LessonsRenewMonthly))
+            ModelState.AddModelError(nameof(model.BonusMonths), "Hediye ay için paket süresini ve aylık yenilenen ders haklarını belirtmelisin.");
     }
 
     private async Task SetPackageNameAsync(ServicePackageVariantFormViewModel model) => model.PackageName =
         await dbContext.ServicePackages.Where(x => x.Id == model.ServicePackageId).Select(x => x.Name).FirstOrDefaultAsync() ?? string.Empty;
     private static void Apply(ServicePackage x, ServicePackageFormViewModel m)
-    { x.Category=m.Category; x.Slug=m.Slug.Trim().ToLower(); x.Name=m.Name.Trim(); x.Subtitle=m.Subtitle.Trim(); x.Description=m.Description.Trim(); x.MembershipPackageId=m.Category==ServicePackageCategory.Membership?m.MembershipPackageId:null; x.IsFeatured=m.IsFeatured; x.IsActive=m.IsActive; x.DisplayOrder=m.DisplayOrder; x.UpdatedAtUtc=DateTime.UtcNow; }
+    { x.Category=m.Category; x.Slug=m.Slug.Trim().ToLower(); x.Name=m.Name.Trim(); x.Subtitle=m.Subtitle.Trim(); x.Description=m.Description.Trim(); x.MembershipPackageId=m.Category==ServicePackageCategory.Membership?m.MembershipPackageId:null; x.KitchenDiscountPercent=m.KitchenDiscountPercent; x.CoffeeDiscountPercent=m.CoffeeDiscountPercent; x.ShopDiscountPercent=m.ShopDiscountPercent; x.IncludesRecoveryRoom=m.IncludesRecoveryRoom; x.IsFeatured=m.IsFeatured; x.IsActive=m.IsActive; x.DisplayOrder=m.DisplayOrder; x.UpdatedAtUtc=DateTime.UtcNow; }
     private static void ApplyFeatures(ServicePackage x, string text) { var lines=text.Split(['\r','\n'],StringSplitOptions.TrimEntries|StringSplitOptions.RemoveEmptyEntries).Distinct(); var i=1; foreach(var line in lines)x.Features.Add(new ServicePackageFeature{Text=line,DisplayOrder=i++}); }
     private static void Apply(ServicePackageVariant x, ServicePackageVariantFormViewModel m)
-    { x.ServicePackageId=m.ServicePackageId;x.Name=m.Name.Trim();x.BillingType=m.BillingType;x.DurationMonths=m.DurationMonths;x.DurationDays=m.DurationDays;x.MonthlyPrice=m.MonthlyPrice;x.TotalPrice=m.TotalPrice;x.PersonalTrainingSessionCount=m.PersonalTrainingSessionCount;x.ReformerClassCreditCount=m.ReformerClassCreditCount;x.PerformanceClassCreditCount=m.PerformanceClassCreditCount;x.GroupClassCreditCount=m.GroupClassCreditCount;x.KidsClassCreditCount=m.KidsClassCreditCount;x.IncludesGymAccess=m.IncludesGymAccess;x.IsRecommended=m.IsRecommended;x.IsActive=m.IsActive;x.DisplayOrder=m.DisplayOrder;x.UpdatedAtUtc=DateTime.UtcNow; }
-    private static ServicePackageVariantFormViewModel Map(ServicePackageVariant x)=>new(){Id=x.Id,ServicePackageId=x.ServicePackageId,PackageName=x.ServicePackage.Name,Name=x.Name,BillingType=x.BillingType,DurationMonths=x.DurationMonths,DurationDays=x.DurationDays,MonthlyPrice=x.MonthlyPrice,TotalPrice=x.TotalPrice,PersonalTrainingSessionCount=x.PersonalTrainingSessionCount,ReformerClassCreditCount=x.ReformerClassCreditCount,PerformanceClassCreditCount=x.PerformanceClassCreditCount,GroupClassCreditCount=x.GroupClassCreditCount,KidsClassCreditCount=x.KidsClassCreditCount,IncludesGymAccess=x.IncludesGymAccess,IsRecommended=x.IsRecommended,IsActive=x.IsActive,DisplayOrder=x.DisplayOrder};
+    { x.ServicePackageId=m.ServicePackageId;x.Name=m.Name.Trim();x.BillingType=m.BillingType;x.DurationMonths=m.DurationMonths;x.DurationDays=m.DurationDays;x.BonusMonths=m.BonusMonths;x.LessonsRenewMonthly=m.LessonsRenewMonthly;x.PriceOnRequest=m.PriceOnRequest;x.MonthlyPrice=m.MonthlyPrice;x.TotalPrice=m.TotalPrice;x.PersonalTrainingSessionCount=m.PersonalTrainingSessionCount;x.ReformerClassCreditCount=m.ReformerClassCreditCount;x.PerformanceClassCreditCount=m.PerformanceClassCreditCount;x.GroupClassCreditCount=m.GroupClassCreditCount;x.KidsClassCreditCount=m.KidsClassCreditCount;x.IncludesGymAccess=false;x.IsRecommended=m.IsRecommended;x.IsActive=m.IsActive;x.DisplayOrder=m.DisplayOrder;x.UpdatedAtUtc=DateTime.UtcNow; }
+    private static ServicePackageVariantFormViewModel Map(ServicePackageVariant x)=>new(){Id=x.Id,ServicePackageId=x.ServicePackageId,PackageName=x.ServicePackage.Name,Name=x.Name,BillingType=x.BillingType,DurationMonths=x.DurationMonths,DurationDays=x.DurationDays,BonusMonths=x.BonusMonths,LessonsRenewMonthly=x.LessonsRenewMonthly,PriceOnRequest=x.PriceOnRequest,MonthlyPrice=x.MonthlyPrice,TotalPrice=x.TotalPrice,PersonalTrainingSessionCount=x.PersonalTrainingSessionCount,ReformerClassCreditCount=x.ReformerClassCreditCount,PerformanceClassCreditCount=x.PerformanceClassCreditCount,GroupClassCreditCount=x.GroupClassCreditCount,KidsClassCreditCount=x.KidsClassCreditCount,IncludesGymAccess=x.IncludesGymAccess,IsRecommended=x.IsRecommended,IsActive=x.IsActive,DisplayOrder=x.DisplayOrder};
     private static string Rights(ServicePackageVariant x)=>string.Join(" · ",new[]{x.PersonalTrainingSessionCount>0?$"{x.PersonalTrainingSessionCount} PT":null,x.ReformerClassCreditCount>0?$"{x.ReformerClassCreditCount} Reformer":null,x.PerformanceClassCreditCount>0?$"{x.PerformanceClassCreditCount} Performance":null,x.GroupClassCreditCount>0?$"{x.GroupClassCreditCount} Grup":null,x.KidsClassCreditCount>0?$"{x.KidsClassCreditCount} Kids":null}.Where(x=>x!=null));
     public static string CategoryName(ServicePackageCategory value)=>value switch{ServicePackageCategory.Membership=>"Membership",ServicePackageCategory.PersonalTraining=>"Personal Training",ServicePackageCategory.GroupClasses=>"Grup Dersleri",ServicePackageCategory.KidsClub=>"Kids Club",_=>value.ToString()};
 }
+
+

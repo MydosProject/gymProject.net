@@ -20602,3 +20602,20 @@ body.has-content-reading-modal {
     padding: 1rem 1.25rem;
   }
 }
+
+/* Shared catalog cards on the homepage and plan pages. */
+.memberships-section .service-package-card { color: #efede5; background: #101110; scroll-margin-top: 7rem; }
+.service-package-card { scroll-margin-top: 7rem; }
+.service-package-card > .service-billing-note { min-height: 0; padding: .8rem; border-left: 2px solid #b7cbb0; color: #cccfc8; font-size: .75rem; }
+.service-variant-copy { min-width: 0; }
+.service-variant-price { min-width: 7rem; max-width: 8.5rem; }
+.service-variant-price b { overflow-wrap: normal; }
+.service-variant-savings { color: #c7e9b6; font-size: .72rem; font-weight: 700; }
+@media (max-width: 480px) {
+    .service-variant { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: .65rem; }
+    .service-variant-price { grid-column: 2; max-width: none; text-align: left; }
+}
+.kitchen-meal-selection { display: grid; gap: .6rem; margin: 1rem 0; border: 0; }
+.kitchen-meal-selection legend { font-size: .85rem; font-weight: 700; }
+.kitchen-meal-selection label { display: flex; align-items: center; gap: .5rem; font-size: .8rem; }
+.kitchen-meal-selection small { color: #8a8982; font-size: .75rem; }

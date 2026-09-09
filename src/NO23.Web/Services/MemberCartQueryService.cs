@@ -47,7 +47,7 @@ public class MemberCartQueryService(
 
         return new MemberCartPanelViewModel
         {
-            CartItems = items,
+            CartItems = (await new MembershipPricingService(dbContext).GetAsync(userId)).ApplyTo(items),
             CheckoutInput = checkoutInput ?? new CheckoutInputViewModel(),
             IsPaymentAvailable = paymentSettings.Enabled,
             ClubPickupDisplayName = clubPickupSettings.EffectiveDisplayName

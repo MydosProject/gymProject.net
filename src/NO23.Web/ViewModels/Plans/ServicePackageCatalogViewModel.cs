@@ -13,6 +13,7 @@ public class ServicePackageCatalogViewModel
 
 public class ServicePackageCardViewModel
 {
+    public string CategoryTitle { get; init; } = string.Empty;
     public string Slug { get; init; } = string.Empty;
     public string Name { get; init; } = string.Empty;
     public string Subtitle { get; init; } = string.Empty;
@@ -31,5 +32,10 @@ public class ServicePackageVariantCardViewModel
     public string Price { get; init; } = string.Empty;
     public string PriceNote { get; init; } = string.Empty;
     public string Rights { get; init; } = string.Empty;
+    public string? UnitPrice { get; init; }
+    public string? Savings { get; init; }
+    public string? ComparisonNote { get; init; }
+    public string? BillingNote { get; init; }
+    public string? CommitmentNote { get; init; }
     public bool IsRecommended { get; init; }
 }

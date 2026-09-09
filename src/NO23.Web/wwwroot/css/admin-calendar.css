@@ -1,0 +1,11 @@
+.weekly-calendar { display:grid; grid-template-columns:repeat(7,minmax(180px,1fr)); gap:.6rem; overflow-x:auto; padding-bottom:1rem; }
+.weekly-calendar-day { padding:.8rem; border:1px solid #ddd; border-radius:10px; background:#f5f5f2; color:#202220; min-width:180px; }
+.weekly-calendar-day h2 { font-size:1rem; text-transform:capitalize; }
+.weekly-calendar-day h2 small { display:block; margin-top:.4rem; color:#555; font-size:.8rem; }
+.weekly-calendar-session { padding:.75rem; margin-top:.8rem; background:white; border-left:3px solid #547747; border-radius:6px; overflow-wrap:anywhere; }
+.weekly-calendar-session.is-personal { border-color:#78629d; }
+.weekly-calendar-session h3 { font-size:.95rem; margin:.4rem 0; }
+.weekly-calendar-session p, .weekly-calendar-session span, .weekly-calendar-session a, .weekly-calendar-session summary { font-size:.8rem; }
+.weekly-calendar-session label { width:100%; font-size:.8rem; }
+.weekly-calendar-session select { width:100%; }
+@media(max-width:767px) { .weekly-calendar { grid-template-columns:1fr; } }

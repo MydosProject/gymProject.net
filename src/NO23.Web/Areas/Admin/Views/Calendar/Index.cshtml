@@ -1,0 +1,86 @@
+@model NO23.Web.ViewModels.Admin.WeeklyCalendarViewModel
+@section Styles { <link rel="stylesheet" href="~/css/admin-calendar.css" asp-append-version="true" /> }
+@using NO23.Web.Services
+@using NO23.Web.Domain.Enums
+@using NO23.Web.Extensions
+@{ ViewData["Title"] = "Haftalık Takvim"; var culture = System.Globalization.CultureInfo.GetCultureInfo("tr-TR"); }
+<section class="admin-page">
+    <header class="admin-page-head"><div><h1>Haftalık takvim</h1><p>Grup derslerini ve birebir seansları aynı haftada planla. Tüm saatler Türkiye saatidir.</p></div></header>
+    @foreach (var key in new[] { "SuccessMessage", "ErrorMessage" })
+    { if (TempData[key] is string message) { <div class="alert @(key == "ErrorMessage" ? "alert-danger" : "alert-success")" role="status">@message</div> } }
+    <form method="get" class="d-flex flex-wrap gap-2 mb-3">
+        <label>Hafta <input type="date" name="week" value="@Model.Week.ToString("yyyy-MM-dd")" class="form-control" /></label>
+        <label>Antrenör <select name="trainerId" class="form-select"><option value="">Tüm antrenörler</option>@foreach(var trainer in Model.Trainers){<option value="@trainer.Value" selected="@(trainer.Value == Model.TrainerId?.ToString())">@trainer.Text</option>}</select></label>
+        <button class="btn btn-dark">Göster</button>
+        <a class="btn btn-outline-dark" asp-route-week="@Model.Week.AddDays(-7).ToString("yyyy-MM-dd")" asp-route-trainerId="@Model.TrainerId">← Önceki hafta</a>
+        <a class="btn btn-outline-dark" asp-route-week="@Model.Week.AddDays(7).ToString("yyyy-MM-dd")" asp-route-trainerId="@Model.TrainerId">Sonraki hafta →</a>
+    </form>
+    <div class="row g-3 mb-4">
+        <div class="col-lg-6"><details class="border rounded p-3 bg-white text-dark"><summary>+ Haftalık grup dersi ekle</summary>
+            <form asp-action="CreateGroup" method="post" class="mt-3">
+                <label class="form-label">Grup dersi</label><select name="GroupClassId" class="form-select mb-2" asp-items="Model.Classes" required><option value="">Ders seç</option></select>
+                <label>Başlangıç haftası <input name="Week" type="date" value="@Model.Week.ToString("yyyy-MM-dd")" class="form-control" required /></label>
+                <fieldset class="my-2"><legend class="fs-6">Haftanın günleri</legend>
+                    @for(var i=0;i<7;i++){ var day=(DayOfWeek)((i+1)%7); <label class="me-2"><input type="checkbox" name="Days" value="@day" /> @culture.DateTimeFormat.GetDayName(day)</label> }
+                </fieldset>
+                <label>Saat <input type="time" name="Time" value="18:00" required class="form-control" /></label>
+                <label>Kaç hafta? <input type="number" name="Weeks" min="1" max="12" value="1" class="form-control" required /></label>
+                <label>Kontenjan (boşsa dersin kontenjanı) <input type="number" name="Capacity" min="1" max="200" class="form-control" /></label>
+                <p class="mt-2">Seçtiğin gün ve saatte her hafta seans oluşur. Çakışma varsa hiçbir seans eklenmez.</p>
+                <button class="btn btn-dark">Haftalık programı oluştur</button>
+            </form></details></div>
+        <div class="col-lg-6"><details class="border rounded p-3 bg-white text-dark"><summary>+ Birebir ders ekle</summary>
+            <form asp-action="CreatePersonal" method="post" class="mt-3">
+                <label class="form-label">Antrenör</label><select name="TrainerId" asp-items="Model.Trainers" class="form-select" required><option value="">Antrenör seç</option></select>
+                <label class="form-label">Üye</label><select name="MemberProfileId" asp-items="Model.Members" class="form-select" required><option value="">Üye seç</option></select>
+                <p>Üye, seçilen antrenöre atanmış olmalıdır. Atamayı Üyeler ekranından yapabilirsin.</p>
+                <label>Tarih ve saat <input name="StartsAt" type="datetime-local" required class="form-control" /></label>
+                <label>Süre (dakika) <input name="DurationMinutes" type="number" min="15" max="240" value="60" required class="form-control" /></label>
+                <label class="d-block">Not <textarea name="Note" maxlength="600" class="form-control"></textarea></label>
+                <button class="btn btn-dark mt-2">Takvime ekle</button>
+            </form></details></div>
+    </div>
+    <div class="weekly-calendar">
+    @for(var i=0;i<7;i++)
+    {
+        var date=Model.Week.AddDays(i);
+        var groups=Model.Groups.Where(x=>ClubTime.ToLocal(x.StartsAtUtc).Date==date).ToList();
+        var personal=Model.Personal.Where(x=>ClubTime.ToLocal(x.StartsAtUtc).Date==date).ToList();
+        <section class="weekly-calendar-day"><h2>@date.ToString("dddd",culture)<small>@date.ToString("dd.MM.yyyy")</small></h2>
+        @if(groups.Count+personal.Count==0){<p>Planlanmış ders yok.</p>}
+        @foreach(var session in groups)
+        {
+            var participants=session.Reservations.Where(x=>x.Status==ClassReservationStatus.Reserved).ToList();
+            <article id="group-session-@session.Id" class="weekly-calendar-session"><span>GRUP · @ClubTime.ToLocal(session.StartsAtUtc).ToString("HH:mm")</span><h3>@session.GroupClass.Name</h3>
+                <p>@session.GroupClass.Trainer.FirstName @session.GroupClass.Trainer.LastName<br />@session.Status.GetDisplayName() · @participants.Count / @(session.CapacityOverride??session.GroupClass.Capacity)</p>
+                <a asp-controller="ClassSessions" asp-action="Edit" asp-route-id="@session.Id">Seansı düzenle</a>
+                <details><summary>Katılımcılar (@participants.Count)</summary>
+                    @foreach(var person in participants){<div class="border-bottom py-2">@person.MemberProfile.ApplicationUser.FirstName @person.MemberProfile.ApplicationUser.LastName
+                        <form asp-controller="ClassSessions" asp-action="RemoveReservation" method="post"><input name="id" type="hidden" value="@session.Id" /><input name="reservationId" type="hidden" value="@person.Id" /><button class="btn btn-sm btn-outline-danger">Çıkar</button></form></div>}
+                    @if(session.Status==ClassSessionStatus.Scheduled && session.StartsAtUtc>DateTime.UtcNow){
+                    <form asp-action="AddParticipant" method="post" class="mt-2"><input name="sessionId" type="hidden" value="@session.Id" /><input name="week" type="hidden" value="@Model.Week.ToString("yyyy-MM-dd")" />
+                        <label>Katılımcı seç<select name="memberId" asp-items="Model.Members" required class="form-select"><option value="">Üye seç</option></select></label><button class="btn btn-dark btn-sm mt-2">Katılımcı ekle</button>
+                    </form>}
+                </details>
+            </article>
+        }
+        @foreach(var session in personal)
+        {
+            <article class="weekly-calendar-session is-personal"><span>BİREBİR · @ClubTime.ToLocal(session.StartsAtUtc).ToString("HH:mm") · @session.DurationMinutes dk</span>
+                <h3>@session.MemberProfile.ApplicationUser.FirstName @session.MemberProfile.ApplicationUser.LastName</h3>
+                <p>@session.Trainer.FirstName @session.Trainer.LastName<br />@session.Status.GetDisplayName()</p>
+                @if(session.Status==PersonalTrainingSessionStatus.Scheduled){<details><summary>Dersi düzenle</summary>
+                <form asp-action="UpdatePersonal" method="post">
+                    <input name="Id" type="hidden" value="@session.Id" /><input name="TrainerId" type="hidden" value="@session.TrainerId" /><input name="Week" type="hidden" value="@Model.Week.ToString("yyyy-MM-dd")" />
+                    <label>İşlem<select name="Status" class="form-select"><option value="Postponed">Tarih / saat değiştir</option><option value="Completed">Tamamlandı</option><option value="Cancelled">İptal edildi</option><option value="NoShow">Katılmadı</option></select></label>
+                    <label>Yeni tarih ve saat<input name="PostponedStartsAt" type="datetime-local" class="form-control" /></label>
+                    <label>Not<textarea name="Note" maxlength="600" class="form-control"></textarea></label>
+                    <small>Ertelemede hak korunur. Mevcut kurala göre tamamlandı, iptal veya katılmadı işlemi bir ders hakkı düşer.</small>
+                    <button class="btn btn-dark btn-sm mt-2">Kaydet</button>
+                </form></details>}
+            </article>
+        }
+        </section>
+    }
+    </div>
+</section>

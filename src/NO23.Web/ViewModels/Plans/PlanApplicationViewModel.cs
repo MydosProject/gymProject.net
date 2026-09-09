@@ -15,6 +15,8 @@ public class PlanApplicationPageViewModel
     public string VariantPrice { get; init; } = string.Empty;
 
     public string VariantRights { get; init; } = string.Empty;
+    public string? BillingNote { get; init; }
+    public string? CommitmentNote { get; init; }
 
     public PlanApplicationInputViewModel Input { get; init; } = new();
 }

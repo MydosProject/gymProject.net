@@ -288,6 +288,11 @@ public class TrainersController(
 
     private async Task<bool> SendInvitationSafelyAsync(ApplicationUser user, string trainerName)
     {
+        if (emailSender is NO23.Web.Services.Email.DisabledEmailSender or NO23.Web.Services.Email.DevelopmentEmailSender)
+        {
+            TempData["InvitationWarning"] = "E-posta gönderimi yapılandırılmamış. İlk şifre bağlantısını oluşturup antrenöre iletebilirsin.";
+            return false;
+        }
         try
         {
             var code = await userManager.GeneratePasswordResetTokenAsync(user);
@@ -316,6 +321,24 @@ public class TrainersController(
                 "Hesap oluşturuldu ancak davet e-postası gönderilemedi. Listeden daveti yeniden gönderebilirsiniz.";
             return false;
         }
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    public async Task<IActionResult> InvitationLink(int id)
+    {
+        var trainer = await dbContext.Trainers.Include(x => x.ApplicationUser).FirstOrDefaultAsync(x => x.Id == id && x.IsActive);
+        if (trainer?.ApplicationUser is null) return NotFound();
+        if (await userManager.HasPasswordAsync(trainer.ApplicationUser))
+        {
+            TempData["StatusMessage"] = "İlk şifre zaten oluşturulmuş. Giriş ekranındaki Şifremi unuttum bağlantısını kullanabilirsin.";
+            return RedirectToAction(nameof(Index));
+        }
+        var code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(await userManager.GeneratePasswordResetTokenAsync(trainer.ApplicationUser)));
+        ViewData["TrainerName"] = trainer.FirstName + " " + trainer.LastName;
+        ViewData["Email"] = trainer.ApplicationUser.Email;
+        Response.Headers["Referrer-Policy"] = "no-referrer";
+        return View("InvitationLink", Url.Page("/Account/ResetPassword", null, new { area = "Identity", code, email = trainer.ApplicationUser.Email }, Request.Scheme));
     }
 
     private void AddIdentityErrors(IdentityResult result)

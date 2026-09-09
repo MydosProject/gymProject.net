@@ -1,4 +1,5 @@
-﻿@using NO23.Web.Data.Seed
+@using System.Globalization
+@using NO23.Web.Data.Seed
 @model NO23.Web.ViewModels.Home.HomeIndexViewModel
 
 @{
@@ -237,13 +238,12 @@
                 }
 
                 <a class="quick-access-card"
-                   asp-area="Member"
-                   asp-controller="Home"
-                   asp-action="Index"
-                   asp-fragment="available-classes">
+                   asp-area=""
+                   asp-controller="Appointments"
+                   asp-action="Index">
                     <span class="quick-access-number">06</span>
                     <strong>Randevu Al</strong>
-                    <small>Antrenmanını planla</small>
+                    <small>Üye olmadan randevu talebi oluştur</small>
                 </a>
             }
         </div>
@@ -463,7 +463,7 @@
                     </div>
                     <div>
                         <dt>Kimler için</dt>
-                        <dd>7–14 yaş grubu</dd>
+                        <dd>6–14 yaş grubu</dd>
                     </div>
                 </dl>
             </details>
@@ -630,80 +630,10 @@
             </p>
         </div>
 
-        <div class="membership-grid">
+        <div class="service-catalog-cards">
             @foreach (var package in Model.MembershipPackages)
             {
-                var isPro = package.Code.Equals(
-                    "PRO",
-                    StringComparison.OrdinalIgnoreCase);
-
-                var isElite = package.Code.Equals(
-                    "ELITE",
-                    StringComparison.OrdinalIgnoreCase);
-
-                var cardClass = isPro
-                    ? "membership-card membership-card-featured"
-                    : isElite
-                        ? "membership-card membership-card-elite"
-                        : "membership-card";
-
-                var level = package.Code.ToUpperInvariant() switch
-                {
-                    "START" => "Başlangıç",
-                    "PLUS" => "Düzenli",
-                    "PRO" => "Hedef Odaklı",
-                    "ELITE" => "Tam Deneyim",
-                    _ => "Üyelik"
-                };
-
-                var buttonText = package.Code.ToUpperInvariant() switch
-                {
-                    "PRO" => "PRO’ya Başvur",
-                    "ELITE" => "ELITE’a Başvur",
-                    _ => "Başvuru Yap"
-                };
-
-                <article class="@cardClass">
-                    @if (isPro)
-                    {
-                        <span class="membership-recommended">
-                            Önerilen
-                        </span>
-                    }
-
-                    <div class="membership-card-header">
-                        <span class="membership-order">
-                            @package.DisplayOrder.ToString("00")
-                        </span>
-
-                        <span class="membership-level">
-                            @level
-                        </span>
-                    </div>
-
-                    <div>
-                        <h3>@package.Name</h3>
-
-                        <p class="membership-audience">
-                            @package.Audience
-                        </p>
-                    </div>
-
-                    <ul class="membership-features">
-                        @foreach (var feature in package.Features)
-                        {
-                            <li>@feature</li>
-                        }
-                    </ul>
-
-                    <a class="membership-button"
-                       asp-area=""
-                       asp-controller="Plans"
-                       asp-action="Index"
-                       asp-route-category="membership">
-                        @buttonText
-                    </a>
-                </article>
+                <partial name="_ServicePackageCard" model="package" />
             }
         </div>
 
@@ -724,6 +654,27 @@
         </div>
     </div>
 </section>
+
+@if (Model.KitchenPackages.Count > 0)
+{
+    <section class="memberships-section" id="kitchen-subscriptions">
+        <div class="container">
+            <div class="memberships-heading"><div><p class="section-kicker">NO:23 Kitchen</p><h2>Beslenme düzenini seç.</h2></div><p>5 veya 20 günlük paketini seç, günlük öğünlerini belirle.</p></div>
+            <div class="service-catalog-cards">
+                @foreach (var package in Model.KitchenPackages)
+                {
+                    <article class="service-package-card">
+                        <div class="service-package-head"><small>Kitchen aboneliği</small><h3>@package.Days Günlük</h3><strong>@package.Name</strong></div>
+                        <p>@package.Description</p>
+                        <ul><li>Kahvaltı, öğle, akşam ve ara öğün seçimi</li><li>Kişisel kalori ve makro hedefine göre planlama</li><li>@((package.UnitPrice / package.Days).ToString("N2", CultureInfo.GetCultureInfo("tr-TR"))) ₺ / gün</li></ul>
+                        <strong>@package.UnitPrice.ToString("N2", CultureInfo.GetCultureInfo("tr-TR")) ₺ / paket</strong>
+                        <a asp-area="Member" asp-controller="Kitchen" asp-action="Index" asp-fragment="plans">Öğünlerini seç →</a>
+                    </article>
+                }
+            </div>
+        </div>
+    </section>
+}
 
 <section class="no23-faq-section"
          id="faq"
@@ -753,8 +704,9 @@
                 <div class="no23-faq-answer">
                     <p>
                         Ana sayfadaki üyelik paketlerinden sana uygun olanı seçip
-                        başvuru formunu tamamlayabilirsin. Hesabın ve üye profilin
-                        seçtiğin paketle birlikte oluşturulur.
+                        başvuru formunu üye olmadan tamamlayabilirsin. Ekibimiz
+                        programını, ödeme koşullarını ve üyelik başlangıcını
+                        netleştirmek için seninle iletişime geçer.
                     </p>
                 </div>
             </details>
@@ -767,7 +719,7 @@
                 </summary>
                 <div class="no23-faq-answer">
                     <p>
-                        START, PLUS, PRO ve ELITE paketlerini haftalık ders hakkı
+                        HYBRID, PRO ve BLACK paketlerini aylık ders hakkı
                         ve sundukları ayrıcalıklara göre karşılaştırabilirsin.
                         Hedefin ve antrenman sıklığın doğru paketi belirlemene
                         yardımcı olur.
@@ -815,7 +767,7 @@
                     <p>
                         Boy, kilo, yaş, aktivite seviyesi ve hedef bilgilerini
                         girerek günlük kalori ve makro ihtiyacını hesaplayabilirsin.
-                        Sonuca göre 5, 10, 20 günlük veya aylık planlardan birini
+                        Sonuca göre 5 veya 20 günlük planlardan birini
                         seçebilirsin.
                     </p>
                 </div>
@@ -977,3 +929,5 @@
         });
     </script>
 }
+
+

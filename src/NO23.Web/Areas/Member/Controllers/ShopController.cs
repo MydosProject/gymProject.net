@@ -325,7 +325,7 @@ public class ShopController(
         {
             ShopProducts = shopProducts,
             KitchenMenuItems = kitchenMenuItems,
-            CartItems = cartItems,
+            CartItems = (await new MembershipPricingService(dbContext).GetAsync(userId)).ApplyTo(cartItems),
             CheckoutInput = checkoutInput
         };
     }

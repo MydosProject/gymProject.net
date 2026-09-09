@@ -1,0 +1,28 @@
+@model NO23.Web.ViewModels.AppointmentRequestViewModel
+@{ ViewData["Title"] = "Randevu Al"; }
+<section class="plan-application-page">
+    <div class="container">
+        <div class="plan-application-layout">
+            <header class="plan-application-summary">
+                <p class="section-kicker">NO23 / RANDEVU</p><h1>Tanışalım,<br /><span>birlikte planlayalım.</span></h1>
+                <p>Üye olmadan randevu talebi oluştur. İlgilendiğin hizmeti ve sana uygun zamanı paylaş; ekibimiz seni arayarak randevunu netleştirsin.</p>
+                <p>Seçtiğin tarih ve saat bir tercihtir. Randevun, ekibimiz seninle görüşüp onayladıktan sonra kesinleşir. Saatler Türkiye saatidir.</p>
+            </header>
+            <form asp-action="Index" method="post" class="plan-application-form">
+                <div asp-validation-summary="All" class="plan-application-validation" role="alert"></div>
+                <label class="plan-application-field"><span>Ad Soyad</span><input asp-for="FullName" autocomplete="name" /></label>
+                <label class="plan-application-field"><span>Telefon</span><input asp-for="PhoneNumber" autocomplete="tel" /></label>
+                <label class="plan-application-field"><span>İlgilendiğin hizmet</span><select asp-for="Service" class="form-select">
+                    @foreach (var service in NO23.Web.ViewModels.AppointmentRequestViewModel.Services) { <option value="@service">@service</option> }
+                </select></label>
+                <div class="plan-application-form-grid">
+                    <label class="plan-application-field"><span>Tercih edilen tarih</span><input asp-for="PreferredDate" type="date" min="@DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(3)).ToString("yyyy-MM-dd")" /></label>
+                    <label class="plan-application-field"><span>Tercih edilen saat</span><input asp-for="PreferredTime" type="time" /></label>
+                </div>
+                <label class="plan-application-field"><span>Notun <em>İsteğe bağlı</em></span><textarea asp-for="Notes" rows="3"></textarea></label>
+                <button type="submit" class="plan-application-submit">Randevu Talebi Gönder <span aria-hidden="true">→</span></button>
+            </form>
+        </div>
+    </div>
+</section>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

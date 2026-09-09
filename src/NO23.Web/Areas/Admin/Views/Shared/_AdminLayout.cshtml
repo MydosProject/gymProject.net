@@ -17,6 +17,7 @@
         currentController.Equals("Members", StringComparison.OrdinalIgnoreCase) ||
         currentController.Equals("ServicePackages", StringComparison.OrdinalIgnoreCase) ||
         currentController.Equals("ServicePackageApplications", StringComparison.OrdinalIgnoreCase) ||
+        currentController.Equals("AppointmentRequests", StringComparison.OrdinalIgnoreCase) ||
         currentController.Equals("MembershipPackageOptions", StringComparison.OrdinalIgnoreCase) ||
         currentController.Equals("MembershipPackages", StringComparison.OrdinalIgnoreCase);
 
@@ -149,7 +150,7 @@
 
                 <div class="admin-nav-group">
                     <p class="admin-nav-title">Kulüp</p>
-                    <a class="admin-nav-link has-submenu @ActiveClass("Members", "MembershipPackages", "MembershipPackageOptions", "ServicePackages", "ServicePackageApplications")"
+                    <a class="admin-nav-link has-submenu @ActiveClass("Members", "MembershipPackages", "MembershipPackageOptions", "ServicePackages", "ServicePackageApplications", "AppointmentRequests")"
                        asp-area="Admin"
                        asp-controller="Members"
                        asp-action="Index"
@@ -179,6 +180,7 @@
                            asp-area="Admin" asp-controller="ServicePackages" asp-action="Index">
                             Paket Kataloğu
                         </a>
+<a class="admin-nav-sublink @ActiveClass("AppointmentRequests")" asp-area="Admin" asp-controller="AppointmentRequests" asp-action="Index">Randevu Talepleri</a>
                         <a class="admin-nav-sublink @ActiveClass("ServicePackageApplications")"
                            asp-area="Admin"
                            asp-controller="ServicePackageApplications"
@@ -190,6 +192,8 @@
                         <span class="admin-nav-index">09</span>
                         <span>Eğitmenler</span>
                     </a>
+                    <a class="admin-nav-link @ActiveClass("Calendar")" asp-area="Admin" asp-controller="Calendar" asp-action="Index"><span>Haftalık Takvim</span></a>
+                    <a class="admin-nav-link @ActiveClass("MemberProgress")" asp-area="Admin" asp-controller="MemberProgress" asp-action="Index"><span>Ölçüm ve Gelişim</span></a>
                     <a class="admin-nav-link has-submenu @ActiveClass("GroupClasses", "ClassSessions", "PersonalTrainingRequests")"
                        asp-area="Admin"
                        asp-controller="GroupClasses"
@@ -389,3 +393,4 @@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
+

@@ -24,6 +24,8 @@ public class KitchenSubscription
     public decimal PackagePriceSnapshot { get; set; }
 
     public int PackageDaysSnapshot { get; set; }
+    // Bits 0..4 correspond to KitchenMealSlot values 1..5. Existing subscriptions keep all meals.
+    public int SelectedMealSlotsMask { get; set; } = 31;
 
     public NutritionGoal Goal { get; set; }
 

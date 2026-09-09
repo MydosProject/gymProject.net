@@ -23,12 +23,12 @@ public class CalendarController(
         var trainerId = await GetTrainerIdAsync();
         if (trainerId is null) return Forbid();
 
-        var selectedDate = (week ?? DateTime.Today).Date;
+        var selectedDate = (week ?? ClubTime.Now).Date;
         var daysSinceMonday = ((int)selectedDate.DayOfWeek + 6) % 7;
         var weekStart = selectedDate.AddDays(-daysSinceMonday);
         var weekEnd = weekStart.AddDays(6);
-        var startUtc = DateTime.SpecifyKind(weekStart, DateTimeKind.Local).ToUniversalTime();
-        var endUtc = DateTime.SpecifyKind(weekStart.AddDays(7), DateTimeKind.Local).ToUniversalTime();
+        var startUtc = ClubTime.ToUtc(weekStart);
+        var endUtc = ClubTime.ToUtc(weekStart.AddDays(7));
 
         var sessionEntities = await dbContext.PersonalTrainingSessions.AsNoTracking()
             .Include(item => item.MemberProfile).ThenInclude(item => item.ApplicationUser)
@@ -83,8 +83,8 @@ public class CalendarController(
             {
                 Date = date,
                 DayName = turkishCulture.DateTimeFormat.GetDayName(date.DayOfWeek),
-                IsToday = date == DateTime.Today,
-                Sessions = sessions.Where(item => item.StartsAtUtc.ToLocalTime().Date == date).ToList()
+                IsToday = date == ClubTime.Now.Date,
+                Sessions = sessions.Where(item => ClubTime.ToLocal(item.StartsAtUtc).Date == date).ToList()
             };
         }).ToList();
 
@@ -114,7 +114,7 @@ public class CalendarController(
         }
 
         var result = await calendarService.CreateAsync(trainerId.Value, model.MemberProfileId,
-            DateTime.SpecifyKind(model.StartsAt, DateTimeKind.Local).ToUniversalTime(),
+            ClubTime.ToUtc(model.StartsAt),
             model.DurationMinutes, model.Note);
         TempData[result.Succeeded ? "StatusMessage" : "ErrorMessage"] = result.Message;
         return RedirectToAction(nameof(Index), new
@@ -130,9 +130,14 @@ public class CalendarController(
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var trainerId = await GetTrainerIdAsync();
         if (trainerId is null || string.IsNullOrWhiteSpace(userId)) return Forbid();
+        if (!ModelState.IsValid)
+        {
+            TempData["ErrorMessage"] = "Ders bilgilerini kontrol et.";
+            return RedirectToAction(nameof(Index));
+        }
 
         DateTime? postponedUtc = model.PostponedStartsAt is null ? null :
-            DateTime.SpecifyKind(model.PostponedStartsAt.Value, DateTimeKind.Local).ToUniversalTime();
+            ClubTime.ToUtc(model.PostponedStartsAt.Value);
         var result = await calendarService.ChangeStatusAsync(
             trainerId.Value, model.Id, model.Status, postponedUtc, userId, model.Note);
         TempData[result.Succeeded ? "StatusMessage" : "ErrorMessage"] = result.Message;

@@ -136,6 +136,7 @@ public static class DatabaseSeeder
             });
         }
         await dbContext.SaveChangesAsync();
+
     }
 
     private static async Task SeedServicePackagesAsync(ApplicationDbContext dbContext)
@@ -153,6 +154,20 @@ public static class DatabaseSeeder
             dbContext.ServicePackages.Add(defaultPackage);
         }
         await dbContext.SaveChangesAsync();
+
+        // Repair availability for databases where the catalog migration deactivated
+        // the published PT choices after they had already been inserted.
+        var ptSlugs = new[] { "pt-flex", "pt-routine", "pt-commit" };
+        var publishedNames = new[] { "8 Ders", "12 Ders", "24 Ders", "36 Ders", "50 Ders", "70 Ders", "100 Ders" };
+        var staleVariants = await dbContext.ServicePackageVariants
+            .Include(x => x.ServicePackage)
+            .Where(x => ptSlugs.Contains(x.ServicePackage.Slug) && publishedNames.Contains(x.Name) && !x.IsActive)
+            .ToListAsync();
+        if (staleVariants.Count > 0)
+        {
+            foreach (var variant in staleVariants) variant.IsActive = true;
+            await dbContext.SaveChangesAsync();
+        }
     }
 
     private static async Task SeedClassOperationsAsync(ApplicationDbContext dbContext)

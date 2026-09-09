@@ -13,6 +13,7 @@ public class CartItemViewModel
     public string? AddedIngredientNames { get; init; }
 
     public decimal UnitPrice { get; init; }
+    public int DiscountPercent { get; init; }
 
     public int Quantity { get; init; }
 

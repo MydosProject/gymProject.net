@@ -213,6 +213,7 @@
                                 {
                                     <div>
                                         <span class="admin-trainer-panel-status is-linked">Davet bekliyor</span>
+                                        <form asp-action="InvitationLink" method="post" class="mt-2"><input type="hidden" name="id" value="@trainer.Id" /><button class="admin-trainer-panel-action" type="submit">İlk şifre bağlantısını oluştur →</button></form>
                                         <form asp-action="ResendInvitation" method="post" class="mt-2">
                                             <input type="hidden" name="id" value="@trainer.Id" />
                                             <button class="admin-trainer-panel-action" type="submit">Daveti yeniden gönder →</button>

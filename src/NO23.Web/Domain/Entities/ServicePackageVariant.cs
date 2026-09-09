@@ -11,8 +11,11 @@ public class ServicePackageVariant
     public ServicePackageBillingType BillingType { get; set; }
     public int? DurationMonths { get; set; }
     public int? DurationDays { get; set; }
+    public int BonusMonths { get; set; }
+    public bool LessonsRenewMonthly { get; set; }
     public decimal? MonthlyPrice { get; set; }
     public decimal TotalPrice { get; set; }
+    public bool PriceOnRequest { get; set; }
     public int PersonalTrainingSessionCount { get; set; }
     public int ReformerClassCreditCount { get; set; }
     public int PerformanceClassCreditCount { get; set; }

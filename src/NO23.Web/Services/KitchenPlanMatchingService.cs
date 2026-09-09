@@ -168,7 +168,9 @@ public static class KitchenPlanMatcher
                 []);
         }
 
-        var slots = GetSlots(subscription.Plan);
+        if (subscription.SelectedMealSlotsMask is < 1 or > 31)
+            return new KitchenPlanMatch(KitchenMealPlanStatus.Failed, "En az bir geçerli öğün seçmelisin.", []);
+        var slots = GetSlots(subscription.Plan).Where(slot => KitchenMealSelection.Contains(subscription.SelectedMealSlotsMask, slot)).ToArray();
         var candidatesBySlot = new List<IReadOnlyList<MealCandidate>>();
 
         foreach (var slot in slots)
@@ -210,7 +212,7 @@ public static class KitchenPlanMatcher
             {
                 return new KitchenPlanMatch(
                     KitchenMealPlanStatus.Failed,
-                    "Aynı gün içinde tekrar etmeyen 5 öğünlük Kitchen planı için yeterli ürün bulunamadı.",
+                    "Seçtiğin öğünlerle aynı gün içinde tekrar etmeyen bir Kitchen planı için yeterli ürün bulunamadı.",
                     []);
             }
 
@@ -318,10 +320,11 @@ public static class KitchenPlanMatcher
         var carbohydrate = candidates.Sum(candidate => candidate.TotalCarbohydrateGrams);
         var fat = candidates.Sum(candidate => candidate.TotalFatGrams);
 
-        var calorieScore = (double)GetDifferenceRatio(calories, subscription.DailyCalories) * 6;
-        var proteinScore = GetMacroScore(protein, subscription.ProteinGrams, penalizeDeficit: true) * 3;
-        var carbohydrateScore = GetMacroScore(carbohydrate, subscription.CarbohydrateGrams, penalizeDeficit: false);
-        var fatScore = GetMacroScore(fat, subscription.FatGrams, penalizeDeficit: false);
+        var selectedRatio = candidates.Sum(candidate => GetSlotCalorieRatio(candidate.Slot));
+        var calorieScore = (double)GetDifferenceRatio(calories, subscription.DailyCalories * selectedRatio) * 6;
+        var proteinScore = GetMacroScore(protein, subscription.ProteinGrams * selectedRatio, penalizeDeficit: true) * 3;
+        var carbohydrateScore = GetMacroScore(carbohydrate, subscription.CarbohydrateGrams * selectedRatio, penalizeDeficit: false);
+        var fatScore = GetMacroScore(fat, subscription.FatGrams * selectedRatio, penalizeDeficit: false);
         var repetitionPenalty = candidates.Count(candidate => previousMenuItemKeys.Contains(GetMenuItemKey(candidate.Item))) * 0.2;
         var goalBonus = candidates.Sum(candidate => GetGoalBonus(candidate.Item, subscription.Goal));
 

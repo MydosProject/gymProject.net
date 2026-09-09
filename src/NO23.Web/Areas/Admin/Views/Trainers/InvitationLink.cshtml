@@ -1,0 +1,10 @@
+@model string
+@{ ViewData["Title"] = "İlk Şifre Bağlantısı"; }
+<section class="admin-page"><h1>@ViewData["TrainerName"] — ilk şifre</h1>
+    <p>Giriş e-postası: <strong>@ViewData["Email"]</strong></p>
+    <p>Bu bağlantıyı yalnızca ilgili antrenöre ilet. Şifre oluşturulduktan sonra aynı e-posta ile giriş yaparak antrenör paneline ulaşabilir. Süresi dolarsa yeni bağlantı oluşturabilirsin.</p>
+    <label for="invitation-link">Şifre oluşturma bağlantısı</label>
+    <input id="invitation-link" class="form-control" type="text" value="@Model" readonly />
+    <a href="@Model" class="btn btn-dark mt-3" rel="noreferrer">Kendi hesabımsa şifremi oluştur</a>
+    <a asp-action="Index" class="btn btn-outline-dark mt-3">Eğitmenlere dön</a>
+</section>

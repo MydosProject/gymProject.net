@@ -108,7 +108,8 @@ public class KitchenController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Subscribe(
         KitchenSubscriptionPlan plan,
-        CalorieCalculatorInputViewModel input)
+        CalorieCalculatorInputViewModel input,
+        KitchenMealSlot[]? selectedMeals = null)
     {
         var userId =
             User.FindFirstValue(
@@ -117,6 +118,12 @@ public class KitchenController(
         if (string.IsNullOrWhiteSpace(userId))
         {
             return Challenge();
+        }
+
+        if (!KitchenMealSelection.TryCreateMask(selectedMeals, out var selectedMealMask))
+        {
+            TempData["ErrorMessage"] = "Paketin için en az bir geçerli öğün seçmelisin.";
+            return View("Index", await BuildDashboardAsync(input, null));
         }
 
         if (!ModelState.IsValid)
@@ -207,6 +214,7 @@ public class KitchenController(
             DateOnly.FromDateTime(
                 DateTime.Today.AddDays(1));
 
+        var membershipDiscounts = await new MembershipPricingService(dbContext).GetAsync(userId);
         var subscription =
             new KitchenSubscription
             {
@@ -226,10 +234,11 @@ public class KitchenController(
                     subscriptionPackage.Name,
 
                 PackagePriceSnapshot =
-                    subscriptionPackage.UnitPrice,
+                    MembershipDiscounts.Apply(subscriptionPackage.UnitPrice, membershipDiscounts.Kitchen),
 
                 PackageDaysSnapshot =
                     subscriptionPackage.Days,
+                SelectedMealSlotsMask = selectedMealMask,
 
                 Goal =
                     input.Goal,
@@ -953,21 +962,25 @@ public class KitchenController(
 
     private async Task<IReadOnlyList<KitchenSubscriptionPlanViewModel>> BuildSubscriptionPackagesAsync()
     {
-        return await dbContext.KitchenSubscriptionPackages
+        var discounts = await new MembershipPricingService(dbContext).GetAsync(User.FindFirstValue(ClaimTypes.NameIdentifier));
+        var packages = await dbContext.KitchenSubscriptionPackages
             .AsNoTracking()
             .Where(package => package.IsActive)
             .OrderBy(package => package.DisplayOrder)
             .ThenBy(package => package.Name)
+            .ToListAsync();
+        return packages
             .Select(package => new KitchenSubscriptionPlanViewModel
             {
                 Plan = package.Plan,
                 Name = package.Name,
                 Description = package.Description,
                 Days = package.Days,
-                UnitPrice = package.UnitPrice,
+                UnitPrice = MembershipDiscounts.Apply(package.UnitPrice, discounts.Kitchen),
+                DiscountPercent = discounts.Kitchen,
                 IsActive = package.IsActive
             })
-            .ToListAsync();
+            .ToList();
     }
 
     private async Task<KitchenMealPlanViewModel?> BuildMealPlanAsync(int kitchenSubscriptionId)

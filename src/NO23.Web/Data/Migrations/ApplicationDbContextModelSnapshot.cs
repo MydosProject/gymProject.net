@@ -238,6 +238,53 @@ namespace NO23.Web.Data.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("NO23.Web.Domain.Entities.AppointmentRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("character varying(160)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<DateOnly>("PreferredDate")
+                        .HasColumnType("date");
+
+                    b.Property<TimeOnly>("PreferredTime")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<string>("Service")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AppointmentRequests");
+                });
+
             modelBuilder.Entity("NO23.Web.Domain.Entities.BlogPost", b =>
                 {
                     b.Property<int>("Id")
@@ -1453,6 +1500,9 @@ namespace NO23.Web.Data.Migrations
                     b.Property<int>("ProteinGrams")
                         .HasColumnType("integer");
 
+                    b.Property<int>("SelectedMealSlotsMask")
+                        .HasColumnType("integer");
+
                     b.Property<string>("SourceActivityLevel")
                         .HasMaxLength(40)
                         .HasColumnType("character varying(40)");
@@ -1673,6 +1723,43 @@ namespace NO23.Web.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("MemberProgressEntries");
+                });
+
+            modelBuilder.Entity("NO23.Web.Domain.Entities.MemberProgressPhoto", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Caption")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<byte[]>("Data")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<int>("MemberProfileId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateOnly>("TakenOn")
+                        .HasColumnType("date");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MemberProfileId");
+
+                    b.ToTable("MemberProgressPhotos");
                 });
 
             modelBuilder.Entity("NO23.Web.Domain.Entities.MembershipPackage", b =>
@@ -2288,6 +2375,9 @@ namespace NO23.Web.Data.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)");
 
+                    b.Property<int>("CoffeeDiscountPercent")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("CreatedAtUtc")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -2301,11 +2391,17 @@ namespace NO23.Web.Data.Migrations
                     b.Property<int>("DisplayOrder")
                         .HasColumnType("integer");
 
+                    b.Property<bool>("IncludesRecoveryRoom")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
                     b.Property<bool>("IsFeatured")
                         .HasColumnType("boolean");
+
+                    b.Property<int>("KitchenDiscountPercent")
+                        .HasColumnType("integer");
 
                     b.Property<int?>("MembershipPackageId")
                         .HasColumnType("integer");
@@ -2314,6 +2410,9 @@ namespace NO23.Web.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<int>("ShopDiscountPercent")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Slug")
                         .IsRequired()
@@ -2441,6 +2540,9 @@ namespace NO23.Web.Data.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)");
 
+                    b.Property<int>("BonusMonths")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("CreatedAtUtc")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -2470,6 +2572,9 @@ namespace NO23.Web.Data.Migrations
                     b.Property<int>("KidsClassCreditCount")
                         .HasColumnType("integer");
 
+                    b.Property<bool>("LessonsRenewMonthly")
+                        .HasColumnType("boolean");
+
                     b.Property<decimal?>("MonthlyPrice")
                         .HasPrecision(12, 2)
                         .HasColumnType("numeric(12,2)");
@@ -2484,6 +2589,9 @@ namespace NO23.Web.Data.Migrations
 
                     b.Property<int>("PersonalTrainingSessionCount")
                         .HasColumnType("integer");
+
+                    b.Property<bool>("PriceOnRequest")
+                        .HasColumnType("boolean");
 
                     b.Property<int>("ReformerClassCreditCount")
                         .HasColumnType("integer");
@@ -3277,6 +3385,17 @@ namespace NO23.Web.Data.Migrations
                 {
                     b.HasOne("NO23.Web.Domain.Entities.MemberProfile", "MemberProfile")
                         .WithMany("ProgressEntries")
+                        .HasForeignKey("MemberProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MemberProfile");
+                });
+
+            modelBuilder.Entity("NO23.Web.Domain.Entities.MemberProgressPhoto", b =>
+                {
+                    b.HasOne("NO23.Web.Domain.Entities.MemberProfile", "MemberProfile")
+                        .WithMany()
                         .HasForeignKey("MemberProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();

@@ -1,0 +1,48 @@
+@model NO23.Web.ViewModels.Plans.ServicePackageCardViewModel
+@{
+    var selectedId = Model.Variants.FirstOrDefault(x => x.IsRecommended)?.Id ?? Model.Variants.FirstOrDefault()?.Id;
+    var billingNote = Model.Variants.Select(x => x.BillingNote).FirstOrDefault(x => x is not null);
+}
+<article id="@Model.Slug" class="service-package-card @(Model.IsFeatured ? "is-featured" : null)">
+    @if (Model.IsFeatured) { <span class="service-package-badge">Önerilen</span> }
+    <div class="service-package-head">
+        <small>@(Model.CategoryTitle == "Personal Training" ? "PERSONAL TRAINING" : Model.CategoryTitle)</small>
+        <h3>@Model.Name</h3>
+        <strong>@Model.Subtitle</strong>
+    </div>
+    <p>@Model.Description</p>
+    <ul>
+        @foreach (var feature in Model.Features) { <li>@feature</li> }
+    </ul>
+    @if (billingNote is not null) { <p class="service-billing-note">@billingNote</p> }
+    @if (Model.Variants.Count > 0)
+    {
+        <form asp-area="" asp-controller="Plans" asp-action="Apply" method="get" class="service-package-application-form">
+            <input type="hidden" name="package" value="@Model.Slug" />
+            <fieldset class="service-package-variants">
+                <legend>Başvurmak istediğin seçeneği belirle</legend>
+                @foreach (var variant in Model.Variants)
+                {
+                    <label class="service-variant @(variant.IsRecommended ? "is-recommended" : null)">
+                        <input type="radio" name="variant" value="@variant.Id" checked="@(variant.Id == selectedId)" required />
+                        <span class="service-variant-check" aria-hidden="true"></span>
+                        <span class="service-variant-copy">
+                            <strong>@variant.Name</strong>
+                            <small>@variant.Rights</small>
+                            @if (variant.CommitmentNote is not null) { <small>@variant.CommitmentNote</small> }
+                            @if (variant.UnitPrice is not null) { <small>@variant.UnitPrice</small> }
+                            @if (variant.Savings is not null)
+                            {
+                                <span class="service-variant-savings">@variant.Savings</span>
+                                <small>@variant.ComparisonNote</small>
+                            }
+                        </span>
+                        <span class="service-variant-price"><b>@variant.Price</b><small>@variant.PriceNote</small></span>
+                    </label>
+                }
+            </fieldset>
+            <button type="submit" class="service-package-submit">Başvuru Yap <span aria-hidden="true">→</span></button>
+        </form>
+    }
+    else { <p class="service-package-unavailable">Bu paket için aktif seçenek bulunmuyor.</p> }
+</article>

@@ -17,7 +17,7 @@ public class KitchenSubscriptionPackageSeedTests
             packages.Select(package => package.Plan).Distinct().Count());
         Assert.All(packages, package =>
         {
-            Assert.True(package.IsActive);
+            Assert.Equal(package.Days is 5 or 20, package.IsActive);
             Assert.True(package.Days > 0);
             Assert.True(package.UnitPrice > 0);
             Assert.False(string.IsNullOrWhiteSpace(package.Name));

@@ -25,6 +25,10 @@ public class ServicePackageFormViewModel
     [Required, StringLength(700), Display(Name = "Açıklama")] public string Description { get; set; } = string.Empty;
     [Display(Name = "Bağlı üyelik paketi")] public int? MembershipPackageId { get; set; }
     [Display(Name = "Öne çıkan paket")] public bool IsFeatured { get; set; }
+    [Range(0, 100), Display(Name = "Kitchen abonelik indirimi (%)")] public int KitchenDiscountPercent { get; set; }
+    [Range(0, 100), Display(Name = "Kitchen & Coffee indirimi (%)")] public int CoffeeDiscountPercent { get; set; }
+    [Range(0, 100), Display(Name = "Shop indirimi (%)")] public int ShopDiscountPercent { get; set; }
+    [Display(Name = "Ücretsiz Recovery Room")] public bool IncludesRecoveryRoom { get; set; }
     [Display(Name = "Aktif")] public bool IsActive { get; set; } = true;
     [Range(1, 1000), Display(Name = "Sıralama")] public int DisplayOrder { get; set; } = 10;
     [Display(Name = "Özellikler")] public string FeaturesText { get; set; } = string.Empty;
@@ -41,6 +45,9 @@ public class ServicePackageVariantFormViewModel
     [Display(Name = "Ödeme tipi")] public ServicePackageBillingType BillingType { get; set; }
     [Range(1, 60), Display(Name = "Süre (ay)")] public int? DurationMonths { get; set; }
     [Range(1, 365), Display(Name = "Süre (gün)")] public int? DurationDays { get; set; }
+    [Range(0, 12), Display(Name = "Hediye ay")] public int BonusMonths { get; set; }
+    [Display(Name = "Ders hakları her ay yenilenir")] public bool LessonsRenewMonthly { get; set; }
+    [Display(Name = "Fiyat teklif ile belirlenir")] public bool PriceOnRequest { get; set; }
     [Range(0, 10000000), Display(Name = "Aylık fiyat")] public decimal? MonthlyPrice { get; set; }
     [Range(0, 10000000), Display(Name = "Toplam fiyat")] public decimal TotalPrice { get; set; }
     [Range(0, 500), Display(Name = "PT seansı")] public int PersonalTrainingSessionCount { get; set; }

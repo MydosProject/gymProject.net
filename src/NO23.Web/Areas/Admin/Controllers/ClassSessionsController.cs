@@ -84,7 +84,7 @@ public class ClassSessionsController(
     {
         return View(await PopulateGroupClassOptionsAsync(new ClassSessionFormViewModel
         {
-            StartsAtLocal = DateTime.Now.Date.AddDays(1).AddHours(18),
+            StartsAtLocal = ClubTime.Now.Date.AddDays(1).AddHours(18),
             Status = ClassSessionStatus.Scheduled
         }));
     }
@@ -99,6 +99,8 @@ public class ClassSessionsController(
         }
 
         ValidateSessionTiming(model);
+
+        await ValidateScheduleAsync(model, null);
 
         if (!ModelState.IsValid)
         {
@@ -142,6 +144,8 @@ public class ClassSessionsController(
         }
 
         ValidateSessionTiming(model);
+
+        await ValidateScheduleAsync(model, id);
 
         if (!ModelState.IsValid)
         {
@@ -339,14 +343,30 @@ public class ClassSessionsController(
 
     private void ValidateSessionTiming(ClassSessionFormViewModel model)
     {
-        var startsAtUtc = DateTime.SpecifyKind(model.StartsAtLocal, DateTimeKind.Local).ToUniversalTime();
+        var startsAtUtc = ClubTime.ToUtc(model.StartsAtLocal);
 
         if (model.Status == ClassSessionStatus.Scheduled && startsAtUtc <= DateTime.UtcNow)
         {
             ModelState.AddModelError(
                 nameof(model.StartsAtLocal),
-                "Planlanmis seans tarihi gelecekte olmali. Gecmis seans icin durumu tamamlandi secmelisin.");
+                "Planlanmış seans tarihi gelecekte olmalı. Geçmiş seans için durumu tamamlandı seçmelisin.");
         }
+    }
+
+    private async Task ValidateScheduleAsync(ClassSessionFormViewModel model, int? id)
+    {
+        if (model.Status != ClassSessionStatus.Scheduled) return;
+        var group = await dbContext.GroupClasses.AsNoTracking().FirstOrDefaultAsync(x => x.Id == model.GroupClassId);
+        if (group is null) return;
+        var start = ClubTime.ToUtc(model.StartsAtLocal);
+        var end = start.AddMinutes(group.DurationMinutes);
+        if (await dbContext.ClassSessions.AnyAsync(x => x.Id != id && x.GroupClass.TrainerId == group.TrainerId &&
+                x.Status == ClassSessionStatus.Scheduled && x.StartsAtUtc < end && x.StartsAtUtc.AddMinutes(x.GroupClass.DurationMinutes) > start) ||
+            await dbContext.PersonalTrainingSessions.AnyAsync(x => x.TrainerId == group.TrainerId &&
+                x.Status == PersonalTrainingSessionStatus.Scheduled && x.StartsAtUtc < end && x.StartsAtUtc.AddMinutes(x.DurationMinutes) > start))
+            ModelState.AddModelError(nameof(model.StartsAtLocal), "Antrenörün bu saat aralığında başka bir grup veya birebir dersi var.");
+        if (id.HasValue && await dbContext.ClassReservations.CountAsync(x => x.ClassSessionId == id && x.Status == ClassReservationStatus.Reserved) > (model.CapacityOverride ?? group.Capacity))
+            ModelState.AddModelError(nameof(model.CapacityOverride), "Kontenjan mevcut katılımcı sayısından az olamaz.");
     }
 
     private static ClassSession MapToEntity(ClassSessionFormViewModel model)
@@ -359,7 +379,7 @@ public class ClassSessionsController(
     private static void ApplyFormModel(ClassSession session, ClassSessionFormViewModel model)
     {
         session.GroupClassId = model.GroupClassId;
-        session.StartsAtUtc = DateTime.SpecifyKind(model.StartsAtLocal, DateTimeKind.Local).ToUniversalTime();
+        session.StartsAtUtc = ClubTime.ToUtc(model.StartsAtLocal);
         session.CapacityOverride = model.CapacityOverride;
         session.Status = model.Status;
         session.UpdatedAtUtc = DateTime.UtcNow;
@@ -371,7 +391,7 @@ public class ClassSessionsController(
         {
             Id = session.Id,
             GroupClassId = session.GroupClassId,
-            StartsAtLocal = session.StartsAtUtc.ToLocalTime(),
+            StartsAtLocal = ClubTime.ToLocal(session.StartsAtUtc),
             CapacityOverride = session.CapacityOverride,
             Status = session.Status
         };
@@ -404,7 +424,7 @@ public class ClassSessionsController(
             .ToListAsync();
 
         var localStartsAt =
-            startsAtUtc.ToLocalTime();
+            ClubTime.ToLocal(startsAtUtc);
 
         foreach (var memberUserId in memberUserIds)
         {

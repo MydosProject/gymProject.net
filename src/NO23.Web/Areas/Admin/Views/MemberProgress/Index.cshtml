@@ -1,0 +1,68 @@
+@model NO23.Web.ViewModels.Admin.MemberProgressPage
+@using NO23.Web.Domain.Entities
+@using NO23.Web.Services
+@{
+    ViewData["Title"] = "Ölçüm ve Gelişim";
+    var culture = System.Globalization.CultureInfo.GetCultureInfo("tr-TR");
+    var latest = Model.Entries.FirstOrDefault();
+    var previous = Model.Entries.Skip(1).FirstOrDefault();
+    var first = Model.Entries.LastOrDefault();
+    var metrics = new (string Field, string Label, string Unit, Func<MemberProgressEntry, decimal?> Read)[] {
+        ("BodyWeightKg", "Vücut ağırlığı", "kg", x => x.BodyWeightKg),
+        ("BodyFatKg", "Yağ ağırlığı", "kg", x => x.BodyFatKg),
+        ("BodyFatPercent", "Yağ oranı", "%", x => x.BodyFatPercent),
+        ("MuscleMassKg", "Kas kütlesi", "kg", x => x.MuscleMassKg),
+        ("MuscleMassPercent", "Kas oranı", "%", x => x.MuscleMassPercent),
+        ("BodyWaterAmount", "Vücut suyu miktarı", "kg", x => x.BodyWaterAmount),
+        ("BodyWaterPercent", "Vücut suyu oranı", "%", x => x.BodyWaterPercent)
+    };
+    string Value(decimal? value) => value?.ToString("0.##", culture) ?? "—";
+    string Change(decimal? a, decimal? b) => a.HasValue && b.HasValue ? (a.Value - b.Value).ToString("+0.##;-0.##;0", culture) : "—";
+}
+<section class="admin-page">
+    <header class="admin-page-head"><div><h1>Ölçüm ve gelişim</h1><p>Her ay yeni ölçüm ekle; önceki ölçüm ve başlangıç değerleriyle değişimi takip et.</p></div></header>
+    @foreach(var key in new[]{"SuccessMessage","ErrorMessage"}){if(TempData[key] is string message){<div class="alert @(key=="ErrorMessage"?"alert-danger":"alert-success")">@message</div>}}
+    <form method="get" class="d-flex gap-2 mb-4"><label>Üye<select asp-for="MemberId" asp-items="Model.Members" class="form-select" required><option value="">Üye seç</option></select></label><button class="btn btn-dark">Gelişimi göster</button></form>
+    @if(Model.MemberId.HasValue)
+    {
+        <h2>@Model.MemberName</h2>
+        @if(latest is not null){<p>Son ölçüm: @latest.EntryDate.ToString("dd.MM.yyyy") · Sonraki aylık kontrol: @latest.EntryDate.AddMonths(1).ToString("dd.MM.yyyy")</p>}
+        <form asp-action="Save" method="post" class="bg-white text-dark border rounded p-3 mb-4">
+            <h3>Ölçüm ekle / düzenle</h3><p>Aynı tarih seçilirse o günün ölçümü güncellenir. Yeni tarih seçilirse geçmiş kayıtlar korunur.</p>
+            <div asp-validation-summary="All" class="text-danger"></div><input type="hidden" name="memberId" value="@Model.MemberId" />
+            <label asp-for="Input.EntryDate"></label><input asp-for="Input.EntryDate" type="date" max="@ClubTime.Now.ToString("yyyy-MM-dd")" class="form-control" />
+            <div class="row g-3 mt-1">
+                @foreach(var metric in metrics){<div class="col-sm-6 col-lg-3"><label for="Input_@metric.Field">@metric.Label (@metric.Unit)</label>
+                    @Html.TextBox("Input."+metric.Field, typeof(NO23.Web.ViewModels.Member.MemberProgressEntryInputViewModel).GetProperty(metric.Field)!.GetValue(Model.Input), new { @class="form-control", inputmode="decimal" })
+                    @Html.ValidationMessage("Input."+metric.Field, null, new { @class="text-danger" })</div>}
+            </div><button class="btn btn-dark mt-3">Ölçümü kaydet</button>
+        </form>
+        <h3>Ölçüm karşılaştırması</h3>
+        <p>Oran farkları yüzde puan olarak gösterilir. Boş ölçümler sıfır kabul edilmez.</p>
+        <div class="table-responsive bg-white text-dark border rounded mb-4"><table class="table mb-0"><thead><tr><th>Ölçüm</th><th>İlk (@first?.EntryDate.ToString("dd.MM.yyyy"))</th><th>Önceki (@previous?.EntryDate.ToString("dd.MM.yyyy"))</th><th>Son (@latest?.EntryDate.ToString("dd.MM.yyyy"))</th><th>Öncekiye göre</th><th>Başlangıca göre</th></tr></thead><tbody>
+            @foreach(var m in metrics){var a=latest is null?null:m.Read(latest);var b=previous is null?null:m.Read(previous);var c=first is null?null:m.Read(first);
+                <tr><td>@m.Label (@m.Unit)</td><td>@Value(c)</td><td>@Value(b)</td><td>@Value(a)</td><td>@Change(a,b)</td><td>@Change(a,c)</td></tr>}
+        </tbody></table></div>
+        <h3>Ölçüm geçmişi</h3>
+        <div class="table-responsive bg-white text-dark border rounded mb-4"><table class="table"><thead><tr><th>Tarih</th>@foreach(var m in metrics){<th>@m.Label (@m.Unit)</th>}<th></th></tr></thead><tbody>
+            @if(Model.Entries.Count==0){<tr><td colspan="9">Henüz ölçüm kaydı yok.</td></tr>}
+            @foreach(var entry in Model.Entries){<tr><td>@entry.EntryDate.ToString("dd.MM.yyyy")</td>@foreach(var m in metrics){<td>@Value(m.Read(entry))</td>}<td><a asp-route-memberId="@Model.MemberId" asp-route-date="@entry.EntryDate.ToString("yyyy-MM-dd")">Düzenle</a></td></tr>}
+        </tbody></table></div>
+        <h3>Önce / sonra fotoğrafları</h3>
+        <p>Fotoğraflar halka açık yayınlanmaz; yönetici, ilgili üye ve atanmış aktif antrenör erişebilir.</p>
+        <form asp-action="Upload" method="post" enctype="multipart/form-data" class="bg-white text-dark border rounded p-3 mb-3">
+            <input type="hidden" name="MemberId" value="@Model.MemberId" />
+            <label>Çekim tarihi<input name="TakenOn" type="date" value="@ClubTime.Now.ToString("yyyy-MM-dd")" max="@ClubTime.Now.ToString("yyyy-MM-dd")" required class="form-control" /></label>
+            <label>Fotoğraf (JPEG / PNG, en fazla 5 MB)<input name="Photo" type="file" accept="image/jpeg,image/png" required class="form-control" /></label>
+            <label>Açıklama<input name="Caption" maxlength="200" class="form-control" placeholder="Ön, yan veya arka görünüm" /></label><button class="btn btn-dark">Fotoğraf yükle</button>
+        </form>
+        @if(Model.Photos.Count>0){
+            <form method="get" class="d-flex flex-wrap gap-2 mb-3"><input name="memberId" type="hidden" value="@Model.MemberId" />
+                <label>Önce<select name="before" class="form-select">@foreach(var p in Model.Photos){<option value="@p.Id" selected="@(p.Id==Model.Before)">@p.TakenOn.ToString("dd.MM.yyyy") — @p.Caption</option>}</select></label>
+                <label>Sonra<select name="after" class="form-select">@foreach(var p in Model.Photos){<option value="@p.Id" selected="@(p.Id==Model.After)">@p.TakenOn.ToString("dd.MM.yyyy") — @p.Caption</option>}</select></label><button class="btn btn-dark">Karşılaştır</button>
+            </form>
+            <div class="row g-3">@foreach(var choice in new[]{(Label:"Önce",Id:Model.Before),(Label:"Sonra",Id:Model.After)}){var p=Model.Photos.FirstOrDefault(x=>x.Id==choice.Id);if(p is not null){<figure class="col-md-6"><figcaption>@choice.Label · @p.TakenOn.ToString("dd.MM.yyyy") · @p.Caption</figcaption><img src="@Url.Action("Image","ProgressPhotos",new{area="",id=p.Id})" alt="@choice.Label gelişim fotoğrafı" style="width:100%;height:420px;object-fit:contain;background:#eee" /></figure>}}</div>
+            <details class="mt-3"><summary>Fotoğrafları yönet</summary>@foreach(var p in Model.Photos){<form asp-action="DeletePhoto" method="post" class="d-flex gap-2 mt-2"><input name="id" type="hidden" value="@p.Id" /><input name="memberId" type="hidden" value="@Model.MemberId" /><span>@p.TakenOn.ToString("dd.MM.yyyy") — @p.Caption</span><button class="btn btn-sm btn-outline-danger">Fotoğrafı sil</button></form>}</details>
+        }
+    }
+</section>

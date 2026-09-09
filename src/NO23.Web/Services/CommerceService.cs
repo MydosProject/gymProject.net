@@ -288,7 +288,8 @@ public class CommerceService
             }
         }
 
-        var order = BuildOrder(profile.Id, OrderType.OneTime, deliveryDetails, null, cart.Items);
+        var discounts = await new MembershipPricingService(dbContext).GetAsync(userId);
+        var order = BuildOrder(profile.Id, OrderType.OneTime, deliveryDetails, null, cart.Items, discounts);
 
         foreach (var cartItem in cart.Items.Where(item => item.ItemType == CartItemType.ShopProduct))
         {
@@ -584,7 +585,8 @@ public class CommerceService
         OrderType orderType,
         DeliveryDetails deliveryDetails,
         int? kitchenSubscriptionId,
-        IEnumerable<CartItem> cartItems)
+        IEnumerable<CartItem> cartItems,
+        MembershipDiscounts? discounts = null)
     {
         var items = cartItems.Select(item => new OrderItem
         {
@@ -596,9 +598,9 @@ public class CommerceService
             RemovedIngredientNames = item.RemovedIngredientNames,
             AddedIngredientNames = item.AddedIngredientNames,
             ProductName = item.ProductName,
-            UnitPrice = item.UnitPrice,
+            UnitPrice = MembershipDiscounts.Apply(item.UnitPrice, discounts?.For(item.ItemType) ?? 0),
             Quantity = item.Quantity,
-            LineTotal = item.LineTotal
+            LineTotal = MembershipDiscounts.Apply(item.UnitPrice, discounts?.For(item.ItemType) ?? 0) * item.Quantity
         }).ToList();
 
         return BuildOrder(memberProfileId, null, orderType, deliveryDetails, kitchenSubscriptionId, items);

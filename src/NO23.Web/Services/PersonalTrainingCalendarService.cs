@@ -10,6 +10,10 @@ public class PersonalTrainingCalendarService(ApplicationDbContext dbContext)
     public async Task<(bool Succeeded, string Message)> CreateAsync(
         int trainerId, int memberProfileId, DateTime startsAtUtc, int durationMinutes, string? note)
     {
+        if (startsAtUtc <= DateTime.UtcNow)
+            return (false, "Ders için gelecekte bir tarih ve saat seçmelisiniz.");
+        if (!await dbContext.Trainers.AnyAsync(x => x.Id == trainerId && x.IsActive))
+            return (false, "Aktif bir antrenör seçmelisiniz.");
         var member = await dbContext.MemberProfiles
             .Include(item => item.MembershipPackage)
             .FirstOrDefaultAsync(item => item.Id == memberProfileId && item.AssignedTrainerId == trainerId);
@@ -24,9 +28,9 @@ public class PersonalTrainingCalendarService(ApplicationDbContext dbContext)
 
         var endsAtUtc = startsAtUtc.AddMinutes(durationMinutes);
         var hasConflict = await dbContext.PersonalTrainingSessions.AnyAsync(item =>
-            item.TrainerId == trainerId && item.Status == PersonalTrainingSessionStatus.Scheduled &&
+            (item.TrainerId == trainerId || item.MemberProfileId == memberProfileId) && item.Status == PersonalTrainingSessionStatus.Scheduled &&
             item.StartsAtUtc < endsAtUtc && item.StartsAtUtc.AddMinutes(item.DurationMinutes) > startsAtUtc);
-        if (hasConflict)
+        if (hasConflict || await HasGroupConflictAsync(trainerId, startsAtUtc, endsAtUtc))
             return (false, "Bu saat aralığında başka bir dersiniz bulunuyor.");
 
         dbContext.PersonalTrainingSessions.Add(new PersonalTrainingSession
@@ -64,11 +68,11 @@ public class PersonalTrainingCalendarService(ApplicationDbContext dbContext)
 
             var newEnd = postponedStartsAtUtc.Value.AddMinutes(session.DurationMinutes);
             var hasConflict = await dbContext.PersonalTrainingSessions.AnyAsync(item =>
-                item.Id != session.Id && item.TrainerId == trainerId &&
+                item.Id != session.Id && (item.TrainerId == trainerId || item.MemberProfileId == session.MemberProfileId) &&
                 item.Status == PersonalTrainingSessionStatus.Scheduled &&
                 item.StartsAtUtc < newEnd &&
                 item.StartsAtUtc.AddMinutes(item.DurationMinutes) > postponedStartsAtUtc.Value);
-            if (hasConflict)
+            if (hasConflict || await HasGroupConflictAsync(trainerId, postponedStartsAtUtc.Value, newEnd))
                 return (false, "Yeni saat aralığında başka bir dersiniz bulunuyor.");
 
             session.StartsAtUtc = postponedStartsAtUtc.Value;
@@ -107,4 +111,8 @@ public class PersonalTrainingCalendarService(ApplicationDbContext dbContext)
         return (true, status == PersonalTrainingSessionStatus.Postponed
             ? "Ders ertelendi; ders hakkı düşülmedi." : "Ders durumu güncellendi.");
     }
+    private Task<bool> HasGroupConflictAsync(int trainerId, DateTime start, DateTime end) =>
+        dbContext.ClassSessions.AnyAsync(x => x.GroupClass.TrainerId == trainerId &&
+            x.Status == ClassSessionStatus.Scheduled && x.StartsAtUtc < end &&
+            x.StartsAtUtc.AddMinutes(x.GroupClass.DurationMinutes) > start);
 }

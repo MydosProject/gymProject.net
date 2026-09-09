@@ -42,6 +42,7 @@ else
                     <small>@GetCartItemTypeName(item.ItemType)</small>
                     <h3>@item.ProductName</h3>
                     <p>@item.Quantity adet · @item.UnitPrice.ToString("N0") ₺</p>
+                    @if (item.DiscountPercent > 0) { <small>Üyeliğine özel %@item.DiscountPercent indirim uygulandı.</small> }
                     @if (!string.IsNullOrWhiteSpace(item.RemovedIngredientNames))
                     {
                         <p class="member-cart-customization"><strong>Çıkar:</strong> @item.RemovedIngredientNames</p>

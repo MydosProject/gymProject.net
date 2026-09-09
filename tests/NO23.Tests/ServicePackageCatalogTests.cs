@@ -25,7 +25,7 @@ public class ServicePackageCatalogTests
         {
             Assert.NotEmpty(package.Variants);
             Assert.All(package.Variants, variant =>
-                Assert.True(variant.TotalPrice > 0 || variant.MonthlyPrice > 0));
+                Assert.True(variant.PriceOnRequest || variant.TotalPrice > 0 || variant.MonthlyPrice > 0));
         });
     }
 

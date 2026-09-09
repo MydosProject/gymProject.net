@@ -24,7 +24,7 @@ public static class KitchenSubscriptionPackageSeed
             Description = "Düzenli beslenme ritmini kurmak için 10 günlük NO23 Kitchen yemek paketi.",
             Days = 10,
             UnitPrice = 7900,
-            IsActive = true,
+            IsActive = false,
             DisplayOrder = 20
         },
         new()
@@ -44,7 +44,7 @@ public static class KitchenSubscriptionPackageSeed
             Description = "Aylık rutin oluşturmak isteyen üyeler için 30 günlük NO23 Kitchen yemek paketi.",
             Days = 30,
             UnitPrice = 19900,
-            IsActive = true,
+            IsActive = false,
             DisplayOrder = 40
         }
     ];

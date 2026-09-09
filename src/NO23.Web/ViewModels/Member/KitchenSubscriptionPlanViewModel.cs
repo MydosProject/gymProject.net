@@ -13,6 +13,7 @@ public class KitchenSubscriptionPlanViewModel
     public int Days { get; init; }
 
     public decimal UnitPrice { get; init; }
+    public int DiscountPercent { get; init; }
 
     public bool IsActive { get; init; }
 }

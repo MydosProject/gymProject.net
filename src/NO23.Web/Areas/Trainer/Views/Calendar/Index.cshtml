@@ -77,7 +77,7 @@
                                     @foreach (var item in day.Sessions)
                                     {
                                         <a class="trainer-week-event" href="#session-@item.Id">
-                                            <strong>@item.StartsAtUtc.ToLocalTime().ToString("HH:mm") · @item.DurationMinutes dk</strong>
+                                            <strong>@NO23.Web.Services.ClubTime.ToLocal(item.StartsAtUtc).ToString("HH:mm") · @item.DurationMinutes dk</strong>
                                             <span>@(string.IsNullOrWhiteSpace(item.MemberName) ? "İsimsiz üye" : item.MemberName)</span>
                                             <span>@item.StatusName</span>
                                         </a>
@@ -144,7 +144,7 @@
                                     <div class="d-flex flex-wrap justify-content-between gap-2 mb-2">
                                         <div>
                                             <strong>@(string.IsNullOrWhiteSpace(session.MemberName) ? "İsimsiz üye" : session.MemberName)</strong>
-                                            <div class="text-muted small">@session.StartsAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm") · @session.DurationMinutes dk · Kalan: @(session.IsUnlimited ? "Sınırsız" : session.RemainingCredits)</div>
+                                            <div class="text-muted small">@NO23.Web.Services.ClubTime.ToLocal(session.StartsAtUtc).ToString("dd.MM.yyyy HH:mm") · @session.DurationMinutes dk · Kalan: @(session.IsUnlimited ? "Sınırsız" : session.RemainingCredits)</div>
                                         </div>
                                         <span class="admin-status">@session.StatusName</span>
                                     </div>
@@ -159,8 +159,8 @@
                                     {
                                         <div class="alert alert-info py-2 px-3 mb-2 small">
                                             <strong>Ertelendi:</strong>
-                                            @latestPostponement.PreviousStartsAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
-                                            → @latestPostponement.NewStartsAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+                                            @NO23.Web.Services.ClubTime.ToLocal(latestPostponement.PreviousStartsAtUtc).ToString("dd.MM.yyyy HH:mm")
+                                            → @NO23.Web.Services.ClubTime.ToLocal(latestPostponement.NewStartsAtUtc).ToString("dd.MM.yyyy HH:mm")
                                         </div>
                                     }
                                     <details class="mb-3">
@@ -170,20 +170,20 @@
                                         <div class="border-start ps-3 mt-2 d-grid gap-2 small">
                                             <div>
                                                 <strong>Ders oluşturuldu</strong>
-                                                <div class="text-muted">@session.CreatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</div>
+                                                <div class="text-muted">@NO23.Web.Services.ClubTime.ToLocal(session.CreatedAtUtc).ToString("dd.MM.yyyy HH:mm")</div>
                                             </div>
                                             @foreach (var history in session.History)
                                             {
                                                 <div>
                                                     <strong>@history.StatusName</strong>
                                                     <div class="text-muted">
-                                                        İşlem: @history.ChangedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+                                                        İşlem: @NO23.Web.Services.ClubTime.ToLocal(history.ChangedAtUtc).ToString("dd.MM.yyyy HH:mm")
                                                     </div>
                                                     @if (history.Status == PersonalTrainingSessionStatus.Postponed)
                                                     {
                                                         <div>
-                                                            Eski tarih: @history.PreviousStartsAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")<br />
-                                                            Yeni tarih: @history.NewStartsAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+                                                            Eski tarih: @NO23.Web.Services.ClubTime.ToLocal(history.PreviousStartsAtUtc).ToString("dd.MM.yyyy HH:mm")<br />
+                                                            Yeni tarih: @NO23.Web.Services.ClubTime.ToLocal(history.NewStartsAtUtc).ToString("dd.MM.yyyy HH:mm")
                                                         </div>
                                                     }
                                                     @if (!string.IsNullOrWhiteSpace(history.Note))

@@ -1,0 +1,26 @@
+@model IReadOnlyList<NO23.Web.Domain.Entities.AppointmentRequest>
+@using NO23.Web.Extensions
+@{ ViewData["Title"] = "Randevu Talepleri"; }
+<section class="admin-page"><div class="container">
+    <header class="admin-page-head"><div><h1>Randevu talepleri</h1><p>Ziyaretçiyi arayarak tarih ve saati netleştir, ardından talebi onayla. Saatler Türkiye saatidir.</p></div></header>
+    @if (TempData["SuccessMessage"] is string message) { <div class="alert alert-success">@message</div> }
+    <div class="table-responsive"><table class="table table-dark align-middle">
+        <thead><tr><th>İletişim</th><th>Hizmet</th><th>Tercih edilen zaman</th><th>Not</th><th>Durum</th></tr></thead>
+        <tbody>
+        @if (Model.Count == 0) { <tr><td colspan="5">Henüz randevu talebi bulunmuyor.</td></tr> }
+        @foreach (var request in Model)
+        {
+            <tr><td>@request.FullName<br />@request.PhoneNumber</td><td>@request.Service</td>
+                <td>@request.PreferredDate.ToString("dd.MM.yyyy") @request.PreferredTime.ToString("HH:mm")</td><td>@request.Notes</td>
+                <td><form asp-action="UpdateStatus" method="post" class="d-flex gap-2">
+                    <input type="hidden" name="id" value="@request.Id" />
+                    <select name="status" class="form-select" aria-label="@request.FullName talep durumu">
+                        @foreach (var status in Enum.GetValues<ServicePackageApplicationStatus>())
+                        { <option value="@status" selected="@(status == request.Status)">@status.GetDisplayName()</option> }
+                    </select><button class="btn btn-outline-light">Kaydet</button>
+                </form></td>
+            </tr>
+        }
+        </tbody>
+    </table></div>
+</div></section>

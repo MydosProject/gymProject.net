@@ -16,7 +16,7 @@
 
         <div class="plan-application-layout">
             <header class="plan-application-summary">
-                <p class="section-kicker">NO23 / @Model.PackageCategory.ToUpperInvariant()</p>
+                <p class="section-kicker">NO23 / @(Model.PackageCategory == "Personal Training" ? "PERSONAL TRAINING" : Model.PackageCategory.ToUpper(System.Globalization.CultureInfo.GetCultureInfo("tr-TR")))</p>
                 <h1>Başvurunu<br /><span>tamamla.</span></h1>
                 <p>
                     Seçtiğin paket ekibimize iletilir. NO23 ekibi program ve
@@ -34,6 +34,8 @@
                     {
                         <p>@Model.VariantRights</p>
                     }
+                    @if (Model.CommitmentNote is not null) { <p>@Model.CommitmentNote</p> }
+                    @if (Model.BillingNote is not null) { <p>@Model.BillingNote</p> }
                 </article>
             </header>
 

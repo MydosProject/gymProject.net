@@ -15,6 +15,7 @@
                 <p class="admin-page-description">Grup derslerini takvime yerleştir, kontenjanı takip et ve seans durumlarını yönet.</p>
             </div>
             <div class="admin-page-actions">
+                <a class="btn btn-dark" asp-controller="Calendar" asp-action="Index">Haftalık takvim ve katılımcılar</a>
                 <a class="btn btn-outline-dark" asp-area="Admin" asp-controller="GroupClasses" asp-action="Index">Grup dersleri</a>
                 <a class="btn btn-dark" asp-action="Create">+ Programa ders ekle</a>
             </div>
@@ -61,7 +62,7 @@
                         @for (var index = 0; index < Model.Count; index++)
                         {
                             var session = Model[index];
-                            var startsAtLocal = session.StartsAtUtc.ToLocalTime();
+                            var startsAtLocal = NO23.Web.Services.ClubTime.ToLocal(session.StartsAtUtc);
                             var remainingCapacity = Math.Max(0, session.Capacity - session.ReservedCount);
                             var isScheduled = session.IsScheduled;
 
@@ -83,7 +84,9 @@
                                 </td>
                                 <td data-label="Kalan"><span class="admin-capacity @(remainingCapacity == 0 ? "is-full" : null)">@remainingCapacity yer</span></td>
                                 <td data-label="Durum"><span class="badge @(isScheduled ? "text-bg-success" : "text-bg-secondary")">@session.Status</span></td>
-                                <td class="text-end" data-label="İşlem"><a class="btn btn-sm btn-outline-dark" asp-action="Edit" asp-route-id="@session.Id">Düzenle</a></td>
+                                <td class="text-end" data-label="İşlem"><a class="btn btn-sm btn-outline-dark" asp-action="Edit" asp-route-id="@session.Id">Düzenle</a>
+                                    <a class="btn btn-sm btn-outline-dark" asp-controller="Calendar" asp-action="Index" asp-route-week="@startsAtLocal.ToString("yyyy-MM-dd")" asp-fragment="group-session-@session.Id">Takvim / katılımcı ekle</a>
+                                </td>
                             </tr>
                             <tr class="admin-session-participant-row">
                                 <td colspan="9">
@@ -110,7 +113,7 @@
                                                             <span>@participant.Email</span>
                                                             <small>
                                                                 @participant.PackageName ·
-                                                                @participant.ReservedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm") tarihinde kaydoldu
+                                                                @NO23.Web.Services.ClubTime.ToLocal(participant.ReservedAtUtc).ToString("dd.MM.yyyy HH:mm") tarihinde kaydoldu
                                                             </small>
                                                         </div>
                                                         <form asp-area="Admin"

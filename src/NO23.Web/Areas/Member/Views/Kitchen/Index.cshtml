@@ -578,7 +578,16 @@
 
                                 <span class="kitchen-plan-days">@plan.Days gün · @plan.UnitPrice.ToString("C0")</span>
                                 <h4>@plan.Name</h4>
+                                @if (plan.DiscountPercent > 0) { <small>Üyeliğine özel %@plan.DiscountPercent indirim uygulandı.</small> }
                                 <p>@plan.Description</p>
+                                <fieldset class="kitchen-meal-selection">
+                                    <legend>Günlük öğünlerini seç</legend>
+                                    @foreach (var meal in Enum.GetValues<NO23.Web.Domain.Enums.KitchenMealSlot>())
+                                    {
+                                        <label><input type="checkbox" name="selectedMeals" value="@meal" checked /> @NO23.Web.Services.KitchenMealSelection.Name(meal)</label>
+                                    }
+                                    <small>Paket bedeli sabittir; öğün seçimi fiyatı değiştirmez. En az bir öğün seçmelisin.</small>
+                                </fieldset>
                                 <button type="submit">
                                     Paketi Satın Al
                                     <span aria-hidden="true">→</span>

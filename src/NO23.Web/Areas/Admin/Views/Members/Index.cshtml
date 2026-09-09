@@ -112,6 +112,7 @@
                                 <td data-label="İşlem">
                                     <div class="d-flex gap-2">
                                         <a class="btn btn-outline-dark btn-sm" asp-action="Edit" asp-route-id="@member.MemberProfileId">Düzenle</a>
+                                        <a class="btn btn-outline-dark btn-sm" asp-controller="MemberProgress" asp-action="Index" asp-route-memberId="@member.MemberProfileId">Ölçüm ve fotoğraflar</a>
                                         <a class="btn btn-outline-danger btn-sm" asp-action="Delete" asp-route-id="@member.MemberProfileId">Sil</a>
                                     </div>
                                 </td>

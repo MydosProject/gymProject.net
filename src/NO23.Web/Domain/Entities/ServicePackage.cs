@@ -11,6 +11,10 @@ public class ServicePackage
     public string Subtitle { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public bool IsFeatured { get; set; }
+    public int KitchenDiscountPercent { get; set; }
+    public int CoffeeDiscountPercent { get; set; }
+    public int ShopDiscountPercent { get; set; }
+    public bool IncludesRecoveryRoom { get; set; }
     public bool IsActive { get; set; } = true;
     public int DisplayOrder { get; set; }
     public int? MembershipPackageId { get; set; }

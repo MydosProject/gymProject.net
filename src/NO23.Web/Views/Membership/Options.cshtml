@@ -22,7 +22,6 @@
                     <ul>
                         @if (option.PersonalTrainingSessionCount > 0) { <li>@option.PersonalTrainingSessionCount birebir PT seansı</li> }
                         @if (option.GroupClassCreditCount > 0) { <li>@option.GroupClassCreditCount grup dersi hakkı</li> }
-                        @if (option.IncludesGymAccess) { <li>Salon kullanım hakkı</li> }
                         @if (option.PersonalTrainingSessionCount == 0) { <li>Personal Training içermez</li> }
                     </ul>
                     <a asp-area="Identity" asp-page="/Account/Register" asp-route-package="@Model.PackageCode" asp-route-option="@option.Id">Bu Seçenekle Devam Et <span>→</span></a>
