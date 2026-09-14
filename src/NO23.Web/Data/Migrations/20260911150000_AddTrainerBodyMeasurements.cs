@@ -1,9 +1,12 @@
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
+using NO23.Web.Data;
 
 #nullable disable
 
 namespace NO23.Web.Data.Migrations;
 
+[DbContext(typeof(ApplicationDbContext))]
 [Migration("20260911150000_AddTrainerBodyMeasurements")]
 public partial class AddTrainerBodyMeasurements : Migration
 {
