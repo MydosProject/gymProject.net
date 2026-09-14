@@ -52,8 +52,8 @@ public class ServicePackageCatalogTests
         AssertPrices("group-performance", ("8 Ders", 6000m), ("8 Ders · 6 Aylık", 30000m),
             ("8 Ders · Yıllık", 60000m), ("12 Ders", 8400m), ("12 Ders · 6 Aylık", 42000m),
             ("12 Ders · Yıllık", 84000m), ("24 Ders · 3 Aylık", 15600m));
-        AssertPrices("kids-club", ("8 Ders", 5000m), ("8 Ders · 6 Aylık", 25000m),
-            ("8 Ders · Yıllık", 50000m));
+        AssertPrices("kids-club", ("Aylık", 5000m), ("6 Aylık", 25000m),
+            ("Yıllık", 50000m));
 
         var reformerPlus = ServicePackageSeed.Defaults.Single(x => x.Slug == "group-reformer-plus");
         Assert.All(reformerPlus.Variants, x =>

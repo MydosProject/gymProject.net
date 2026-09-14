@@ -186,7 +186,10 @@
             }
             else
             {
-                <div class="classes-schedule-list">
+                <div class="classes-schedule-list"
+                     role="region"
+                     aria-label="Yaklaşan seanslar"
+                     tabindex="0">
                     @for (var index = 0; index < Model.UpcomingSessions.Count; index++)
                     {
                         var session = Model.UpcomingSessions[index];

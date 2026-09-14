@@ -143,9 +143,9 @@ public static class ServicePackageSeed
         package.Features = Features("6–14 yaş arası çocuklara uygun", "Postür analizi dahil", "Yaşa uygun egzersiz planı", "Aynı aileden ikinci çocuk için %25 kardeş indirimi", "6 aylık paketin 1 ayı hediye", "Yıllık paketin 2 ayı hediye");
         foreach (var option in new GroupVariantDefinition[]
         {
-            new("8 Ders", 1, 0, 5000m, 0, 8, false, false),
-            new("8 Ders · 6 Aylık", 6, 1, 25000m, 0, 8, true, false),
-            new("8 Ders · Yıllık", 12, 2, 50000m, 0, 8, true, false)
+            new("Aylık", 1, 0, 5000m, 0, 8, false, false),
+            new("6 Aylık", 6, 1, 25000m, 0, 8, true, false),
+            new("Yıllık", 12, 2, 50000m, 0, 8, true, false)
         }) AddGroupVariant(package, option, true);
         return package;
     }

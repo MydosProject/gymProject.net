@@ -2,8 +2,9 @@
 @{
     var selectedId = Model.Variants.FirstOrDefault(x => x.IsRecommended)?.Id ?? Model.Variants.FirstOrDefault()?.Id;
     var billingNote = Model.Variants.Select(x => x.BillingNote).FirstOrDefault(x => x is not null);
+    var isKidsPackage = string.Equals(Model.Slug, "kids-club", StringComparison.OrdinalIgnoreCase);
 }
-<article id="@Model.Slug" class="service-package-card @(Model.IsFeatured ? "is-featured" : null)">
+<article id="@Model.Slug" class="service-package-card @(Model.IsFeatured ? "is-featured" : null) @(isKidsPackage ? "is-kids-package" : null)">
     @if (Model.IsFeatured) { <span class="service-package-badge">En Çok Tercih Edilen</span> }
     <div class="service-package-head">
         <small>@(Model.CategoryTitle == "Personal Training" ? "PERSONAL TRAINING" : Model.CategoryTitle)</small>
