@@ -137,7 +137,8 @@ public class AdminOperationsTests
         var trainer = new Trainer { FirstName = "Test", LastName = "Coach", Specialty = "PT", ApplicationUser = new ApplicationUser { UserName = "coach", Email = "coach@test.local" } };
         db.Trainers.Add(trainer);
         await db.SaveChangesAsync();
-        var controller = Setup(new NO23.Web.Areas.Admin.Controllers.TrainersController(db, manager, new DisabledEmailSender(NullLogger<DisabledEmailSender>.Instance)));
+        var controller = Setup(new NO23.Web.Areas.Admin.Controllers.TrainersController(
+            db, manager, new DisabledEmailSender(NullLogger<DisabledEmailSender>.Instance), null!));
         Assert.IsType<RedirectToActionResult>(await controller.ResendInvitation(trainer.Id));
         Assert.Contains("gönderilemedi", controller.TempData["StatusMessage"]?.ToString());
         Assert.Contains("yapılandırılmamış", controller.TempData["InvitationWarning"]?.ToString());

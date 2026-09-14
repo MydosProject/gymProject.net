@@ -37,6 +37,9 @@ public class OrdersController(
                 DeliveryDate = order.DeliveryDate,
                 DeliveryTimeSlot = order.DeliveryTimeSlot,
                 Total = order.Total,
+                order.DiscountCode,
+                order.CampaignDiscountPercent,
+                order.DiscountAmount,
                 ItemCount = order.Items.Sum(item => item.Quantity),
                 Items = order.Items
                     .OrderBy(item => item.Id)
@@ -73,6 +76,9 @@ public class OrdersController(
                 DeliveryTimeSlot = order.DeliveryTimeSlot,
                 DeliveryMethod = order.DeliveryMethod.GetDisplayName(),
                 Total = order.Total,
+                DiscountCode = order.DiscountCode,
+                CampaignDiscountPercent = order.CampaignDiscountPercent,
+                DiscountAmount = order.DiscountAmount,
                 ItemCount = order.ItemCount,
                 Items = order.Items
                     .Select(item => new OrderListItemDetailViewModel

@@ -14,6 +14,16 @@ public class KitchenCheckoutViewModel : IValidatableObject
 
     public decimal PackagePrice { get; set; }
 
+    public string SelectedMeals { get; set; } = string.Empty;
+
+    public int DailyCalories { get; set; }
+
+    public decimal DailyDeliveryFee { get; set; }
+
+    public decimal AddressDeliveryFee => DailyDeliveryFee * PackageDays;
+
+    public decimal AddressDeliveryTotal => PackagePrice + AddressDeliveryFee;
+
     public bool IsPaymentAvailable { get; set; }
 
     public string ClubPickupDisplayName { get; set; } = "NO23 Sports Club";

@@ -35,9 +35,9 @@
                 </h1>
 
                 <p>
-                    Günlük kalori tüketimini ve vücut ölçümlerini kaydet.
-                    Geçmiş tarihlerdeki verilerini görüntüle, güncelle ve
-                    ilerlemeni düzenli şekilde takip et.
+                    Kalorini her gün, vücut ölçümlerini ise tartı veya analiz
+                    yaptığın gün kaydet. Böylece iki veri birbirine karışmadan
+                    ilerlemeni düzenli şekilde takip edebilirsin.
                 </p>
             </div>
 
@@ -106,11 +106,18 @@
               asp-action="ProgressMeasurements"
               asp-antiforgery="true"
               method="post"
-              class="member-progress-form">
+              class="member-progress-form"
+              onsubmit="return false;">
 
             <div asp-validation-summary="ModelOnly"
                  class="text-danger member-progress-validation">
             </div>
+
+            <div class="alert alert-info mb-4">
+                Kalori, kilo, su tüketimi ve vücut ölçümleri yalnızca yöneticiniz veya atanmış eğitmeniniz tarafından kaydedilir. Bu ekran görüntüleme amaçlıdır.
+            </div>
+
+            <fieldset disabled>
 
             <section class="member-progress-section
                             member-progress-calorie-section">
@@ -197,8 +204,8 @@
                         <p>Tartı ölçümleri</p>
                         <h2>Vücut ölçümleri</h2>
                         <span>
-                            Mevcut ölçümlerin arasından bildiklerini
-                            doldurabilirsin.
+                            Tartı veya vücut analizinde gördüğün değerleri
+                            yalnızca ölçüm yaptığın gün doldur.
                         </span>
                     </div>
                 </header>
@@ -352,12 +359,20 @@
                         </header>
 
                         <div class="member-progress-water-layout">
+                            <label class="member-progress-field" for="DailyWaterIntakeLiters">
+                                <span>Günlük su tüketimi</span>
+                                <div class="member-progress-input-shell">
+                                    <strong aria-hidden="true">L</strong>
+                                    <input id="DailyWaterIntakeLiters" type="number" name="DailyWaterIntakeLiters"
+                                           value="@FormatDecimal(Model.Input.DailyWaterIntakeLiters)" />
+                                </div>
+                            </label>
                             <label class="member-progress-field"
                                    for="BodyWaterAmount">
                                 <span>Vücut suyu miktarı</span>
 
                                 <div class="member-progress-input-shell">
-                                    <strong aria-hidden="true">LT</strong>
+                                    <strong aria-hidden="true">KG</strong>
 
                                     <input id="BodyWaterAmount"
                                            type="number"
@@ -377,14 +392,17 @@
                                 <span>Ölçüm notu</span>
 
                                 <p>
-                                    Tartı cihazındaki değer hangi birimde
-                                    gösteriliyorsa aynı değeri gir.
+                                    InBody ve benzeri analiz cihazlarında su
+                                    miktarı genellikle kg olarak gösterilir.
+                                    Cihazındaki birimi kontrol ederek gir.
                                 </p>
                             </div>
                         </div>
                     </section>
                 </div>
             </section>
+
+            </fieldset>
 
             <footer class="member-progress-form-footer">
                 <div>
@@ -394,18 +412,89 @@
                     </strong>
                 </div>
 
-                <button class="member-progress-submit"
-                        type="submit">
-                    <span>İlerlemeni Kaydet</span>
-                    <strong aria-hidden="true">→</strong>
-                </button>
+                <span class="member-progress-submit">Salt okunur</span>
             </footer>
         </form>
+
+        <section class="member-progress-history-section">
+            <header class="member-progress-chart-head">
+                <div>
+                    <p>03 / Ölçüm geçmişi</p>
+                    <h2>Son ölçümlerin</h2>
+                </div>
+
+                <div class="member-progress-chart-stats">
+                    <article>
+                        <span>Kayıtlı ölçüm</span>
+                        <strong>@Model.MeasurementDayCount gün</strong>
+                    </article>
+                </div>
+            </header>
+
+            <div class="member-progress-measurement-guide">
+                <strong>Bu bölüm nasıl çalışır?</strong>
+                <p>
+                    Kalori günlük toplam tüketimindir. Ölçüm değerleri ise her
+                    gün girilmez; tartı veya analiz yaptığın gün girilir. Yeni
+                    bir tarih seçerek o güne ait kaydı görüntüleyebilirsin.
+                </p>
+            </div>
+
+            @if (Model.MeasurementHistory.Count == 0)
+            {
+                <div class="member-goals-empty">
+                    <strong>Henüz ölçüm geçmişi yok.</strong>
+                    <p>
+                        İlk tartı veya vücut analizinden sonra değerlerini
+                        kaydettiğinde karşılaştırma burada görünecek.
+                    </p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive member-progress-history-table-wrap">
+                    <table class="member-progress-history-table">
+                        <thead>
+                            <tr>
+                                <th>Tarih</th>
+                                <th>Ağırlık</th>
+                                <th>Yağ kg</th>
+                                <th>Yağ oranı</th>
+                                <th>Kas kg</th>
+                                <th>Kas oranı</th>
+                                <th>Su kg</th>
+                                <th>Su oranı</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var measurement in Model.MeasurementHistory)
+                            {
+                                <tr>
+                                    <td>
+                                        <a asp-action="ProgressMeasurements"
+                                           asp-route-date="@measurement.EntryDate.ToString("yyyy-MM-dd")">
+                                            @measurement.EntryDate.ToString("dd.MM.yyyy")
+                                        </a>
+                                    </td>
+                                    <td>@(FormatDecimal(measurement.BodyWeightKg) is { Length: > 0 } weight ? $"{weight} kg" : "—")</td>
+                                    <td>@(FormatDecimal(measurement.BodyFatKg) is { Length: > 0 } fatKg ? $"{fatKg} kg" : "—")</td>
+                                    <td>@(FormatDecimal(measurement.BodyFatPercent) is { Length: > 0 } fat ? $"{fat}%" : "—")</td>
+                                    <td>@(FormatDecimal(measurement.MuscleMassKg) is { Length: > 0 } muscleKg ? $"{muscleKg} kg" : "—")</td>
+                                    <td>@(FormatDecimal(measurement.MuscleMassPercent) is { Length: > 0 } muscle ? $"{muscle}%" : "—")</td>
+                                    <td>@(FormatDecimal(measurement.BodyWaterAmount) is { Length: > 0 } waterKg ? $"{waterKg} kg" : "—")</td>
+                                    <td>@(FormatDecimal(measurement.BodyWaterPercent) is { Length: > 0 } water ? $"{water}%" : "—")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </section>
 
         <section class="member-progress-chart-section">
             <header class="member-progress-chart-head">
                 <div>
-                    <p>03 / Kalori Trendi</p>
+                    <p>04 / Kalori Trendi</p>
                     <h2>Son 14 Gün</h2>
                 </div>
 

@@ -8,13 +8,25 @@
     var previous = Model.Entries.Skip(1).FirstOrDefault();
     var first = Model.Entries.LastOrDefault();
     var metrics = new (string Field, string Label, string Unit, Func<MemberProgressEntry, decimal?> Read)[] {
+        ("CaloriesConsumed", "Günlük kalori", "kcal", x => x.CaloriesConsumed),
         ("BodyWeightKg", "Vücut ağırlığı", "kg", x => x.BodyWeightKg),
+        ("HeightCm", "Boy", "cm", x => x.HeightCm),
+        ("ShoulderCm", "Omuz", "cm", x => x.ShoulderCm),
+        ("ChestCm", "Göğüs", "cm", x => x.ChestCm),
+        ("RightArmCm", "Sağ kol", "cm", x => x.RightArmCm),
+        ("LeftArmCm", "Sol kol", "cm", x => x.LeftArmCm),
+        ("WaistCm", "Bel", "cm", x => x.WaistCm),
+        ("AbdomenCm", "Karın", "cm", x => x.AbdomenCm),
+        ("HipCm", "Basen", "cm", x => x.HipCm),
+        ("RightUpperLegCm", "Sağ üst bacak", "cm", x => x.RightUpperLegCm),
+        ("LeftUpperLegCm", "Sol üst bacak", "cm", x => x.LeftUpperLegCm),
         ("BodyFatKg", "Yağ ağırlığı", "kg", x => x.BodyFatKg),
         ("BodyFatPercent", "Yağ oranı", "%", x => x.BodyFatPercent),
         ("MuscleMassKg", "Kas kütlesi", "kg", x => x.MuscleMassKg),
         ("MuscleMassPercent", "Kas oranı", "%", x => x.MuscleMassPercent),
         ("BodyWaterAmount", "Vücut suyu miktarı", "kg", x => x.BodyWaterAmount),
-        ("BodyWaterPercent", "Vücut suyu oranı", "%", x => x.BodyWaterPercent)
+        ("BodyWaterPercent", "Vücut suyu oranı", "%", x => x.BodyWaterPercent),
+        ("DailyWaterIntakeLiters", "Günlük su tüketimi", "L", x => x.DailyWaterIntakeLiters)
     };
     string Value(decimal? value) => value?.ToString("0.##", culture) ?? "—";
     string Change(decimal? a, decimal? b) => a.HasValue && b.HasValue ? (a.Value - b.Value).ToString("+0.##;-0.##;0", culture) : "—";
@@ -45,7 +57,7 @@
         </tbody></table></div>
         <h3>Ölçüm geçmişi</h3>
         <div class="table-responsive bg-white text-dark border rounded mb-4"><table class="table"><thead><tr><th>Tarih</th>@foreach(var m in metrics){<th>@m.Label (@m.Unit)</th>}<th></th></tr></thead><tbody>
-            @if(Model.Entries.Count==0){<tr><td colspan="9">Henüz ölçüm kaydı yok.</td></tr>}
+            @if(Model.Entries.Count==0){<tr><td colspan="@(metrics.Length + 2)">Henüz ölçüm kaydı yok.</td></tr>}
             @foreach(var entry in Model.Entries){<tr><td>@entry.EntryDate.ToString("dd.MM.yyyy")</td>@foreach(var m in metrics){<td>@Value(m.Read(entry))</td>}<td><a asp-route-memberId="@Model.MemberId" asp-route-date="@entry.EntryDate.ToString("yyyy-MM-dd")">Düzenle</a></td></tr>}
         </tbody></table></div>
         <h3>Önce / sonra fotoğrafları</h3>

@@ -18,6 +18,18 @@ public class MemberProfileConfiguration : IEntityTypeConfiguration<MemberProfile
         builder.Property(profile => profile.FitnessGoal)
             .HasMaxLength(160);
 
+        builder.Property(profile => profile.ReferralCode)
+            .HasMaxLength(32)
+            .IsRequired();
+
+        builder.HasIndex(profile => profile.ReferralCode)
+            .IsUnique();
+
+        builder.HasOne(profile => profile.ReferredByMemberProfile)
+            .WithMany(profile => profile.ReferredMembers)
+            .HasForeignKey(profile => profile.ReferredByMemberProfileId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.Property(profile => profile.CreatedAtUtc)
             .HasDefaultValueSql("NOW()");
 

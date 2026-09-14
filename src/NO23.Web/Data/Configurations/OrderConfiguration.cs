@@ -66,6 +66,12 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.Property(order => order.Subtotal)
             .HasPrecision(10, 2);
 
+        builder.Property(order => order.DiscountCode)
+            .HasMaxLength(40);
+
+        builder.Property(order => order.DiscountAmount)
+            .HasPrecision(10, 2);
+
         builder.Property(order => order.DeliveryFee)
             .HasPrecision(10, 2);
 
@@ -84,6 +90,11 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.HasOne(order => order.KitchenSubscription)
             .WithMany(subscription => subscription.Orders)
             .HasForeignKey(order => order.KitchenSubscriptionId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasOne(order => order.DiscountCampaign)
+            .WithMany(campaign => campaign.Orders)
+            .HasForeignKey(order => order.DiscountCampaignId)
             .OnDelete(DeleteBehavior.SetNull);
     }
 }

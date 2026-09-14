@@ -35,6 +35,7 @@ public class ClassSessionsController(
                 TrainerName = session.GroupClass.Trainer.FirstName + " " + session.GroupClass.Trainer.LastName,
                 IsGroupClassActive = session.GroupClass.IsActive,
                 StartsAtUtc = session.StartsAtUtc,
+                DurationMinutes = session.GroupClass.DurationMinutes,
                 Capacity = session.CapacityOverride ?? session.GroupClass.Capacity,
                 ReservedCount = session.Reservations.Count(reservation => reservation.Status == ClassReservationStatus.Reserved),
                 Participants = session.Reservations
@@ -67,7 +68,7 @@ public class ClassSessionsController(
                 ReservedCount = session.ReservedCount,
                 Participants = session.Participants,
                 Status = ClassSessionLifecycle
-                    .GetEffectiveStatus(session.Status, session.StartsAtUtc, nowUtc)
+                    .GetEffectiveStatus(session.Status, session.StartsAtUtc, nowUtc, session.DurationMinutes)
                     .GetDisplayName(),
                 IsScheduled = ClassSessionLifecycle.IsReservationOpen(
                     session.Status,

@@ -14,6 +14,26 @@ public class MemberProgressEntry
 
     public decimal? BodyWeightKg { get; set; }
 
+    public decimal? HeightCm { get; set; }
+
+    public decimal? ShoulderCm { get; set; }
+
+    public decimal? ChestCm { get; set; }
+
+    public decimal? RightArmCm { get; set; }
+
+    public decimal? LeftArmCm { get; set; }
+
+    public decimal? WaistCm { get; set; }
+
+    public decimal? AbdomenCm { get; set; }
+
+    public decimal? HipCm { get; set; }
+
+    public decimal? RightUpperLegCm { get; set; }
+
+    public decimal? LeftUpperLegCm { get; set; }
+
     public decimal? BodyFatKg { get; set; }
 
     public decimal? BodyFatPercent { get; set; }
@@ -25,6 +45,8 @@ public class MemberProgressEntry
     public decimal? BodyWaterAmount { get; set; }
 
     public decimal? BodyWaterPercent { get; set; }
+
+    public decimal? DailyWaterIntakeLiters { get; set; }
 
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
 

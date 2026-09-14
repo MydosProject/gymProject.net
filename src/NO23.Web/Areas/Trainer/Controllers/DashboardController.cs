@@ -6,6 +6,7 @@ using NO23.Web.Data;
 using NO23.Web.Data.Seed;
 using NO23.Web.Domain.Enums;
 using NO23.Web.Extensions;
+using NO23.Web.Services;
 using NO23.Web.ViewModels.TrainerPanel;
 
 namespace NO23.Web.Areas.Trainer.Controllers;
@@ -42,6 +43,9 @@ public class DashboardController(ApplicationDbContext dbContext)
         }
 
         var nowUtc = DateTime.UtcNow;
+        var todayLocal = ClubTime.Now.Date;
+        var monthStartUtc = ClubTime.ToUtc(new DateTime(todayLocal.Year, todayLocal.Month, 1));
+        var weekStartUtc = ClubTime.ToUtc(todayLocal.AddDays(-(((int)todayLocal.DayOfWeek + 6) % 7)));
 
         var pendingRequestCount =
             await dbContext.PersonalTrainingRequests
@@ -76,6 +80,22 @@ public class DashboardController(ApplicationDbContext dbContext)
                     session.GroupClass.IsActive &&
                     session.Status == ClassSessionStatus.Scheduled &&
                     session.StartsAtUtc >= nowUtc);
+
+        var completedLessonCountThisMonth =
+            await dbContext.ClassSessions.AsNoTracking().CountAsync(session =>
+                session.GroupClass.TrainerId == trainer.Id && session.Status == ClassSessionStatus.Completed &&
+                session.StartsAtUtc >= monthStartUtc && session.StartsAtUtc <= nowUtc) +
+            await dbContext.PersonalTrainingSessions.AsNoTracking().CountAsync(session =>
+                session.TrainerId == trainer.Id && session.Status == PersonalTrainingSessionStatus.Completed &&
+                session.StartsAtUtc >= monthStartUtc && session.StartsAtUtc <= nowUtc);
+
+        var completedLessonCountThisWeek =
+            await dbContext.ClassSessions.AsNoTracking().CountAsync(session =>
+                session.GroupClass.TrainerId == trainer.Id && session.Status == ClassSessionStatus.Completed &&
+                session.StartsAtUtc >= weekStartUtc && session.StartsAtUtc <= nowUtc) +
+            await dbContext.PersonalTrainingSessions.AsNoTracking().CountAsync(session =>
+                session.TrainerId == trainer.Id && session.Status == PersonalTrainingSessionStatus.Completed &&
+                session.StartsAtUtc >= weekStartUtc && session.StartsAtUtc <= nowUtc);
 
         var requestRows =
             await dbContext.PersonalTrainingRequests
@@ -200,6 +220,8 @@ public class DashboardController(ApplicationDbContext dbContext)
                 activeGroupClassCount,
             UpcomingClassSessionCount =
                 upcomingClassSessionCount,
+            CompletedLessonCountThisMonth = completedLessonCountThisMonth,
+            CompletedLessonCountThisWeek = completedLessonCountThisWeek,
             RecentPersonalTrainingRequests =
                 recentRequests,
             UpcomingClassSessions =

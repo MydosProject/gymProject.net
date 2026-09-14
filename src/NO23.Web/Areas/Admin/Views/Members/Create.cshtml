@@ -1,0 +1,20 @@
+@model NO23.Web.ViewModels.Admin.MemberCreateViewModel
+@{ ViewData["Title"] = "Yeni üye"; }
+<section class="admin-page"><div class="container">
+    <header class="admin-page-head"><div><p class="admin-eyebrow">ÜYE YÖNETİMİ</p><h1>Yeni üye ekle</h1><p class="admin-page-description">Üye adına hesap ve üyelik profili oluşturun.</p></div><a class="btn btn-outline-dark" asp-action="Index">Listeye dön</a></header>
+    <form asp-action="Create" method="post" class="admin-form-card">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="row g-3">
+            <div class="col-md-6"><label asp-for="FirstName" class="form-label"></label><input asp-for="FirstName" class="form-control" /><span asp-validation-for="FirstName" class="text-danger"></span></div>
+            <div class="col-md-6"><label asp-for="LastName" class="form-label"></label><input asp-for="LastName" class="form-control" /><span asp-validation-for="LastName" class="text-danger"></span></div>
+            <div class="col-md-6"><label asp-for="Email" class="form-label"></label><input asp-for="Email" class="form-control" /><span asp-validation-for="Email" class="text-danger"></span></div>
+            <div class="col-md-6"><label asp-for="PhoneNumber" class="form-label"></label><input asp-for="PhoneNumber" class="form-control" /><span asp-validation-for="PhoneNumber" class="text-danger"></span></div>
+            <div class="col-md-6"><label asp-for="Password" class="form-label"></label><input asp-for="Password" class="form-control" /><span asp-validation-for="Password" class="text-danger"></span></div>
+            <div class="col-md-6"><label asp-for="MembershipPackageId" class="form-label"></label><select asp-for="MembershipPackageId" asp-items="ViewBag.Packages" class="form-select"><option value="">Paket seçin</option></select><span asp-validation-for="MembershipPackageId" class="text-danger"></span></div>
+            <div class="col-md-6"><label asp-for="RemainingClassCredits" class="form-label"></label><input asp-for="RemainingClassCredits" class="form-control" /><span asp-validation-for="RemainingClassCredits" class="text-danger"></span></div>
+            <div class="col-md-6"><label asp-for="AssignedTrainerId" class="form-label"></label><select asp-for="AssignedTrainerId" asp-items="ViewBag.Trainers" class="form-select"><option value="">Atanmamış</option></select></div>
+            <div class="col-12"><label asp-for="FitnessGoal" class="form-label"></label><input asp-for="FitnessGoal" class="form-control" /></div>
+        </div>
+        <button type="submit" class="btn btn-dark mt-4">Üyeyi oluştur</button>
+    </form>
+</div></section>

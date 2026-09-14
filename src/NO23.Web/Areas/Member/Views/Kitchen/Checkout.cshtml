@@ -22,6 +22,19 @@
                         <span>•</span>
                         @Model.PackagePrice.ToString("C0")
                     </p>
+                    <p class="member-kitchen-checkout-summary">
+                        Öğünler: @Model.SelectedMeals
+                        @if (Model.DailyCalories > 0)
+                        {
+                            <span>•</span>
+                            <text>Hedef: @Model.DailyCalories kcal / gün</text>
+                        }
+                        else
+                        {
+                            <span>•</span>
+                            <text>Standart porsiyon planı</text>
+                        }
+                    </p>
                 </div>
 
                 <div class="member-kitchen-checkout-price">
@@ -30,6 +43,12 @@
                     <small>@Model.PackageDays günlük Kitchen planı</small>
                 </div>
             </header>
+
+            <div class="member-kitchen-checkout-price-breakdown">
+                <span><strong>Paket</strong><strong>@Model.PackagePrice.ToString("C0")</strong></span>
+                <span><strong>Adrese teslim</strong><strong data-kitchen-delivery-total>@Model.AddressDeliveryFee.ToString("C0")</strong></span>
+                <span><strong>Toplam</strong><strong data-kitchen-order-total>@Model.AddressDeliveryTotal.ToString("C0")</strong></span>
+            </div>
 
             <div class="member-kitchen-checkout-note">
                 <span class="member-kitchen-checkout-note-icon"
@@ -87,7 +106,7 @@
                                value="@OrderDeliveryMethod.AddressDelivery" />
                         <span>
                             Adrese teslim
-                            <small>Seçeceğin il ve ilçedeki adresine gönderilir.</small>
+                            <small>Seçeceğin il ve ilçedeki adresine gönderilir. (@Model.DailyDeliveryFee.ToString("C0") / gün)</small>
                         </span>
                     </label>
                     <label>
@@ -96,7 +115,7 @@
                                value="@OrderDeliveryMethod.ClubPickup" />
                         <span>
                             Salondan teslim
-                            <small>@Model.ClubPickupDisplayName</small>
+                            <small>@Model.ClubPickupDisplayName · ücretsiz teslim</small>
                         </span>
                     </label>
                     <span asp-validation-for="DeliveryMethod"></span>
@@ -185,4 +204,20 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const deliveryTotal = document.querySelector("[data-kitchen-delivery-total]");
+            const orderTotal = document.querySelector("[data-kitchen-order-total]");
+            const packagePrice = @Model.PackagePrice.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            const addressFee = @Model.AddressDeliveryFee.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            const format = value => Number(value).toLocaleString("tr-TR", { style: "currency", currency: "TRY", maximumFractionDigits: 0 });
+            document.querySelectorAll("[name='DeliveryMethod']").forEach(function (radio) {
+                radio.addEventListener("change", function () {
+                    const isAddress = radio.value === "@OrderDeliveryMethod.AddressDelivery" && radio.checked;
+                    deliveryTotal.textContent = format(isAddress ? addressFee : 0);
+                    orderTotal.textContent = format(isAddress ? packagePrice + Number(addressFee) : packagePrice);
+                });
+            });
+        });
+    </script>
 }

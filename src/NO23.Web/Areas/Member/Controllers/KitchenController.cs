@@ -104,6 +104,71 @@ public class KitchenController(
         return LocalRedirect($"{Url.Action(nameof(Index))}#calculator");
     }
 
+    [HttpGet]
+    public async Task<IActionResult> ResumePendingSubscription()
+    {
+        var raw = HttpContext.Session.GetString(PendingKitchenSubscription.SessionKey);
+        if (string.IsNullOrWhiteSpace(raw)) return LocalRedirect($"{Url.Action(nameof(Index))}#plans");
+
+        PendingKitchenSubscriptionData? pending;
+        try { pending = JsonSerializer.Deserialize<PendingKitchenSubscriptionData>(raw); }
+        catch (JsonException) { pending = null; }
+        if (pending is null)
+        {
+            HttpContext.Session.Remove(PendingKitchenSubscription.SessionKey);
+            return RedirectToAction(nameof(Index));
+        }
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId)) return Challenge();
+        var profile = await dbContext.MemberProfiles.FirstOrDefaultAsync(x => x.ApplicationUserId == userId);
+        if (profile is null) return Challenge();
+        var package = await dbContext.KitchenSubscriptionPackages.AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Plan == pending.Plan && x.IsActive);
+        KitchenSubscriptionPriceQuote? quote = null;
+        string? error = null;
+        if (package is null || !KitchenSubscriptionPricing.TryCalculate(package, pending.SelectedMeals, out quote, out error))
+        {
+            TempData["ErrorMessage"] = error ?? "Seçilen Kitchen paketi artık kullanılamıyor.";
+            return RedirectToAction(nameof(Index));
+        }
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        if (await dbContext.KitchenSubscriptions.AnyAsync(x => x.MemberProfileId == profile.Id &&
+            x.Status == KitchenSubscriptionStatus.Active && x.EndsOn >= today))
+        {
+            TempData["ErrorMessage"] = "Aktif Kitchen paketin devam ediyor.";
+            return RedirectToAction(nameof(Index));
+        }
+        if (quote!.MainMealCount > 1 && pending.Recommendation is null)
+        {
+            TempData["ErrorMessage"] = "2+1 ve 3+1 seçimi için kalori hesabını tamamlamalısın.";
+            return LocalRedirect($"{Url.Action(nameof(Index))}#calculator");
+        }
+
+        var discounts = await new MembershipPricingService(dbContext).GetAsync(userId);
+        var input = pending.CalculatorInput;
+        var recommendation = pending.Recommendation;
+        var startsOn = DateOnly.FromDateTime(DateTime.Today.AddDays(1));
+        var subscription = new KitchenSubscription
+        {
+            MemberProfileId = profile.Id, KitchenSubscriptionPackageId = package.Id, Plan = package.Plan,
+            Status = KitchenSubscriptionStatus.PendingPayment, PackageNameSnapshot = package.Name,
+            PackagePriceSnapshot = MembershipDiscounts.Apply(quote.PackagePrice, discounts.For(CartItemType.KitchenSubscriptionPackage)),
+            PackageDaysSnapshot = package.Days, SelectedMealSlotsMask = quote.SelectedMealSlotsMask,
+            DailyDeliveryFeeSnapshot = package.DailyDeliveryFee,
+            Goal = recommendation?.Goal ?? NutritionGoal.HealthyLifestyle,
+            SourceHeightCm = input?.HeightCm, SourceWeightKg = input?.WeightKg, SourceAge = input?.Age,
+            SourceGender = input?.Gender, SourceActivityLevel = input?.ActivityLevel,
+            DailyCalories = recommendation?.DailyCalories ?? 0, ProteinGrams = recommendation?.ProteinGrams ?? 0,
+            CarbohydrateGrams = recommendation?.CarbohydrateGrams ?? 0, FatGrams = recommendation?.FatGrams ?? 0,
+            StartsOn = startsOn, EndsOn = startsOn.AddDays(package.Days - 1)
+        };
+        dbContext.KitchenSubscriptions.Add(subscription);
+        await dbContext.SaveChangesAsync();
+        HttpContext.Session.Remove(PendingKitchenSubscription.SessionKey);
+        return RedirectToAction(nameof(Checkout), new { subscriptionId = subscription.Id, deliveryMethod = pending.DeliveryMethod });
+    }
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Subscribe(
@@ -118,12 +183,6 @@ public class KitchenController(
         if (string.IsNullOrWhiteSpace(userId))
         {
             return Challenge();
-        }
-
-        if (!KitchenMealSelection.TryCreateMask(selectedMeals, out var selectedMealMask))
-        {
-            TempData["ErrorMessage"] = "Paketin için en az bir geçerli öğün seçmelisin.";
-            return View("Index", await BuildDashboardAsync(input, null));
         }
 
         if (!ModelState.IsValid)
@@ -187,6 +246,16 @@ public class KitchenController(
             return RedirectToAction(nameof(Index));
         }
 
+        if (!KitchenSubscriptionPricing.TryCalculate(
+                subscriptionPackage,
+                selectedMeals,
+                out var priceQuote,
+                out var priceError))
+        {
+            TempData["ErrorMessage"] = priceError;
+            return View("Index", await BuildDashboardAsync(input, null));
+        }
+
         var today =
             DateOnly.FromDateTime(
                 DateTime.Today);
@@ -234,11 +303,13 @@ public class KitchenController(
                     subscriptionPackage.Name,
 
                 PackagePriceSnapshot =
-                    MembershipDiscounts.Apply(subscriptionPackage.UnitPrice, membershipDiscounts.Kitchen),
+                    MembershipDiscounts.Apply(priceQuote!.PackagePrice, membershipDiscounts.For(CartItemType.KitchenSubscriptionPackage)),
 
                 PackageDaysSnapshot =
                     subscriptionPackage.Days,
-                SelectedMealSlotsMask = selectedMealMask,
+                SelectedMealSlotsMask = priceQuote.SelectedMealSlotsMask,
+
+                DailyDeliveryFeeSnapshot = subscriptionPackage.DailyDeliveryFee,
 
                 Goal =
                     input.Goal,
@@ -294,7 +365,8 @@ public class KitchenController(
 
     [HttpGet]
     public async Task<IActionResult> Checkout(
-        int subscriptionId)
+        int subscriptionId,
+        OrderDeliveryMethod? deliveryMethod = null)
     {
         var userId =
             User.FindFirstValue(
@@ -355,11 +427,21 @@ public class KitchenController(
                 PackagePrice =
                     subscription.PackagePriceSnapshot,
 
+                SelectedMeals = BuildMealSelectionSummary(subscription.SelectedMealSlotsMask),
+
+                DailyCalories = subscription.DailyCalories,
+
+                DailyDeliveryFee = subscription.DailyDeliveryFeeSnapshot,
+
                 IsPaymentAvailable =
                     paymentSettings.Enabled,
 
                 ClubPickupDisplayName =
                     clubPickupSettings.EffectiveDisplayName,
+
+                DeliveryMethod = deliveryMethod is OrderDeliveryMethod.AddressDelivery or OrderDeliveryMethod.ClubPickup
+                    ? deliveryMethod.Value
+                    : OrderDeliveryMethod.AddressDelivery,
 
                 FullName =
                     fullName.Trim(),
@@ -407,6 +489,12 @@ public class KitchenController(
 
         model.PackagePrice =
             subscription.PackagePriceSnapshot;
+
+        model.SelectedMeals = BuildMealSelectionSummary(subscription.SelectedMealSlotsMask);
+
+        model.DailyCalories = subscription.DailyCalories;
+
+        model.DailyDeliveryFee = subscription.DailyDeliveryFeeSnapshot;
 
         model.IsPaymentAvailable =
             paymentSettings.Enabled;
@@ -480,7 +568,7 @@ public class KitchenController(
                 area = "Member"
             },
             "http",
-            new HostString("213.254.136.245", 5044));
+            "213.254.136.245:5044");
 
         var paymentResult =
             await iyzicoPaymentService.InitializeAsync(
@@ -977,11 +1065,19 @@ public class KitchenController(
                 Description = package.Description,
                 Days = package.Days,
                 UnitPrice = MembershipDiscounts.Apply(package.UnitPrice, discounts.Kitchen),
+                TwoMainMealsPrice = MembershipDiscounts.Apply(package.TwoMainMealsPrice, discounts.Kitchen),
+                ThreeMainMealsPrice = MembershipDiscounts.Apply(package.ThreeMainMealsPrice, discounts.Kitchen),
+                DailyDeliveryFee = package.DailyDeliveryFee,
                 DiscountPercent = discounts.Kitchen,
                 IsActive = package.IsActive
             })
             .ToList();
     }
+
+    private static string BuildMealSelectionSummary(int selectedMealSlotsMask) =>
+        string.Join(", ", Enum.GetValues<KitchenMealSlot>()
+            .Where(meal => KitchenMealSelection.Contains(selectedMealSlotsMask, meal))
+            .Select(KitchenMealSelection.Name));
 
     private async Task<KitchenMealPlanViewModel?> BuildMealPlanAsync(int kitchenSubscriptionId)
     {

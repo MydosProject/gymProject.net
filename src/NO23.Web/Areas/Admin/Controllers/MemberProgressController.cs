@@ -28,15 +28,18 @@ public class MemberProgressController(ApplicationDbContext db, MemberProgressTra
     {
         var userId = await db.MemberProfiles.Where(x => x.Id == memberId).Select(x => x.ApplicationUserId).FirstOrDefaultAsync();
         if (userId is null) return NotFound();
-        if (input.EntryDate == default || new decimal?[] { input.BodyWeightKg, input.BodyFatKg, input.BodyFatPercent,
-                input.MuscleMassKg, input.MuscleMassPercent, input.BodyWaterAmount, input.BodyWaterPercent }.All(x => x is null))
+        if (input.EntryDate == default || new decimal?[] { input.BodyWeightKg, input.HeightCm, input.ShoulderCm,
+                input.ChestCm, input.RightArmCm, input.LeftArmCm, input.WaistCm, input.AbdomenCm, input.HipCm,
+                input.RightUpperLegCm, input.LeftUpperLegCm, input.BodyFatKg, input.BodyFatPercent,
+                input.MuscleMassKg, input.MuscleMassPercent, input.BodyWaterAmount, input.BodyWaterPercent,
+                input.DailyWaterIntakeLiters }.All(x => x is null))
             ModelState.AddModelError(string.Empty, "Tarih ve en az bir ölçüm değeri girmelisin.");
-        // Staff measurements must not erase the member's separately logged calories.
-        input.CaloriesConsumed = await db.MemberProgressEntries.Where(x => x.MemberProfileId == memberId && x.EntryDate == input.EntryDate)
-            .Select(x => x.CaloriesConsumed).FirstOrDefaultAsync();
         if (ModelState.IsValid)
         {
-            var result = await progress.UpsertAsync(userId, input);
+            var result = await progress.UpsertAsync(
+                userId,
+                input,
+                preserveCaloriesWhenMissing: true);
             if (result.Succeeded)
             {
                 TempData["SuccessMessage"] = "Ölçüm kaydedildi. Önceki kayıtlarla karşılaştırabilirsin.";
@@ -98,8 +101,12 @@ public class MemberProgressController(ApplicationDbContext db, MemberProgressTra
         page.MemberId = member.Id;
         page.MemberName = member.ApplicationUser.FirstName + " " + member.ApplicationUser.LastName;
         page.Entries = await db.MemberProgressEntries.AsNoTracking().Where(x => x.MemberProfileId == member.Id &&
-            (x.BodyWeightKg != null || x.BodyFatKg != null || x.BodyFatPercent != null || x.MuscleMassKg != null ||
-             x.MuscleMassPercent != null || x.BodyWaterAmount != null || x.BodyWaterPercent != null))
+            (x.BodyWeightKg != null || x.HeightCm != null || x.ShoulderCm != null || x.ChestCm != null ||
+             x.RightArmCm != null || x.LeftArmCm != null || x.WaistCm != null || x.AbdomenCm != null ||
+             x.HipCm != null || x.RightUpperLegCm != null || x.LeftUpperLegCm != null ||
+             x.BodyFatKg != null || x.BodyFatPercent != null || x.MuscleMassKg != null ||
+             x.MuscleMassPercent != null || x.BodyWaterAmount != null || x.BodyWaterPercent != null ||
+             x.DailyWaterIntakeLiters != null))
             .OrderByDescending(x => x.EntryDate).ToListAsync();
         page.Photos = await db.MemberProgressPhotos.AsNoTracking().Where(x => x.MemberProfileId == member.Id)
             .OrderBy(x => x.TakenOn).ThenBy(x => x.Id).Select(x => new ProgressPhotoInfo(x.Id, x.TakenOn, x.Caption)).ToListAsync();
@@ -107,9 +114,15 @@ public class MemberProgressController(ApplicationDbContext db, MemberProgressTra
         var entry = page.Entries.FirstOrDefault(x => x.EntryDate == selectedDate);
         page.Input = new MemberProgressEntryInputViewModel
         {
-            EntryDate = selectedDate, BodyWeightKg = entry?.BodyWeightKg, BodyFatKg = entry?.BodyFatKg,
+            EntryDate = selectedDate, CaloriesConsumed = entry?.CaloriesConsumed,
+            BodyWeightKg = entry?.BodyWeightKg, BodyFatKg = entry?.BodyFatKg,
+            HeightCm = entry?.HeightCm, ShoulderCm = entry?.ShoulderCm, ChestCm = entry?.ChestCm,
+            RightArmCm = entry?.RightArmCm, LeftArmCm = entry?.LeftArmCm, WaistCm = entry?.WaistCm,
+            AbdomenCm = entry?.AbdomenCm, HipCm = entry?.HipCm, RightUpperLegCm = entry?.RightUpperLegCm,
+            LeftUpperLegCm = entry?.LeftUpperLegCm,
             BodyFatPercent = entry?.BodyFatPercent, MuscleMassKg = entry?.MuscleMassKg, MuscleMassPercent = entry?.MuscleMassPercent,
-            BodyWaterAmount = entry?.BodyWaterAmount, BodyWaterPercent = entry?.BodyWaterPercent
+            BodyWaterAmount = entry?.BodyWaterAmount, BodyWaterPercent = entry?.BodyWaterPercent,
+            DailyWaterIntakeLiters = entry?.DailyWaterIntakeLiters
         };
         return page;
     }

@@ -31,6 +31,28 @@ public class MemberEditViewModel
     public int? AssignedTrainerId { get; set; }
 }
 
+public class MemberCreateViewModel
+{
+    [Required, StringLength(80), Display(Name = "Ad")]
+    public string FirstName { get; set; } = string.Empty;
+    [Required, StringLength(80), Display(Name = "Soyad")]
+    public string LastName { get; set; } = string.Empty;
+    [Required, EmailAddress, StringLength(256), Display(Name = "E-posta")]
+    public string Email { get; set; } = string.Empty;
+    [Phone, StringLength(40), Display(Name = "Telefon")]
+    public string? PhoneNumber { get; set; }
+    [Required, StringLength(100, MinimumLength = 6), DataType(DataType.Password), Display(Name = "Geçici parola")]
+    public string Password { get; set; } = string.Empty;
+    [Range(1, int.MaxValue), Display(Name = "Üyelik paketi")]
+    public int MembershipPackageId { get; set; }
+    [StringLength(160), Display(Name = "Fitness hedefi")]
+    public string? FitnessGoal { get; set; }
+    [Range(0, int.MaxValue), Display(Name = "Kalan ders hakkı")]
+    public int RemainingClassCredits { get; set; }
+    [Display(Name = "Personel trainer")]
+    public int? AssignedTrainerId { get; set; }
+}
+
 public class MemberDeleteViewModel
 {
     public int Id { get; init; }

@@ -14,6 +14,12 @@ public class KitchenSubscriptionPackageListItemViewModel
 
     public decimal UnitPrice { get; init; }
 
+    public decimal TwoMainMealsPrice { get; init; }
+
+    public decimal ThreeMainMealsPrice { get; init; }
+
+    public decimal DailyDeliveryFee { get; init; }
+
     public bool IsActive { get; init; }
 
     public int DisplayOrder { get; init; }

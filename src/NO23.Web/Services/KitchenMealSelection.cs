@@ -4,6 +4,12 @@ namespace NO23.Web.Services;
 
 public static class KitchenMealSelection
 {
+    public static bool IsMainMeal(KitchenMealSlot meal) =>
+        meal is KitchenMealSlot.Breakfast or KitchenMealSlot.Lunch or KitchenMealSlot.Dinner;
+
+    public static bool IsSnack(KitchenMealSlot meal) =>
+        meal is KitchenMealSlot.MorningSnack or KitchenMealSlot.AfternoonSnack;
+
     public static bool TryCreateMask(IEnumerable<KitchenMealSlot>? slots, out int mask)
     {
         mask = 0;

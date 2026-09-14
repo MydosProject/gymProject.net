@@ -98,6 +98,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
 
+    public DbSet<DiscountCampaign> DiscountCampaigns => Set<DiscountCampaign>();
+
     public DbSet<PaymentTransaction> PaymentTransactions => Set<PaymentTransaction>();
 
     public DbSet<CommunityEvent> CommunityEvents => Set<CommunityEvent>();

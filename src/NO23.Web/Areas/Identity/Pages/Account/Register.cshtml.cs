@@ -59,6 +59,17 @@ public class RegisterModel(
             await FindSelectedPackageAsync(Input.PackageCode);
 
         MembershipPackageOption? selectedOption = null;
+        MemberProfile? referringMember = null;
+
+        if (!string.IsNullOrWhiteSpace(Input.ReferralCode))
+        {
+            referringMember = await dbContext.MemberProfiles
+                .FirstOrDefaultAsync(profile => profile.ReferralCode == Input.ReferralCode.Trim().ToUpper());
+            if (referringMember is null)
+            {
+                ModelState.AddModelError(nameof(Input.ReferralCode), "Davet kodu geçerli değil.");
+            }
+        }
 
         if (selectedPackage is null)
         {
@@ -123,7 +134,9 @@ public class RegisterModel(
             MembershipPackageOptionId = selectedOption?.Id,
             FitnessGoal = Input.FitnessGoal,
             RemainingClassCredits =
-                CalculateInitialClassCredits(selectedPackage, selectedOption)
+                CalculateInitialClassCredits(selectedPackage, selectedOption),
+            ReferralCode = await GenerateReferralCodeAsync(),
+            ReferredByMemberProfileId = referringMember?.Id
         });
 
         await dbContext.SaveChangesAsync();
@@ -274,6 +287,10 @@ public class RegisterModel(
             ErrorMessage =
                 "Parola ve tekrar alanı eşleşmiyor.")]
         public string ConfirmPassword { get; set; } = string.Empty;
+
+        [StringLength(32)]
+        [Display(Name = "Davet kodu")]
+        public string? ReferralCode { get; set; }
     }
 
     public record PackageOption(
@@ -288,4 +305,17 @@ public class RegisterModel(
         int DurationDays,
         int PersonalTrainingSessionCount,
         int GroupClassCreditCount);
+
+    private async Task<string> GenerateReferralCodeAsync()
+    {
+        var prefix = $"NO23-{Guid.NewGuid():N}"[..13].ToUpperInvariant();
+        var code = prefix;
+        var suffix = 0;
+        while (await dbContext.MemberProfiles.AnyAsync(profile => profile.ReferralCode == code))
+        {
+            suffix++;
+            code = $"{prefix[..Math.Min(prefix.Length, 10)]}{suffix:D2}";
+        }
+        return code;
+    }
 }

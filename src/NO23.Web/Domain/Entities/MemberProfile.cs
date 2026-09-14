@@ -24,6 +24,16 @@ public class MemberProfile
 
     public Trainer? AssignedTrainer { get; set; }
 
+    /// <summary>Üyenin paylaşabileceği, kayıt sırasında kullanılabilen benzersiz davet kodu.</summary>
+    public string ReferralCode { get; set; } = string.Empty;
+
+    /// <summary>Bu üyeyi davet eden üyenin profil anahtarı.</summary>
+    public int? ReferredByMemberProfileId { get; set; }
+
+    public MemberProfile? ReferredByMemberProfile { get; set; }
+
+    public ICollection<MemberProfile> ReferredMembers { get; set; } = [];
+
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
 
     public DateTime? UpdatedAtUtc { get; set; }

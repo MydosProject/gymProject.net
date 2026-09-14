@@ -18,5 +18,7 @@ public class PersonalTrainingRequestListItemViewModel
 
     public bool IsPending { get; init; }
 
+    public DateTime? ScheduledAtUtc { get; init; }
+
     public DateTime CreatedAtUtc { get; init; }
 }

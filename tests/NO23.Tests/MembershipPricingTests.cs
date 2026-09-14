@@ -11,10 +11,74 @@ namespace NO23.Tests;
 
 public class MembershipPricingTests
 {
+    [Fact]
+    public async Task ActiveCampaignCode_AppliesAfterMembershipDiscount_AndIsSavedOnOrder()
+    {
+        await using var db = new ApplicationDbContext(
+            new DbContextOptionsBuilder<ApplicationDbContext>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .Options);
+        var package = ServicePackageSeed.Defaults.Single(x => x.Slug == "pro-membership");
+        db.ServicePackages.Add(package);
+        var member = new MemberProfile
+        {
+            ApplicationUser = new ApplicationUser
+            {
+                UserName = "campaign-test",
+                Email = "campaign@example.test"
+            },
+            MembershipPackage = package.MembershipPackage!
+        };
+        var product = new ShopProduct
+        {
+            Name = "Mat",
+            Sku = "MAT-1",
+            UnitPrice = 100,
+            StockQuantity = 10,
+            IsActive = true
+        };
+        var campaign = new DiscountCampaign
+        {
+            Code = "WELCOME10",
+            Name = "Hoş geldin",
+            DiscountPercent = 10,
+            IsActive = true
+        };
+        db.AddRange(member, product, campaign);
+        await db.SaveChangesAsync();
+
+        var commerce = new CommerceService(db);
+        Assert.True((await commerce.AddShopProductToCartAsync(
+            member.ApplicationUserId,
+            product.Id,
+            2)).Succeeded);
+
+        var result = await commerce.CreateOneTimeOrderFromCartAsync(
+            member.ApplicationUserId,
+            new DeliveryDetails
+            {
+                FullName = "Test Üye",
+                PhoneNumber = "05555555555",
+                AddressLine = "Test adres",
+                City = "İstanbul",
+                District = "Kadıköy"
+            },
+            "welcome10");
+
+        Assert.True(result.Succeeded);
+        var order = await db.Orders.Include(item => item.Items).SingleAsync();
+        Assert.Equal(171m, order.Total);
+        Assert.Equal(19m, order.DiscountAmount);
+        Assert.Equal("WELCOME10", order.DiscountCode);
+        Assert.Equal(10, order.CampaignDiscountPercent);
+        Assert.Equal(1, campaign.UsedCount);
+        Assert.Equal(85.5m, Assert.Single(order.Items).UnitPrice);
+    }
+
     [Theory]
-    [InlineData("hybrid", 5, 5, 0)]
+    [InlineData("hybrid", 5, 0, 0)]
     [InlineData("pro-membership", 10, 10, 5)]
-    [InlineData("black", 15, 10, 5)]
+    [InlineData("black", 15, 15, 5)]
     public async Task MemberDiscounts_MatchCatalogAndCheckout(string slug, int kitchen, int coffee, int shop)
     {
         await using var db = new ApplicationDbContext(new DbContextOptionsBuilder<ApplicationDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);

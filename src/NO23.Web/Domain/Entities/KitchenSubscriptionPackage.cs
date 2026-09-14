@@ -16,6 +16,12 @@ public class KitchenSubscriptionPackage
 
     public decimal UnitPrice { get; set; }
 
+    public decimal TwoMainMealsPrice { get; set; }
+
+    public decimal ThreeMainMealsPrice { get; set; }
+
+    public decimal DailyDeliveryFee { get; set; }
+
     public bool IsActive { get; set; } = true;
 
     public int DisplayOrder { get; set; }

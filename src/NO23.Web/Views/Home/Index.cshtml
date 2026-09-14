@@ -130,7 +130,9 @@
             </a>
 
             <a class="quick-access-card"
-               href="#schedule">
+               asp-area=""
+               asp-controller="Classes"
+               asp-action="Index">
                 <span class="quick-access-number">02</span>
                 <strong>Ders Programı</strong>
                 <small>Grup derslerini incele</small>
@@ -666,8 +668,8 @@
                     <article class="service-package-card">
                         <div class="service-package-head"><small>Kitchen aboneliği</small><h3>@package.Days Günlük</h3><strong>@package.Name</strong></div>
                         <p>@package.Description</p>
-                        <ul><li>Kahvaltı, öğle, akşam ve ara öğün seçimi</li><li>Kişisel kalori ve makro hedefine göre planlama</li><li>@((package.UnitPrice / package.Days).ToString("N2", CultureInfo.GetCultureInfo("tr-TR"))) ₺ / gün</li></ul>
-                        <strong>@package.UnitPrice.ToString("N2", CultureInfo.GetCultureInfo("tr-TR")) ₺ / paket</strong>
+                        <ul><li>1, 2 veya 3 ana öğün + 1 ara öğün seçimi</li><li>Kişisel kalori ve makro hedefine göre planlama</li><li>@package.DailyDeliveryFee.ToString("N0", CultureInfo.GetCultureInfo("tr-TR")) ₺ / gün kurye</li></ul>
+                        <strong>@package.UnitPrice.ToString("N0", CultureInfo.GetCultureInfo("tr-TR")) – @package.ThreeMainMealsPrice.ToString("N0", CultureInfo.GetCultureInfo("tr-TR")) ₺ / paket</strong>
                         <a asp-area="Member" asp-controller="Kitchen" asp-action="Index" asp-fragment="plans">Öğünlerini seç →</a>
                     </article>
                 }

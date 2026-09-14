@@ -35,13 +35,14 @@ public class PublicCatalogRegressionTests
         Assert.Equal("Güncel HYBRID", card.Name);
         Assert.Equal(other.Description, card.Description);
         Assert.Equal(other.Features, card.Features);
+        Assert.Equal(other.Highlights, card.Highlights);
         Assert.Equal(other.Variants.Select(x => x.Price), card.Variants.Select(x => x.Price));
         Assert.Equal(3, card.Variants.Count);
         Assert.DoesNotContain(card.Variants, x => x.Rights.Contains("Salon"));
     }
 
     [Fact]
-    public async Task Savings_UseSameTermAndPtUnitPrice_AndQuotesNeverShowZero()
+    public async Task Savings_UseSameTermAndPtUnitPrice_WithPublishedPrices()
     {
         await using var db = Db();
         db.ServicePackages.AddRange(ServicePackageSeed.Defaults);
@@ -55,10 +56,10 @@ public class PublicCatalogRegressionTests
         var routine = pt.Single(x => x.Slug == "pt-routine");
         Assert.Contains("6.000,00", routine.Variants[0].Savings);
         Assert.Contains("1.500,00", routine.Variants[0].UnitPrice);
-        var quote = routine.Variants[1];
-        Assert.Equal("Fiyat için bilgi al", quote.Price);
-        Assert.Null(quote.Savings);
-        Assert.Null(quote.UnitPrice);
+        var thirtySixLessons = routine.Variants[1];
+        Assert.Contains("54.000,00", thirtySixLessons.Price);
+        Assert.Contains("9.000,00", thirtySixLessons.Savings);
+        Assert.Contains("1.500,00", thirtySixLessons.UnitPrice);
     }
 
     [Fact]
@@ -85,15 +86,16 @@ public class PublicCatalogRegressionTests
         db.ServicePackages.Add(plus);
         await db.SaveChangesAsync();
         var annual = plus.Variants.Single(x => x.DurationMonths == 12);
-        Assert.Equal(12, annual.ReformerClassCreditCount);
-        Assert.Equal(0, annual.PerformanceClassCreditCount);
+        Assert.Equal(8, annual.ReformerClassCreditCount);
+        Assert.Equal(4, annual.PerformanceClassCreditCount);
         var presentation = ServicePackageCatalogService.Present(annual);
-        Assert.Contains("toplam 14 ay", presentation.CommitmentNote);
-        Assert.Contains("Her ay: 12 Reformer", presentation.Rights);
+        Assert.Contains("12 aylık paketin 2 ayı hediye", presentation.CommitmentNote);
+        Assert.Contains("Her ay: 8 Reformer", presentation.Rights);
+        Assert.Contains("4 Performance", presentation.Rights);
         var controller = new PlansController(db) { ControllerContext = new ControllerContext { HttpContext = new Microsoft.AspNetCore.Http.DefaultHttpContext() } };
         var application = Assert.IsType<PlanApplicationPageViewModel>(Assert.IsType<ViewResult>(await controller.Apply(plus.Slug, annual.Id)).Model);
         Assert.Equal(presentation.CommitmentNote, application.CommitmentNote);
-        Assert.Contains("Fiyat için bilgi al", application.VariantPrice);
+        Assert.Contains("75.000,00", application.VariantPrice);
     }
 
     [Fact]
@@ -108,6 +110,43 @@ public class PublicCatalogRegressionTests
 
         Assert.Contains("600,00", twelve.Savings);
         Assert.Contains("8 Ders birim fiyatına göre", twelve.ComparisonNote);
+    }
+
+    [Fact]
+    public async Task LongTermGroupPackages_ShowDiscountAgainstTheMonthlyPackage()
+    {
+        await using var db = Db();
+        db.ServicePackages.Add(ServicePackageSeed.Defaults.Single(x => x.Slug == "group-reformer"));
+        await db.SaveChangesAsync();
+
+        var package = Assert.Single(await new ServicePackageCatalogService(db).LoadAsync(ServicePackageCategory.GroupClasses));
+        var sixMonths = package.Variants.Single(x => x.Name == "6 Aylık (Ayda 8 Ders)");
+        var annual = package.Variants.Single(x => x.Name == "Yıllık (Ayda 8 Ders)");
+
+        Assert.Contains("5.000,00", sixMonths.Savings);
+        Assert.Contains("520,83", sixMonths.UnitPrice);
+        Assert.Contains("10.000,00", annual.Savings);
+        Assert.Contains("520,83", annual.UnitPrice);
+        Assert.Contains("Hediye ay dahil toplam kullanım süresi 12 ay", annual.CommitmentNote);
+    }
+
+    [Fact]
+    public async Task MembershipCards_SeparateCommercialHighlightsAndExplainMonthlyCollection()
+    {
+        await using var db = Db();
+        db.ServicePackages.Add(ServicePackageSeed.Defaults.Single(x => x.Slug == "pro-membership"));
+        await db.SaveChangesAsync();
+
+        var package = Assert.Single(await new ServicePackageCatalogService(db).LoadAsync(ServicePackageCategory.Membership));
+        Assert.Contains(package.Highlights, x => x.Contains("Kitchen aboneliğinde %10 indirim"));
+        Assert.Contains(package.Highlights, x => x.Contains("Coffee’de %10 indirim"));
+        Assert.Contains(package.Highlights, x => x.Contains("Shop ürünlerinde %5 indirim"));
+        Assert.DoesNotContain(package.Features, x => x.Contains("indirim", StringComparison.OrdinalIgnoreCase));
+        Assert.All(package.Variants, x =>
+        {
+            Assert.Contains("her ay karttan otomatik tahsil", x.BillingNote, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("Başvuru tek başına ödeme oluşturmaz", x.BillingNote);
+        });
     }
 
     private static ApplicationDbContext Db() => new(new DbContextOptionsBuilder<ApplicationDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);

@@ -190,6 +190,18 @@
                             </div>
                         </div>
 
+                        <div class="col-12">
+                            <div class="no23-form-field">
+                                <label asp-for="Input.ReferralCode">Davet kodu (varsa)</label>
+                                <input asp-for="Input.ReferralCode"
+                                       class="form-control no23-form-control"
+                                       autocomplete="off"
+                                       placeholder="Arkadaşının NO23 davet kodu" />
+                                <span asp-validation-for="Input.ReferralCode"></span>
+                                <small class="text-muted">Davet koduyla kayıt olursan ikiniz de %10 indirim kazanırsınız.</small>
+                            </div>
+                        </div>
+
                         <div class="col-md-6">
                             <div class="no23-form-field">
                                 <label asp-for="Input.Password"></label>

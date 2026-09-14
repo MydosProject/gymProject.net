@@ -78,6 +78,16 @@
                     </label>
                 </div>
 
+                @if (Model.IsKidsClub)
+                {
+                    <label class="plan-application-field">
+                        <span>Aile kodu <em>İkinci çocuk için</em></span>
+                        <input asp-for="Input.FamilyCode" autocomplete="off" placeholder="İlk çocuk kaydındaki KIDS kodu" />
+                        <small asp-validation-for="Input.FamilyCode"></small>
+                        <small>İlk çocuk kaydıysa boş bırakın; sistem yeni bir aile kodu üretecektir. İkinci çocukta %25 indirim uygulanır.</small>
+                    </label>
+                }
+
                 <label class="plan-application-field">
                     <span>
                         Notun

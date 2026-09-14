@@ -11,9 +11,12 @@ public static class KitchenSubscriptionPackageSeed
         {
             Plan = KitchenSubscriptionPlan.FiveDays,
             Name = "5 Günlük Kitchen Paketi",
-            Description = "Kalori ve makro hedeflerine göre hazırlanan 5 günlük NO23 Kitchen yemek paketi.",
+            Description = "Günlük 1-3 ana öğün ve 1 ara öğün seçimiyle hazırlanan 5 günlük deneme paketi.",
             Days = 5,
-            UnitPrice = 4250,
+            UnitPrice = 3000,
+            TwoMainMealsPrice = 5500,
+            ThreeMainMealsPrice = 7500,
+            DailyDeliveryFee = 95,
             IsActive = true,
             DisplayOrder = 10
         },
@@ -24,6 +27,9 @@ public static class KitchenSubscriptionPackageSeed
             Description = "Düzenli beslenme ritmini kurmak için 10 günlük NO23 Kitchen yemek paketi.",
             Days = 10,
             UnitPrice = 7900,
+            TwoMainMealsPrice = 7900,
+            ThreeMainMealsPrice = 7900,
+            DailyDeliveryFee = 95,
             IsActive = false,
             DisplayOrder = 20
         },
@@ -31,9 +37,12 @@ public static class KitchenSubscriptionPackageSeed
         {
             Plan = KitchenSubscriptionPlan.TwentyDays,
             Name = "20 Günlük Kitchen Paketi",
-            Description = "Uzun süreli hedef takibi için 20 günlük NO23 Kitchen yemek paketi.",
+            Description = "Günlük 1-3 ana öğün ve 1 ara öğün seçimiyle hazırlanan 20 günlük abonelik paketi.",
             Days = 20,
-            UnitPrice = 14500,
+            UnitPrice = 10000,
+            TwoMainMealsPrice = 19000,
+            ThreeMainMealsPrice = 28000,
+            DailyDeliveryFee = 95,
             IsActive = true,
             DisplayOrder = 30
         },
@@ -44,6 +53,9 @@ public static class KitchenSubscriptionPackageSeed
             Description = "Aylık rutin oluşturmak isteyen üyeler için 30 günlük NO23 Kitchen yemek paketi.",
             Days = 30,
             UnitPrice = 19900,
+            TwoMainMealsPrice = 19900,
+            ThreeMainMealsPrice = 19900,
+            DailyDeliveryFee = 95,
             IsActive = false,
             DisplayOrder = 40
         }

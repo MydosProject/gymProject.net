@@ -1,0 +1,65 @@
+@model DiscountCampaignFormViewModel
+
+<form method="post" class="bg-white border rounded-3 p-4 text-dark admin-form-card">
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+    <input type="hidden" asp-for="Id" />
+
+    <section class="admin-form-section">
+        <header>
+            <span>01</span>
+            <div>
+                <h2>Kampanya bilgileri</h2>
+                <p>Üyenin sepette kullanacağı kodu ve indirim koşullarını belirle.</p>
+            </div>
+        </header>
+
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label asp-for="Code" class="form-label"></label>
+                <input asp-for="Code" class="form-control text-uppercase" autocomplete="off" />
+                <span asp-validation-for="Code" class="text-danger"></span>
+            </div>
+            <div class="col-md-8">
+                <label asp-for="Name" class="form-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="DiscountPercent" class="form-label"></label>
+                <input asp-for="DiscountPercent" class="form-control" />
+                <span asp-validation-for="DiscountPercent" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="MinimumSubtotal" class="form-label"></label>
+                <input asp-for="MinimumSubtotal" class="form-control" />
+                <span asp-validation-for="MinimumSubtotal" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="UsageLimit" class="form-label"></label>
+                <input asp-for="UsageLimit" class="form-control" placeholder="Sınırsız" />
+                <span asp-validation-for="UsageLimit" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="StartsAt" class="form-label"></label>
+                <input asp-for="StartsAt" class="form-control" type="datetime-local" />
+                <span asp-validation-for="StartsAt" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="EndsAt" class="form-label"></label>
+                <input asp-for="EndsAt" class="form-control" type="datetime-local" />
+                <span asp-validation-for="EndsAt" class="text-danger"></span>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <label class="form-check admin-form-toggle w-100 mb-0">
+                    <input asp-for="IsActive" class="form-check-input" />
+                    <span><strong>Aktif</strong><small>Aktif kodlar koşulları sağlandığında sepette kullanılır.</small></span>
+                </label>
+            </div>
+        </div>
+    </section>
+
+    <div class="d-flex justify-content-end gap-2 mt-4">
+        <a asp-action="Index" class="btn btn-outline-secondary">Vazgeç</a>
+        <button type="submit" class="btn btn-dark">Kaydet</button>
+    </div>
+</form>

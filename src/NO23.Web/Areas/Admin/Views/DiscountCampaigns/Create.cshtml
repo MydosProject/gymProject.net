@@ -1,0 +1,9 @@
+@model DiscountCampaignFormViewModel
+@{ ViewData["Title"] = "Yeni İndirim Kampanyası"; }
+
+<section class="admin-page"><div class="container">
+    <header class="admin-page-head"><div><p class="admin-eyebrow">NO23 SHOP / İNDİRİMLER</p><h1>Yeni kampanya</h1><p class="admin-page-description">Sepette kullanılacak yeni indirim kodunu oluştur.</p></div></header>
+    <partial name="_Form" model="Model" />
+</div></section>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

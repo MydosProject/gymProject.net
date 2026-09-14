@@ -101,6 +101,9 @@ public class HomeController(
             RemainingClassCredits = profile.RemainingClassCredits,
             HasUnlimitedClasses = profile.MembershipPackage.WeeklyClassLimit is null,
             HasActiveKitchenSubscription = hasActiveKitchenSubscription,
+            ReferralCode = profile.ReferralCode,
+            ReferralDiscountPercent = profile.ReferredByMemberProfileId.HasValue ||
+                await dbContext.MemberProfiles.AnyAsync(x => x.ReferredByMemberProfileId == profile.Id) ? 10 : 0,
             UpcomingReservations = upcomingReservations,
             AvailableSessions = availableSessions
         });

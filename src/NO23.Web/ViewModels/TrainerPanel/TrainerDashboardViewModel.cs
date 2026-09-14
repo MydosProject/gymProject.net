@@ -14,6 +14,10 @@ public class TrainerDashboardViewModel
 
     public int UpcomingClassSessionCount { get; set; }
 
+    public int CompletedLessonCountThisMonth { get; set; }
+
+    public int CompletedLessonCountThisWeek { get; set; }
+
     public List<TrainerPersonalTrainingRequestListItemViewModel>
         RecentPersonalTrainingRequests { get; set; } = [];
 

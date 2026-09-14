@@ -22,6 +22,8 @@ public class KitchenSubscriptionListItemViewModel
 
     public int DailyCalories { get; init; }
 
+    public int SelectedMealSlotsMask { get; init; }
+
     public int ProteinGrams { get; init; }
 
     public int CarbohydrateGrams { get; init; }

@@ -9,7 +9,7 @@
             <span>01</span>
             <div>
                 <h2>Paket bilgileri</h2>
-                <p>Kitchen paketinin planını, süresini, üye panelindeki açıklamasını ve fiyatını belirle.</p>
+                <p>Kitchen paketinin süresini, öğün sayısına göre fiyatlarını ve günlük kurye ücretini belirle.</p>
             </div>
         </header>
 
@@ -34,10 +34,25 @@
                 <input asp-for="Days" class="form-control" />
                 <span asp-validation-for="Days" class="text-danger"></span>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label asp-for="UnitPrice" class="form-label"></label>
                 <input asp-for="UnitPrice" class="form-control" />
                 <span asp-validation-for="UnitPrice" class="text-danger"></span>
+            </div>
+            <div class="col-md-3">
+                <label asp-for="TwoMainMealsPrice" class="form-label"></label>
+                <input asp-for="TwoMainMealsPrice" class="form-control" />
+                <span asp-validation-for="TwoMainMealsPrice" class="text-danger"></span>
+            </div>
+            <div class="col-md-3">
+                <label asp-for="ThreeMainMealsPrice" class="form-label"></label>
+                <input asp-for="ThreeMainMealsPrice" class="form-control" />
+                <span asp-validation-for="ThreeMainMealsPrice" class="text-danger"></span>
+            </div>
+            <div class="col-md-3">
+                <label asp-for="DailyDeliveryFee" class="form-label"></label>
+                <input asp-for="DailyDeliveryFee" class="form-control" />
+                <span asp-validation-for="DailyDeliveryFee" class="text-danger"></span>
             </div>
             <div class="col-md-4 d-flex align-items-end">
                 <label class="form-check admin-form-toggle w-100 mb-0">

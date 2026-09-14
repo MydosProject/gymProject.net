@@ -6,8 +6,11 @@ using NO23.Web.Domain.Enums;
 using NO23.Web.Services;
 using NO23.Web.ViewModels.GuestOrders;
 using NO23.Web.ViewModels;
+using NO23.Web.ViewModels.Member;
 using NO23.Web.Services.Payments;
 using Microsoft.Extensions.Options;
+using System.Text.Json;
+using System.Security.Claims;
 
 namespace NO23.Web.Controllers;
 
@@ -17,8 +20,11 @@ public class KitchenController(
     CommerceService commerceService,
     IyzicoPaymentService iyzicoPaymentService,
     IOptions<IyzicoOptions> paymentOptions,
-    IOptions<ClubPickupOptions> clubPickupOptions) : Controller
+    IOptions<ClubPickupOptions> clubPickupOptions,
+    CalorieCalculatorService calorieCalculator) : Controller
 {
+    private const string PublicCalculatorInputSessionKey = "NO23.PublicKitchen.CalculatorInput";
+    private const string PublicCalculatorResultSessionKey = "NO23.PublicKitchen.CalculatorResult";
     private readonly IyzicoOptions paymentSettings = paymentOptions.Value;
     private readonly ClubPickupOptions clubPickupSettings = clubPickupOptions.Value;
 
@@ -63,7 +69,141 @@ public class KitchenController(
             })
             .ToList();
 
-        return View(model);
+        var subscriptionPlans = await dbContext.KitchenSubscriptionPackages
+            .AsNoTracking()
+            .Where(package => package.IsActive && (package.Days == 5 || package.Days == 20))
+            .OrderBy(package => package.DisplayOrder)
+            .Select(package => new KitchenSubscriptionPlanViewModel
+            {
+                Plan = package.Plan,
+                Name = package.Name,
+                Description = package.Description,
+                Days = package.Days,
+                UnitPrice = package.UnitPrice,
+                TwoMainMealsPrice = package.TwoMainMealsPrice,
+                ThreeMainMealsPrice = package.ThreeMainMealsPrice,
+                DailyDeliveryFee = package.DailyDeliveryFee,
+                IsActive = package.IsActive
+            })
+            .ToListAsync();
+
+        return View(new KitchenPublicPageViewModel
+        {
+            MenuItems = model,
+            SubscriptionPlans = subscriptionPlans,
+            CalculatorInput = ReadSession<CalorieCalculatorInputViewModel>(PublicCalculatorInputSessionKey)
+                ?? new CalorieCalculatorInputViewModel(),
+            Recommendation = ReadSession<CalorieRecommendationViewModel>(PublicCalculatorResultSessionKey)
+        });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult CalculateCalories(
+        [Bind(Prefix = "CalculatorInput")] CalorieCalculatorInputViewModel input)
+    {
+        if (!ModelState.IsValid)
+        {
+            TempData["ErrorMessage"] = "Kalori hesabı için boy, kilo, yaş ve hedef bilgilerini kontrol et.";
+            return LocalRedirect($"{Url.Action(nameof(Index))}#calorie-calculator");
+        }
+
+        var result = calorieCalculator.Calculate(new CalorieCalculationRequest
+        {
+            HeightCm = input.HeightCm,
+            WeightKg = input.WeightKg,
+            Age = input.Age,
+            Gender = input.Gender,
+            ActivityLevel = input.ActivityLevel,
+            Goal = input.Goal
+        });
+        var recommendation = new CalorieRecommendationViewModel
+        {
+            Goal = input.Goal,
+            DailyCalories = result.DailyCalories,
+            ProteinGrams = result.ProteinGrams,
+            CarbohydrateGrams = result.CarbohydrateGrams,
+            FatGrams = result.FatGrams
+        };
+
+        HttpContext.Session.SetString(
+            PublicCalculatorInputSessionKey,
+            JsonSerializer.Serialize(input));
+        HttpContext.Session.SetString(
+            PublicCalculatorResultSessionKey,
+            JsonSerializer.Serialize(recommendation));
+
+        return LocalRedirect($"{Url.Action(nameof(Index))}#calorie-calculator");
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> StartSubscription(
+        KitchenSubscriptionPlan plan,
+        KitchenMealSlot[]? selectedMeals,
+        OrderDeliveryMethod deliveryMethod,
+        [Bind(Prefix = "calculator")] CalorieCalculatorInputViewModel calculator)
+    {
+        var package = await dbContext.KitchenSubscriptionPackages.AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Plan == plan && x.IsActive);
+        KitchenSubscriptionPriceQuote? quote = null;
+        string? error = null;
+        if (package is null || !KitchenSubscriptionPricing.TryCalculate(package, selectedMeals, out quote, out error))
+        {
+            TempData["ErrorMessage"] = error ?? "Seçilen Kitchen paketi bulunamadı.";
+            return LocalRedirect($"{Url.Action(nameof(Index))}#plans");
+        }
+
+        if (!Enum.IsDefined(deliveryMethod)) deliveryMethod = OrderDeliveryMethod.ClubPickup;
+        CalorieRecommendationViewModel? recommendation = null;
+        CalorieCalculatorInputViewModel? storedInput = null;
+        if (quote!.MainMealCount > 1)
+        {
+            if (!ModelState.IsValid)
+            {
+                TempData["ErrorMessage"] = "2+1 ve 3+1 paketleri için kalori bilgilerini kontrol etmelisin.";
+                return LocalRedirect($"{Url.Action(nameof(Index))}#plans");
+            }
+            var result = calorieCalculator.Calculate(new CalorieCalculationRequest
+            {
+                HeightCm = calculator.HeightCm, WeightKg = calculator.WeightKg, Age = calculator.Age,
+                Gender = calculator.Gender, ActivityLevel = calculator.ActivityLevel, Goal = calculator.Goal
+            });
+            storedInput = calculator;
+            recommendation = new CalorieRecommendationViewModel
+            {
+                Goal = calculator.Goal, DailyCalories = result.DailyCalories,
+                ProteinGrams = result.ProteinGrams, CarbohydrateGrams = result.CarbohydrateGrams, FatGrams = result.FatGrams
+            };
+        }
+
+        HttpContext.Session.SetString(PendingKitchenSubscription.SessionKey, JsonSerializer.Serialize(
+            new PendingKitchenSubscriptionData(plan, selectedMeals!.Distinct().ToArray(), deliveryMethod, storedInput, recommendation)));
+
+        var resumeUrl = Url.Action("ResumePendingSubscription", "Kitchen", new { area = "Member" }) ?? "/Member/Kitchen/ResumePendingSubscription";
+        if (User.Identity?.IsAuthenticated == true && User.IsInRole(NO23.Web.Data.Seed.ApplicationRoles.Member))
+            return LocalRedirect(resumeUrl);
+        return RedirectToPage("/Account/Register", new { area = "Identity", returnUrl = resumeUrl });
+    }
+
+    private T? ReadSession<T>(string key)
+    {
+        var value = HttpContext.Session.GetString(key);
+
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return default;
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize<T>(value);
+        }
+        catch (JsonException)
+        {
+            HttpContext.Session.Remove(key);
+            return default;
+        }
     }
 
     public async Task<IActionResult> Order(int menuItemId)
@@ -126,7 +266,7 @@ public class KitchenController(
             orderNumber
         },
         "http",
-        new HostString("213.254.136.245", 5044));
+        "213.254.136.245:5044");
 
     var paymentResult =
         await iyzicoPaymentService.InitializeAsync(

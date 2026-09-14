@@ -1,0 +1,150 @@
+@using System.Globalization
+@using NO23.Web.Domain.Entities
+@using NO23.Web.Services
+@model TrainerMeasurementsViewModel
+
+@{
+    ViewData["Title"] = "Üye Ölçümleri";
+    var culture = CultureInfo.GetCultureInfo("tr-TR");
+    var latest = Model.Entries.FirstOrDefault();
+    var previous = Model.Entries.Skip(1).FirstOrDefault();
+    var metrics = new (string Field, string Label, string Unit, Func<MemberProgressEntry, decimal?> Read)[]
+    {
+        ("CaloriesConsumed", "Günlük kalori", "kcal", item => item.CaloriesConsumed),
+        ("BodyWeightKg", "Kilo", "kg", item => item.BodyWeightKg),
+        ("HeightCm", "Boy", "cm", item => item.HeightCm),
+        ("ShoulderCm", "Omuz", "cm", item => item.ShoulderCm),
+        ("ChestCm", "Göğüs", "cm", item => item.ChestCm),
+        ("RightArmCm", "Sağ kol", "cm", item => item.RightArmCm),
+        ("LeftArmCm", "Sol kol", "cm", item => item.LeftArmCm),
+        ("WaistCm", "Bel", "cm", item => item.WaistCm),
+        ("AbdomenCm", "Karın", "cm", item => item.AbdomenCm),
+        ("HipCm", "Basen", "cm", item => item.HipCm),
+        ("RightUpperLegCm", "Sağ üst bacak", "cm", item => item.RightUpperLegCm),
+        ("LeftUpperLegCm", "Sol üst bacak", "cm", item => item.LeftUpperLegCm),
+        ("BodyFatPercent", "Yağ oranı", "%", item => item.BodyFatPercent),
+        ("MuscleMassPercent", "Kas oranı", "%", item => item.MuscleMassPercent),
+        ("DailyWaterIntakeLiters", "Günlük su tüketimi", "L", item => item.DailyWaterIntakeLiters)
+    };
+
+    string Value(decimal? value) => value?.ToString("0.##", culture) ?? "—";
+    string Change(decimal? current, decimal? previousValue) =>
+        current.HasValue && previousValue.HasValue
+            ? (current.Value - previousValue.Value).ToString("+0.##;-0.##;0", culture)
+            : "—";
+}
+
+<section class="admin-page trainer-measurements-page">
+    <header class="admin-page-head">
+        <div>
+            <h1>Üye ölçümleri</h1>
+            <p>Atanmış üyelerinin aylık ölçümlerini kaydet ve değişimi takip et.</p>
+        </div>
+    </header>
+
+    @if (TempData["StatusMessage"] is string statusMessage)
+    {
+        <div class="alert alert-success">@statusMessage</div>
+    }
+    @if (TempData["ErrorMessage"] is string errorMessage)
+    {
+        <div class="alert alert-danger">@errorMessage</div>
+    }
+
+    <form method="get" class="d-flex flex-wrap align-items-end gap-3 mb-4">
+        <label>
+            <span class="form-label">Üye</span>
+            <select name="memberId" class="form-select" required>
+                <option value="">Üye seç</option>
+                @foreach (var member in Model.Members)
+                {
+                    <option value="@member.Value" selected="@(member.Value == Model.MemberId?.ToString())">@member.Text</option>
+                }
+            </select>
+        </label>
+        <button class="btn btn-dark" type="submit">Ölçümleri göster</button>
+    </form>
+
+    @if (Model.MemberId.HasValue)
+    {
+        <h2>@Model.MemberName</h2>
+        <p class="text-muted">Ölçümleri mümkünse aynı saat ve aynı cihazla, ayda bir kaydedin.</p>
+
+        <form asp-action="Save" method="post" class="bg-white text-dark border rounded p-3 mb-4">
+            <input type="hidden" name="memberId" value="@Model.MemberId" />
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <h3>Yeni ölçüm / düzenleme</h3>
+            <p>Seçili tarihteki kayıt güncellenir; yeni tarih seçerseniz geçmiş korunur.</p>
+            <label asp-for="Input.EntryDate"></label>
+            <input asp-for="Input.EntryDate" type="date" max="@ClubTime.Now.ToString("yyyy-MM-dd")" class="form-control mb-3" />
+
+            <div class="trainer-measurement-groups">
+                <section>
+                    <h4>Temel ve çevre ölçüleri</h4>
+                    <div class="row g-3">
+                        @foreach (var metric in metrics.Take(11))
+                        {
+                            <div class="col-sm-6 col-lg-3">
+                                <label for="Input_@metric.Field">@metric.Label (@metric.Unit)</label>
+                                @Html.TextBox("Input." + metric.Field, typeof(NO23.Web.ViewModels.Member.MemberProgressEntryInputViewModel).GetProperty(metric.Field)!.GetValue(Model.Input), new { @class = "form-control", inputmode = "decimal" })
+                                @Html.ValidationMessage("Input." + metric.Field, null, new { @class = "text-danger" })
+                            </div>
+                        }
+                    </div>
+                </section>
+                <section>
+                    <h4>Vücut kompozisyonu</h4>
+                    <div class="row g-3">
+                        @foreach (var metric in metrics.Skip(11))
+                        {
+                            <div class="col-sm-6 col-lg-3">
+                                <label for="Input_@metric.Field">@metric.Label (@metric.Unit)</label>
+                                @Html.TextBox("Input." + metric.Field, typeof(NO23.Web.ViewModels.Member.MemberProgressEntryInputViewModel).GetProperty(metric.Field)!.GetValue(Model.Input), new { @class = "form-control", inputmode = "decimal" })
+                                @Html.ValidationMessage("Input." + metric.Field, null, new { @class = "text-danger" })
+                            </div>
+                        }
+                    </div>
+                </section>
+            </div>
+            <button class="btn btn-dark mt-3" type="submit">Ölçümü kaydet</button>
+        </form>
+
+        @if (latest is not null)
+        {
+            <h3>Son ölçüm karşılaştırması</h3>
+            <div class="table-responsive bg-white text-dark border rounded mb-4">
+                <table class="table mb-0">
+                    <thead><tr><th>Ölçüm</th><th>Son</th><th>Önceki</th><th>Değişim</th></tr></thead>
+                    <tbody>
+                    @foreach (var metric in metrics)
+                    {
+                        var current = metric.Read(latest);
+                        var old = previous is null ? null : metric.Read(previous);
+                        <tr><td>@metric.Label (@metric.Unit)</td><td>@Value(current)</td><td>@Value(old)</td><td>@Change(current, old)</td></tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        <h3>Ölçüm geçmişi</h3>
+        <div class="table-responsive bg-white text-dark border rounded">
+            <table class="table">
+                <thead><tr><th>Tarih</th>@foreach (var metric in metrics) { <th>@metric.Label</th> }</tr></thead>
+                <tbody>
+                @if (Model.Entries.Count == 0)
+                {
+                    <tr><td colspan="@(metrics.Length + 1)">Henüz ölçüm kaydı yok.</td></tr>
+                }
+                @foreach (var entry in Model.Entries)
+                {
+                    <tr>
+                        <td><a asp-route-memberId="@Model.MemberId" asp-route-date="@entry.EntryDate.ToString("yyyy-MM-dd")">@entry.EntryDate.ToString("dd.MM.yyyy")</a></td>
+                        @foreach (var metric in metrics) { <td>@Value(metric.Read(entry))</td> }
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>

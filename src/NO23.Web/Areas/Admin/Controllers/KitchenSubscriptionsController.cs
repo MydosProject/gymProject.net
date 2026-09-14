@@ -31,6 +31,7 @@ public class KitchenSubscriptionsController(ApplicationDbContext dbContext) : Co
                 PackagePrice = subscription.PackagePriceSnapshot,
                 PackageDays = subscription.PackageDaysSnapshot,
                 DailyCalories = subscription.DailyCalories,
+                SelectedMealSlotsMask = subscription.SelectedMealSlotsMask,
                 ProteinGrams = subscription.ProteinGrams,
                 CarbohydrateGrams = subscription.CarbohydrateGrams,
                 FatGrams = subscription.FatGrams,

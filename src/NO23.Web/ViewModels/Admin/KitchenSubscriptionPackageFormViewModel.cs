@@ -24,9 +24,21 @@ public class KitchenSubscriptionPackageFormViewModel
     [Display(Name = "Gün sayısı")]
     public int Days { get; set; }
 
-    [Range(0, 1000000)]
-    [Display(Name = "Paket fiyatı")]
+    [Range(typeof(decimal), "0.01", "1000000")]
+    [Display(Name = "1 ana + 1 ara öğün")]
     public decimal UnitPrice { get; set; }
+
+    [Range(typeof(decimal), "0.01", "1000000")]
+    [Display(Name = "2 ana + 1 ara öğün")]
+    public decimal TwoMainMealsPrice { get; set; }
+
+    [Range(typeof(decimal), "0.01", "1000000")]
+    [Display(Name = "3 ana + 1 ara öğün")]
+    public decimal ThreeMainMealsPrice { get; set; }
+
+    [Range(typeof(decimal), "0", "1000000")]
+    [Display(Name = "Günlük kurye ücreti")]
+    public decimal DailyDeliveryFee { get; set; } = 95;
 
     [Display(Name = "Aktif")]
     public bool IsActive { get; set; } = true;

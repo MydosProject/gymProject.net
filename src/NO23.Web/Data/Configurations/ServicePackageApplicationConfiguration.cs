@@ -25,6 +25,9 @@ public class ServicePackageApplicationConfiguration :
         builder.Property(application => application.Notes)
             .HasMaxLength(1000);
 
+        builder.Property(application => application.FamilyCode)
+            .HasMaxLength(32);
+
         builder.Property(application => application.Status)
             .HasConversion<string>()
             .HasMaxLength(40);
@@ -34,6 +37,7 @@ public class ServicePackageApplicationConfiguration :
 
         builder.HasIndex(application => application.Status);
         builder.HasIndex(application => application.CreatedAtUtc);
+        builder.HasIndex(application => application.FamilyCode);
 
         builder.HasOne(application => application.ServicePackage)
             .WithMany()

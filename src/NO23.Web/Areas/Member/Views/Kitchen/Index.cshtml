@@ -1,4 +1,5 @@
 @using NO23.Web.Domain.Enums
+@using System.Globalization
 @model KitchenDashboardViewModel
 
 @{
@@ -214,7 +215,7 @@
                     <dl class="kitchen-subscription-macros">
                         <div>
                             <dt>Günlük Kalori</dt>
-                            <dd>@subscription.DailyCalories <small>kcal</small></dd>
+                            <dd>@(subscription.DailyCalories > 0 ? $"{subscription.DailyCalories} kcal" : "Standart porsiyon")</dd>
                         </div>
                         <div>
                             <dt>Protein</dt>
@@ -266,7 +267,7 @@
                         </div>
                         <div>
                             <span>Günlük hedef</span>
-                            <strong>@subscription.DailyCalories kcal</strong>
+                            <strong>@(subscription.DailyCalories > 0 ? $"{subscription.DailyCalories} kcal" : "Standart porsiyon")</strong>
                         </div>
                         <div>
                             <span>Hedef türü</span>
@@ -289,7 +290,7 @@
                                     </span>
 
                                     <span class="kitchen-meal-day-calories">
-                                        <small>@GetCalorieComparison(day.TotalCalories, subscription.DailyCalories)</small>
+                                        <small>@(subscription.DailyCalories > 0 ? GetCalorieComparison(day.TotalCalories, subscription.DailyCalories) : "Standart porsiyon planı")</small>
                                         <strong>@day.TotalCalories kcal</strong>
                                     </span>
 
@@ -567,7 +568,11 @@
                                   asp-action="Subscribe"
                                   asp-antiforgery="true"
                                   method="post"
-                                  class="kitchen-plan-card">
+                                  class="kitchen-plan-card"
+                                  data-kitchen-subscription-card
+                                  data-price-one="@plan.UnitPrice.ToString(CultureInfo.InvariantCulture)"
+                                  data-price-two="@plan.TwoMainMealsPrice.ToString(CultureInfo.InvariantCulture)"
+                                  data-price-three="@plan.ThreeMainMealsPrice.ToString(CultureInfo.InvariantCulture)">
                                 <input type="hidden" name="plan" value="@plan.Plan" />
                                 <input type="hidden" name="input.HeightCm" value="@Model.CalculatorInput.HeightCm" />
                                 <input type="hidden" name="input.WeightKg" value="@Model.CalculatorInput.WeightKg" />
@@ -576,7 +581,7 @@
                                 <input type="hidden" name="input.ActivityLevel" value="@Model.CalculatorInput.ActivityLevel" />
                                 <input type="hidden" name="input.Goal" value="@Model.CalculatorInput.Goal" />
 
-                                <span class="kitchen-plan-days">@plan.Days gün · @plan.UnitPrice.ToString("C0")</span>
+                                <span class="kitchen-plan-days">@plan.Days gün · <strong data-kitchen-selected-price>@plan.ThreeMainMealsPrice.ToString("C0")</strong></span>
                                 <h4>@plan.Name</h4>
                                 @if (plan.DiscountPercent > 0) { <small>Üyeliğine özel %@plan.DiscountPercent indirim uygulandı.</small> }
                                 <p>@plan.Description</p>
@@ -584,9 +589,27 @@
                                     <legend>Günlük öğünlerini seç</legend>
                                     @foreach (var meal in Enum.GetValues<NO23.Web.Domain.Enums.KitchenMealSlot>())
                                     {
-                                        <label><input type="checkbox" name="selectedMeals" value="@meal" checked /> @NO23.Web.Services.KitchenMealSelection.Name(meal)</label>
+                                        @if (NO23.Web.Services.KitchenMealSelection.IsMainMeal(meal))
+                                        {
+                                            <label><input type="checkbox" name="selectedMeals" value="@meal" checked data-main-meal /> @NO23.Web.Services.KitchenMealSelection.Name(meal)</label>
+                                        }
+                                        else
+                                        {
+                                            <label>
+                                                @if (meal == KitchenMealSlot.AfternoonSnack)
+                                                {
+                                                    <input type="radio" name="selectedMeals" value="@meal" checked data-snack-meal />
+                                                }
+                                                else
+                                                {
+                                                    <input type="radio" name="selectedMeals" value="@meal" data-snack-meal />
+                                                }
+                                                @NO23.Web.Services.KitchenMealSelection.Name(meal)
+                                            </label>
+                                        }
                                     }
-                                    <small>Paket bedeli sabittir; öğün seçimi fiyatı değiştirmez. En az bir öğün seçmelisin.</small>
+                                    <small>1, 2 veya 3 ana öğün + 1 ara öğün seç. Fiyat ana öğün sayısına göre anında güncellenir.</small>
+                                    <small class="kitchen-meal-selection-error" data-kitchen-selection-error hidden></small>
                                 </fieldset>
                                 <button type="submit">
                                     Paketi Satın Al
@@ -880,6 +903,36 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll("[data-kitchen-subscription-card]").forEach(function (card) {
+                const mainMeals = card.querySelectorAll("[data-main-meal]");
+                const priceElement = card.querySelector("[data-kitchen-selected-price]");
+                const errorElement = card.querySelector("[data-kitchen-selection-error]");
+                const submitButton = card.querySelector("button[type=submit]");
+
+                const updateSubscriptionPrice = function () {
+                    const selectedCount = Array.from(mainMeals).filter(function (input) {
+                        return input.checked;
+                    }).length;
+                    const prices = {
+                        1: card.dataset.priceOne,
+                        2: card.dataset.priceTwo,
+                        3: card.dataset.priceThree
+                    };
+                    const valid = selectedCount >= 1 && selectedCount <= 3;
+                    priceElement.textContent = valid
+                        ? Number(prices[selectedCount]).toLocaleString("tr-TR", { style: "currency", currency: "TRY", maximumFractionDigits: 0 })
+                        : "Seçim yap";
+                    errorElement.hidden = valid;
+                    errorElement.textContent = valid ? "" : "En az bir ana öğün seçmelisin.";
+                    submitButton.disabled = !valid;
+                };
+
+                mainMeals.forEach(function (input) {
+                    input.addEventListener("change", updateSubscriptionPrice);
+                });
+                updateSubscriptionPrice();
+            });
+
             const categoryButtons = document.querySelectorAll(
                 "[data-kitchen-category-filter]"
             );

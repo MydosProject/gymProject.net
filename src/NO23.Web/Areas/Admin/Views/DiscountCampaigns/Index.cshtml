@@ -1,0 +1,75 @@
+@model IReadOnlyList<DiscountCampaignListItemViewModel>
+@{
+    ViewData["Title"] = "İndirim Kampanyaları";
+    var now = DateTime.UtcNow;
+}
+
+<section class="admin-page">
+    <div class="container">
+        <header class="admin-page-head">
+            <div>
+                <p class="admin-eyebrow">NO23 SHOP / İNDİRİMLER</p>
+                <h1>İndirim kampanyaları</h1>
+                <p class="admin-page-description">Sepette kullanılabilecek kampanya kodlarını, tarihlerini ve kullanım limitlerini yönet.</p>
+            </div>
+            <a class="btn btn-dark" asp-action="Create">+ Yeni kampanya</a>
+        </header>
+
+        @if (TempData["SuccessMessage"] is string successMessage)
+        {
+            <div class="alert alert-success">@successMessage</div>
+        }
+
+        <div class="admin-metrics">
+            <article><span>Kampanya</span><strong>@Model.Count</strong><small>Toplam tanım</small></article>
+            <article><span>Aktif</span><strong>@Model.Count(item => item.IsActive && (!item.StartsAtUtc.HasValue || item.StartsAtUtc <= now) && (!item.EndsAtUtc.HasValue || item.EndsAtUtc >= now))</strong><small>Şu an kullanılabilir</small></article>
+            <article><span>Kullanım</span><strong>@Model.Sum(item => item.UsedCount)</strong><small>Oluşturulan sipariş</small></article>
+        </div>
+
+        <div class="table-responsive admin-table-card">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Kod</th>
+                        <th>Kampanya</th>
+                        <th>İndirim</th>
+                        <th>Minimum sepet</th>
+                        <th>Dönem</th>
+                        <th>Kullanım</th>
+                        <th>Durum</th>
+                        <th class="text-end">İşlem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Count == 0)
+                    {
+                        <tr><td colspan="8"><div class="admin-empty-row">Henüz indirim kampanyası tanımlanmadı.</div></td></tr>
+                    }
+                    else
+                    {
+                        @foreach (var campaign in Model)
+                        {
+                            var isInPeriod = (!campaign.StartsAtUtc.HasValue || campaign.StartsAtUtc <= now) &&
+                                (!campaign.EndsAtUtc.HasValue || campaign.EndsAtUtc >= now);
+                            <tr>
+                                <td data-label="Kod"><strong>@campaign.Code</strong></td>
+                                <td data-label="Kampanya">@campaign.Name</td>
+                                <td data-label="İndirim"><strong>%@campaign.DiscountPercent</strong></td>
+                                <td data-label="Minimum sepet">@campaign.MinimumSubtotal.ToString("N0") ₺</td>
+                                <td data-label="Dönem">
+                                    <small class="admin-cell-note">
+                                        @(campaign.StartsAtUtc.HasValue ? NO23.Web.Services.ClubTime.ToLocal(campaign.StartsAtUtc.Value).ToString("dd.MM.yyyy HH:mm") : "Hemen") –
+                                        @(campaign.EndsAtUtc.HasValue ? NO23.Web.Services.ClubTime.ToLocal(campaign.EndsAtUtc.Value).ToString("dd.MM.yyyy HH:mm") : "Süresiz")
+                                    </small>
+                                </td>
+                                <td data-label="Kullanım"><strong>@campaign.UsedCount</strong> / @(campaign.UsageLimit?.ToString() ?? "∞")</td>
+                                <td data-label="Durum"><span class="badge @(campaign.IsActive && isInPeriod ? "text-bg-success" : "text-bg-secondary")">@(campaign.IsActive && isInPeriod ? "Aktif" : "Pasif")</span></td>
+                                <td class="text-end" data-label="İşlem"><a class="btn btn-sm btn-outline-dark" asp-action="Edit" asp-route-id="@campaign.Id">Düzenle</a></td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>

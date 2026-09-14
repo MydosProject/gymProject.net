@@ -148,38 +148,12 @@
 
                             @if (challenge.CanLogToday)
                             {
-                                @if (!challenge.TodayCaloriesConsumed.HasValue)
-                                {
-                                    <p class="member-challenge-note">
-                                        Bugünkü kayıt henüz yok.
-                                        <a asp-area="Member"
-                                           asp-controller="Goals"
-                                           asp-action="ProgressMeasurements"
-                                           asp-route-date="@challenge.LogDate.ToString("yyyy-MM-dd")">
-                                            Bugünün kaydını gir
-                                        </a>
-                                    </p>
-                                }
-
-                                <form asp-area="Member"
-                                      asp-controller="Goals"
-                                      asp-action="LogChallengeCalories"
-                                      asp-antiforgery="true"
-                                      method="post"
-                                      class="member-challenge-log-form">
-                                    <input type="hidden" name="ParticipationId" value="@challenge.ParticipationId" />
-                                    <input type="hidden" name="EntryDate" value="@challenge.LogDate.ToString("yyyy-MM-dd")" />
-                                    <label>
-                                        <span>Bugün alınan kalori</span>
-                                        <input type="number"
-                                               name="CaloriesConsumed"
-                                               min="1"
-                                               max="10000"
-                                               value="@(challenge.TodayCaloriesConsumed?.ToString() ?? string.Empty)"
-                                               placeholder="Örn. @challenge.TargetDailyCalories" />
-                                    </label>
-                                    <button type="submit">Kaloriyi Kaydet</button>
-                                </form>
+                                <p class="member-challenge-note">
+                                    @(challenge.TodayCaloriesConsumed.HasValue
+                                        ? "Bugünkü kalori kaydı yöneticin veya eğitmenin tarafından girildi."
+                                        : "Bugünkü kayıt henüz yok. Günlük kalori kaydını yöneticin veya atanmış eğitmenin ekleyebilir.")
+                                    Üye ekranı salt okunurdur.
+                                </p>
                             }
                             else
                             {

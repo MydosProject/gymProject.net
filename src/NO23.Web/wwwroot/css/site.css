@@ -20605,17 +20605,219 @@ body.has-content-reading-modal {
 
 /* Shared catalog cards on the homepage and plan pages. */
 .memberships-section .service-package-card { color: #efede5; background: #101110; scroll-margin-top: 7rem; }
-.service-package-card { scroll-margin-top: 7rem; }
-.service-package-card > .service-billing-note { min-height: 0; padding: .8rem; border-left: 2px solid #b7cbb0; color: #cccfc8; font-size: .75rem; }
+.service-package-card {
+    overflow: hidden;
+    scroll-margin-top: 7rem;
+    transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+.service-package-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(190, 255, 28, .45);
+    box-shadow: 0 22px 70px rgba(0, 0, 0, .28);
+}
+.service-package-card.is-featured {
+    border-color: rgba(190, 255, 28, .72);
+    background: radial-gradient(circle at 100% 0, rgba(190, 255, 28, .14), transparent 34%), linear-gradient(155deg, rgba(255, 255, 255, .07), rgba(255, 255, 255, .015));
+}
+.service-package-card.is-featured::before {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 3px;
+    content: "";
+    background: #beff1c;
+}
+.service-package-card .service-package-badge {
+    color: #11150d;
+    background: #beff1c;
+}
+.service-package-highlights {
+    position: relative;
+    margin: 0 0 1.2rem;
+    padding: 1rem;
+    border: 1px solid rgba(190, 255, 28, .42);
+    background: linear-gradient(135deg, rgba(190, 255, 28, .13), rgba(190, 255, 28, .035));
+}
+.service-package-highlights-title {
+    display: block;
+    margin-bottom: .65rem;
+    color: #beff1c;
+    font-size: .58rem;
+    font-weight: 900;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+}
+.service-package-highlights > div {
+    display: grid;
+    gap: .45rem;
+}
+.service-package-highlights strong {
+    color: #f3f6ed;
+    font-size: .78rem;
+    line-height: 1.35;
+}
+.service-package-highlights strong::before {
+    margin-right: .45rem;
+    color: #beff1c;
+    content: "+";
+}
+.service-package-card > .service-billing-note {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr);
+    align-items: center;
+    gap: .8rem;
+    min-height: 0;
+    margin: 0 0 1.2rem;
+    padding: .85rem;
+    border: 1px solid rgba(255, 255, 255, .18);
+    color: #e8e9e3;
+    background: rgba(255, 255, 255, .045);
+}
+.service-billing-note-mark {
+    display: grid;
+    width: 48px;
+    height: 48px;
+    place-items: center;
+    border-radius: 50%;
+    color: #11150d;
+    background: #beff1c;
+    font-size: .56rem;
+    font-weight: 950;
+    letter-spacing: .08em;
+}
+.service-billing-note > span:last-child {
+    display: grid;
+    gap: .2rem;
+}
+.service-billing-note strong {
+    font-size: .78rem;
+}
+.service-billing-note small {
+    color: #aeb0a8;
+    font-size: .68rem;
+    line-height: 1.45;
+}
 .service-variant-copy { min-width: 0; }
 .service-variant-price { min-width: 7rem; max-width: 8.5rem; }
 .service-variant-price b { overflow-wrap: normal; }
-.service-variant-savings { color: #c7e9b6; font-size: .72rem; font-weight: 700; }
+.service-variant.is-recommended {
+    border-color: rgba(190, 255, 28, .58);
+    background: rgba(190, 255, 28, .055);
+}
+.service-variant-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .35rem .5rem;
+}
+.service-variant-title em {
+    padding: .22rem .38rem;
+    color: #11150d;
+    background: #beff1c;
+    font-size: .48rem;
+    font-style: normal;
+    font-weight: 950;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+.service-variant-savings {
+    display: flex;
+    align-items: baseline;
+    gap: .4rem;
+    width: fit-content;
+    margin-top: .42rem;
+    padding: .32rem .48rem;
+    color: #11150d;
+    background: #beff1c;
+}
+.service-variant-savings small {
+    margin: 0;
+    color: inherit;
+    font-size: .48rem;
+    font-weight: 900;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+.service-variant-savings strong {
+    font-size: .66rem;
+    font-weight: 950;
+}
+.service-package-submit {
+    border-color: #beff1c;
+}
+.service-package-card.is-featured .service-package-submit,
+.service-package-submit:hover,
+.service-package-submit:focus-visible {
+    color: #11150d;
+    background: #beff1c;
+}
 @media (max-width: 480px) {
     .service-variant { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: .65rem; }
     .service-variant-price { grid-column: 2; max-width: none; text-align: left; }
+    .service-package-card > .service-billing-note { grid-template-columns: 40px minmax(0, 1fr); }
+    .service-billing-note-mark { width: 40px; height: 40px; }
 }
 .kitchen-meal-selection { display: grid; gap: .6rem; margin: 1rem 0; border: 0; }
 .kitchen-meal-selection legend { font-size: .85rem; font-weight: 700; }
 .kitchen-meal-selection label { display: flex; align-items: center; gap: .5rem; font-size: .8rem; }
 .kitchen-meal-selection small { color: #8a8982; font-size: .75rem; }
+.kitchen-meal-selection-error { color: #ff5b54; }
+.kitchen-subscription-section { margin: 4rem 0 5rem; }
+.kitchen-subscription-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.kitchen-subscription-card { border: 1px solid rgba(255,255,255,.16); background: #111411; padding: 1.5rem; display: flex; flex-direction: column; gap: .85rem; }
+.kitchen-subscription-card:hover { border-color: #b7ff00; transform: translateY(-3px); transition: border-color .2s ease, transform .2s ease; }
+.kitchen-subscription-card h3 { margin: 0; font-size: 1.7rem; }
+.kitchen-subscription-card p { margin: 0; color: #aaa; min-height: 3.2rem; }
+.kitchen-plan-days { color: #b7ff00; font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.kitchen-subscription-prices { display: grid; gap: .45rem; border-top: 1px solid rgba(255,255,255,.12); border-bottom: 1px solid rgba(255,255,255,.12); padding: .85rem 0; }
+.kitchen-subscription-prices div { display: flex; justify-content: space-between; gap: 1rem; color: #d4d4d0; font-size: .85rem; }
+.kitchen-subscription-prices strong { color: #fff; }
+.kitchen-delivery-note { color: #9b9b95; font-size: .75rem; }
+.kitchen-subscription-cta { margin-top: auto; border: 1px solid #b7ff00; color: #b7ff00; display: flex; justify-content: space-between; padding: .8rem 1rem; font-weight: 700; }
+.kitchen-subscription-cta:hover { background: #b7ff00; color: #10130f; }
+.member-kitchen-checkout-price-breakdown { display: grid; gap: .45rem; border: 1px solid rgba(255,255,255,.14); padding: 1rem 1.25rem; margin: 1rem 0 1.5rem; }
+.member-kitchen-checkout-price-breakdown span { display: flex; justify-content: space-between; gap: 1rem; color: #aaa; }
+.member-kitchen-checkout-price-breakdown span:last-child { border-top: 1px solid rgba(255,255,255,.14); padding-top: .65rem; color: #b7ff00; }
+.kitchen-plan-card button:disabled { opacity: .45; cursor: not-allowed; }
+@media (max-width: 760px) {
+  .kitchen-subscription-grid { grid-template-columns: 1fr; }
+}
+.member-progress-history-section {
+    margin-top: 1.25rem;
+    padding: clamp(1.25rem, 3vw, 2rem);
+    border: 1px solid rgba(255,255,255,.12);
+    background: rgba(17,20,17,.92);
+}
+.member-progress-measurement-guide {
+    display: grid;
+    gap: .35rem;
+    margin: 1rem 0 1.25rem;
+    padding: .9rem 1rem;
+    border-left: 3px solid #c5ff20;
+    background: rgba(197,255,32,.07);
+}
+.member-progress-measurement-guide strong { color: #c5ff20; font-size: .78rem; letter-spacing: .06em; text-transform: uppercase; }
+.member-progress-measurement-guide p { margin: 0; color: #c2c4bb; font-size: .82rem; line-height: 1.55; }
+.member-progress-history-table-wrap { overflow-x: auto; }
+.member-progress-history-table { width: 100%; min-width: 850px; border-collapse: collapse; color: #e9ebe3; }
+.member-progress-history-table th,
+.member-progress-history-table td { padding: .8rem .7rem; border-bottom: 1px solid rgba(255,255,255,.09); text-align: left; font-size: .78rem; white-space: nowrap; }
+.member-progress-history-table th { color: #969b8c; font-size: .64rem; letter-spacing: .08em; text-transform: uppercase; }
+.member-progress-history-table td a { color: #c5ff20; font-weight: 700; text-decoration: none; }
+.member-progress-history-table td a:hover { text-decoration: underline; }
+.trainer-measurements-page .trainer-measurement-groups { display: grid; gap: 1.25rem; }
+.trainer-measurement-groups section { padding: 1rem; border: 1px solid rgba(0,0,0,.1); border-radius: .35rem; }
+.trainer-measurement-groups h4 { margin: 0 0 .9rem; font-size: 1rem; }
+.trainer-measurements-page .table { min-width: 820px; }
+.admin-dashboard-requests-panel { overflow: hidden; }
+.admin-dashboard-requests-table { min-width: 760px; color: inherit; }
+.admin-dashboard-requests-table th { color: #8f9589; font-size: .68rem; letter-spacing: .08em; text-transform: uppercase; }
+.admin-dashboard-requests-table td { padding: .9rem .75rem; border-color: rgba(255,255,255,.09); }
+.admin-dashboard-requests-table td strong,
+.admin-dashboard-requests-table td small { display: block; }
+.admin-dashboard-requests-table td small { color: #8f9589; font-size: .72rem; }
+.admin-dashboard-requests-table td a { color: #c5ff20; font-weight: 700; text-decoration: none; white-space: nowrap; }
+.admin-dashboard-requests-table td a:hover { text-decoration: underline; }
+.admin-dashboard-request-status { color: #aeb4a5; font-size: .74rem; font-weight: 700; }
+.admin-dashboard-request-status.is-pending { color: #c5ff20; }

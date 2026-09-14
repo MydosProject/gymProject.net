@@ -414,11 +414,12 @@ public sealed class IyzicoPendingPaymentService(
             return true;
         }
 
-        if (!subscription.SourceHeightCm.HasValue ||
+        if (subscription.DailyCalories > 0 &&
+            (!subscription.SourceHeightCm.HasValue ||
             !subscription.SourceWeightKg.HasValue ||
             !subscription.SourceAge.HasValue ||
             !subscription.SourceGender.HasValue ||
-            !subscription.SourceActivityLevel.HasValue)
+            !subscription.SourceActivityLevel.HasValue))
         {
             logger.LogError(
                 "Kitchen paketi için kalori kaynak bilgileri eksik. KitchenSubscriptionId: {KitchenSubscriptionId}",
@@ -453,27 +454,31 @@ public sealed class IyzicoPendingPaymentService(
         await dbContext.SaveChangesAsync(
             cancellationToken);
 
-        var calculationRequest =
-            new CalorieCalculationRequest
+        CalorieCalculationRequest? calculationRequest = null;
+
+        if (subscription.DailyCalories > 0)
+        {
+            calculationRequest = new CalorieCalculationRequest
             {
                 HeightCm =
-                    subscription.SourceHeightCm.Value,
+                    subscription.SourceHeightCm.GetValueOrDefault(),
 
                 WeightKg =
-                    subscription.SourceWeightKg.Value,
+                    subscription.SourceWeightKg.GetValueOrDefault(),
 
                 Age =
-                    subscription.SourceAge.Value,
+                    subscription.SourceAge.GetValueOrDefault(),
 
                 Gender =
-                    subscription.SourceGender.Value,
+                    subscription.SourceGender.GetValueOrDefault(),
 
                 ActivityLevel =
-                    subscription.SourceActivityLevel.Value,
+                    subscription.SourceActivityLevel.GetValueOrDefault(),
 
                 Goal =
                     subscription.Goal
             };
+        }
 
         var planResult =
             await kitchenPlanMatchingService.GenerateAsync(

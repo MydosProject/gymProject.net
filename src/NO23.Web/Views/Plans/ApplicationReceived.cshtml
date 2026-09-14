@@ -2,6 +2,8 @@
     ViewData["Title"] = "Başvurun Alındı";
     var packageName = ViewData["PackageName"]?.ToString();
     var variantName = ViewData["VariantName"]?.ToString();
+    var familyCode = TempData["PlanApplicationFamilyCode"]?.ToString();
+    var siblingDiscount = Convert.ToInt32(TempData["PlanApplicationSiblingDiscount"] ?? 0);
 }
 
 <section class="plan-application-page plan-application-result-page">
@@ -27,6 +29,13 @@
                 <p>Seçimin ekibimize iletildi.</p>
             }
             <p>Program ve başlangıç detayları için seninle iletişime geçeceğiz.</p>
+            @if (!string.IsNullOrWhiteSpace(familyCode))
+            {
+                <div class="alert alert-info">
+                    <strong>Aile kodunuz: @familyCode</strong><br />
+                    @(siblingDiscount > 0 ? $"İkinci çocuk için %{siblingDiscount} kardeş indirimi tanımlandı." : "İkinci çocuk kaydında bu kodu kullanarak %25 kardeş indirimi alabilirsiniz.")
+                </div>
+            }
             <div class="plan-application-result-actions">
                 <a asp-controller="Plans" asp-action="Index" asp-route-category="membership">
                     Paketlere Dön

@@ -151,20 +151,21 @@ public class ShopController(
             return Challenge();
         }
         var result = await commerceService.CreateOneTimeOrderFromCartAsync(
-    userId,
-    new DeliveryDetails
-    {
-        DeliveryMethod = input.DeliveryMethod,
-        FullName = input.FullName,
-        PhoneNumber = input.PhoneNumber,
-        AddressLine = input.AddressLine,
-        District = input.District,
-        City = input.City,
-        PostalCode = input.PostalCode,
-        DeliveryDate = input.DeliveryDate,
-        DeliveryTimeSlot = input.DeliveryTimeSlot,
-        Notes = input.Notes
-    });
+            userId,
+            new DeliveryDetails
+            {
+                DeliveryMethod = input.DeliveryMethod,
+                FullName = input.FullName,
+                PhoneNumber = input.PhoneNumber,
+                AddressLine = input.AddressLine,
+                District = input.District,
+                City = input.City,
+                PostalCode = input.PostalCode,
+                DeliveryDate = input.DeliveryDate,
+                DeliveryTimeSlot = input.DeliveryTimeSlot,
+                Notes = input.Notes
+            },
+            input.DiscountCode);
 
     if (!result.Succeeded || result.EntityId is null)
     {
@@ -182,7 +183,7 @@ public class ShopController(
         area = "Member"
     },
     "http",
-    new HostString("213.254.136.245", 5044));
+    "213.254.136.245:5044");
 
 
     var paymentResult =

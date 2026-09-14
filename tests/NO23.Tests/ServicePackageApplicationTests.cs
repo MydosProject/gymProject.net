@@ -80,6 +80,42 @@ public class ServicePackageApplicationTests
         Assert.Equal(1, await dbContext.ServicePackageApplications.CountAsync());
     }
 
+    [Fact]
+    public async Task Apply_Post_UsesGeneratedFamilyCodeForSecondChildDiscount()
+    {
+        await using var dbContext = CreateDbContext();
+        var (package, variant) = await SeedKidsPackageAsync(dbContext);
+        var controller = CreateController(dbContext);
+
+        await controller.Apply(new PlanApplicationInputViewModel
+        {
+            ServicePackageId = package.Id,
+            ServicePackageVariantId = variant.Id,
+            FullName = "Birinci Çocuk",
+            Email = "parent-one@example.com",
+            PhoneNumber = "05555555555"
+        });
+        var familyCode = (await dbContext.ServicePackageApplications.SingleAsync()).FamilyCode;
+
+        await controller.Apply(new PlanApplicationInputViewModel
+        {
+            ServicePackageId = package.Id,
+            ServicePackageVariantId = variant.Id,
+            FullName = "İkinci Çocuk",
+            Email = "parent-two@example.com",
+            PhoneNumber = "05555555555",
+            FamilyCode = familyCode
+        });
+
+        var applications = await dbContext.ServicePackageApplications
+            .OrderBy(item => item.Id)
+            .ToListAsync();
+        Assert.Equal(2, applications.Count);
+        Assert.StartsWith("KIDS-", familyCode);
+        Assert.Equal(familyCode, applications[1].FamilyCode);
+        Assert.Equal(25, applications[1].SiblingDiscountPercent);
+    }
+
     private static PlansController CreateController(
         ApplicationDbContext dbContext)
     {

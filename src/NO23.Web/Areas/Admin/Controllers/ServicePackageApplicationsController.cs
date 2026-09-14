@@ -33,6 +33,8 @@ public class ServicePackageApplicationsController(ApplicationDbContext dbContext
                 application.Email,
                 application.PhoneNumber,
                 application.Notes,
+                application.FamilyCode,
+                application.SiblingDiscountPercent,
                 application.Status,
                 application.CreatedAtUtc
             })
@@ -50,6 +52,8 @@ public class ServicePackageApplicationsController(ApplicationDbContext dbContext
                 Email = application.Email,
                 PhoneNumber = application.PhoneNumber,
                 Notes = application.Notes,
+                FamilyCode = application.FamilyCode,
+                SiblingDiscountPercent = application.SiblingDiscountPercent,
                 Status = application.Status,
                 CreatedAtLocal = DateTime.SpecifyKind(
                     application.CreatedAtUtc,

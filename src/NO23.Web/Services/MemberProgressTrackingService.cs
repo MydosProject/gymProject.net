@@ -10,7 +10,10 @@ public class MemberProgressTrackingService(ApplicationDbContext dbContext)
 {
     public async Task<MemberProgressTrackingResult> UpsertAsync(
         string userId,
-        MemberProgressEntryInputViewModel input)
+        MemberProgressEntryInputViewModel input,
+        bool preserveMeasurements = false,
+        bool preserveTrainerMeasurements = false,
+        bool preserveCaloriesWhenMissing = false)
     {
         if (string.IsNullOrWhiteSpace(userId))
         {
@@ -36,7 +39,10 @@ public class MemberProgressTrackingService(ApplicationDbContext dbContext)
             .FirstOrDefaultAsync(item =>
                 item.MemberProfileId == profile.Id &&
                 item.EntryDate == input.EntryDate);
-        var hasAnyValue = HasAnyValue(input);
+        var hasAnyValue = HasAnyValue(input) ||
+            (preserveTrainerMeasurements &&
+             entry is not null &&
+             HasAnyTrainerMeasurement(entry));
 
         if (!hasAnyValue)
         {
@@ -67,16 +73,41 @@ public class MemberProgressTrackingService(ApplicationDbContext dbContext)
             entry.UpdatedAtUtc = DateTime.UtcNow;
         }
 
-        entry.CaloriesConsumed = input.CaloriesConsumed;
-        entry.BodyWeightKg = Normalize(input.BodyWeightKg);
-        entry.BodyFatKg = Normalize(input.BodyFatKg);
-        entry.BodyFatPercent = Normalize(input.BodyFatPercent);
-        entry.MuscleMassKg = Normalize(input.MuscleMassKg);
-        entry.MuscleMassPercent = Normalize(input.MuscleMassPercent);
-        entry.BodyWaterAmount = Normalize(input.BodyWaterAmount);
-        entry.BodyWaterPercent = Normalize(input.BodyWaterPercent);
+        if (input.CaloriesConsumed.HasValue || !preserveCaloriesWhenMissing)
+        {
+            entry.CaloriesConsumed = input.CaloriesConsumed;
+        }
 
-        await SyncChallengeProgressAsync(profile.Id, input.EntryDate, input.CaloriesConsumed);
+        // Challenge calorie entries are intentionally separate from body
+        // measurements. A calorie-only edit must not erase an existing
+        // measurement recorded on the same day.
+        if (!preserveMeasurements)
+        {
+            entry.BodyWeightKg = Normalize(input.BodyWeightKg);
+            entry.BodyFatKg = Normalize(input.BodyFatKg);
+            entry.BodyFatPercent = Normalize(input.BodyFatPercent);
+            entry.MuscleMassKg = Normalize(input.MuscleMassKg);
+            entry.MuscleMassPercent = Normalize(input.MuscleMassPercent);
+            entry.BodyWaterAmount = Normalize(input.BodyWaterAmount);
+            entry.BodyWaterPercent = Normalize(input.BodyWaterPercent);
+            entry.DailyWaterIntakeLiters = Normalize(input.DailyWaterIntakeLiters);
+        }
+
+        if (!preserveTrainerMeasurements)
+        {
+            entry.HeightCm = Normalize(input.HeightCm);
+            entry.ShoulderCm = Normalize(input.ShoulderCm);
+            entry.ChestCm = Normalize(input.ChestCm);
+            entry.RightArmCm = Normalize(input.RightArmCm);
+            entry.LeftArmCm = Normalize(input.LeftArmCm);
+            entry.WaistCm = Normalize(input.WaistCm);
+            entry.AbdomenCm = Normalize(input.AbdomenCm);
+            entry.HipCm = Normalize(input.HipCm);
+            entry.RightUpperLegCm = Normalize(input.RightUpperLegCm);
+            entry.LeftUpperLegCm = Normalize(input.LeftUpperLegCm);
+        }
+
+        await SyncChallengeProgressAsync(profile.Id, input.EntryDate, entry.CaloriesConsumed);
         await dbContext.SaveChangesAsync();
 
         return MemberProgressTrackingResult.Ok("Kayıt güncellendi.");
@@ -183,7 +214,32 @@ public class MemberProgressTrackingService(ApplicationDbContext dbContext)
                input.MuscleMassKg.HasValue ||
                input.MuscleMassPercent.HasValue ||
                input.BodyWaterAmount.HasValue ||
-               input.BodyWaterPercent.HasValue;
+               input.BodyWaterPercent.HasValue ||
+               input.DailyWaterIntakeLiters.HasValue ||
+               input.HeightCm.HasValue ||
+               input.ShoulderCm.HasValue ||
+               input.ChestCm.HasValue ||
+               input.RightArmCm.HasValue ||
+               input.LeftArmCm.HasValue ||
+               input.WaistCm.HasValue ||
+               input.AbdomenCm.HasValue ||
+               input.HipCm.HasValue ||
+               input.RightUpperLegCm.HasValue ||
+               input.LeftUpperLegCm.HasValue;
+    }
+
+    private static bool HasAnyTrainerMeasurement(MemberProgressEntry entry)
+    {
+        return entry.HeightCm.HasValue ||
+               entry.ShoulderCm.HasValue ||
+               entry.ChestCm.HasValue ||
+               entry.RightArmCm.HasValue ||
+               entry.LeftArmCm.HasValue ||
+               entry.WaistCm.HasValue ||
+               entry.AbdomenCm.HasValue ||
+               entry.HipCm.HasValue ||
+               entry.RightUpperLegCm.HasValue ||
+               entry.LeftUpperLegCm.HasValue;
     }
 
     private static decimal? Normalize(decimal? value)

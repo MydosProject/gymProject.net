@@ -87,6 +87,7 @@
                             <th>Eğitmen</th>
                             <th>Tercih</th>
                             <th>Oluşturulma</th>
+                            <th>Kesin randevu</th>
                             <th>Durum</th>
                             <th class="text-end">İşlem</th>
                         </tr>
@@ -96,7 +97,7 @@
                         @if (Model.Count == 0)
                         {
                             <tr>
-                                <td colspan="7">
+                                <td colspan="8">
                                     <div class="admin-personal-empty-state">
                                         <span>00</span>
 
@@ -177,6 +178,20 @@
                                             <span class="admin-cell-note">
                                                 @createdAtLocal.ToString("HH:mm")
                                             </span>
+                                        </div>
+                                    </td>
+
+                                    <td data-label="Kesin randevu">
+                                        <div class="admin-personal-date">
+                                            @if (request.ScheduledAtUtc.HasValue)
+                                            {
+                                                <strong>@request.ScheduledAtUtc.Value.ToLocalTime().ToString("dd.MM.yyyy")</strong>
+                                                <span class="admin-cell-note">@request.ScheduledAtUtc.Value.ToLocalTime().ToString("HH:mm")</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="admin-cell-note">Henüz planlanmadı</span>
+                                            }
                                         </div>
                                     </td>
 

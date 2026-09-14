@@ -26,6 +26,15 @@ public class KitchenSubscriptionPackageConfiguration : IEntityTypeConfiguration<
         builder.Property(package => package.UnitPrice)
             .HasPrecision(10, 2);
 
+        builder.Property(package => package.TwoMainMealsPrice)
+            .HasPrecision(10, 2);
+
+        builder.Property(package => package.ThreeMainMealsPrice)
+            .HasPrecision(10, 2);
+
+        builder.Property(package => package.DailyDeliveryFee)
+            .HasPrecision(10, 2);
+
         builder.Property(package => package.CreatedAtUtc)
             .HasDefaultValueSql("NOW()");
     }

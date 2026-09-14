@@ -26,6 +26,10 @@ public class ServicePackageApplication
 
     public string? Notes { get; set; }
 
+    public string? FamilyCode { get; set; }
+
+    public int SiblingDiscountPercent { get; set; }
+
     public ServicePackageApplicationStatus Status { get; set; } =
         ServicePackageApplicationStatus.Pending;
 

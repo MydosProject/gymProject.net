@@ -13,9 +13,7 @@ namespace NO23.Web.Areas.Member.Controllers;
 
 [Area("Member")]
 [Authorize(Roles = ApplicationRoles.Member)]
-public class GoalsController(
-    ApplicationDbContext dbContext,
-    MemberProgressTrackingService progressTrackingService) : Controller
+public class GoalsController(ApplicationDbContext dbContext) : Controller
 {
     [HttpGet]
     public async Task<IActionResult> Index()
@@ -100,6 +98,34 @@ public class GoalsController(
             })
             .ToListAsync();
 
+        var measurementHistory = await dbContext.MemberProgressEntries
+            .AsNoTracking()
+            .Where(entry =>
+                entry.MemberProfileId == memberProfileId.Value &&
+                (entry.BodyWeightKg.HasValue ||
+                 entry.BodyFatKg.HasValue ||
+                 entry.BodyFatPercent.HasValue ||
+                 entry.MuscleMassKg.HasValue ||
+                 entry.MuscleMassPercent.HasValue ||
+                 entry.BodyWaterAmount.HasValue ||
+                 entry.BodyWaterPercent.HasValue ||
+                 entry.DailyWaterIntakeLiters.HasValue))
+            .OrderByDescending(entry => entry.EntryDate)
+            .Take(8)
+            .Select(entry => new MemberProgressMeasurementHistoryItemViewModel
+            {
+                EntryDate = entry.EntryDate,
+                BodyWeightKg = entry.BodyWeightKg,
+                BodyFatKg = entry.BodyFatKg,
+                BodyFatPercent = entry.BodyFatPercent,
+                MuscleMassKg = entry.MuscleMassKg,
+                MuscleMassPercent = entry.MuscleMassPercent,
+                BodyWaterAmount = entry.BodyWaterAmount,
+                BodyWaterPercent = entry.BodyWaterPercent,
+                DailyWaterIntakeLiters = entry.DailyWaterIntakeLiters
+            })
+            .ToListAsync();
+
         return View(new MemberProgressTrackingViewModel
         {
             Input = selectedEntry is null
@@ -117,7 +143,8 @@ public class GoalsController(
                     MuscleMassKg = selectedEntry.MuscleMassKg,
                     MuscleMassPercent = selectedEntry.MuscleMassPercent,
                     BodyWaterAmount = selectedEntry.BodyWaterAmount,
-                    BodyWaterPercent = selectedEntry.BodyWaterPercent
+                    BodyWaterPercent = selectedEntry.BodyWaterPercent,
+                    DailyWaterIntakeLiters = selectedEntry.DailyWaterIntakeLiters
                 },
 
             CalorieChartItems = calorieChartItems,
@@ -133,7 +160,9 @@ public class GoalsController(
                 : calorieChartItems.Max(item =>
                     item.CaloriesConsumed),
 
-            LoggedDayCount = calorieChartItems.Count
+            LoggedDayCount = calorieChartItems.Count,
+
+            MeasurementHistory = measurementHistory
         });
     }
 
@@ -180,94 +209,12 @@ public class GoalsController(
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> LogChallengeCalories(
-        ChallengeCalorieLogInputViewModel input)
-    {
-        if (!ModelState.IsValid)
-        {
-            TempData["ErrorMessage"] = ModelState
-                .Where(item => item.Value?.Errors.Count > 0)
-                .SelectMany(item => item.Value!.Errors)
-                .Select(error => error.ErrorMessage)
-                .FirstOrDefault(error =>
-                    !string.IsNullOrWhiteSpace(error)) ??
-                "Kalori girişini kontrol et.";
-
-            return RedirectToAction(nameof(CalorieTracking));
-        }
-
-        var userId =
-            User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-        if (string.IsNullOrWhiteSpace(userId))
-        {
-            return Challenge();
-        }
-
-        var result = await progressTrackingService.UpsertAsync(
-            userId,
-            new MemberProgressEntryInputViewModel
-            {
-                EntryDate = input.EntryDate,
-                CaloriesConsumed = input.CaloriesConsumed
-            });
-
-        TempData[
-            result.Succeeded
-                ? "SuccessMessage"
-                : "ErrorMessage"
-        ] = result.Message;
-
-        return RedirectToAction(nameof(CalorieTracking));
-    }
+    public IActionResult LogChallengeCalories(
+        ChallengeCalorieLogInputViewModel input) => Forbid();
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> ProgressMeasurements(
-        MemberProgressEntryInputViewModel input)
-    {
-        if (!ModelState.IsValid)
-        {
-            TempData["ErrorMessage"] = ModelState
-                .Where(item => item.Value?.Errors.Count > 0)
-                .SelectMany(item => item.Value!.Errors)
-                .Select(error => error.ErrorMessage)
-                .FirstOrDefault(error =>
-                    !string.IsNullOrWhiteSpace(error)) ??
-                "Kayıt bilgilerini kontrol et.";
-
-            return RedirectToAction(
-                nameof(ProgressMeasurements),
-                new
-                {
-                    date = input.EntryDate
-                });
-        }
-
-        var userId =
-            User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-        if (string.IsNullOrWhiteSpace(userId))
-        {
-            return Challenge();
-        }
-
-        var result = await progressTrackingService
-            .UpsertAsync(userId, input);
-
-        TempData[
-            result.Succeeded
-                ? "SuccessMessage"
-                : "ErrorMessage"
-        ] = result.Message;
-
-        return RedirectToAction(
-            nameof(ProgressMeasurements),
-            new
-            {
-                date = input.EntryDate
-            });
-    }
+    public IActionResult ProgressMeasurements(MemberProgressEntryInputViewModel input) => Forbid();
 
     private async Task<MemberGoalsIndexViewModel?>
         BuildViewModelAsync()

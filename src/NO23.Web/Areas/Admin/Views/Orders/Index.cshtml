@@ -124,7 +124,13 @@
                                         </div>
                                     </details>
                                 </td>
-                                <td data-label="Toplam"><strong>@order.Total.ToString("C0")</strong></td>
+                                <td data-label="Toplam">
+                                    <strong>@order.Total.ToString("C0")</strong>
+                                    @if (order.DiscountAmount > 0)
+                                    {
+                                        <small class="admin-cell-note">@order.DiscountCode · %@order.CampaignDiscountPercent (-@order.DiscountAmount.ToString("C0"))</small>
+                                    }
+                                </td>
                                 <td class="text-end" data-label="İşlem">
                                     @if (order.AvailablePaymentStatuses.Count == 0 &&
                                          order.AvailableOrderStatuses.Count == 0)

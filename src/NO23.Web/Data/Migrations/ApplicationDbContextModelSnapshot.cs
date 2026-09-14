@@ -789,6 +789,66 @@ namespace NO23.Web.Data.Migrations
                     b.ToTable("CommunityEventReservations");
                 });
 
+            modelBuilder.Entity("NO23.Web.Domain.Entities.DiscountCampaign", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<int>("DiscountPercent")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("EndsAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<decimal>("MinimumSubtotal")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<DateTime?>("StartsAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("UsageLimit")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UsedCount")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("IsActive");
+
+                    b.HasIndex("StartsAtUtc", "EndsAtUtc");
+
+                    b.ToTable("DiscountCampaigns");
+                });
+
             modelBuilder.Entity("NO23.Web.Domain.Entities.GroupClass", b =>
                 {
                     b.Property<int>("Id")
@@ -947,15 +1007,13 @@ namespace NO23.Web.Data.Migrations
                         .HasColumnType("integer");
 
                     b.Property<string>("SourceActivityLevel")
-                        .IsRequired()
                         .HasMaxLength(40)
                         .HasColumnType("character varying(40)");
 
-                    b.Property<int>("SourceAge")
+                    b.Property<int?>("SourceAge")
                         .HasColumnType("integer");
 
                     b.Property<string>("SourceGender")
-                        .IsRequired()
                         .HasMaxLength(40)
                         .HasColumnType("character varying(40)");
 
@@ -964,10 +1022,10 @@ namespace NO23.Web.Data.Migrations
                         .HasMaxLength(40)
                         .HasColumnType("character varying(40)");
 
-                    b.Property<int>("SourceHeightCm")
+                    b.Property<int?>("SourceHeightCm")
                         .HasColumnType("integer");
 
-                    b.Property<decimal>("SourceWeightKg")
+                    b.Property<decimal?>("SourceWeightKg")
                         .HasPrecision(6, 2)
                         .HasColumnType("numeric(6,2)");
 
@@ -1463,6 +1521,10 @@ namespace NO23.Web.Data.Migrations
                     b.Property<int>("DailyCalories")
                         .HasColumnType("integer");
 
+                    b.Property<decimal>("DailyDeliveryFeeSnapshot")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
                     b.Property<DateOnly>("EndsOn")
                         .HasColumnType("date");
 
@@ -1554,6 +1616,10 @@ namespace NO23.Web.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("NOW()");
 
+                    b.Property<decimal>("DailyDeliveryFee")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
                     b.Property<int>("Days")
                         .HasColumnType("integer");
 
@@ -1577,6 +1643,14 @@ namespace NO23.Web.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(40)
                         .HasColumnType("character varying(40)");
+
+                    b.Property<decimal>("ThreeMainMealsPrice")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<decimal>("TwoMainMealsPrice")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
 
                     b.Property<decimal>("UnitPrice")
                         .HasPrecision(10, 2)
@@ -1644,6 +1718,14 @@ namespace NO23.Web.Data.Migrations
                     b.Property<int?>("MembershipPackageOptionId")
                         .HasColumnType("integer");
 
+                    b.Property<string>("ReferralCode")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<int?>("ReferredByMemberProfileId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("RemainingClassCredits")
                         .HasColumnType("integer");
 
@@ -1661,6 +1743,11 @@ namespace NO23.Web.Data.Migrations
 
                     b.HasIndex("MembershipPackageOptionId");
 
+                    b.HasIndex("ReferralCode")
+                        .IsUnique();
+
+                    b.HasIndex("ReferredByMemberProfileId");
+
                     b.ToTable("MemberProfiles");
                 });
 
@@ -1671,6 +1758,10 @@ namespace NO23.Web.Data.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal?>("AbdomenCm")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("numeric(6,2)");
 
                     b.Property<decimal?>("BodyFatKg")
                         .HasPrecision(7, 2)
@@ -1695,13 +1786,37 @@ namespace NO23.Web.Data.Migrations
                     b.Property<int?>("CaloriesConsumed")
                         .HasColumnType("integer");
 
+                    b.Property<decimal?>("ChestCm")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("numeric(6,2)");
+
                     b.Property<DateTime>("CreatedAtUtc")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("NOW()");
 
+                    b.Property<decimal?>("DailyWaterIntakeLiters")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)");
+
                     b.Property<DateOnly>("EntryDate")
                         .HasColumnType("date");
+
+                    b.Property<decimal?>("HeightCm")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("numeric(6,2)");
+
+                    b.Property<decimal?>("HipCm")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("numeric(6,2)");
+
+                    b.Property<decimal?>("LeftArmCm")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("numeric(6,2)");
+
+                    b.Property<decimal?>("LeftUpperLegCm")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("numeric(6,2)");
 
                     b.Property<int>("MemberProfileId")
                         .HasColumnType("integer");
@@ -1714,8 +1829,24 @@ namespace NO23.Web.Data.Migrations
                         .HasPrecision(5, 2)
                         .HasColumnType("numeric(5,2)");
 
+                    b.Property<decimal?>("RightArmCm")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("numeric(6,2)");
+
+                    b.Property<decimal?>("RightUpperLegCm")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("numeric(6,2)");
+
+                    b.Property<decimal?>("ShoulderCm")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("numeric(6,2)");
+
                     b.Property<DateTime?>("UpdatedAtUtc")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal?>("WaistCm")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("numeric(6,2)");
 
                     b.HasKey("Id");
 
@@ -1908,6 +2039,9 @@ namespace NO23.Web.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("CampaignDiscountPercent")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("CreatedAtUtc")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -1955,6 +2089,17 @@ namespace NO23.Web.Data.Migrations
                         .HasColumnType("character varying(20)");
 
                     b.Property<string>("DeliveryTimeSlot")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<decimal>("DiscountAmount")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<int?>("DiscountCampaignId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("DiscountCode")
                         .HasMaxLength(40)
                         .HasColumnType("character varying(40)");
 
@@ -2007,6 +2152,8 @@ namespace NO23.Web.Data.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DiscountCampaignId");
 
                     b.HasIndex("KitchenSubscriptionId");
 
@@ -2458,6 +2605,10 @@ namespace NO23.Web.Data.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
 
+                    b.Property<string>("FamilyCode")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasMaxLength(160)
@@ -2478,6 +2629,9 @@ namespace NO23.Web.Data.Migrations
                     b.Property<int>("ServicePackageVariantId")
                         .HasColumnType("integer");
 
+                    b.Property<int>("SiblingDiscountPercent")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(40)
@@ -2491,6 +2645,8 @@ namespace NO23.Web.Data.Migrations
                     b.HasIndex("ApplicationUserId");
 
                     b.HasIndex("CreatedAtUtc");
+
+                    b.HasIndex("FamilyCode");
 
                     b.HasIndex("ServicePackageId");
 
@@ -3372,6 +3528,11 @@ namespace NO23.Web.Data.Migrations
                         .HasForeignKey("MembershipPackageOptionId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("NO23.Web.Domain.Entities.MemberProfile", "ReferredByMemberProfile")
+                        .WithMany("ReferredMembers")
+                        .HasForeignKey("ReferredByMemberProfileId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("ApplicationUser");
 
                     b.Navigation("AssignedTrainer");
@@ -3379,6 +3540,8 @@ namespace NO23.Web.Data.Migrations
                     b.Navigation("MembershipPackage");
 
                     b.Navigation("MembershipPackageOption");
+
+                    b.Navigation("ReferredByMemberProfile");
                 });
 
             modelBuilder.Entity("NO23.Web.Domain.Entities.MemberProgressEntry", b =>
@@ -3416,6 +3579,11 @@ namespace NO23.Web.Data.Migrations
 
             modelBuilder.Entity("NO23.Web.Domain.Entities.Order", b =>
                 {
+                    b.HasOne("NO23.Web.Domain.Entities.DiscountCampaign", "DiscountCampaign")
+                        .WithMany("Orders")
+                        .HasForeignKey("DiscountCampaignId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("NO23.Web.Domain.Entities.KitchenSubscription", "KitchenSubscription")
                         .WithMany("Orders")
                         .HasForeignKey("KitchenSubscriptionId")
@@ -3425,6 +3593,8 @@ namespace NO23.Web.Data.Migrations
                         .WithMany("Orders")
                         .HasForeignKey("MemberProfileId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("DiscountCampaign");
 
                     b.Navigation("KitchenSubscription");
 
@@ -3693,6 +3863,11 @@ namespace NO23.Web.Data.Migrations
                     b.Navigation("Reservations");
                 });
 
+            modelBuilder.Entity("NO23.Web.Domain.Entities.DiscountCampaign", b =>
+                {
+                    b.Navigation("Orders");
+                });
+
             modelBuilder.Entity("NO23.Web.Domain.Entities.GroupClass", b =>
                 {
                     b.Navigation("Sessions");
@@ -3779,6 +3954,8 @@ namespace NO23.Web.Data.Migrations
                     b.Navigation("PersonalTrainingSessions");
 
                     b.Navigation("ProgressEntries");
+
+                    b.Navigation("ReferredMembers");
 
                     b.Navigation("ShoppingCart");
 

@@ -52,6 +52,18 @@
 
     <section class="admin-dashboard-metrics trainer-dashboard-metrics">
 
+        <article class="admin-dashboard-metric-card">
+            <div class="admin-dashboard-metric-top"><span>00</span><small>Performans</small></div>
+            <strong>@Model.CompletedLessonCountThisMonth.ToString("00")</strong>
+            <div class="admin-dashboard-metric-footer"><span>Bu ay tamamlanan ders</span></div>
+        </article>
+
+        <article class="admin-dashboard-metric-card">
+            <div class="admin-dashboard-metric-top"><span>00</span><small>Haftalık</small></div>
+            <strong>@Model.CompletedLessonCountThisWeek.ToString("00")</strong>
+            <div class="admin-dashboard-metric-footer"><span>Bu hafta tamamlanan ders</span></div>
+        </article>
+
         <a class="admin-dashboard-metric-card"
            asp-area="Trainer"
            asp-controller="PersonalTrainingRequests"

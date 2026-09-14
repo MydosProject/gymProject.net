@@ -12,7 +12,7 @@ public class KitchenPlanMatchingService(ApplicationDbContext dbContext)
 
     public async Task<KitchenPlanGenerationResult> GenerateAsync(
         int kitchenSubscriptionId,
-        CalorieCalculationRequest sourceRequest)
+        CalorieCalculationRequest? sourceRequest)
     {
         var existingPlan = await dbContext.KitchenMealPlans
             .AsNoTracking()
@@ -64,7 +64,7 @@ public class KitchenPlanMatchingService(ApplicationDbContext dbContext)
 
     private static KitchenMealPlan BuildMealPlan(
         KitchenSubscription subscription,
-        CalorieCalculationRequest sourceRequest,
+        CalorieCalculationRequest? sourceRequest,
         KitchenPlanMatch match)
     {
         return new KitchenMealPlan
@@ -72,12 +72,12 @@ public class KitchenPlanMatchingService(ApplicationDbContext dbContext)
             KitchenSubscriptionId = subscription.Id,
             Status = KitchenMealPlanStatus.Generated,
             CalculationVersion = CurrentCalculationVersion,
-            SourceHeightCm = sourceRequest.HeightCm,
-            SourceWeightKg = sourceRequest.WeightKg,
-            SourceAge = sourceRequest.Age,
-            SourceGender = sourceRequest.Gender,
-            SourceActivityLevel = sourceRequest.ActivityLevel,
-            SourceGoal = sourceRequest.Goal,
+            SourceHeightCm = sourceRequest?.HeightCm,
+            SourceWeightKg = sourceRequest?.WeightKg,
+            SourceAge = sourceRequest?.Age,
+            SourceGender = sourceRequest?.Gender,
+            SourceActivityLevel = sourceRequest?.ActivityLevel,
+            SourceGoal = sourceRequest?.Goal ?? subscription.Goal,
             TargetDailyCalories = subscription.DailyCalories,
             TargetProteinGrams = subscription.ProteinGrams,
             TargetCarbohydrateGrams = subscription.CarbohydrateGrams,

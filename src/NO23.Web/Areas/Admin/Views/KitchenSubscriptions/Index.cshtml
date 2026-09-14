@@ -36,6 +36,11 @@
         "Completed" => "Tamamlandı",
         _ => status
     };
+
+    static string GetMealSummary(int mask) =>
+        string.Join(", ", Enum.GetValues<NO23.Web.Domain.Enums.KitchenMealSlot>()
+            .Where(meal => NO23.Web.Services.KitchenMealSelection.Contains(mask, meal))
+            .Select(NO23.Web.Services.KitchenMealSelection.Name));
 }
 
 <section class="admin-page">
@@ -112,6 +117,7 @@
                                 <td data-label="Hedef">@GetGoalName(subscription.Goal)</td>
                                 <td data-label="Makro">
                                     <strong>@subscription.DailyCalories kcal</strong>
+                                    <small class="admin-cell-note">@GetMealSummary(subscription.SelectedMealSlotsMask)</small>
                                     <small class="admin-cell-note admin-code">
                                         P @subscription.ProteinGrams / K @subscription.CarbohydrateGrams / Y @subscription.FatGrams
                                     </small>

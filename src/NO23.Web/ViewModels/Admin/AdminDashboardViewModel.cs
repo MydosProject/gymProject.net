@@ -13,4 +13,16 @@ public class AdminDashboardViewModel
     public int PendingPersonalTrainingRequests { get; set; }
 
     public int PendingOrders { get; set; }
+
+    public IReadOnlyList<PersonalTrainingRequestListItemViewModel>
+        RecentPersonalTrainingRequests { get; init; } = [];
+
+    public IReadOnlyList<TrainerMonthlyLessonViewModel> MonthlyTrainerLessons { get; set; } = [];
+}
+
+public class TrainerMonthlyLessonViewModel
+{
+    public string TrainerName { get; init; } = string.Empty;
+    public int CompletedLessonCountThisWeek { get; init; }
+    public int CompletedLessonCount { get; init; }
 }

@@ -93,7 +93,7 @@ public class LifecycleStatusTests
 
         var status = ClassSessionLifecycle.GetEffectiveStatus(
             ClassSessionStatus.Scheduled,
-            nowUtc.AddMinutes(-1),
+            nowUtc.AddMinutes(-61),
             nowUtc);
 
         Assert.Equal(ClassSessionStatus.Completed, status);

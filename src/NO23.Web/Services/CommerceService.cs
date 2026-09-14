@@ -10,7 +10,7 @@ namespace NO23.Web.Services;
 public class CommerceService
 (ApplicationDbContext dbContext, IOptions<ClubPickupOptions>? clubPickupOptions = null)
 {
-    private const decimal DeliveryFee = 0;
+    private const decimal DefaultDeliveryFee = 0;
     private readonly ClubPickupOptions clubPickupSettings =
         clubPickupOptions?.Value ?? new ClubPickupOptions();
 
@@ -219,7 +219,10 @@ public class CommerceService
         return CommerceResult.Ok(cartItem.ShoppingCartId);
     }
 
-    public async Task<CommerceResult> CreateOneTimeOrderFromCartAsync(string userId, DeliveryDetails deliveryDetails)
+    public async Task<CommerceResult> CreateOneTimeOrderFromCartAsync(
+        string userId,
+        DeliveryDetails deliveryDetails,
+        string? discountCode = null)
     {
         var deliveryResult = NormalizeDeliveryDetails(deliveryDetails);
 
@@ -289,7 +292,33 @@ public class CommerceService
         }
 
         var discounts = await new MembershipPricingService(dbContext).GetAsync(userId);
-        var order = BuildOrder(profile.Id, OrderType.OneTime, deliveryDetails, null, cart.Items, discounts);
+        var discountedSubtotal = cart.Items.Sum(item =>
+            MembershipDiscounts.Apply(
+                item.UnitPrice,
+                discounts.For(item.ItemType)) * item.Quantity);
+        var campaignResult = await ResolveDiscountCampaignAsync(
+            discountCode,
+            discountedSubtotal);
+
+        if (!campaignResult.Succeeded)
+        {
+            return CommerceResult.Fail(campaignResult.ErrorMessage!);
+        }
+
+        var order = BuildOrder(
+            profile.Id,
+            OrderType.OneTime,
+            deliveryDetails,
+            null,
+            cart.Items,
+            discounts,
+            campaignResult.Campaign);
+
+        if (campaignResult.Campaign is not null)
+        {
+            campaignResult.Campaign.UsedCount++;
+            campaignResult.Campaign.UpdatedAtUtc = DateTime.UtcNow;
+        }
 
         foreach (var cartItem in cart.Items.Where(item => item.ItemType == CartItemType.ShopProduct))
         {
@@ -378,13 +407,18 @@ public class CommerceService
                 subscription.PackagePriceSnapshot
         };
 
+        var deliveryFee = addressDetails.DeliveryMethod == OrderDeliveryMethod.AddressDelivery
+            ? subscription.DailyDeliveryFeeSnapshot * subscription.PackageDaysSnapshot
+            : 0m;
+
         var order = BuildOrder(
             profile.Id,
             null,
             OrderType.KitchenSubscription,
             addressDetails,
             subscription.Id,
-            [orderItem]);
+            [orderItem],
+            deliveryFee);
 
         dbContext.Orders.Add(order);
 
@@ -586,8 +620,10 @@ public class CommerceService
         DeliveryDetails deliveryDetails,
         int? kitchenSubscriptionId,
         IEnumerable<CartItem> cartItems,
-        MembershipDiscounts? discounts = null)
+        MembershipDiscounts? discounts = null,
+        DiscountCampaign? campaign = null)
     {
+        var campaignPercent = campaign?.DiscountPercent ?? 0;
         var items = cartItems.Select(item => new OrderItem
         {
             ItemType = item.ItemType,
@@ -598,12 +634,82 @@ public class CommerceService
             RemovedIngredientNames = item.RemovedIngredientNames,
             AddedIngredientNames = item.AddedIngredientNames,
             ProductName = item.ProductName,
-            UnitPrice = MembershipDiscounts.Apply(item.UnitPrice, discounts?.For(item.ItemType) ?? 0),
+            UnitPrice = MembershipDiscounts.Apply(
+                MembershipDiscounts.Apply(item.UnitPrice, discounts?.For(item.ItemType) ?? 0),
+                campaignPercent),
             Quantity = item.Quantity,
-            LineTotal = MembershipDiscounts.Apply(item.UnitPrice, discounts?.For(item.ItemType) ?? 0) * item.Quantity
+            LineTotal = MembershipDiscounts.Apply(
+                MembershipDiscounts.Apply(item.UnitPrice, discounts?.For(item.ItemType) ?? 0),
+                campaignPercent) * item.Quantity
         }).ToList();
 
-        return BuildOrder(memberProfileId, null, orderType, deliveryDetails, kitchenSubscriptionId, items);
+        var order = BuildOrder(
+            memberProfileId,
+            null,
+            orderType,
+            deliveryDetails,
+            kitchenSubscriptionId,
+            items);
+
+        if (campaign is not null)
+        {
+            var beforeCampaignSubtotal = cartItems.Sum(item =>
+                MembershipDiscounts.Apply(
+                    item.UnitPrice,
+                    discounts?.For(item.ItemType) ?? 0) * item.Quantity);
+
+            order.DiscountCampaignId = campaign.Id;
+            order.DiscountCampaign = campaign;
+            order.DiscountCode = campaign.Code;
+            order.CampaignDiscountPercent = campaign.DiscountPercent;
+            order.DiscountAmount = beforeCampaignSubtotal - order.Subtotal;
+        }
+
+        return order;
+    }
+
+    private async Task<DiscountCampaignResult> ResolveDiscountCampaignAsync(
+        string? discountCode,
+        decimal subtotal)
+    {
+        if (string.IsNullOrWhiteSpace(discountCode))
+        {
+            return DiscountCampaignResult.Ok(null);
+        }
+
+        var normalizedCode = discountCode.Trim().ToUpperInvariant();
+        var campaign = await dbContext.DiscountCampaigns
+            .FirstOrDefaultAsync(item => item.Code == normalizedCode);
+
+        if (campaign is null || !campaign.IsActive)
+        {
+            return DiscountCampaignResult.Fail("İndirim kodu geçersiz veya aktif değil.");
+        }
+
+        var now = DateTime.UtcNow;
+
+        if (campaign.StartsAtUtc.HasValue && campaign.StartsAtUtc.Value > now)
+        {
+            return DiscountCampaignResult.Fail("İndirim kodunun kullanım dönemi henüz başlamadı.");
+        }
+
+        if (campaign.EndsAtUtc.HasValue && campaign.EndsAtUtc.Value < now)
+        {
+            return DiscountCampaignResult.Fail("İndirim kodunun kullanım süresi doldu.");
+        }
+
+        if (campaign.UsageLimit.HasValue && campaign.UsedCount >= campaign.UsageLimit.Value)
+        {
+            return DiscountCampaignResult.Fail("İndirim kodunun kullanım limiti doldu.");
+        }
+
+        if (subtotal < campaign.MinimumSubtotal)
+        {
+            return DiscountCampaignResult.Fail(
+                $"Bu indirim kodu için sepet tutarı en az {campaign.MinimumSubtotal:N0} ₺ olmalıdır.");
+        }
+
+        return DiscountCampaignResult.Ok(campaign);
     }
 
     private static Order BuildGuestOrder(
@@ -620,7 +726,8 @@ public class CommerceService
         OrderType orderType,
         DeliveryDetails deliveryDetails,
         int? kitchenSubscriptionId,
-        IEnumerable<OrderItem> orderItems)
+        IEnumerable<OrderItem> orderItems,
+        decimal deliveryFee = DefaultDeliveryFee)
     {
         var items = orderItems.ToList();
         var subtotal = items.Sum(item => item.LineTotal);
@@ -645,8 +752,8 @@ public class CommerceService
             DeliveryTimeSlot = deliveryDetails.DeliveryTimeSlot?.Trim(),
             Notes = deliveryDetails.Notes?.Trim(),
             Subtotal = subtotal,
-            DeliveryFee = DeliveryFee,
-            Total = subtotal + DeliveryFee,
+            DeliveryFee = deliveryFee,
+            Total = subtotal + deliveryFee,
             Items = items
         };
     }
@@ -801,5 +908,17 @@ public class CommerceService
 
         public static KitchenCustomizationResult Fail(string errorMessage) =>
             new(false, null, null, errorMessage);
+    }
+
+    private sealed record DiscountCampaignResult(
+        bool Succeeded,
+        DiscountCampaign? Campaign,
+        string? ErrorMessage)
+    {
+        public static DiscountCampaignResult Ok(DiscountCampaign? campaign) =>
+            new(true, campaign, null);
+
+        public static DiscountCampaignResult Fail(string errorMessage) =>
+            new(false, null, errorMessage);
     }
 }

@@ -7,14 +7,15 @@ public static class ClassSessionLifecycle
     public static ClassSessionStatus GetEffectiveStatus(
         ClassSessionStatus storedStatus,
         DateTime startsAtUtc,
-        DateTime nowUtc)
+        DateTime nowUtc,
+        int durationMinutes = 60)
     {
         if (storedStatus is ClassSessionStatus.Cancelled or ClassSessionStatus.Completed)
         {
             return storedStatus;
         }
 
-        return startsAtUtc <= nowUtc
+        return startsAtUtc.AddMinutes(Math.Max(1, durationMinutes)) <= nowUtc
             ? ClassSessionStatus.Completed
             : ClassSessionStatus.Scheduled;
     }
@@ -23,10 +24,12 @@ public static class ClassSessionLifecycle
         ClassSessionStatus storedStatus,
         DateTime startsAtUtc,
         DateTime nowUtc,
-        bool isGroupClassActive)
+        bool isGroupClassActive,
+        int durationMinutes = 60)
     {
         return isGroupClassActive &&
                storedStatus == ClassSessionStatus.Scheduled &&
-               GetEffectiveStatus(storedStatus, startsAtUtc, nowUtc) == ClassSessionStatus.Scheduled;
+               startsAtUtc > nowUtc &&
+               GetEffectiveStatus(storedStatus, startsAtUtc, nowUtc, durationMinutes) == ClassSessionStatus.Scheduled;
     }
 }

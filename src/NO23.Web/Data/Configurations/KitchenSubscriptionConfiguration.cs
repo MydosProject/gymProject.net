@@ -38,6 +38,9 @@ public class KitchenSubscriptionConfiguration : IEntityTypeConfiguration<Kitchen
         builder.Property(subscription => subscription.PackagePriceSnapshot)
             .HasPrecision(10, 2);
 
+        builder.Property(subscription => subscription.DailyDeliveryFeeSnapshot)
+            .HasPrecision(10, 2);
+
         builder.HasIndex(subscription => new { subscription.MemberProfileId, subscription.Status });
 
         builder.Property(subscription => subscription.CreatedAtUtc)

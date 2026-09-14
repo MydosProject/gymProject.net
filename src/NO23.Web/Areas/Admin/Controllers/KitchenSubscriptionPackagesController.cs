@@ -27,6 +27,9 @@ public class KitchenSubscriptionPackagesController(ApplicationDbContext dbContex
                 Description = package.Description,
                 Days = package.Days,
                 UnitPrice = package.UnitPrice,
+                TwoMainMealsPrice = package.TwoMainMealsPrice,
+                ThreeMainMealsPrice = package.ThreeMainMealsPrice,
+                DailyDeliveryFee = package.DailyDeliveryFee,
                 IsActive = package.IsActive,
                 DisplayOrder = package.DisplayOrder,
                 SubscriptionCount = package.KitchenSubscriptions.Count
@@ -45,6 +48,9 @@ public class KitchenSubscriptionPackagesController(ApplicationDbContext dbContex
             Description = "NO23 Kitchen yemek paketi.",
             Days = 5,
             UnitPrice = 0,
+            TwoMainMealsPrice = 0,
+            ThreeMainMealsPrice = 0,
+            DailyDeliveryFee = 95,
             IsActive = true,
             DisplayOrder = 10
         });
@@ -138,6 +144,9 @@ public class KitchenSubscriptionPackagesController(ApplicationDbContext dbContex
         package.Description = model.Description.Trim();
         package.Days = model.Days;
         package.UnitPrice = model.UnitPrice;
+        package.TwoMainMealsPrice = model.TwoMainMealsPrice;
+        package.ThreeMainMealsPrice = model.ThreeMainMealsPrice;
+        package.DailyDeliveryFee = model.DailyDeliveryFee;
         package.IsActive = model.IsActive;
         package.DisplayOrder = model.DisplayOrder;
         package.UpdatedAtUtc = DateTime.UtcNow;
@@ -154,6 +163,9 @@ public class KitchenSubscriptionPackagesController(ApplicationDbContext dbContex
             Description = package.Description,
             Days = package.Days,
             UnitPrice = package.UnitPrice,
+            TwoMainMealsPrice = package.TwoMainMealsPrice,
+            ThreeMainMealsPrice = package.ThreeMainMealsPrice,
+            DailyDeliveryFee = package.DailyDeliveryFee,
             IsActive = package.IsActive,
             DisplayOrder = package.DisplayOrder
         };

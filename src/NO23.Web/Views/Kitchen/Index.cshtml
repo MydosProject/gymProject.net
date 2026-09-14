@@ -1,4 +1,6 @@
-@model IReadOnlyList<NO23.Web.ViewModels.GuestOrders.GuestOrderPageViewModel>
+@using NO23.Web.Domain.Enums
+@using System.Globalization
+@model NO23.Web.ViewModels.KitchenPublicPageViewModel
 @{
     ViewData["Title"] = "NO23 Kitchen";
 }
@@ -39,6 +41,122 @@
             </aside>
         </section>
 
+        <section class="kitchen-subscription-section" id="calorie-calculator">
+            <div class="kitchen-section-heading">
+                <div>
+                    <p class="kitchen-section-kicker">Ücretsiz Kalori Hesaplama</p>
+                    <h2>Üye olmadan günlük hedefini öğren.</h2>
+                </div>
+                <p>Sonuç, 2+1 veya 3+1 Kitchen aboneliğinde tabağının hazırlanmasına yardımcı olur. 1+1 pakette hesaplama zorunlu değildir.</p>
+            </div>
+
+            <form asp-action="CalculateCalories" method="post" class="kitchen-subscription-card">
+                <div class="row g-3">
+                    <div class="col-md-4"><label asp-for="CalculatorInput.HeightCm">Boy (cm)</label><input asp-for="CalculatorInput.HeightCm" class="form-control" /><span asp-validation-for="CalculatorInput.HeightCm"></span></div>
+                    <div class="col-md-4"><label asp-for="CalculatorInput.WeightKg">Kilo (kg)</label><input asp-for="CalculatorInput.WeightKg" class="form-control" /><span asp-validation-for="CalculatorInput.WeightKg"></span></div>
+                    <div class="col-md-4"><label asp-for="CalculatorInput.Age">Yaş</label><input asp-for="CalculatorInput.Age" class="form-control" /><span asp-validation-for="CalculatorInput.Age"></span></div>
+                    <div class="col-md-4">
+                        <label asp-for="CalculatorInput.Gender">Cinsiyet</label>
+                        <select asp-for="CalculatorInput.Gender" class="form-select"><option value="Female">Kadın</option><option value="Male">Erkek</option></select>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="CalculatorInput.ActivityLevel">Aktivite</label>
+                        <select asp-for="CalculatorInput.ActivityLevel" class="form-select"><option value="Sedentary">Hareketsiz</option><option value="LightlyActive">Az aktif</option><option value="ModeratelyActive">Orta aktif</option><option value="VeryActive">Çok aktif</option></select>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="CalculatorInput.Goal">Hedef</label>
+                        <select asp-for="CalculatorInput.Goal" class="form-select"><option value="LoseWeight">Kilo verme</option><option value="HealthyLifestyle">Sağlıklı yaşam</option><option value="GainMuscle">Kas kazanımı</option></select>
+                    </div>
+                </div>
+                <button type="submit" class="kitchen-subscription-cta mt-3">Kalorimi Hesapla <span aria-hidden="true">→</span></button>
+
+                @if (Model.Recommendation is not null)
+                {
+                    <div class="kitchen-subscription-prices mt-3" aria-live="polite">
+                        <div><span>Günlük enerji</span><strong>@Model.Recommendation.DailyCalories kcal</strong></div>
+                        <div><span>Protein</span><strong>@Model.Recommendation.ProteinGrams g</strong></div>
+                        <div><span>Karbonhidrat</span><strong>@Model.Recommendation.CarbohydrateGrams g</strong></div>
+                        <div><span>Yağ</span><strong>@Model.Recommendation.FatGrams g</strong></div>
+                    </div>
+                }
+            </form>
+        </section>
+
+        @if (Model.SubscriptionPlans.Count > 0)
+        {
+            @if (TempData["ErrorMessage"] is string kitchenError)
+            {
+                <div class="alert alert-danger" role="alert">@kitchenError</div>
+            }
+            <section class="kitchen-subscription-section" id="plans">
+                <div class="kitchen-section-heading">
+                    <div>
+                        <p class="kitchen-section-kicker">NO23 Kitchen Aboneliği</p>
+                        <h2>Günlük öğün düzenini seç.</h2>
+                    </div>
+                    <p>Her gün 1, 2 veya 3 ana öğün ve bir ara öğün seç. Kalori hedefin üretim planına aktarılır.</p>
+                </div>
+
+                <div class="kitchen-subscription-grid">
+                    @foreach (var plan in Model.SubscriptionPlans)
+                    {
+                        <form class="kitchen-subscription-card" asp-action="StartSubscription" method="post"
+                              data-public-kitchen-plan
+                              data-price-one="@plan.UnitPrice.ToString(CultureInfo.InvariantCulture)"
+                              data-price-two="@plan.TwoMainMealsPrice.ToString(CultureInfo.InvariantCulture)"
+                              data-price-three="@plan.ThreeMainMealsPrice.ToString(CultureInfo.InvariantCulture)"
+                              data-delivery-daily="@plan.DailyDeliveryFee.ToString(CultureInfo.InvariantCulture)"
+                              data-days="@plan.Days">
+                            <input type="hidden" name="plan" value="@plan.Plan" />
+                            <span class="kitchen-plan-days">@plan.Days gün</span>
+                            <h3>@plan.Name</h3>
+                            <p>@plan.Description</p>
+                            <div class="kitchen-subscription-prices">
+                                <div><span>1 ana + 1 ara</span><strong>@plan.UnitPrice.ToString("C0")</strong></div>
+                                <div><span>2 ana + 1 ara</span><strong>@plan.TwoMainMealsPrice.ToString("C0")</strong></div>
+                                <div><span>3 ana + 1 ara</span><strong>@plan.ThreeMainMealsPrice.ToString("C0")</strong></div>
+                            </div>
+                            <small class="kitchen-delivery-note">Adrese teslim: @plan.DailyDeliveryFee.ToString("C0") / gün · Salondan teslim ücretsiz</small>
+
+                            <fieldset class="kitchen-meal-selection">
+                                <legend>Öğünlerini seç</legend>
+                                <label><input type="checkbox" name="selectedMeals" value="Breakfast" checked data-public-main-meal /> Kahvaltı</label>
+                                <label><input type="checkbox" name="selectedMeals" value="Lunch" data-public-main-meal /> Öğle yemeği</label>
+                                <label><input type="checkbox" name="selectedMeals" value="Dinner" data-public-main-meal /> Akşam yemeği</label>
+                                <label><input type="radio" name="selectedMeals" value="MorningSnack" /> Sabah ara öğünü</label>
+                                <label><input type="radio" name="selectedMeals" value="AfternoonSnack" checked /> Öğleden sonra ara öğünü</label>
+                            </fieldset>
+
+                            <fieldset class="kitchen-meal-selection">
+                                <legend>Teslimat</legend>
+                                <label><input type="radio" name="deliveryMethod" value="ClubPickup" checked /> Gel-al · ücretsiz</label>
+                                <label><input type="radio" name="deliveryMethod" value="AddressDelivery" /> Eve teslim · @plan.DailyDeliveryFee.ToString("C0")/gün</label>
+                            </fieldset>
+
+                            <div data-public-calorie-fields hidden>
+                                <p><strong>2+1 ve 3+1 için kalori hedefini hesapla</strong></p>
+                                <div class="row g-2">
+                                    <div class="col-4"><label>Boy<input class="form-control" type="number" name="calculator.HeightCm" value="@Model.CalculatorInput.HeightCm" min="120" max="230" /></label></div>
+                                    <div class="col-4"><label>Kilo<input class="form-control" type="number" name="calculator.WeightKg" value="@Model.CalculatorInput.WeightKg.ToString(CultureInfo.InvariantCulture)" min="35" max="250" step="0.1" /></label></div>
+                                    <div class="col-4"><label>Yaş<input class="form-control" type="number" name="calculator.Age" value="@Model.CalculatorInput.Age" min="13" max="90" /></label></div>
+                                    <div class="col-6"><label>Cinsiyet<select class="form-select" name="calculator.Gender"><option value="Female">Kadın</option><option value="Male">Erkek</option></select></label></div>
+                                    <div class="col-6"><label>Aktivite<select class="form-select" name="calculator.ActivityLevel"><option value="Sedentary">Hareketsiz</option><option value="LightlyActive">Az aktif</option><option value="ModeratelyActive" selected>Orta aktif</option><option value="VeryActive">Çok aktif</option></select></label></div>
+                                    <div class="col-12"><label>Hedef<select class="form-select" name="calculator.Goal"><option value="LoseWeight">Kilo verme</option><option value="HealthyLifestyle" selected>Sağlıklı yaşam</option><option value="GainMuscle">Kas kazanımı</option></select></label></div>
+                                </div>
+                            </div>
+
+                            <div class="kitchen-subscription-prices mt-3">
+                                <div><span>Seçimin</span><strong data-public-package-price>@plan.UnitPrice.ToString("C0")</strong></div>
+                                <div><span>Teslimat</span><strong data-public-delivery-price>Ücretsiz</strong></div>
+                                <div><span>Toplam</span><strong data-public-total-price>@plan.UnitPrice.ToString("C0")</strong></div>
+                            </div>
+                            <button type="submit" class="kitchen-subscription-cta">Seçimi kaydet ve devam et <span aria-hidden="true">→</span></button>
+                        </form>
+                    }
+                </div>
+            </section>
+        }
+
         <section class="kitchen-menu-section" id="public-kitchen-menu">
             <div class="kitchen-section-heading">
                 <div>
@@ -51,7 +169,7 @@
                 </p>
             </div>
 
-            @if (Model.Count == 0)
+            @if (Model.MenuItems.Count == 0)
             {
                 <div class="kitchen-menu-empty">
                     <span>00</span>
@@ -69,7 +187,7 @@
                             <span>Filtreleme sistemi</span>
                             <p>Öğün tipini ve beslenme tercihini birlikte kullanabilirsin.</p>
                         </div>
-                        <strong>@Model.Count.ToString("00")</strong>
+                        <strong>@Model.MenuItems.Count.ToString("00")</strong>
                     </div>
 
                     <div class="kitchen-filter-toolbar">
@@ -82,7 +200,7 @@
                             <i aria-hidden="true">⌕</i>
                         </label>
                         <div class="kitchen-filter-summary" aria-live="polite">
-                            <span><strong data-kitchen-count>@Model.Count</strong> ürün gösteriliyor</span>
+                            <span><strong data-kitchen-count>@Model.MenuItems.Count</strong> ürün gösteriliyor</span>
                             <button type="button" data-kitchen-reset hidden>Filtreleri Temizle</button>
                         </div>
                     </div>
@@ -114,9 +232,9 @@
                 </div>
 
                 <div class="kitchen-menu-grid" data-kitchen-grid>
-                    @for (var index = 0; index < Model.Count; index++)
+                    @for (var index = 0; index < Model.MenuItems.Count; index++)
                     {
-                        var item = Model[index];
+                        var item = Model.MenuItems[index];
                         var rawCategory = item.Category?.Trim().ToLowerInvariant() ?? string.Empty;
                         var categoryKey = rawCategory.Contains("breakfast") || rawCategory.Contains("kahvalt")
                             ? "breakfast"
@@ -235,6 +353,27 @@
 @section Scripts {
     <script>
         (() => {
+            const money = value => Number(value).toLocaleString("tr-TR", { style: "currency", currency: "TRY", maximumFractionDigits: 0 });
+            document.querySelectorAll("[data-public-kitchen-plan]").forEach(form => {
+                const updatePlan = () => {
+                    const mainCount = form.querySelectorAll("[data-public-main-meal]:checked").length;
+                    const prices = [0, Number(form.dataset.priceOne), Number(form.dataset.priceTwo), Number(form.dataset.priceThree)];
+                    const packagePrice = prices[mainCount] || 0;
+                    const address = form.querySelector("[name='deliveryMethod'][value='AddressDelivery']")?.checked;
+                    const delivery = address ? Number(form.dataset.deliveryDaily) * Number(form.dataset.days) : 0;
+                    form.querySelector("[data-public-calorie-fields]").hidden = mainCount <= 1;
+                    form.querySelector("[data-public-package-price]").textContent = money(packagePrice);
+                    form.querySelector("[data-public-delivery-price]").textContent = delivery ? money(delivery) : "Ücretsiz";
+                    form.querySelector("[data-public-total-price]").textContent = money(packagePrice + delivery);
+                };
+                form.addEventListener("change", updatePlan);
+                form.addEventListener("submit", event => {
+                    const mainCount = form.querySelectorAll("[data-public-main-meal]:checked").length;
+                    if (mainCount < 1 || !form.querySelector("[name='selectedMeals']:checked")) event.preventDefault();
+                });
+                updatePlan();
+            });
+
             const root = document.querySelector("[data-kitchen-filter]");
             if (!root) return;
 

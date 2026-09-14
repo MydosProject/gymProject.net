@@ -112,6 +112,14 @@
     </section>
 
     <section class="admin-dashboard-operation-section">
+        <header class="admin-dashboard-section-head"><div><span>Eğitmen performansı</span><h2>Bu ay tamamlanan dersler</h2></div></header>
+        <div class="table-responsive admin-table-card"><table class="table align-middle mb-0"><thead><tr><th>Eğitmen</th><th>Bu hafta</th><th>Bu ay</th></tr></thead><tbody>
+        @if (Model.MonthlyTrainerLessons.Count == 0) { <tr><td colspan="3">Bu ay tamamlanmış ders bulunmuyor.</td></tr> }
+        else { foreach (var trainer in Model.MonthlyTrainerLessons) { <tr><td>@trainer.TrainerName</td><td><strong>@trainer.CompletedLessonCountThisWeek</strong></td><td><strong>@trainer.CompletedLessonCount</strong></td></tr> } }
+        </tbody></table></div>
+    </section>
+
+    <section class="admin-dashboard-operation-section">
         <header class="admin-dashboard-section-head">
             <div>
                 <span>Operasyon özeti</span>
@@ -172,6 +180,79 @@
                     <strong aria-hidden="true">→</strong>
                 </div>
             </a>
+        </div>
+    </section>
+
+    <section class="admin-dashboard-requests-section admin-dashboard-operation-section">
+        <header class="admin-dashboard-section-head">
+            <div>
+                <span>Randevu takibi</span>
+                <h2>Son birebir talepleri</h2>
+            </div>
+
+            <a class="admin-dashboard-link"
+               asp-area="Admin"
+               asp-controller="PersonalTrainingRequests"
+               asp-action="Index">
+                Tüm talepleri gör <strong aria-hidden="true">→</strong>
+            </a>
+        </header>
+
+        <div class="admin-dashboard-panel admin-dashboard-requests-panel">
+            @if (Model.RecentPersonalTrainingRequests.Count == 0)
+            {
+                <div class="admin-dashboard-empty-state">
+                    <strong>Henüz randevu talebi yok.</strong>
+                    <p>Üyelerden gelen birebir talepler bu alanda görünecek.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0 admin-dashboard-requests-table">
+                        <thead>
+                            <tr>
+                                <th>Üye</th>
+                                <th>Eğitmen</th>
+                                <th>Tercih</th>
+                                <th>Kesin randevu</th>
+                                <th>Durum</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var request in Model.RecentPersonalTrainingRequests)
+                        {
+                            <tr>
+                                <td data-label="Üye">
+                                    <strong>@request.MemberName</strong>
+                                    <small>@request.MemberEmail</small>
+                                </td>
+                                <td data-label="Eğitmen">@request.TrainerName</td>
+                                <td data-label="Tercih">
+                                    @request.PreferredDate.ToString("dd.MM.yyyy")<br />
+                                    <small>@request.PreferredTimeWindow</small>
+                                </td>
+                                <td data-label="Kesin randevu">
+                                    @(request.ScheduledAtUtc?.ToLocalTime().ToString("dd.MM.yyyy HH:mm") ?? "—")
+                                </td>
+                                <td data-label="Durum">
+                                    <span class="admin-dashboard-request-status @(request.IsPending ? "is-pending" : "")">
+                                        @request.Status
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <a asp-area="Admin"
+                                       asp-controller="PersonalTrainingRequests"
+                                       asp-action="Edit"
+                                       asp-route-id="@request.Id">Yönet →</a>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
         </div>
     </section>
 

@@ -4,7 +4,7 @@
     var billingNote = Model.Variants.Select(x => x.BillingNote).FirstOrDefault(x => x is not null);
 }
 <article id="@Model.Slug" class="service-package-card @(Model.IsFeatured ? "is-featured" : null)">
-    @if (Model.IsFeatured) { <span class="service-package-badge">Önerilen</span> }
+    @if (Model.IsFeatured) { <span class="service-package-badge">En Çok Tercih Edilen</span> }
     <div class="service-package-head">
         <small>@(Model.CategoryTitle == "Personal Training" ? "PERSONAL TRAINING" : Model.CategoryTitle)</small>
         <h3>@Model.Name</h3>
@@ -14,7 +14,28 @@
     <ul>
         @foreach (var feature in Model.Features) { <li>@feature</li> }
     </ul>
-    @if (billingNote is not null) { <p class="service-billing-note">@billingNote</p> }
+    @if (Model.Highlights.Count > 0)
+    {
+        <section class="service-package-highlights" aria-label="Paket avantajları">
+            <span class="service-package-highlights-title">Paket Avantajları</span>
+            <div>
+                @foreach (var highlight in Model.Highlights)
+                {
+                    <strong>@highlight</strong>
+                }
+            </div>
+        </section>
+    }
+    @if (billingNote is not null)
+    {
+        <aside class="service-billing-note" aria-label="Aylık ödeme bilgisi">
+            <span class="service-billing-note-mark">AYLIK</span>
+            <span>
+                <strong>Otomatik kart tahsilatı</strong>
+                <small>@billingNote</small>
+            </span>
+        </aside>
+    }
     @if (Model.Variants.Count > 0)
     {
         <form asp-area="" asp-controller="Plans" asp-action="Apply" method="get" class="service-package-application-form">
@@ -27,13 +48,16 @@
                         <input type="radio" name="variant" value="@variant.Id" checked="@(variant.Id == selectedId)" required />
                         <span class="service-variant-check" aria-hidden="true"></span>
                         <span class="service-variant-copy">
-                            <strong>@variant.Name</strong>
+                            <span class="service-variant-title">
+                                <strong>@variant.Name</strong>
+                                @if (variant.IsRecommended) { <em>En çok tercih edilen</em> }
+                            </span>
                             <small>@variant.Rights</small>
                             @if (variant.CommitmentNote is not null) { <small>@variant.CommitmentNote</small> }
                             @if (variant.UnitPrice is not null) { <small>@variant.UnitPrice</small> }
                             @if (variant.Savings is not null)
                             {
-                                <span class="service-variant-savings">@variant.Savings</span>
+                                <span class="service-variant-savings"><small>Toplam Avantaj</small><strong>@variant.Savings</strong></span>
                                 <small>@variant.ComparisonNote</small>
                             }
                         </span>

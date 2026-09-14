@@ -90,6 +90,11 @@
                                     </a>
                                 </td>
                                 <td data-label="Not">
+                                    @if (!string.IsNullOrWhiteSpace(item.FamilyCode))
+                                    {
+                                        <strong>@item.FamilyCode</strong>
+                                        @if (item.SiblingDiscountPercent > 0) { <span class="admin-cell-note d-block">%@item.SiblingDiscountPercent kardeş indirimi</span> }
+                                    }
                                     @if (string.IsNullOrWhiteSpace(item.Notes))
                                     {
                                         <span class="admin-cell-note">—</span>

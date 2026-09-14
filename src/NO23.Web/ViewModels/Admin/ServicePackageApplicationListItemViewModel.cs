@@ -19,6 +19,8 @@ public class ServicePackageApplicationListItemViewModel
     public string PhoneNumber { get; init; } = string.Empty;
 
     public string? Notes { get; init; }
+    public string? FamilyCode { get; init; }
+    public int SiblingDiscountPercent { get; init; }
 
     public ServicePackageApplicationStatus Status { get; init; }
 

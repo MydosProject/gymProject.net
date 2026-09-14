@@ -176,6 +176,17 @@ else
                     <span asp-validation-for="CheckoutInput.DeliveryTimeSlot"></span>
                 </div>
                 <div class="shop-form-field shop-form-field-wide">
+                    <label asp-for="CheckoutInput.DiscountCode">
+                        İndirim Kodu <small>İsteğe bağlı</small>
+                    </label>
+                    <input asp-for="CheckoutInput.DiscountCode"
+                           autocomplete="off"
+                           placeholder="Örn. NO23FIT"
+                           style="text-transform: uppercase" />
+                    <span asp-validation-for="CheckoutInput.DiscountCode"></span>
+                    <small>Geçerli kampanya indirimi üyelik avantajlarının üzerine ödeme sırasında uygulanır.</small>
+                </div>
+                <div class="shop-form-field shop-form-field-wide">
                     <label asp-for="CheckoutInput.Notes">
                         Sipariş Notu <small>İsteğe bağlı</small>
                     </label>

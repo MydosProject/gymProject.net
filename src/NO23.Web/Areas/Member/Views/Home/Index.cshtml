@@ -128,6 +128,21 @@
 
         </div>
 
+        <section class="member-dashboard-section member-referral-card" id="referral">
+            <div class="member-section-heading">
+                <div>
+                    <p class="member-section-kicker">Arkadaşını davet et</p>
+                    <h2>Karşılıklı %10 indirim kazanın</h2>
+                </div>
+                <span class="member-section-count">%@Model.ReferralDiscountPercent</span>
+            </div>
+            <p>Bu kodu arkadaşın kayıt olurken kullansın. Üyelik, Kitchen ve mağaza ödemelerinde indirim otomatik uygulanır.</p>
+            <div class="input-group referral-code-group">
+                <input class="form-control" value="@Model.ReferralCode" readonly aria-label="Davet kodunuz" />
+                <button class="btn btn-dark" type="button" onclick="navigator.clipboard?.writeText('@Model.ReferralCode')">Kodu kopyala</button>
+            </div>
+        </section>
+
         <section class="member-dashboard-section" id="reservations">
             <div class="member-section-heading">
                 <div>

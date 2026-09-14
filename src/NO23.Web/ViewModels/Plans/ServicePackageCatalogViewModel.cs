@@ -21,6 +21,7 @@ public class ServicePackageCardViewModel
     public bool IsFeatured { get; init; }
     public string? MembershipCode { get; init; }
     public IReadOnlyList<string> Features { get; init; } = [];
+    public IReadOnlyList<string> Highlights { get; init; } = [];
     public IReadOnlyList<ServicePackageVariantCardViewModel> Variants { get; init; } = [];
 }
 

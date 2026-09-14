@@ -97,6 +97,29 @@ public class PlansController(ApplicationDbContext dbContext) : Controller
             return View(BuildApplicationPage(selection, input));
         }
 
+        string? familyCode = null;
+        var siblingDiscountPercent = 0;
+        if (selection.Category == ServicePackageCategory.KidsClub)
+        {
+            if (!string.IsNullOrWhiteSpace(input.FamilyCode))
+            {
+                familyCode = input.FamilyCode.Trim().ToUpperInvariant();
+                var familyExists = await dbContext.ServicePackageApplications.AsNoTracking().AnyAsync(x =>
+                    x.ServicePackage.Category == ServicePackageCategory.KidsClub && x.FamilyCode == familyCode);
+                if (!familyExists)
+                {
+                    ModelState.AddModelError("Input.FamilyCode", "Aile kodu bulunamadı. Kodu kontrol edin veya ilk çocuk kaydı olarak boş bırakın.");
+                    return View(BuildApplicationPage(selection, input));
+                }
+                siblingDiscountPercent = 25;
+            }
+            else
+            {
+                do { familyCode = $"KIDS-{Guid.NewGuid():N}"[..13].ToUpperInvariant(); }
+                while (await dbContext.ServicePackageApplications.AnyAsync(x => x.FamilyCode == familyCode));
+            }
+        }
+
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var normalizedEmail = input.Email.Trim().ToUpperInvariant();
         var duplicateThreshold = DateTime.UtcNow.AddMinutes(-5);
@@ -120,7 +143,9 @@ public class PlansController(ApplicationDbContext dbContext) : Controller
                     PhoneNumber = input.PhoneNumber.Trim(),
                     Notes = string.IsNullOrWhiteSpace(input.Notes)
                         ? null
-                        : input.Notes.Trim()
+                        : input.Notes.Trim(),
+                    FamilyCode = familyCode,
+                    SiblingDiscountPercent = siblingDiscountPercent
                 });
 
             await dbContext.SaveChangesAsync();
@@ -128,6 +153,8 @@ public class PlansController(ApplicationDbContext dbContext) : Controller
 
         TempData["PlanApplicationPackage"] = selection.PackageName;
         TempData["PlanApplicationVariant"] = selection.VariantName;
+        TempData["PlanApplicationFamilyCode"] = familyCode;
+        TempData["PlanApplicationSiblingDiscount"] = siblingDiscountPercent;
 
         return RedirectToAction(nameof(ApplicationReceived));
     }
@@ -171,7 +198,8 @@ public class PlansController(ApplicationDbContext dbContext) : Controller
                 item.Id == variantId &&
                 item.IsActive &&
                 item.ServicePackage.Slug == packageSlug &&
-                item.ServicePackage.IsActive)
+                item.ServicePackage.IsActive &&
+                (item.ServicePackage.Category != ServicePackageCategory.KidsClub || item.KidsClassCreditCount == 8))
             .FirstOrDefaultAsync();
 
         return variant is null
@@ -191,7 +219,8 @@ public class PlansController(ApplicationDbContext dbContext) : Controller
                 item.Id == variantId &&
                 item.IsActive &&
                 item.ServicePackageId == packageId &&
-                item.ServicePackage.IsActive)
+                item.ServicePackage.IsActive &&
+                (item.ServicePackage.Category != ServicePackageCategory.KidsClub || item.KidsClassCreditCount == 8))
             .FirstOrDefaultAsync();
 
         return variant is null
@@ -223,6 +252,7 @@ public class PlansController(ApplicationDbContext dbContext) : Controller
         VariantRights = selection.Rights,
         BillingNote = selection.Presentation.BillingNote,
         CommitmentNote = selection.Presentation.CommitmentNote,
+        IsKidsClub = selection.Category == ServicePackageCategory.KidsClub,
         Input = input
     };
 

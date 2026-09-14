@@ -17,6 +17,7 @@ public class PlanApplicationPageViewModel
     public string VariantRights { get; init; } = string.Empty;
     public string? BillingNote { get; init; }
     public string? CommitmentNote { get; init; }
+    public bool IsKidsClub { get; init; }
 
     public PlanApplicationInputViewModel Input { get; init; } = new();
 }
@@ -49,4 +50,8 @@ public class PlanApplicationInputViewModel
     [StringLength(1000)]
     [Display(Name = "Notun")]
     public string? Notes { get; set; }
+
+    [StringLength(32)]
+    [Display(Name = "Aile kodu")]
+    public string? FamilyCode { get; set; }
 }

@@ -13,6 +13,13 @@ public class KitchenSubscriptionPlanViewModel
     public int Days { get; init; }
 
     public decimal UnitPrice { get; init; }
+
+    public decimal TwoMainMealsPrice { get; init; }
+
+    public decimal ThreeMainMealsPrice { get; init; }
+
+    public decimal DailyDeliveryFee { get; init; }
+
     public int DiscountPercent { get; init; }
 
     public bool IsActive { get; init; }

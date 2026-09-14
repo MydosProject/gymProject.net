@@ -16,6 +16,52 @@ public class MembersController(
     ApplicationDbContext dbContext,
     UserManager<ApplicationUser> userManager) : Controller
 {
+    [HttpGet]
+    public async Task<IActionResult> Create()
+    {
+        var model = new MemberCreateViewModel();
+        await LoadCreateOptionsAsync(model);
+        return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create(MemberCreateViewModel model)
+    {
+        var package = await dbContext.MembershipPackages.FirstOrDefaultAsync(x => x.Id == model.MembershipPackageId && x.IsActive);
+        if (package is null) ModelState.AddModelError(nameof(model.MembershipPackageId), "Aktif bir paket seçmelisiniz.");
+        if (await userManager.FindByEmailAsync(model.Email.Trim()) is not null)
+            ModelState.AddModelError(nameof(model.Email), "Bu e-posta adresi zaten kullanılıyor.");
+        if (!ModelState.IsValid)
+        {
+            await LoadCreateOptionsAsync(model);
+            return View(model);
+        }
+
+        var user = new ApplicationUser
+        {
+            UserName = model.Email.Trim(), Email = model.Email.Trim(), EmailConfirmed = true,
+            FirstName = model.FirstName.Trim(), LastName = model.LastName.Trim(),
+            PhoneNumber = string.IsNullOrWhiteSpace(model.PhoneNumber) ? null : model.PhoneNumber.Trim()
+        };
+        var result = await userManager.CreateAsync(user, model.Password);
+        if (!result.Succeeded)
+        {
+            foreach (var error in result.Errors) ModelState.AddModelError(string.Empty, error.Description);
+            await LoadCreateOptionsAsync(model);
+            return View(model);
+        }
+        await userManager.AddToRoleAsync(user, ApplicationRoles.Member);
+        dbContext.MemberProfiles.Add(new MemberProfile
+        {
+            ApplicationUserId = user.Id, MembershipPackageId = package!.Id,
+            FitnessGoal = model.FitnessGoal?.Trim(), RemainingClassCredits = model.RemainingClassCredits,
+            AssignedTrainerId = model.AssignedTrainerId, ReferralCode = $"NO23-{Guid.NewGuid():N}"[..13].ToUpperInvariant()
+        });
+        await dbContext.SaveChangesAsync();
+        TempData["StatusMessage"] = "Üye hesabı oluşturuldu. Geçici parolayı üyeyle paylaşabilirsiniz.";
+        return RedirectToAction(nameof(Index));
+    }
     public async Task<IActionResult> Index()
     {
         var members = await dbContext.MemberProfiles
@@ -197,6 +243,14 @@ public class MembersController(
                 .OrderBy(item => item.FirstName).ThenBy(item => item.LastName)
                 .Select(item => new { item.Id, Name = item.FirstName + " " + item.LastName }).ToListAsync(),
             "Id", "Name", trainerId);
+    }
+
+    private async Task LoadCreateOptionsAsync(MemberCreateViewModel model)
+    {
+        ViewBag.Packages = new SelectList(await dbContext.MembershipPackages.AsNoTracking().Where(x => x.IsActive)
+            .OrderBy(x => x.DisplayOrder).Select(x => new { x.Id, x.Name }).ToListAsync(), "Id", "Name", model.MembershipPackageId);
+        ViewBag.Trainers = new SelectList(await dbContext.Trainers.AsNoTracking().Where(x => x.IsActive)
+            .OrderBy(x => x.FirstName).ThenBy(x => x.LastName).Select(x => new { x.Id, Name = x.FirstName + " " + x.LastName }).ToListAsync(), "Id", "Name", model.AssignedTrainerId);
     }
 
     private async Task<MemberDeleteViewModel?> BuildDeleteModelAsync(int id)

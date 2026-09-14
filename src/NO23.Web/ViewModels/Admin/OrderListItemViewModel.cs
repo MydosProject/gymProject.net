@@ -34,6 +34,12 @@ public class OrderListItemViewModel
 
     public decimal Total { get; init; }
 
+    public string? DiscountCode { get; init; }
+
+    public int CampaignDiscountPercent { get; init; }
+
+    public decimal DiscountAmount { get; init; }
+
     public int ItemCount { get; init; }
 
     public IReadOnlyList<OrderListItemDetailViewModel> Items { get; init; } = [];

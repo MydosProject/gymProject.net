@@ -230,6 +230,10 @@
                                 <div class="member-order-total">
                                     <dt>Toplam</dt>
                                     <dd>@order.Total.ToString("N0") ₺</dd>
+                                    @if (order.DiscountAmount > 0)
+                                    {
+                                        <small>@order.DiscountCode koduyla %@order.CampaignDiscountPercent indirim: -@order.DiscountAmount.ToString("N0") ₺</small>
+                                    }
                                 </div>
                             </dl>
 

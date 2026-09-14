@@ -176,6 +176,7 @@ builder.Services.AddScoped<IIyzicoCheckoutClient, IyzicoCheckoutClient>();
 builder.Services.AddScoped<IyzicoPaymentService>();
 builder.Services.AddScoped<IyzicoPendingPaymentService>();
 builder.Services.AddHostedService<IyzicoPendingPaymentWorker>();
+builder.Services.AddHostedService<SessionCompletionHostedService>();
 builder.Services.AddScoped<UserNotificationService>();
 builder.Services.AddScoped<UserNotificationRealtimeService>();
 builder.Services.AddScoped<AdminStockNotificationService>();

@@ -19,7 +19,16 @@ public class HomeController(ApplicationDbContext dbContext) : Controller
             .Where(x => x.IsActive && (x.Days == 5 || x.Days == 20))
             .OrderBy(x => x.DisplayOrder)
             .Select(x => new KitchenSubscriptionPlanViewModel
-            { Plan = x.Plan, Name = x.Name, Description = x.Description, Days = x.Days, UnitPrice = x.UnitPrice })
+            {
+                Plan = x.Plan,
+                Name = x.Name,
+                Description = x.Description,
+                Days = x.Days,
+                UnitPrice = x.UnitPrice,
+                TwoMainMealsPrice = x.TwoMainMealsPrice,
+                ThreeMainMealsPrice = x.ThreeMainMealsPrice,
+                DailyDeliveryFee = x.DailyDeliveryFee
+            })
             .ToListAsync()
     });
 

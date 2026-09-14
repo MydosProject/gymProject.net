@@ -50,6 +50,10 @@ public class CheckoutInputViewModel : IValidatableObject
     [Display(Name = "Sipariş Notu")]
     public string? Notes { get; set; }
 
+    [StringLength(40, ErrorMessage = "İndirim kodu en fazla 40 karakter olabilir.")]
+    [Display(Name = "İndirim kodu")]
+    public string? DiscountCode { get; set; }
+
     public IEnumerable<ValidationResult> Validate(
         ValidationContext validationContext)
     {

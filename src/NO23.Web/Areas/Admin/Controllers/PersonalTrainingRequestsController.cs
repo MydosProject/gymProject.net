@@ -34,6 +34,7 @@ public class PersonalTrainingRequestsController(
                 TrainerName = request.Trainer.FirstName + " " + request.Trainer.LastName,
                 request.PreferredDate,
                 request.PreferredTimeWindow,
+                request.ScheduledAtUtc,
                 request.Status,
                 request.CreatedAtUtc
             })
@@ -50,6 +51,7 @@ public class PersonalTrainingRequestsController(
                 TrainerName = request.TrainerName,
                 PreferredDate = request.PreferredDate,
                 PreferredTimeWindow = request.PreferredTimeWindow,
+                ScheduledAtUtc = request.ScheduledAtUtc,
                 Status = request.Status.GetDisplayName(),
                 IsPending = request.Status == PersonalTrainingRequestStatus.Pending,
                 CreatedAtUtc = request.CreatedAtUtc

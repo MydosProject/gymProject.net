@@ -51,6 +51,9 @@ public async Task<IActionResult> Index(
                 order.DeliveryTimeSlot,
                 order.DeliveryMethod,
                 order.Total,
+                order.DiscountCode,
+                order.CampaignDiscountPercent,
+                order.DiscountAmount,
                 Items = order.Items
                     .OrderBy(item => item.Id)
                     .Select(item => new
@@ -80,6 +83,9 @@ public async Task<IActionResult> Index(
                 DeliveryTimeSlot = order.DeliveryTimeSlot,
                 DeliveryMethod = order.DeliveryMethod.ToString(),
                 Total = order.Total,
+                DiscountCode = order.DiscountCode,
+                CampaignDiscountPercent = order.CampaignDiscountPercent,
+                DiscountAmount = order.DiscountAmount,
                 ItemCount = order.Items.Sum(item => item.Quantity),
                 Items = order.Items
                     .Select(item => new MemberOrderItemViewModel

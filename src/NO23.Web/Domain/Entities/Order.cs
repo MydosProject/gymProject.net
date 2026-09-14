@@ -47,6 +47,16 @@ public class Order
 
     public decimal Subtotal { get; set; }
 
+    public int? DiscountCampaignId { get; set; }
+
+    public DiscountCampaign? DiscountCampaign { get; set; }
+
+    public string? DiscountCode { get; set; }
+
+    public int CampaignDiscountPercent { get; set; }
+
+    public decimal DiscountAmount { get; set; }
+
     public decimal DeliveryFee { get; set; }
 
     public decimal Total { get; set; }

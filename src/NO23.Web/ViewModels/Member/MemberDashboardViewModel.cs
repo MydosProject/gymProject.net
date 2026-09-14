@@ -12,6 +12,10 @@ public class MemberDashboardViewModel
 
     public bool HasActiveKitchenSubscription { get; init; }
 
+    public string ReferralCode { get; init; } = string.Empty;
+
+    public int ReferralDiscountPercent { get; init; }
+
     public IReadOnlyList<MemberReservationViewModel> UpcomingReservations { get; init; } = [];
 
     public IReadOnlyList<AvailableClassSessionViewModel> AvailableSessions { get; init; } = [];

@@ -26,9 +26,9 @@ public class KitchenSubscriptionPackageSeedTests
     }
 
     [Theory]
-    [InlineData(KitchenSubscriptionPlan.FiveDays, 5, 4250)]
+    [InlineData(KitchenSubscriptionPlan.FiveDays, 5, 3000)]
     [InlineData(KitchenSubscriptionPlan.TenDays, 10, 7900)]
-    [InlineData(KitchenSubscriptionPlan.TwentyDays, 20, 14500)]
+    [InlineData(KitchenSubscriptionPlan.TwentyDays, 20, 10000)]
     [InlineData(KitchenSubscriptionPlan.Monthly, 30, 19900)]
     public void Defaults_MatchPublishedPackageDurationAndPrice(
         KitchenSubscriptionPlan plan,
@@ -41,6 +41,9 @@ public class KitchenSubscriptionPackageSeedTests
 
         Assert.Equal(expectedDays, package.Days);
         Assert.Equal((decimal)expectedPrice, package.UnitPrice);
+        Assert.True(package.TwoMainMealsPrice >= package.UnitPrice);
+        Assert.True(package.ThreeMainMealsPrice >= package.TwoMainMealsPrice);
+        Assert.Equal(95m, package.DailyDeliveryFee);
     }
 
     [Fact]

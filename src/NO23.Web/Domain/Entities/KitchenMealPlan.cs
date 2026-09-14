@@ -14,15 +14,15 @@ public class KitchenMealPlan
 
     public string CalculationVersion { get; set; } = "v1";
 
-    public int SourceHeightCm { get; set; }
+    public int? SourceHeightCm { get; set; }
 
-    public decimal SourceWeightKg { get; set; }
+    public decimal? SourceWeightKg { get; set; }
 
-    public int SourceAge { get; set; }
+    public int? SourceAge { get; set; }
 
-    public Gender SourceGender { get; set; }
+    public Gender? SourceGender { get; set; }
 
-    public ActivityLevel SourceActivityLevel { get; set; }
+    public ActivityLevel? SourceActivityLevel { get; set; }
 
     public NutritionGoal SourceGoal { get; set; }
 
