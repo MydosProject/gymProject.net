@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using NO23.Web.Data;
 using NO23.Web.Data.Seed;
 using NO23.Web.Domain.Entities;
+using NO23.Web.Domain.Enums;
 using NO23.Web.ViewModels.Member;
 
 namespace NO23.Web.Areas.Member.Controllers;
@@ -139,7 +140,12 @@ public class ProfileController(
             .Where(member => member.ApplicationUserId == userId)
             .Select(member => new
             {
-                PackageName = member.MembershipPackage.Name,
+                PackageName = dbContext.ServicePackages
+                    .Where(package => package.Category == ServicePackageCategory.Membership && package.IsActive &&
+                        package.MembershipPackageId == member.MembershipPackageId)
+                    .OrderBy(package => package.DisplayOrder)
+                    .Select(package => package.Name)
+                    .FirstOrDefault() ?? member.MembershipPackage.Name,
                 OptionName = member.MembershipPackageOption != null ? member.MembershipPackageOption.Name : null,
                 member.CreatedAtUtc
             })

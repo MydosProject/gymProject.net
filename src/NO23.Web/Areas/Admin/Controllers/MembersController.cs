@@ -7,6 +7,7 @@ using NO23.Web.ViewModels.Admin;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Identity;
 using NO23.Web.Domain.Entities;
+using NO23.Web.Domain.Enums;
 
 namespace NO23.Web.Areas.Admin.Controllers;
 
@@ -28,8 +29,13 @@ public class MembersController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(MemberCreateViewModel model)
     {
-        var package = await dbContext.MembershipPackages.FirstOrDefaultAsync(x => x.Id == model.MembershipPackageId && x.IsActive);
-        if (package is null) ModelState.AddModelError(nameof(model.MembershipPackageId), "Aktif bir paket seçmelisiniz.");
+        var package = await dbContext.ServicePackages.AsNoTracking()
+            .Where(x => x.Category == ServicePackageCategory.Membership && x.IsActive &&
+                x.MembershipPackageId == model.MembershipPackageId && x.MembershipPackage!.IsActive)
+            .Select(x => x.MembershipPackage)
+            .FirstOrDefaultAsync();
+        if (package is null)
+            ModelState.AddModelError(nameof(model.MembershipPackageId), "Güncel aktif üyelik paketlerinden birini seçmelisiniz.");
         if (await userManager.FindByEmailAsync(model.Email.Trim()) is not null)
             ModelState.AddModelError(nameof(model.Email), "Bu e-posta adresi zaten kullanılıyor.");
         if (!ModelState.IsValid)
@@ -76,7 +82,12 @@ public class MembersController(
                 FullName = ((profile.ApplicationUser.FirstName ?? "") + " " + (profile.ApplicationUser.LastName ?? "")).Trim(),
                 Email = profile.ApplicationUser.Email ?? "",
                 PhoneNumber = profile.ApplicationUser.PhoneNumber,
-                PackageName = profile.MembershipPackage.Name,
+                PackageName = dbContext.ServicePackages
+                    .Where(package => package.Category == ServicePackageCategory.Membership && package.IsActive &&
+                        package.MembershipPackageId == profile.MembershipPackageId)
+                    .OrderBy(package => package.DisplayOrder)
+                    .Select(package => package.Name)
+                    .FirstOrDefault() ?? profile.MembershipPackage.Name,
                 FitnessGoal = profile.FitnessGoal,
                 RemainingClassCredits = profile.RemainingClassCredits,
                 IsUnlimitedPackage = profile.MembershipPackage.WeeklyClassLimit == null,
@@ -124,19 +135,21 @@ public class MembersController(
     public async Task<IActionResult> Edit(int id, MemberEditViewModel model)
     {
         if (id != model.Id) return BadRequest();
-        var packageExists = await dbContext.MembershipPackages
-            .AnyAsync(item => item.Id == model.MembershipPackageId &&
-                (item.IsActive || item.MemberProfiles.Any(profile => profile.Id == id)));
-        var trainerExists = model.AssignedTrainerId is null || await dbContext.Trainers
-            .AnyAsync(item => item.Id == model.AssignedTrainerId &&
-                (item.IsActive || item.AssignedMembers.Any(profile => profile.Id == id)));
-        if (!packageExists) ModelState.AddModelError(nameof(model.MembershipPackageId), "Aktif bir paket seçmelisiniz.");
-        if (!trainerExists) ModelState.AddModelError(nameof(model.AssignedTrainerId), "Aktif bir trainer seçmelisiniz.");
-
         var member = await dbContext.MemberProfiles
             .Include(item => item.ApplicationUser)
             .FirstOrDefaultAsync(item => item.Id == id);
         if (member is null) return NotFound();
+
+        var packageExists = member.MembershipPackageId == model.MembershipPackageId ||
+            await dbContext.ServicePackages.AnyAsync(item =>
+                item.Category == ServicePackageCategory.Membership && item.IsActive &&
+                item.MembershipPackageId == model.MembershipPackageId && item.MembershipPackage!.IsActive);
+        var trainerExists = model.AssignedTrainerId is null || await dbContext.Trainers
+            .AnyAsync(item => item.Id == model.AssignedTrainerId &&
+                (item.IsActive || item.AssignedMembers.Any(profile => profile.Id == id)));
+        if (!packageExists)
+            ModelState.AddModelError(nameof(model.MembershipPackageId), "Güncel aktif üyelik paketlerinden birini seçmelisiniz.");
+        if (!trainerExists) ModelState.AddModelError(nameof(model.AssignedTrainerId), "Aktif bir trainer seçmelisiniz.");
 
         var email = model.Email.Trim();
         var emailOwner = await userManager.FindByEmailAsync(email);
@@ -234,10 +247,16 @@ public class MembersController(
 
     private async Task LoadEditOptionsAsync(int packageId, int? trainerId)
     {
-        ViewBag.Packages = new SelectList(
-            await dbContext.MembershipPackages.AsNoTracking().Where(item => item.IsActive || item.Id == packageId)
-                .OrderBy(item => item.DisplayOrder).Select(item => new { item.Id, item.Name }).ToListAsync(),
-            "Id", "Name", packageId);
+        var packages = await CurrentMembershipPackagesAsync();
+        if (packages.All(item => item.Id != packageId))
+        {
+            var legacyPackage = await dbContext.MembershipPackages.AsNoTracking()
+                .Where(item => item.Id == packageId)
+                .Select(item => new MembershipPackageSelectItem(item.Id, $"{item.Name} — Eski paket"))
+                .FirstOrDefaultAsync();
+            if (legacyPackage is not null) packages.Add(legacyPackage);
+        }
+        ViewBag.Packages = new SelectList(packages, "Id", "Name", packageId);
         ViewBag.Trainers = new SelectList(
             await dbContext.Trainers.AsNoTracking().Where(item => item.IsActive || item.Id == trainerId)
                 .OrderBy(item => item.FirstName).ThenBy(item => item.LastName)
@@ -247,8 +266,7 @@ public class MembersController(
 
     private async Task LoadCreateOptionsAsync(MemberCreateViewModel model)
     {
-        ViewBag.Packages = new SelectList(await dbContext.MembershipPackages.AsNoTracking().Where(x => x.IsActive)
-            .OrderBy(x => x.DisplayOrder).Select(x => new { x.Id, x.Name }).ToListAsync(), "Id", "Name", model.MembershipPackageId);
+        ViewBag.Packages = new SelectList(await CurrentMembershipPackagesAsync(), "Id", "Name", model.MembershipPackageId);
         ViewBag.Trainers = new SelectList(await dbContext.Trainers.AsNoTracking().Where(x => x.IsActive)
             .OrderBy(x => x.FirstName).ThenBy(x => x.LastName).Select(x => new { x.Id, Name = x.FirstName + " " + x.LastName }).ToListAsync(), "Id", "Name", model.AssignedTrainerId);
     }
@@ -261,7 +279,12 @@ public class MembersController(
                 Id = item.Id,
                 FullName = ((item.ApplicationUser.FirstName ?? "") + " " + (item.ApplicationUser.LastName ?? "")).Trim(),
                 Email = item.ApplicationUser.Email ?? string.Empty,
-                PackageName = item.MembershipPackage.Name,
+                PackageName = dbContext.ServicePackages
+                    .Where(package => package.Category == ServicePackageCategory.Membership && package.IsActive &&
+                        package.MembershipPackageId == item.MembershipPackageId)
+                    .OrderBy(package => package.DisplayOrder)
+                    .Select(package => package.Name)
+                    .FirstOrDefault() ?? item.MembershipPackage.Name,
                 OrderCount = item.Orders.Count,
                 PersonalTrainingSessionCount = item.PersonalTrainingSessions.Count,
                 KitchenSubscriptionCount = item.KitchenSubscriptions.Count,
@@ -272,4 +295,16 @@ public class MembersController(
     private async Task<bool> HasProtectedHistoryAsync(int id) =>
         await dbContext.MemberProfiles.AnyAsync(item => item.Id == id &&
             (item.Orders.Any() || item.PersonalTrainingSessions.Any() || item.KitchenSubscriptions.Any()));
+
+    private async Task<List<MembershipPackageSelectItem>> CurrentMembershipPackagesAsync() =>
+        await dbContext.ServicePackages.AsNoTracking()
+            .Where(item => item.Category == ServicePackageCategory.Membership && item.IsActive &&
+                item.MembershipPackageId.HasValue && item.MembershipPackage!.IsActive)
+            .OrderBy(item => item.DisplayOrder).ThenBy(item => item.Name)
+            .Select(item => new MembershipPackageSelectItem(
+                item.MembershipPackageId!.Value,
+                item.Name + " — " + item.Subtitle))
+            .ToListAsync();
+
+    private sealed record MembershipPackageSelectItem(int Id, string Name);
 }

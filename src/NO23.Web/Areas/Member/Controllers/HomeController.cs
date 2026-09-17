@@ -93,11 +93,17 @@ public class HomeController(
                 subscription.MemberProfileId == profile.Id &&
                 subscription.Status == KitchenSubscriptionStatus.Active &&
                 subscription.EndsOn >= today);
+        var currentPackageName = await dbContext.ServicePackages.AsNoTracking()
+            .Where(package => package.Category == ServicePackageCategory.Membership && package.IsActive &&
+                package.MembershipPackageId == profile.MembershipPackageId)
+            .OrderBy(package => package.DisplayOrder)
+            .Select(package => package.Name)
+            .FirstOrDefaultAsync() ?? profile.MembershipPackage.Name;
 
         return View(new MemberDashboardViewModel
         {
             MemberName = string.IsNullOrWhiteSpace(memberName) ? profile.ApplicationUser.Email ?? "NO23 Member" : memberName,
-            PackageName = profile.MembershipPackage.Name,
+            PackageName = currentPackageName,
             RemainingClassCredits = profile.RemainingClassCredits,
             HasUnlimitedClasses = profile.MembershipPackage.WeeklyClassLimit is null,
             HasActiveKitchenSubscription = hasActiveKitchenSubscription,
