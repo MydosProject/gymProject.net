@@ -12,6 +12,10 @@ public class MemberListItemViewModel
 
     public string PackageName { get; init; } = string.Empty;
 
+    public string? FamilyCode { get; init; }
+
+    public int SiblingDiscountPercent { get; init; }
+
     public string? FitnessGoal { get; init; }
 
     public int RemainingClassCredits { get; init; }

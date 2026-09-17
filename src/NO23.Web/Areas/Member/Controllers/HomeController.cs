@@ -29,6 +29,8 @@ public class HomeController(
             .AsNoTracking()
             .Include(member => member.ApplicationUser)
             .Include(member => member.MembershipPackage)
+            .Include(member => member.ServicePackageVariant)
+                .ThenInclude(variant => variant!.ServicePackage)
             .FirstOrDefaultAsync(member => member.ApplicationUserId == userId);
 
         if (profile is null)
@@ -93,7 +95,9 @@ public class HomeController(
                 subscription.MemberProfileId == profile.Id &&
                 subscription.Status == KitchenSubscriptionStatus.Active &&
                 subscription.EndsOn >= today);
-        var currentPackageName = await dbContext.ServicePackages.AsNoTracking()
+        var currentPackageName = profile.ServicePackageVariant is not null
+            ? profile.ServicePackageVariant.ServicePackage.Name + " — " + profile.ServicePackageVariant.Name
+            : await dbContext.ServicePackages.AsNoTracking()
             .Where(package => package.Category == ServicePackageCategory.Membership && package.IsActive &&
                 package.MembershipPackageId == profile.MembershipPackageId)
             .OrderBy(package => package.DisplayOrder)
@@ -105,7 +109,7 @@ public class HomeController(
             MemberName = string.IsNullOrWhiteSpace(memberName) ? profile.ApplicationUser.Email ?? "NO23 Member" : memberName,
             PackageName = currentPackageName,
             RemainingClassCredits = profile.RemainingClassCredits,
-            HasUnlimitedClasses = profile.MembershipPackage.WeeklyClassLimit is null,
+            HasUnlimitedClasses = MemberPackageEntitlement.HasUnlimitedClassAccess(profile),
             HasActiveKitchenSubscription = hasActiveKitchenSubscription,
             ReferralCode = profile.ReferralCode,
             ReferralDiscountPercent = profile.ReferredByMemberProfileId.HasValue ||

@@ -27,4 +27,5 @@ public class ServicePackageVariant
     public int DisplayOrder { get; set; }
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAtUtc { get; set; }
+    public ICollection<MemberProfile> MemberProfiles { get; set; } = [];
 }

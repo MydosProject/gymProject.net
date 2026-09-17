@@ -179,6 +179,8 @@ public class GoalsController(ApplicationDbContext dbContext) : Controller
 
         var profile = await dbContext.MemberProfiles
             .Include(member => member.MembershipPackage)
+            .Include(member => member.ServicePackageVariant)
+                .ThenInclude(variant => variant!.ServicePackage)
             .FirstOrDefaultAsync(member =>
                 member.ApplicationUserId == userId);
 
@@ -230,6 +232,8 @@ public class GoalsController(ApplicationDbContext dbContext) : Controller
         var profile = await dbContext.MemberProfiles
             .AsNoTracking()
             .Include(member => member.MembershipPackage)
+            .Include(member => member.ServicePackageVariant)
+                .ThenInclude(variant => variant!.ServicePackage)
             .FirstOrDefaultAsync(member =>
                 member.ApplicationUserId == userId);
 
@@ -364,14 +368,16 @@ public class GoalsController(ApplicationDbContext dbContext) : Controller
     {
         var package = profile.MembershipPackage;
 
-        model.MembershipPackageName = package.Name;
+        model.MembershipPackageName = profile.ServicePackageVariant is null
+            ? package.Name
+            : profile.ServicePackageVariant.ServicePackage.Name + " — " + profile.ServicePackageVariant.Name;
         model.MembershipPackageAudience = package.Audience;
         model.MembershipPackageDescription = package.Description;
         model.RemainingClassCredits =
             profile.RemainingClassCredits;
 
         model.HasUnlimitedClasses =
-            package.WeeklyClassLimit is null;
+            MemberPackageEntitlement.HasUnlimitedClassAccess(profile);
 
         model.IncludedBenefits =
             BuildIncludedBenefits(package);

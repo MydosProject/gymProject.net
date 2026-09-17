@@ -53,7 +53,8 @@ public class ServicePackageCatalogTests
             ("8 Ders · Yıllık", 60000m), ("12 Ders", 8400m), ("12 Ders · 6 Aylık", 42000m),
             ("12 Ders · Yıllık", 84000m), ("24 Ders · 3 Aylık", 15600m));
         AssertPrices("kids-club", ("Aylık", 5000m), ("6 Aylık", 25000m),
-            ("Yıllık", 50000m));
+            ("Yıllık", 50000m), ("12 Ders", 7200m), ("12 Ders · 6 Aylık", 36000m),
+            ("12 Ders · Yıllık", 72000m), ("24 Ders · 3 Aylık", 13800m));
 
         var reformerPlus = ServicePackageSeed.Defaults.Single(x => x.Slug == "group-reformer-plus");
         Assert.All(reformerPlus.Variants, x =>

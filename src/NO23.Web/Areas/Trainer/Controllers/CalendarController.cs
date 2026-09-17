@@ -49,7 +49,8 @@ public class CalendarController(
                 Status = item.Status,
                 StatusName = item.Status.GetDisplayName(),
                 RemainingCredits = item.MemberProfile.RemainingClassCredits,
-                IsUnlimited = item.MemberProfile.MembershipPackage.WeeklyClassLimit == null,
+                IsUnlimited = item.MemberProfile.ServicePackageVariantId == null &&
+                    item.MemberProfile.MembershipPackage.WeeklyClassLimit == null,
                 Note = item.Note,
                 CreatedAtUtc = item.CreatedAtUtc,
                 History = item.History.OrderByDescending(history => history.ChangedAtUtc)
@@ -72,7 +73,7 @@ public class CalendarController(
                 Id = item.Id,
                 Name = ((item.ApplicationUser.FirstName ?? "") + " " + (item.ApplicationUser.LastName ?? "")).Trim(),
                 RemainingCredits = item.RemainingClassCredits
-                ,IsUnlimited = item.MembershipPackage.WeeklyClassLimit == null
+                ,IsUnlimited = item.ServicePackageVariantId == null && item.MembershipPackage.WeeklyClassLimit == null
             }).ToListAsync();
 
         var turkishCulture = CultureInfo.GetCultureInfo("tr-TR");

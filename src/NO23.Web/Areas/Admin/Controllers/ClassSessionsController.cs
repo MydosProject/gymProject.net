@@ -278,7 +278,7 @@ public class ClassSessionsController(
                 "Ders seansı yönetici tarafından iptal edildi.";
 
             var hasLimitedPackage =
-                reservation.MemberProfile.MembershipPackage.WeeklyClassLimit is not null;
+                !MemberPackageEntitlement.HasUnlimitedClassAccess(reservation.MemberProfile);
 
             if (hasLimitedPackage)
             {

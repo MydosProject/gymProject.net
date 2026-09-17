@@ -16,6 +16,14 @@ public class MemberProfile
 
     public MembershipPackageOption? MembershipPackageOption { get; set; }
 
+    public int? ServicePackageVariantId { get; set; }
+
+    public ServicePackageVariant? ServicePackageVariant { get; set; }
+
+    public string? FamilyCode { get; set; }
+
+    public int SiblingDiscountPercent { get; set; }
+
     public string? FitnessGoal { get; set; }
 
     public int RemainingClassCredits { get; set; }

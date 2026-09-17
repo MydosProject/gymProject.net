@@ -58,7 +58,7 @@ public class ClassReservationService(ApplicationDbContext dbContext)
             return ReservationResult.Fail("Ders kontenjanı dolu.");
         }
 
-        var isUnlimitedPackage = profile.MembershipPackage.WeeklyClassLimit is null;
+        var isUnlimitedPackage = MemberPackageEntitlement.HasUnlimitedClassAccess(profile);
 
         if (!isUnlimitedPackage && profile.RemainingClassCredits <= 0)
         {
@@ -121,7 +121,7 @@ public class ClassReservationService(ApplicationDbContext dbContext)
         reservation.CancelledAtUtc = DateTime.UtcNow;
         reservation.CancellationReason = "Member cancellation";
 
-        if (reservation.MemberProfile.MembershipPackage.WeeklyClassLimit is not null)
+        if (!MemberPackageEntitlement.HasUnlimitedClassAccess(reservation.MemberProfile))
         {
             reservation.MemberProfile.RemainingClassCredits++;
         }
@@ -159,7 +159,7 @@ public class ClassReservationService(ApplicationDbContext dbContext)
         reservation.CancellationReason =
             "Yönetici tarafından ders listesinden çıkarıldı.";
 
-        if (reservation.MemberProfile.MembershipPackage.WeeklyClassLimit is not null)
+        if (!MemberPackageEntitlement.HasUnlimitedClassAccess(reservation.MemberProfile))
         {
             reservation.MemberProfile.RemainingClassCredits++;
         }

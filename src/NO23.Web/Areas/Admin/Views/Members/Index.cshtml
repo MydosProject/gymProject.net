@@ -90,7 +90,17 @@
                                     <small class="admin-cell-note">@member.Email</small>
                                 </td>
                                 <td data-label="İletişim">@(string.IsNullOrWhiteSpace(member.PhoneNumber) ? "-" : member.PhoneNumber)</td>
-                                <td data-label="Paket"><span class="admin-status">@member.PackageName</span></td>
+                                <td data-label="Paket">
+                                    <span class="admin-status">@member.PackageName</span>
+                                    @if (!string.IsNullOrWhiteSpace(member.FamilyCode))
+                                    {
+                                        <small class="admin-cell-note d-block">Aile kodu: @member.FamilyCode</small>
+                                        @if (member.SiblingDiscountPercent > 0)
+                                        {
+                                            <small class="admin-cell-note d-block">%@member.SiblingDiscountPercent kardeş indirimi</small>
+                                        }
+                                    }
+                                </td>
                                 <td data-label="Hedef">@(string.IsNullOrWhiteSpace(member.FitnessGoal) ? "-" : member.FitnessGoal)</td>
                                 <td data-label="Kalan ders">
                                     <strong>@(member.IsUnlimitedPackage ? "Sınırsız" : member.RemainingClassCredits)</strong>

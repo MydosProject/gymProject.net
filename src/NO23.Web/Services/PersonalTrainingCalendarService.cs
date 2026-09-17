@@ -20,7 +20,7 @@ public class PersonalTrainingCalendarService(ApplicationDbContext dbContext)
         if (member is null)
             return (false, "Yalnızca size atanmış bir üyeye ders planlayabilirsiniz.");
 
-        if (member.MembershipPackage.WeeklyClassLimit is not null && member.RemainingClassCredits <= 0)
+        if (!MemberPackageEntitlement.HasUnlimitedClassAccess(member) && member.RemainingClassCredits <= 0)
             return (false, "Üyenin kalan ders hakkı bulunmuyor.");
 
         if (durationMinutes is < 15 or > 240)
@@ -85,7 +85,7 @@ public class PersonalTrainingCalendarService(ApplicationDbContext dbContext)
             session.Status = status;
             if (!session.CreditConsumed)
             {
-                if (session.MemberProfile.MembershipPackage.WeeklyClassLimit is not null)
+                if (!MemberPackageEntitlement.HasUnlimitedClassAccess(session.MemberProfile))
                     session.MemberProfile.RemainingClassCredits--;
                 session.CreditConsumed = true;
                 session.MemberProfile.UpdatedAtUtc = DateTime.UtcNow;

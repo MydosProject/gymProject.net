@@ -145,7 +145,11 @@ public static class ServicePackageSeed
         {
             new("Aylık", 1, 0, 5000m, 0, 8, false, false),
             new("6 Aylık", 6, 1, 25000m, 0, 8, true, false),
-            new("Yıllık", 12, 2, 50000m, 0, 8, true, false)
+            new("Yıllık", 12, 2, 50000m, 0, 8, true, false),
+            new("12 Ders", 1, 0, 7200m, 0, 12, false, true),
+            new("12 Ders · 6 Aylık", 6, 1, 36000m, 0, 12, true, false),
+            new("12 Ders · Yıllık", 12, 2, 72000m, 0, 12, true, false),
+            new("24 Ders · 3 Aylık", 3, 0, 13800m, 0, 24, false, false)
         }) AddGroupVariant(package, option, true);
         return package;
     }

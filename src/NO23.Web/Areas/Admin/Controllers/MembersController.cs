@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Identity;
 using NO23.Web.Domain.Entities;
 using NO23.Web.Domain.Enums;
+using NO23.Web.Services;
 
 namespace NO23.Web.Areas.Admin.Controllers;
 
@@ -29,13 +30,12 @@ public class MembersController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(MemberCreateViewModel model)
     {
-        var package = await dbContext.ServicePackages.AsNoTracking()
-            .Where(x => x.Category == ServicePackageCategory.Membership && x.IsActive &&
-                x.MembershipPackageId == model.MembershipPackageId && x.MembershipPackage!.IsActive)
-            .Select(x => x.MembershipPackage)
-            .FirstOrDefaultAsync();
-        if (package is null)
-            ModelState.AddModelError(nameof(model.MembershipPackageId), "Güncel aktif üyelik paketlerinden birini seçmelisiniz.");
+        var variant = await FindSelectableVariantAsync(model.ServicePackageVariantId);
+        if (variant is null)
+            ModelState.AddModelError(nameof(model.ServicePackageVariantId), "Aktif bir üyelik, grup dersi veya Kids paketi seçmelisiniz.");
+        var family = await ResolveKidsFamilyAsync(variant, model.FamilyCode);
+        if (family.Error is not null)
+            ModelState.AddModelError(nameof(model.FamilyCode), family.Error);
         if (await userManager.FindByEmailAsync(model.Email.Trim()) is not null)
             ModelState.AddModelError(nameof(model.Email), "Bu e-posta adresi zaten kullanılıyor.");
         if (!ModelState.IsValid)
@@ -58,14 +58,23 @@ public class MembersController(
             return View(model);
         }
         await userManager.AddToRoleAsync(user, ApplicationRoles.Member);
+        var membershipPackageId = await ResolveLegacyMembershipPackageIdAsync(variant!);
         dbContext.MemberProfiles.Add(new MemberProfile
         {
-            ApplicationUserId = user.Id, MembershipPackageId = package!.Id,
-            FitnessGoal = model.FitnessGoal?.Trim(), RemainingClassCredits = model.RemainingClassCredits,
-            AssignedTrainerId = model.AssignedTrainerId, ReferralCode = $"NO23-{Guid.NewGuid():N}"[..13].ToUpperInvariant()
+            ApplicationUserId = user.Id,
+            MembershipPackageId = membershipPackageId,
+            ServicePackageVariantId = variant!.Id,
+            FitnessGoal = model.FitnessGoal?.Trim(),
+            RemainingClassCredits = MemberPackageEntitlement.CalculateInitialCredits(variant),
+            AssignedTrainerId = model.AssignedTrainerId,
+            FamilyCode = family.Code,
+            SiblingDiscountPercent = family.DiscountPercent,
+            ReferralCode = $"NO23-{Guid.NewGuid():N}"[..13].ToUpperInvariant()
         });
         await dbContext.SaveChangesAsync();
-        TempData["StatusMessage"] = "Üye hesabı oluşturuldu. Geçici parolayı üyeyle paylaşabilirsiniz.";
+        TempData["StatusMessage"] = family.Code is null
+            ? "Üye hesabı ve paket hakları oluşturuldu. Geçici parolayı üyeyle paylaşabilirsiniz."
+            : $"Üye hesabı ve Kids paketi oluşturuldu. Aile kodu: {family.Code}";
         return RedirectToAction(nameof(Index));
     }
     public async Task<IActionResult> Index()
@@ -74,6 +83,8 @@ public class MembersController(
             .AsNoTracking()
             .Include(profile => profile.ApplicationUser)
             .Include(profile => profile.MembershipPackage)
+            .Include(profile => profile.ServicePackageVariant)
+                .ThenInclude(variant => variant!.ServicePackage)
             .OrderByDescending(profile => profile.CreatedAtUtc)
             .Select(profile => new MemberListItemViewModel
             {
@@ -82,15 +93,19 @@ public class MembersController(
                 FullName = ((profile.ApplicationUser.FirstName ?? "") + " " + (profile.ApplicationUser.LastName ?? "")).Trim(),
                 Email = profile.ApplicationUser.Email ?? "",
                 PhoneNumber = profile.ApplicationUser.PhoneNumber,
-                PackageName = dbContext.ServicePackages
+                PackageName = profile.ServicePackageVariant == null
+                    ? dbContext.ServicePackages
                     .Where(package => package.Category == ServicePackageCategory.Membership && package.IsActive &&
                         package.MembershipPackageId == profile.MembershipPackageId)
                     .OrderBy(package => package.DisplayOrder)
                     .Select(package => package.Name)
-                    .FirstOrDefault() ?? profile.MembershipPackage.Name,
+                    .FirstOrDefault() ?? profile.MembershipPackage.Name
+                    : profile.ServicePackageVariant.ServicePackage.Name + " — " + profile.ServicePackageVariant.Name,
+                FamilyCode = profile.FamilyCode,
+                SiblingDiscountPercent = profile.SiblingDiscountPercent,
                 FitnessGoal = profile.FitnessGoal,
                 RemainingClassCredits = profile.RemainingClassCredits,
-                IsUnlimitedPackage = profile.MembershipPackage.WeeklyClassLimit == null,
+                IsUnlimitedPackage = profile.ServicePackageVariantId == null && profile.MembershipPackage.WeeklyClassLimit == null,
                 AssignedTrainerId = profile.AssignedTrainerId,
                 AssignedTrainerName = profile.AssignedTrainer == null
                     ? null
@@ -119,14 +134,15 @@ public class MembersController(
                 LastName = item.ApplicationUser.LastName ?? string.Empty,
                 Email = item.ApplicationUser.Email ?? string.Empty,
                 PhoneNumber = item.ApplicationUser.PhoneNumber,
-                MembershipPackageId = item.MembershipPackageId,
+                ServicePackageVariantId = item.ServicePackageVariantId,
+                FamilyCode = item.FamilyCode,
                 FitnessGoal = item.FitnessGoal,
                 RemainingClassCredits = item.RemainingClassCredits,
                 AssignedTrainerId = item.AssignedTrainerId
             }).FirstOrDefaultAsync();
         if (model is null) return NotFound();
 
-        await LoadEditOptionsAsync(model.MembershipPackageId, model.AssignedTrainerId);
+        await LoadEditOptionsAsync(model.ServicePackageVariantId, model.AssignedTrainerId);
         return View(model);
     }
 
@@ -140,15 +156,17 @@ public class MembersController(
             .FirstOrDefaultAsync(item => item.Id == id);
         if (member is null) return NotFound();
 
-        var packageExists = member.MembershipPackageId == model.MembershipPackageId ||
-            await dbContext.ServicePackages.AnyAsync(item =>
-                item.Category == ServicePackageCategory.Membership && item.IsActive &&
-                item.MembershipPackageId == model.MembershipPackageId && item.MembershipPackage!.IsActive);
+        var variant = model.ServicePackageVariantId is null && member.ServicePackageVariantId is null
+            ? null
+            : await FindSelectableVariantAsync(model.ServicePackageVariantId);
+        var packageExists = model.ServicePackageVariantId is null
+            ? member.ServicePackageVariantId is null
+            : variant is not null;
         var trainerExists = model.AssignedTrainerId is null || await dbContext.Trainers
             .AnyAsync(item => item.Id == model.AssignedTrainerId &&
                 (item.IsActive || item.AssignedMembers.Any(profile => profile.Id == id)));
         if (!packageExists)
-            ModelState.AddModelError(nameof(model.MembershipPackageId), "Güncel aktif üyelik paketlerinden birini seçmelisiniz.");
+            ModelState.AddModelError(nameof(model.ServicePackageVariantId), "Aktif bir üyelik, grup dersi veya Kids paketi seçmelisiniz.");
         if (!trainerExists) ModelState.AddModelError(nameof(model.AssignedTrainerId), "Aktif bir trainer seçmelisiniz.");
 
         var email = model.Email.Trim();
@@ -158,7 +176,16 @@ public class MembersController(
 
         if (!ModelState.IsValid)
         {
-            await LoadEditOptionsAsync(model.MembershipPackageId, model.AssignedTrainerId);
+            await LoadEditOptionsAsync(model.ServicePackageVariantId, model.AssignedTrainerId);
+            return View(model);
+        }
+
+        var family = await ResolveKidsFamilyAsync(
+            variant, model.FamilyCode, member.Id, member.FamilyCode, member.SiblingDiscountPercent);
+        if (family.Error is not null)
+        {
+            ModelState.AddModelError(nameof(model.FamilyCode), family.Error);
+            await LoadEditOptionsAsync(model.ServicePackageVariantId, model.AssignedTrainerId);
             return View(model);
         }
 
@@ -173,9 +200,19 @@ public class MembersController(
         user.EmailConfirmed = true;
         user.PhoneNumber = string.IsNullOrWhiteSpace(model.PhoneNumber) ? null : model.PhoneNumber.Trim();
 
-        member.MembershipPackageId = model.MembershipPackageId;
+        var packageChanged = member.ServicePackageVariantId != model.ServicePackageVariantId;
+        if (variant is not null)
+        {
+            member.MembershipPackageId = await ResolveLegacyMembershipPackageIdAsync(variant);
+            if (packageChanged)
+                member.RemainingClassCredits = MemberPackageEntitlement.CalculateInitialCredits(variant);
+        }
+        member.ServicePackageVariantId = model.ServicePackageVariantId;
+        member.FamilyCode = family.Code;
+        member.SiblingDiscountPercent = family.DiscountPercent;
         member.FitnessGoal = model.FitnessGoal?.Trim();
-        member.RemainingClassCredits = model.RemainingClassCredits;
+        if (!packageChanged)
+            member.RemainingClassCredits = model.RemainingClassCredits;
         member.AssignedTrainerId = model.AssignedTrainerId;
         member.UpdatedAtUtc = DateTime.UtcNow;
 
@@ -184,7 +221,7 @@ public class MembersController(
         {
             foreach (var error in updateResult.Errors)
                 ModelState.AddModelError(string.Empty, error.Description);
-            await LoadEditOptionsAsync(model.MembershipPackageId, model.AssignedTrainerId);
+            await LoadEditOptionsAsync(model.ServicePackageVariantId, model.AssignedTrainerId);
             return View(model);
         }
         await dbContext.SaveChangesAsync();
@@ -245,18 +282,9 @@ public class MembersController(
         return RedirectToAction(nameof(Index));
     }
 
-    private async Task LoadEditOptionsAsync(int packageId, int? trainerId)
+    private async Task LoadEditOptionsAsync(int? variantId, int? trainerId)
     {
-        var packages = await CurrentMembershipPackagesAsync();
-        if (packages.All(item => item.Id != packageId))
-        {
-            var legacyPackage = await dbContext.MembershipPackages.AsNoTracking()
-                .Where(item => item.Id == packageId)
-                .Select(item => new MembershipPackageSelectItem(item.Id, $"{item.Name} — Eski paket"))
-                .FirstOrDefaultAsync();
-            if (legacyPackage is not null) packages.Add(legacyPackage);
-        }
-        ViewBag.Packages = new SelectList(packages, "Id", "Name", packageId);
+        ViewBag.PackageOptions = await ManualPackageOptionsAsync(variantId);
         ViewBag.Trainers = new SelectList(
             await dbContext.Trainers.AsNoTracking().Where(item => item.IsActive || item.Id == trainerId)
                 .OrderBy(item => item.FirstName).ThenBy(item => item.LastName)
@@ -266,7 +294,7 @@ public class MembersController(
 
     private async Task LoadCreateOptionsAsync(MemberCreateViewModel model)
     {
-        ViewBag.Packages = new SelectList(await CurrentMembershipPackagesAsync(), "Id", "Name", model.MembershipPackageId);
+        ViewBag.PackageOptions = await ManualPackageOptionsAsync(model.ServicePackageVariantId);
         ViewBag.Trainers = new SelectList(await dbContext.Trainers.AsNoTracking().Where(x => x.IsActive)
             .OrderBy(x => x.FirstName).ThenBy(x => x.LastName).Select(x => new { x.Id, Name = x.FirstName + " " + x.LastName }).ToListAsync(), "Id", "Name", model.AssignedTrainerId);
     }
@@ -279,12 +307,14 @@ public class MembersController(
                 Id = item.Id,
                 FullName = ((item.ApplicationUser.FirstName ?? "") + " " + (item.ApplicationUser.LastName ?? "")).Trim(),
                 Email = item.ApplicationUser.Email ?? string.Empty,
-                PackageName = dbContext.ServicePackages
+                PackageName = item.ServicePackageVariant == null
+                    ? dbContext.ServicePackages
                     .Where(package => package.Category == ServicePackageCategory.Membership && package.IsActive &&
                         package.MembershipPackageId == item.MembershipPackageId)
                     .OrderBy(package => package.DisplayOrder)
                     .Select(package => package.Name)
-                    .FirstOrDefault() ?? item.MembershipPackage.Name,
+                    .FirstOrDefault() ?? item.MembershipPackage.Name
+                    : item.ServicePackageVariant.ServicePackage.Name + " — " + item.ServicePackageVariant.Name,
                 OrderCount = item.Orders.Count,
                 PersonalTrainingSessionCount = item.PersonalTrainingSessions.Count,
                 KitchenSubscriptionCount = item.KitchenSubscriptions.Count,
@@ -296,15 +326,79 @@ public class MembersController(
         await dbContext.MemberProfiles.AnyAsync(item => item.Id == id &&
             (item.Orders.Any() || item.PersonalTrainingSessions.Any() || item.KitchenSubscriptions.Any()));
 
-    private async Task<List<MembershipPackageSelectItem>> CurrentMembershipPackagesAsync() =>
-        await dbContext.ServicePackages.AsNoTracking()
-            .Where(item => item.Category == ServicePackageCategory.Membership && item.IsActive &&
-                item.MembershipPackageId.HasValue && item.MembershipPackage!.IsActive)
-            .OrderBy(item => item.DisplayOrder).ThenBy(item => item.Name)
-            .Select(item => new MembershipPackageSelectItem(
-                item.MembershipPackageId!.Value,
-                item.Name + " — " + item.Subtitle))
-            .ToListAsync();
+    private async Task<List<ManualMemberPackageOptionViewModel>> ManualPackageOptionsAsync(int? selectedId)
+    {
+        var variants = await dbContext.ServicePackageVariants.AsNoTracking()
+            .Where(item => (item.IsActive || item.Id == selectedId) && item.ServicePackage.IsActive &&
+                (item.ServicePackage.Category == ServicePackageCategory.Membership ||
+                 item.ServicePackage.Category == ServicePackageCategory.GroupClasses ||
+                 item.ServicePackage.Category == ServicePackageCategory.KidsClub))
+            .OrderBy(item => item.ServicePackage.Category)
+            .ThenBy(item => item.ServicePackage.DisplayOrder)
+            .ThenBy(item => item.DisplayOrder)
+            .Select(item => new
+            {
+                item.Id,
+                item.Name,
+                item.TotalPrice,
+                item.ServicePackage.Category,
+                PackageName = item.ServicePackage.Name
+            }).ToListAsync();
 
-    private sealed record MembershipPackageSelectItem(int Id, string Name);
+        return variants.Select(item => new ManualMemberPackageOptionViewModel
+        {
+            Id = item.Id,
+            Category = item.Category.ToString(),
+            GroupName = item.Category switch
+            {
+                ServicePackageCategory.Membership => "Üyelik paketleri",
+                ServicePackageCategory.GroupClasses => "Grup dersi paketleri",
+                _ => "Kids paketleri"
+            },
+            Label = $"{item.PackageName} — {item.Name} — {item.TotalPrice:N0} ₺"
+        }).ToList();
+    }
+
+    private async Task<ServicePackageVariant?> FindSelectableVariantAsync(int? variantId)
+    {
+        if (variantId is null) return null;
+        return await dbContext.ServicePackageVariants
+            .Include(item => item.ServicePackage)
+            .FirstOrDefaultAsync(item => item.Id == variantId && item.IsActive && item.ServicePackage.IsActive &&
+                (item.ServicePackage.Category == ServicePackageCategory.Membership ||
+                 item.ServicePackage.Category == ServicePackageCategory.GroupClasses ||
+                 item.ServicePackage.Category == ServicePackageCategory.KidsClub));
+    }
+
+    private async Task<int> ResolveLegacyMembershipPackageIdAsync(ServicePackageVariant variant)
+    {
+        if (variant.ServicePackage.MembershipPackageId is int packageId) return packageId;
+        return await dbContext.MembershipPackages
+            .Where(item => item.Code == MembershipPackageCode.Start)
+            .Select(item => item.Id)
+            .SingleAsync();
+    }
+
+    private async Task<(string? Code, int DiscountPercent, string? Error)> ResolveKidsFamilyAsync(
+        ServicePackageVariant? variant, string? submittedCode, int? currentMemberId = null,
+        string? currentCode = null, int currentDiscountPercent = 0)
+    {
+        if (variant?.ServicePackage.Category != ServicePackageCategory.KidsClub)
+            return (null, 0, null);
+
+        var code = submittedCode?.Trim().ToUpperInvariant();
+        if (string.IsNullOrWhiteSpace(code))
+            return ($"KIDS-{Guid.NewGuid():N}"[..13].ToUpperInvariant(), 0, null);
+
+        if (string.Equals(code, currentCode, StringComparison.OrdinalIgnoreCase))
+            return (code, currentDiscountPercent, null);
+
+        var familyExists = await dbContext.MemberProfiles.AnyAsync(item =>
+            item.Id != currentMemberId && item.FamilyCode == code &&
+            item.ServicePackageVariant != null &&
+            item.ServicePackageVariant.ServicePackage.Category == ServicePackageCategory.KidsClub);
+        return familyExists
+            ? (code, 25, null)
+            : (null, 0, "Girilen aile koduna bağlı aktif bir Kids üyesi bulunamadı.");
+    }
 }

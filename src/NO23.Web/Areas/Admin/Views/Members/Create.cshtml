@@ -1,5 +1,6 @@
 @model NO23.Web.ViewModels.Admin.MemberCreateViewModel
-@{ ViewData["Title"] = "Yeni üye"; }
+@using NO23.Web.ViewModels.Admin
+@{ ViewData["Title"] = "Yeni üye"; var packageOptions = ViewBag.PackageOptions as List<ManualMemberPackageOptionViewModel> ?? []; }
 <section class="admin-page"><div class="container">
     <header class="admin-page-head"><div><p class="admin-eyebrow">ÜYE YÖNETİMİ</p><h1>Yeni üye ekle</h1><p class="admin-page-description">Üye adına hesap ve üyelik profili oluşturun.</p></div><a class="btn btn-outline-dark" asp-action="Index">Listeye dön</a></header>
     <form asp-action="Create" method="post" class="admin-form-card">
@@ -10,11 +11,43 @@
             <div class="col-md-6"><label asp-for="Email" class="form-label"></label><input asp-for="Email" class="form-control" /><span asp-validation-for="Email" class="text-danger"></span></div>
             <div class="col-md-6"><label asp-for="PhoneNumber" class="form-label"></label><input asp-for="PhoneNumber" class="form-control" /><span asp-validation-for="PhoneNumber" class="text-danger"></span></div>
             <div class="col-md-6"><label asp-for="Password" class="form-label"></label><input asp-for="Password" class="form-control" /><span asp-validation-for="Password" class="text-danger"></span></div>
-            <div class="col-md-6"><label asp-for="MembershipPackageId" class="form-label"></label><select asp-for="MembershipPackageId" asp-items="ViewBag.Packages" class="form-select"><option value="">Paket seçin</option></select><span asp-validation-for="MembershipPackageId" class="text-danger"></span><small class="form-text text-muted">Güncel katalogdaki HYBRID, PRO veya BLACK üyeliğini seçin.</small></div>
-            <div class="col-md-6"><label asp-for="RemainingClassCredits" class="form-label"></label><input asp-for="RemainingClassCredits" class="form-control" /><span asp-validation-for="RemainingClassCredits" class="text-danger"></span></div>
+            <div class="col-md-6">
+                <label asp-for="ServicePackageVariantId" class="form-label"></label>
+                <select asp-for="ServicePackageVariantId" class="form-select" id="packageVariant">
+                    <option value="">Paket seçin</option>
+                    @foreach (var group in packageOptions.GroupBy(item => item.GroupName))
+                    {
+                        <optgroup label="@group.Key">
+                            @foreach (var option in group)
+                            {
+                                <option value="@option.Id" data-category="@option.Category">@option.Label</option>
+                            }
+                        </optgroup>
+                    }
+                </select>
+                <span asp-validation-for="ServicePackageVariantId" class="text-danger"></span>
+                <small class="form-text text-muted">Ders hakkı, seçilen paket ve süreye göre otomatik tanımlanır.</small>
+            </div>
+            <div class="col-md-6" id="familyCodeField">
+                <label asp-for="FamilyCode" class="form-label"></label>
+                <input asp-for="FamilyCode" class="form-control" placeholder="İlk çocuk için boş bırakın" />
+                <span asp-validation-for="FamilyCode" class="text-danger"></span>
+                <small class="form-text text-muted">İlk çocukta kod otomatik üretilir. İkinci çocukta mevcut kod girilince %25 indirim tanımlanır.</small>
+            </div>
             <div class="col-md-6"><label asp-for="AssignedTrainerId" class="form-label"></label><select asp-for="AssignedTrainerId" asp-items="ViewBag.Trainers" class="form-select"><option value="">Atanmamış</option></select></div>
             <div class="col-12"><label asp-for="FitnessGoal" class="form-label"></label><input asp-for="FitnessGoal" class="form-control" /></div>
         </div>
         <button type="submit" class="btn btn-dark mt-4">Üyeyi oluştur</button>
     </form>
 </div></section>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (() => {
+            const select = document.getElementById('packageVariant');
+            const family = document.getElementById('familyCodeField');
+            const toggle = () => family.hidden = select.selectedOptions[0]?.dataset.category !== 'KidsClub';
+            select.addEventListener('change', toggle); toggle();
+        })();
+    </script>
+}

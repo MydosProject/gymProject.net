@@ -18,8 +18,11 @@ public class MemberEditViewModel
     [Phone, StringLength(40), Display(Name = "Telefon")]
     public string? PhoneNumber { get; set; }
 
-    [Range(1, int.MaxValue), Display(Name = "Üyelik paketi")]
-    public int MembershipPackageId { get; set; }
+    [Display(Name = "Paket ve süre")]
+    public int? ServicePackageVariantId { get; set; }
+
+    [StringLength(32), Display(Name = "Kids aile kodu")]
+    public string? FamilyCode { get; set; }
 
     [StringLength(160), Display(Name = "Fitness hedefi")]
     public string? FitnessGoal { get; set; }
@@ -43,14 +46,22 @@ public class MemberCreateViewModel
     public string? PhoneNumber { get; set; }
     [Required, StringLength(100, MinimumLength = 6), DataType(DataType.Password), Display(Name = "Geçici parola")]
     public string Password { get; set; } = string.Empty;
-    [Range(1, int.MaxValue), Display(Name = "Üyelik paketi")]
-    public int MembershipPackageId { get; set; }
+    [Required, Range(1, int.MaxValue), Display(Name = "Paket ve süre")]
+    public int? ServicePackageVariantId { get; set; }
+    [StringLength(32), Display(Name = "Kids aile kodu")]
+    public string? FamilyCode { get; set; }
     [StringLength(160), Display(Name = "Fitness hedefi")]
     public string? FitnessGoal { get; set; }
-    [Range(0, int.MaxValue), Display(Name = "Kalan ders hakkı")]
-    public int RemainingClassCredits { get; set; }
     [Display(Name = "Personel trainer")]
     public int? AssignedTrainerId { get; set; }
+}
+
+public class ManualMemberPackageOptionViewModel
+{
+    public int Id { get; init; }
+    public string GroupName { get; init; } = string.Empty;
+    public string Label { get; init; } = string.Empty;
+    public string Category { get; init; } = string.Empty;
 }
 
 public class MemberDeleteViewModel

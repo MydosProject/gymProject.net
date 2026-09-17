@@ -1712,6 +1712,10 @@ namespace NO23.Web.Data.Migrations
                         .HasMaxLength(160)
                         .HasColumnType("character varying(160)");
 
+                    b.Property<string>("FamilyCode")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
                     b.Property<int>("MembershipPackageId")
                         .HasColumnType("integer");
 
@@ -1729,6 +1733,12 @@ namespace NO23.Web.Data.Migrations
                     b.Property<int>("RemainingClassCredits")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("ServicePackageVariantId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SiblingDiscountPercent")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime?>("UpdatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
@@ -1739,6 +1749,8 @@ namespace NO23.Web.Data.Migrations
 
                     b.HasIndex("AssignedTrainerId");
 
+                    b.HasIndex("FamilyCode");
+
                     b.HasIndex("MembershipPackageId");
 
                     b.HasIndex("MembershipPackageOptionId");
@@ -1747,6 +1759,8 @@ namespace NO23.Web.Data.Migrations
                         .IsUnique();
 
                     b.HasIndex("ReferredByMemberProfileId");
+
+                    b.HasIndex("ServicePackageVariantId");
 
                     b.ToTable("MemberProfiles");
                 });
@@ -3533,6 +3547,11 @@ namespace NO23.Web.Data.Migrations
                         .HasForeignKey("ReferredByMemberProfileId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.HasOne("NO23.Web.Domain.Entities.ServicePackageVariant", "ServicePackageVariant")
+                        .WithMany("MemberProfiles")
+                        .HasForeignKey("ServicePackageVariantId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("ApplicationUser");
 
                     b.Navigation("AssignedTrainer");
@@ -3542,6 +3561,8 @@ namespace NO23.Web.Data.Migrations
                     b.Navigation("MembershipPackageOption");
 
                     b.Navigation("ReferredByMemberProfile");
+
+                    b.Navigation("ServicePackageVariant");
                 });
 
             modelBuilder.Entity("NO23.Web.Domain.Entities.MemberProgressEntry", b =>
@@ -3991,6 +4012,11 @@ namespace NO23.Web.Data.Migrations
                     b.Navigation("Features");
 
                     b.Navigation("Variants");
+                });
+
+            modelBuilder.Entity("NO23.Web.Domain.Entities.ServicePackageVariant", b =>
+                {
+                    b.Navigation("MemberProfiles");
                 });
 
             modelBuilder.Entity("NO23.Web.Domain.Entities.ShopProduct", b =>

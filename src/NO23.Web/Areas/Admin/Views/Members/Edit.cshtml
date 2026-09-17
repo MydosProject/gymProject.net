@@ -1,6 +1,8 @@
 @model MemberEditViewModel
+@using NO23.Web.ViewModels.Admin
 @{
     ViewData["Title"] = "Üyeyi Düzenle";
+    var packageOptions = ViewBag.PackageOptions as List<ManualMemberPackageOptionViewModel> ?? [];
 }
 
 <section class="admin-page">
@@ -39,9 +41,20 @@
                     <span asp-validation-for="PhoneNumber" class="text-danger"></span>
                 </div>
                 <div class="col-md-6">
-                    <label asp-for="MembershipPackageId" class="form-label"></label>
-                    <select asp-for="MembershipPackageId" asp-items="ViewBag.Packages" class="form-select"></select>
-                    <span asp-validation-for="MembershipPackageId" class="text-danger"></span>
+                    <label asp-for="ServicePackageVariantId" class="form-label"></label>
+                    <select asp-for="ServicePackageVariantId" class="form-select" id="packageVariant">
+                        @if (Model.ServicePackageVariantId is null) { <option value="">Eski paket (değiştirilmedi)</option> }
+                        @foreach (var group in packageOptions.GroupBy(item => item.GroupName))
+                        {
+                            <optgroup label="@group.Key">
+                                @foreach (var option in group)
+                                {
+                                    <option value="@option.Id" data-category="@option.Category">@option.Label</option>
+                                }
+                            </optgroup>
+                        }
+                    </select>
+                    <span asp-validation-for="ServicePackageVariantId" class="text-danger"></span>
                 </div>
                 <div class="col-md-6">
                     <label asp-for="AssignedTrainerId" class="form-label"></label>
@@ -49,6 +62,12 @@
                         <option value="">Atanmamış</option>
                     </select>
                     <span asp-validation-for="AssignedTrainerId" class="text-danger"></span>
+                </div>
+                <div class="col-md-6" id="familyCodeField">
+                    <label asp-for="FamilyCode" class="form-label"></label>
+                    <input asp-for="FamilyCode" class="form-control" placeholder="İlk çocuk için boş bırakın" />
+                    <span asp-validation-for="FamilyCode" class="text-danger"></span>
+                    <small class="form-text text-muted">İkinci çocuk için ilk çocuğun aile kodunu girin.</small>
                 </div>
                 <div class="col-md-6">
                     <label asp-for="RemainingClassCredits" class="form-label"></label>
@@ -69,4 +88,14 @@
     </div>
 </section>
 
-@section Scripts { <partial name="_ValidationScriptsPartial" /> }
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (() => {
+            const select = document.getElementById('packageVariant');
+            const family = document.getElementById('familyCodeField');
+            const toggle = () => family.hidden = select.selectedOptions[0]?.dataset.category !== 'KidsClub';
+            select.addEventListener('change', toggle); toggle();
+        })();
+    </script>
+}

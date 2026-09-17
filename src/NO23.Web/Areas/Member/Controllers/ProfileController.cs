@@ -140,12 +140,14 @@ public class ProfileController(
             .Where(member => member.ApplicationUserId == userId)
             .Select(member => new
             {
-                PackageName = dbContext.ServicePackages
+                PackageName = member.ServicePackageVariant == null
+                    ? dbContext.ServicePackages
                     .Where(package => package.Category == ServicePackageCategory.Membership && package.IsActive &&
                         package.MembershipPackageId == member.MembershipPackageId)
                     .OrderBy(package => package.DisplayOrder)
                     .Select(package => package.Name)
-                    .FirstOrDefault() ?? member.MembershipPackage.Name,
+                    .FirstOrDefault() ?? member.MembershipPackage.Name
+                    : member.ServicePackageVariant.ServicePackage.Name + " — " + member.ServicePackageVariant.Name,
                 OptionName = member.MembershipPackageOption != null ? member.MembershipPackageOption.Name : null,
                 member.CreatedAtUtc
             })

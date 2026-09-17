@@ -18,6 +18,11 @@ public class MemberProfileConfiguration : IEntityTypeConfiguration<MemberProfile
         builder.Property(profile => profile.FitnessGoal)
             .HasMaxLength(160);
 
+        builder.Property(profile => profile.FamilyCode)
+            .HasMaxLength(32);
+
+        builder.HasIndex(profile => profile.FamilyCode);
+
         builder.Property(profile => profile.ReferralCode)
             .HasMaxLength(32)
             .IsRequired();
@@ -46,6 +51,11 @@ public class MemberProfileConfiguration : IEntityTypeConfiguration<MemberProfile
         builder.HasOne(profile => profile.MembershipPackageOption)
             .WithMany(option => option.MemberProfiles)
             .HasForeignKey(profile => profile.MembershipPackageOptionId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasOne(profile => profile.ServicePackageVariant)
+            .WithMany(variant => variant.MemberProfiles)
+            .HasForeignKey(profile => profile.ServicePackageVariantId)
             .OnDelete(DeleteBehavior.SetNull);
 
         builder.HasOne(profile => profile.AssignedTrainer)
