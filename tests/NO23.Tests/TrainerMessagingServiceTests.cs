@@ -9,6 +9,55 @@ namespace NO23.Tests;
 public class TrainerMessagingServiceTests
 {
     [Fact]
+    public async Task EnsureAssignedConversationsAsync_OpensConversationForAssignedMember()
+    {
+        await using var dbContext = CreateDbContext();
+        var member = await SeedMemberAsync(dbContext);
+        var trainer = await SeedTrainerAsync(dbContext);
+        member.AssignedTrainerId = trainer.Id;
+        await dbContext.SaveChangesAsync();
+        var service = new TrainerMessagingService(dbContext);
+
+        await service.EnsureAssignedConversationsAsync(member.ApplicationUserId);
+        await service.EnsureAssignedConversationsAsync(member.ApplicationUserId);
+
+        var conversation = Assert.Single(dbContext.TrainerConversations);
+        Assert.Equal(member.Id, conversation.MemberProfileId);
+        Assert.Equal(trainer.Id, conversation.TrainerId);
+        Assert.True(await service.CanMemberWriteAsync(
+            member.ApplicationUserId,
+            conversation.Id));
+    }
+
+    [Fact]
+    public async Task EnsureAssignedConversationsAsync_OpensConversationsForTrainersAssignedMembers()
+    {
+        await using var dbContext = CreateDbContext();
+        var firstMember = await SeedMemberAsync(dbContext);
+        var secondMember = await SeedMemberAsync(dbContext);
+        var trainer = await SeedTrainerAsync(dbContext);
+        firstMember.AssignedTrainerId = trainer.Id;
+        secondMember.AssignedTrainerId = trainer.Id;
+        await dbContext.SaveChangesAsync();
+        var service = new TrainerMessagingService(dbContext);
+
+        await service.EnsureAssignedConversationsAsync(trainer.ApplicationUserId!);
+
+        var conversations = await dbContext.TrainerConversations
+            .OrderBy(conversation => conversation.MemberProfileId)
+            .ToListAsync();
+        Assert.Equal(2, conversations.Count);
+        Assert.All(conversations, conversation =>
+            Assert.Equal(trainer.Id, conversation.TrainerId));
+        foreach (var conversation in conversations)
+        {
+            Assert.True(await service.CanTrainerWriteAsync(
+                trainer.ApplicationUserId!,
+                conversation.Id));
+        }
+    }
+
+    [Fact]
     public async Task StartByTrainerAsync_OpensConversationForAssignedMemberWithoutRequest()
     {
         await using var dbContext = CreateDbContext();

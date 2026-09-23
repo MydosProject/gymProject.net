@@ -33,6 +33,9 @@ public class MessagesController(
             return Challenge();
         }
 
+        await messagingService
+            .EnsureAssignedConversationsAsync(userId);
+
         var trainerId =
             await dbContext.Trainers
                 .AsNoTracking()

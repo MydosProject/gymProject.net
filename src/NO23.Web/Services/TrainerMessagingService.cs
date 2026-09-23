@@ -10,6 +10,94 @@ public class TrainerMessagingService(
 {
     private const int MaximumMessageLength = 2000;
 
+    public async Task EnsureAssignedConversationsAsync(
+        string userId)
+    {
+        var assignments = await dbContext.MemberProfiles
+            .AsNoTracking()
+            .Where(member =>
+                member.AssignedTrainerId != null &&
+                member.AssignedTrainer!.ApplicationUserId != null &&
+                (
+                    member.ApplicationUserId == userId ||
+                    member.AssignedTrainer.ApplicationUserId == userId
+                ))
+            .Select(member => new
+            {
+                MemberProfileId = member.Id,
+                TrainerId = member.AssignedTrainerId!.Value
+            })
+            .ToListAsync();
+
+        if (assignments.Count == 0)
+        {
+            return;
+        }
+
+        if (dbContext.Database.ProviderName ==
+            "Npgsql.EntityFrameworkCore.PostgreSQL")
+        {
+            foreach (var assignment in assignments)
+            {
+                await dbContext.Database.ExecuteSqlInterpolatedAsync(
+                    $"""
+                    INSERT INTO "TrainerConversations"
+                        ("MemberProfileId", "TrainerId", "CreatedAtUtc")
+                    VALUES
+                        ({assignment.MemberProfileId}, {assignment.TrainerId}, {DateTime.UtcNow})
+                    ON CONFLICT ("MemberProfileId", "TrainerId") DO NOTHING;
+                    """);
+            }
+
+            return;
+        }
+
+        var memberProfileIds = assignments
+            .Select(assignment => assignment.MemberProfileId)
+            .Distinct()
+            .ToArray();
+
+        var trainerIds = assignments
+            .Select(assignment => assignment.TrainerId)
+            .Distinct()
+            .ToArray();
+
+        var existingPairs = await dbContext.TrainerConversations
+            .AsNoTracking()
+            .Where(conversation =>
+                memberProfileIds.Contains(conversation.MemberProfileId) &&
+                trainerIds.Contains(conversation.TrainerId))
+            .Select(conversation => new
+            {
+                conversation.MemberProfileId,
+                conversation.TrainerId
+            })
+            .ToListAsync();
+
+        var existingKeys = existingPairs
+            .Select(pair => (pair.MemberProfileId, pair.TrainerId))
+            .ToHashSet();
+
+        var missingConversations = assignments
+            .Where(assignment =>
+                !existingKeys.Contains(
+                    (assignment.MemberProfileId, assignment.TrainerId)))
+            .Select(assignment => new TrainerConversation
+            {
+                MemberProfileId = assignment.MemberProfileId,
+                TrainerId = assignment.TrainerId
+            })
+            .ToList();
+
+        if (missingConversations.Count == 0)
+        {
+            return;
+        }
+
+        dbContext.TrainerConversations.AddRange(missingConversations);
+        await dbContext.SaveChangesAsync();
+    }
+
     public async Task<(bool Succeeded, int? ConversationId, string? ErrorMessage)> StartByTrainerAsync(
         string trainerUserId, int memberProfileId)
     {
