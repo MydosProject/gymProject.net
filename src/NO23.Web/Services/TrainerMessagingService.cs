@@ -10,6 +10,39 @@ public class TrainerMessagingService(
 {
     private const int MaximumMessageLength = 2000;
 
+    public async Task<(bool Succeeded, int? ConversationId, string? ErrorMessage)> StartByTrainerAsync(
+        string trainerUserId, int memberProfileId)
+    {
+        var trainerId = await dbContext.Trainers.AsNoTracking()
+            .Where(trainer => trainer.ApplicationUserId == trainerUserId && trainer.IsActive)
+            .Select(trainer => (int?)trainer.Id)
+            .FirstOrDefaultAsync();
+        if (trainerId is null)
+            return (false, null, "Aktif eğitmen hesabı bulunamadı.");
+
+        var isAssigned = await dbContext.MemberProfiles.AsNoTracking()
+            .AnyAsync(member => member.Id == memberProfileId && member.AssignedTrainerId == trainerId);
+        if (!isAssigned)
+            return (false, null, "Yalnızca size atanmış bir üyeyle konuşma başlatabilirsiniz.");
+
+        var existingId = await dbContext.TrainerConversations.AsNoTracking()
+            .Where(conversation => conversation.TrainerId == trainerId &&
+                conversation.MemberProfileId == memberProfileId)
+            .Select(conversation => (int?)conversation.Id)
+            .FirstOrDefaultAsync();
+        if (existingId is not null)
+            return (true, existingId, null);
+
+        var conversation = new TrainerConversation
+        {
+            TrainerId = trainerId.Value,
+            MemberProfileId = memberProfileId
+        };
+        dbContext.TrainerConversations.Add(conversation);
+        await dbContext.SaveChangesAsync();
+        return (true, conversation.Id, null);
+    }
+
     public async Task<bool> CanAccessConversationAsync(
     string userId,
     int conversationId)
@@ -368,6 +401,10 @@ public class TrainerMessagingService(
         int memberProfileId,
         int trainerId)
     {
+        if (await dbContext.MemberProfiles.AsNoTracking().AnyAsync(member =>
+            member.Id == memberProfileId && member.AssignedTrainerId == trainerId))
+            return true;
+
         var completedThresholdUtc =
             DateTime.UtcNow.AddHours(-48);
 

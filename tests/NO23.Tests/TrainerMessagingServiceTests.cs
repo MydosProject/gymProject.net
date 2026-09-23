@@ -9,6 +9,40 @@ namespace NO23.Tests;
 public class TrainerMessagingServiceTests
 {
     [Fact]
+    public async Task StartByTrainerAsync_OpensConversationForAssignedMemberWithoutRequest()
+    {
+        await using var dbContext = CreateDbContext();
+        var member = await SeedMemberAsync(dbContext);
+        var trainer = await SeedTrainerAsync(dbContext);
+        member.AssignedTrainerId = trainer.Id;
+        await dbContext.SaveChangesAsync();
+        var service = new TrainerMessagingService(dbContext);
+
+        var first = await service.StartByTrainerAsync(trainer.ApplicationUserId!, member.Id);
+        var second = await service.StartByTrainerAsync(trainer.ApplicationUserId!, member.Id);
+
+        Assert.True(first.Succeeded);
+        Assert.Equal(first.ConversationId, second.ConversationId);
+        Assert.Single(dbContext.TrainerConversations);
+        Assert.True(await service.CanTrainerWriteAsync(trainer.ApplicationUserId!, first.ConversationId!.Value));
+        Assert.True(await service.CanMemberWriteAsync(member.ApplicationUserId, first.ConversationId.Value));
+    }
+
+    [Fact]
+    public async Task StartByTrainerAsync_RejectsMemberAssignedElsewhere()
+    {
+        await using var dbContext = CreateDbContext();
+        var member = await SeedMemberAsync(dbContext);
+        var trainer = await SeedTrainerAsync(dbContext);
+
+        var result = await new TrainerMessagingService(dbContext)
+            .StartByTrainerAsync(trainer.ApplicationUserId!, member.Id);
+
+        Assert.False(result.Succeeded);
+        Assert.Empty(dbContext.TrainerConversations);
+    }
+
+    [Fact]
     public async Task CanMemberWriteAsync_ReturnsTrue_ForPendingRequest()
     {
         await using var dbContext = CreateDbContext();

@@ -227,7 +227,7 @@ public static class DatabaseSeeder
         {
             Name = "Reformer Pilates",
             Description = "Kontrollü güç, core stabilizasyonu ve mobilite odaklı ders.",
-            DurationMinutes = 45,
+            DurationMinutes = 50,
             DifficultyLevel = ClassDifficultyLevel.AllLevels,
             AverageCaloriesBurned = 280,
             Capacity = 8,

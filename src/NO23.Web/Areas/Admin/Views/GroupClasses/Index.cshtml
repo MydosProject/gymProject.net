@@ -25,6 +25,11 @@
             <article><span>Planlanan seans</span><strong>@totalSessionCount</strong><small>Tüm program</small></article>
         </div>
 
+        @if (TempData["SuccessMessage"] is string successMessage)
+        { <div class="alert alert-success" role="status">@successMessage</div> }
+        @if (TempData["ErrorMessage"] is string errorMessage)
+        { <div class="alert alert-danger" role="alert">@errorMessage</div> }
+
         <div class="table-responsive admin-table-card admin-class-table">
             <table class="table align-middle mb-0">
                 <thead>
@@ -64,7 +69,13 @@
                                     <span class="admin-cell-note">seans</span>
                                 </td>
                                 <td data-label="Durum"><span class="badge @(groupClass.IsActive ? "text-bg-success" : "text-bg-secondary")">@(groupClass.IsActive ? "Aktif" : "Pasif")</span></td>
-                                <td class="text-end" data-label="İşlem"><a class="btn btn-sm btn-outline-dark" asp-action="Edit" asp-route-id="@groupClass.Id">Düzenle</a></td>
+                                <td class="text-end" data-label="İşlem">
+                                    <a class="btn btn-sm btn-outline-dark" asp-action="Edit" asp-route-id="@groupClass.Id">Düzenle</a>
+                                    <form asp-action="Remove" asp-route-id="@groupClass.Id" method="post" class="d-inline"
+                                          onsubmit="return confirm('Bu grup dersi kaldırılsın mı? Ders geçmişi varsa arşivlenir; gelecek seanslar iptal edilir ve katılımcı hakları iade edilir.');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">@(groupClass.SessionCount == 0 ? "Sil" : "Kaldır")</button>
+                                    </form>
+                                </td>
                             </tr>
                         }
                     }

@@ -24,31 +24,49 @@
                     @for(var i=0;i<7;i++){ var day=(DayOfWeek)((i+1)%7); <label class="me-2"><input type="checkbox" name="Days" value="@day" /> @culture.DateTimeFormat.GetDayName(day)</label> }
                 </fieldset>
                 <label>Saat <input type="time" name="Time" value="18:00" required class="form-control" /></label>
-                <label>Kaç hafta? <input type="number" name="Weeks" min="1" max="12" value="1" class="form-control" required /></label>
+                <label>Kaç hafta? <input type="number" name="Weeks" min="1" max="52" value="1" class="form-control" required /></label>
                 <label>Kontenjan (boşsa dersin kontenjanı) <input type="number" name="Capacity" min="1" max="200" class="form-control" /></label>
-                <p class="mt-2">Seçtiğin gün ve saatte her hafta seans oluşur. Çakışma varsa hiçbir seans eklenmez.</p>
+                <p class="mt-2">Seçtiğin gün ve saatte 52 haftaya kadar sezonluk seans oluşturabilirsin. Çakışma varsa hiçbir seans eklenmez.</p>
                 <button class="btn btn-dark">Haftalık programı oluştur</button>
             </form></details></div>
         <div class="col-lg-6"><details class="border rounded p-3 bg-white text-dark"><summary>+ Birebir ders ekle</summary>
             <form asp-action="CreatePersonal" method="post" class="mt-3">
                 <label class="form-label">Antrenör</label><select name="TrainerId" asp-items="Model.Trainers" class="form-select" required><option value="">Antrenör seç</option></select>
                 <label class="form-label">Üye</label><select name="MemberProfileId" asp-items="Model.Members" class="form-select" required><option value="">Üye seç</option></select>
-                <p>Üye, seçilen antrenöre atanmış olmalıdır. Atamayı Üyeler ekranından yapabilirsin.</p>
+                <p>Yönetici olarak üyeyi atanmış antrenöründen farklı bir antrenöre de planlayabilirsin. Kalıcı atama değişmez.</p>
                 <label>Tarih ve saat <input name="StartsAt" type="datetime-local" required class="form-control" /></label>
-                <label>Süre (dakika) <input name="DurationMinutes" type="number" min="15" max="240" value="60" required class="form-control" /></label>
+                <label>Süre (dakika) <input name="DurationMinutes" type="number" min="15" max="240" value="50" required class="form-control" /></label>
                 <label class="d-block">Not <textarea name="Note" maxlength="600" class="form-control"></textarea></label>
                 <button class="btn btn-dark mt-2">Takvime ekle</button>
             </form></details></div>
     </div>
+    <details class="border rounded p-3 bg-white text-dark mb-4">
+        <summary>+ Haftalık sabit birebir program ekle</summary>
+        <form asp-action="CreateWeeklyPersonal" method="post" class="row g-2 mt-2">
+            <div class="col-md-6"><label class="form-label">Antrenör</label><select name="TrainerId" asp-items="Model.Trainers" class="form-select" required><option value="">Antrenör seç</option></select></div>
+            <div class="col-md-6"><label class="form-label">Üye</label><select name="MemberProfileId" asp-items="Model.Members" class="form-select" required><option value="">Üye seç</option></select></div>
+            <div class="col-md-4"><label class="form-label">Başlangıç haftası</label><input name="Week" type="date" value="@Model.Week.ToString("yyyy-MM-dd")" class="form-control" required /></div>
+            <div class="col-md-4"><label class="form-label">Saat</label><input name="Time" type="time" value="11:00" class="form-control" required /></div>
+            <div class="col-md-4"><label class="form-label">Kaç hafta?</label><input name="Weeks" type="number" min="1" max="52" value="4" class="form-control" required /></div>
+            <fieldset class="col-12"><legend class="fs-6">Sabit günler</legend>
+                @for(var i=0;i<7;i++){ var day=(DayOfWeek)((i+1)%7); <label class="me-3"><input type="checkbox" name="Days" value="@day" /> @culture.DateTimeFormat.GetDayName(day)</label> }
+            </fieldset>
+            <div class="col-md-4"><label class="form-label">Süre (dakika)</label><input name="DurationMinutes" type="number" min="15" max="240" value="50" class="form-control" required /></div>
+            <div class="col-md-8"><label class="form-label">Not</label><input name="Note" maxlength="600" class="form-control" /></div>
+            <p class="mb-0">Paketin birebir ders hakkı ve çakışmalar kontrol edilir; hata varsa hiçbir ders eklenmez.</p>
+            <div><button class="btn btn-dark">Haftalık birebir programı oluştur</button></div>
+        </form>
+    </details>
     <div class="weekly-calendar">
     @for(var i=0;i<7;i++)
     {
         var date=Model.Week.AddDays(i);
-        var groups=Model.Groups.Where(x=>ClubTime.ToLocal(x.StartsAtUtc).Date==date).ToList();
-        var personal=Model.Personal.Where(x=>ClubTime.ToLocal(x.StartsAtUtc).Date==date).ToList();
+        var entries=Model.EntriesFor(date);
         <section class="weekly-calendar-day"><h2>@date.ToString("dddd",culture)<small>@date.ToString("dd.MM.yyyy")</small></h2>
-        @if(groups.Count+personal.Count==0){<p>Planlanmış ders yok.</p>}
-        @foreach(var session in groups)
+        @if(entries.Count==0){<p>Planlanmış ders yok.</p>}
+        @foreach(var entry in entries)
+        {
+        if (entry.Group is { } session)
         {
             var participants=session.Reservations.Where(x=>x.Status==ClassReservationStatus.Reserved).ToList();
             <article id="group-session-@session.Id" class="weekly-calendar-session"><span>GRUP · @ClubTime.ToLocal(session.StartsAtUtc).ToString("HH:mm")</span><h3>@session.GroupClass.Name</h3>
@@ -64,14 +82,14 @@
                 </details>
             </article>
         }
-        @foreach(var session in personal)
+        else if (entry.Personal is { } personalSession)
         {
-            <article class="weekly-calendar-session is-personal"><span>BİREBİR · @ClubTime.ToLocal(session.StartsAtUtc).ToString("HH:mm") · @session.DurationMinutes dk</span>
-                <h3>@session.MemberProfile.ApplicationUser.FirstName @session.MemberProfile.ApplicationUser.LastName</h3>
-                <p>@session.Trainer.FirstName @session.Trainer.LastName<br />@session.Status.GetDisplayName()</p>
-                @if(session.Status==PersonalTrainingSessionStatus.Scheduled){<details><summary>Dersi düzenle</summary>
+            <article class="weekly-calendar-session is-personal"><span>BİREBİR · @ClubTime.ToLocal(personalSession.StartsAtUtc).ToString("HH:mm") · @personalSession.DurationMinutes dk</span>
+                <h3>@personalSession.MemberProfile.ApplicationUser.FirstName @personalSession.MemberProfile.ApplicationUser.LastName</h3>
+                <p>@personalSession.Trainer.FirstName @personalSession.Trainer.LastName<br />@personalSession.Status.GetDisplayName()</p>
+                @if(personalSession.Status==PersonalTrainingSessionStatus.Scheduled){<details><summary>Dersi düzenle</summary>
                 <form asp-action="UpdatePersonal" method="post">
-                    <input name="Id" type="hidden" value="@session.Id" /><input name="TrainerId" type="hidden" value="@session.TrainerId" /><input name="Week" type="hidden" value="@Model.Week.ToString("yyyy-MM-dd")" />
+                    <input name="Id" type="hidden" value="@personalSession.Id" /><input name="TrainerId" type="hidden" value="@personalSession.TrainerId" /><input name="Week" type="hidden" value="@Model.Week.ToString("yyyy-MM-dd")" />
                     <label>İşlem<select name="Status" class="form-select"><option value="Postponed">Tarih / saat değiştir</option><option value="Completed">Tamamlandı</option><option value="Cancelled">İptal edildi</option><option value="NoShow">Katılmadı</option></select></label>
                     <label>Yeni tarih ve saat<input name="PostponedStartsAt" type="datetime-local" class="form-control" /></label>
                     <label>Not<textarea name="Note" maxlength="600" class="form-control"></textarea></label>
@@ -79,6 +97,7 @@
                     <button class="btn btn-dark btn-sm mt-2">Kaydet</button>
                 </form></details>}
             </article>
+        }
         }
         </section>
     }

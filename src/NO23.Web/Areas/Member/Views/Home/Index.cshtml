@@ -83,6 +83,11 @@
                 <div>
                     <p>Paketin</p>
                     <h2>@packageName</h2>
+                    @if (Model.MembershipEndsAtUtc is { } membershipEnd)
+                    {
+                        <p>Bitiş: @NO23.Web.Services.ClubTime.ToLocal(membershipEnd).ToString("dd.MM.yyyy")</p>
+                    }
+                    <a href="@Url.Action("Index", "Membership", new { area = "Member" })">Üyelik paketlerini incele →</a>
                 </div>
             </article>
 

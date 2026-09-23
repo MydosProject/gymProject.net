@@ -4,6 +4,14 @@ namespace NO23.Web.Services;
 
 public static class MemberPackageEntitlement
 {
+    public static bool IsActive(MemberProfile profile, DateTime atUtc) =>
+        !profile.MembershipEndsAtUtc.HasValue || profile.MembershipEndsAtUtc.Value > atUtc;
+
+    public static DateTime CalculateEndDate(ServicePackageVariant variant, DateTime startsAtUtc) =>
+        variant.DurationDays is > 0
+            ? startsAtUtc.AddDays(variant.DurationDays.Value)
+            : startsAtUtc.AddMonths((variant.DurationMonths ?? 1) + variant.BonusMonths);
+
     public static int CalculateInitialCredits(ServicePackageVariant variant)
     {
         var credits = variant.PersonalTrainingSessionCount

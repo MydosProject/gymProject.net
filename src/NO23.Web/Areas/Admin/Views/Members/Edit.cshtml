@@ -63,6 +63,11 @@
                     </select>
                     <span asp-validation-for="AssignedTrainerId" class="text-danger"></span>
                 </div>
+                <div class="col-md-6">
+                    <label asp-for="MembershipEndsOn" class="form-label"></label>
+                    <input asp-for="MembershipEndsOn" type="date" class="form-control" />
+                    <small class="form-text text-muted">Eski üyelerde tarih bilinmiyorsa burada girin. Paket değişirse bitiş tarihi yeni paketin süresine göre hesaplanır.</small>
+                </div>
                 <div class="col-md-6" id="familyCodeField">
                     <label asp-for="FamilyCode" class="form-label"></label>
                     <input asp-for="FamilyCode" class="form-control" placeholder="İlk çocuk için boş bırakın" />

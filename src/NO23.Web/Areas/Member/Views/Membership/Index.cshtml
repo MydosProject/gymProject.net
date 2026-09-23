@@ -1,0 +1,67 @@
+@using System.Globalization
+@using NO23.Web.Services
+@model NO23.Web.ViewModels.Member.MembershipRenewalViewModel
+@{
+    ViewData["Title"] = "Üyelik Yenileme";
+    var culture = CultureInfo.GetCultureInfo("tr-TR");
+    var active = Model.MembershipEndsAtUtc > DateTime.UtcNow;
+}
+<section class="container py-5" style="max-width:980px">
+    <p class="text-uppercase small">NO23 üyelik</p>
+    <h1>Üyeliğini yenile</h1>
+    <p>Mevcut paket: <strong>@Model.CurrentPackageName</strong></p>
+    @if (Model.MembershipEndsAtUtc is { } end)
+    {
+        <p>Bitiş: <strong>@ClubTime.ToLocal(end).ToString("dd MMMM yyyy", culture)</strong></p>
+    }
+    else
+    {
+        <p class="alert alert-warning">Eski üyeliklerde bitiş tarihi kayıtlı olmayabilir. Satın alma tamamlandığında yeni paket hemen başlar ve kalan eski hakların yerini alır.</p>
+    }
+    @if (TempData["SuccessMessage"] is string success)
+    { <div class="alert alert-success">@success</div> }
+    @if (TempData["ErrorMessage"] is string error)
+    { <div class="alert alert-danger">@error</div> }
+    @if (active)
+    {
+        <div class="alert alert-info">Mevcut paketin bitince burada yeni paket satın alabilirsin.</div>
+    }
+    else if (!Model.PaymentEnabled)
+    {
+        <div class="alert alert-warning">Çevrimiçi ödeme şu anda kapalı. Yönetimle iletişime geçebilirsin.</div>
+    }
+    else
+    {
+        <p>Fiyatlar seçilen dönem için <strong>tek çekim toplam tutardır</strong>; otomatik aylık tahsilat başlatılmaz. Ödeme doğrulanınca paket otomatik etkinleşir.</p>
+        <form asp-action="Buy" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <div class="row g-3 mb-4">
+                @foreach (var option in Model.Options)
+                {
+                    <div class="col-md-6">
+                        <label class="card h-100 p-3" for="variant-@option.Id" style="cursor:pointer">
+                            <span><input type="radio" asp-for="Input.VariantId" id="variant-@option.Id" value="@option.Id" /> <strong>@option.PackageName — @option.VariantName</strong></span>
+                            <span>@(option.DurationDays is > 0 ? $"{option.DurationDays} gün" : $"{option.DurationMonths} ay") · @option.TotalCredits ders hakkı</span>
+                            <strong>@option.TotalPrice.ToString("C", culture)</strong>
+                        </label>
+                    </div>
+                }
+            </div>
+            @if (Model.Options.Count == 0)
+            { <p>Şu anda satın alınabilir üyelik paketi bulunmuyor.</p> }
+            else
+            {
+                <h2 class="h4">Fatura bilgileri</h2>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6"><label asp-for="Input.FullName">Ad soyad</label><input asp-for="Input.FullName" class="form-control" /></div>
+                    <div class="col-md-6"><label asp-for="Input.Phone">Telefon</label><input asp-for="Input.Phone" class="form-control" /></div>
+                    <div class="col-12"><label asp-for="Input.BillingAddress">Adres</label><input asp-for="Input.BillingAddress" class="form-control" /></div>
+                    <div class="col-md-6"><label asp-for="Input.District">İlçe</label><input asp-for="Input.District" class="form-control" /></div>
+                    <div class="col-md-6"><label asp-for="Input.City">İl</label><input asp-for="Input.City" class="form-control" /></div>
+                </div>
+                <button type="submit" class="btn btn-primary">Kartla ödemeye geç</button>
+            }
+        </form>
+    }
+</section>

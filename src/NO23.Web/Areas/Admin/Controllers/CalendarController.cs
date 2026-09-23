@@ -49,10 +49,23 @@ public class CalendarController(ApplicationDbContext db, PersonalTrainingCalenda
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> CreatePersonal(AdminPersonalSessionInput input)
     {
-        var result = ModelState.IsValid ? await personal.CreateAsync(input.TrainerId, input.MemberProfileId, ClubTime.ToUtc(input.StartsAt), input.DurationMinutes, input.Note)
+        var result = ModelState.IsValid ? await personal.CreateByAdminAsync(input.TrainerId, input.MemberProfileId, ClubTime.ToUtc(input.StartsAt), input.DurationMinutes, input.Note)
             : (false, "Ders bilgilerini kontrol et.");
         TempData[result.Item1 ? "SuccessMessage" : "ErrorMessage"] = result.Item2;
         return RedirectToAction(nameof(Index), new { week = input.StartsAt.ToString("yyyy-MM-dd"), trainerId = input.TrainerId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateWeeklyPersonal(AdminWeeklyPersonalSessionInput input)
+    {
+        var result = ModelState.IsValid
+            ? await personal.CreateWeeklyByAdminAsync(input.TrainerId, input)
+            : (false, "Haftalık birebir ders bilgilerini kontrol et.");
+        TempData[result.Item1 ? "SuccessMessage" : "ErrorMessage"] = result.Item2;
+        return RedirectToAction(nameof(Index), new
+        {
+            week = input.Week.ToString("yyyy-MM-dd"), trainerId = input.TrainerId
+        });
     }
 
     [HttpPost, ValidateAntiForgeryToken]

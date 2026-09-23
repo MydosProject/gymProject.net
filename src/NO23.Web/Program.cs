@@ -174,6 +174,7 @@ builder.Services.AddScoped<OrderWorkflowService>();
 builder.Services.AddScoped<MemberCartQueryService>();
 builder.Services.AddScoped<IIyzicoCheckoutClient, IyzicoCheckoutClient>();
 builder.Services.AddScoped<IyzicoPaymentService>();
+builder.Services.AddScoped<MembershipRenewalService>();
 builder.Services.AddScoped<IyzicoPendingPaymentService>();
 builder.Services.AddHostedService<IyzicoPendingPaymentWorker>();
 builder.Services.AddHostedService<SessionCompletionHostedService>();

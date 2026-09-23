@@ -12,6 +12,8 @@ public class MemberListItemViewModel
 
     public string PackageName { get; init; } = string.Empty;
 
+    public DateTime? MembershipEndsAtUtc { get; init; }
+
     public string? FamilyCode { get; init; }
 
     public int SiblingDiscountPercent { get; init; }

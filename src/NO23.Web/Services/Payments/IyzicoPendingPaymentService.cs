@@ -10,7 +10,8 @@ public sealed class IyzicoPendingPaymentService(
     IIyzicoCheckoutClient checkoutClient,
     KitchenPlanMatchingService kitchenPlanMatchingService,
     ILogger<IyzicoPendingPaymentService> logger,
-    ShopStockNotificationService? shopStockNotificationService = null)
+    ShopStockNotificationService? shopStockNotificationService = null,
+    MembershipRenewalService? membershipRenewalService = null)
 {
     private const string ProviderName = "iyzico";
     private const string MissingPaymentErrorCode = "5122";
@@ -54,6 +55,31 @@ public sealed class IyzicoPendingPaymentService(
         return processedCount;
     }
 
+    public async Task<int> ProcessPaidUnactivatedMembershipsAsync(
+        CancellationToken cancellationToken = default)
+    {
+        var orderIds = await dbContext.Orders.AsNoTracking()
+            .Where(order => order.Type == OrderType.MembershipRenewal &&
+                order.PaymentStatus == PaymentStatus.Paid &&
+                order.MemberProfileId.HasValue &&
+                (order.MemberProfile!.MembershipEndsAtUtc == null ||
+                 order.MemberProfile.MembershipEndsAtUtc <= order.CreatedAtUtc) &&
+                (order.MemberProfile!.LastMembershipOrderId == null ||
+                 order.MemberProfile.LastMembershipOrderId < order.Id))
+            .OrderBy(order => order.Id)
+            .Select(order => order.Id)
+            .Take(BatchSize)
+            .ToListAsync(cancellationToken);
+        var activatedCount = 0;
+        foreach (var orderId in orderIds)
+        {
+            if (await (membershipRenewalService ?? new MembershipRenewalService(dbContext))
+                    .ActivatePaidOrderAsync(orderId, cancellationToken))
+                activatedCount++;
+        }
+        return activatedCount;
+    }
+
     public async Task<int> ProcessStaleOrphanShopOrdersAsync(
         CancellationToken cancellationToken = default)
     {
@@ -77,9 +103,10 @@ public sealed class IyzicoPendingPaymentService(
                     order.CreatedAtUtc <= expiresBeforeUtc &&
                     !order.StockRestoredAtUtc.HasValue &&
                     !order.PaymentTransactions.Any() &&
-                    order.Items.Any(item =>
-                        item.ItemType == CartItemType.ShopProduct &&
-                        item.ShopProductId.HasValue))
+                    (order.Type == OrderType.MembershipRenewal ||
+                     order.Items.Any(item =>
+                         item.ItemType == CartItemType.ShopProduct &&
+                         item.ShopProductId.HasValue)))
                 .OrderBy(order => order.CreatedAtUtc)
                 .Take(BatchSize)
                 .ToListAsync(cancellationToken);
@@ -261,6 +288,13 @@ public sealed class IyzicoPendingPaymentService(
                         order.Id,
                         order.KitchenSubscriptionId);
                 }
+            }
+            else if (order.Type == OrderType.MembershipRenewal)
+            {
+                var activated = await (membershipRenewalService ?? new MembershipRenewalService(dbContext))
+                    .ActivatePaidOrderAsync(order.Id, cancellationToken);
+                if (!activated)
+                    logger.LogError("Mutabakat başarılı ama üyelik aktifleştirilemedi. OrderId: {OrderId}", order.Id);
             }
 
             return true;

@@ -61,13 +61,18 @@ public sealed class IyzicoPendingPaymentWorker(
                     .ProcessStaleOrphanShopOrdersAsync(
                         cancellationToken);
 
+            var activatedMembershipCount = await pendingPaymentService
+                .ProcessPaidUnactivatedMembershipsAsync(cancellationToken);
+
             if (processedCount > 0 ||
-                staleOrphanOrderCount > 0)
+                staleOrphanOrderCount > 0 ||
+                activatedMembershipCount > 0)
             {
                 logger.LogInformation(
-                    "Processed {ProcessedCount} expired iyzico payment(s) and {StaleOrphanOrderCount} stale orphan shop order(s).",
+                    "Processed {ProcessedCount} expired iyzico payment(s), {StaleOrphanOrderCount} stale orphan order(s), and {ActivatedMembershipCount} paid membership(s).",
                     processedCount,
-                    staleOrphanOrderCount);
+                    staleOrphanOrderCount,
+                    activatedMembershipCount);
             }
         }
         catch (OperationCanceledException)

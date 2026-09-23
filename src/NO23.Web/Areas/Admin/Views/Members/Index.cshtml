@@ -92,6 +92,10 @@
                                 <td data-label="İletişim">@(string.IsNullOrWhiteSpace(member.PhoneNumber) ? "-" : member.PhoneNumber)</td>
                                 <td data-label="Paket">
                                     <span class="admin-status">@member.PackageName</span>
+                                    @if (member.MembershipEndsAtUtc is { } membershipEnd)
+                                    {
+                                        <small class="admin-cell-note d-block">Bitiş: @NO23.Web.Services.ClubTime.ToLocal(membershipEnd).ToString("dd.MM.yyyy")</small>
+                                    }
                                     @if (!string.IsNullOrWhiteSpace(member.FamilyCode))
                                     {
                                         <small class="admin-cell-note d-block">Aile kodu: @member.FamilyCode</small>

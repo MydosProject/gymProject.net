@@ -81,18 +81,20 @@ public class DashboardController(ApplicationDbContext dbContext)
                     session.Status == ClassSessionStatus.Scheduled &&
                     session.StartsAtUtc >= nowUtc);
 
-        var completedLessonCountThisMonth =
+        var completedGroupThisMonth =
             await dbContext.ClassSessions.AsNoTracking().CountAsync(session =>
                 session.GroupClass.TrainerId == trainer.Id && session.Status == ClassSessionStatus.Completed &&
-                session.StartsAtUtc >= monthStartUtc && session.StartsAtUtc <= nowUtc) +
+                session.StartsAtUtc >= monthStartUtc && session.StartsAtUtc <= nowUtc);
+        var completedPersonalThisMonth =
             await dbContext.PersonalTrainingSessions.AsNoTracking().CountAsync(session =>
                 session.TrainerId == trainer.Id && session.Status == PersonalTrainingSessionStatus.Completed &&
                 session.StartsAtUtc >= monthStartUtc && session.StartsAtUtc <= nowUtc);
 
-        var completedLessonCountThisWeek =
+        var completedGroupThisWeek =
             await dbContext.ClassSessions.AsNoTracking().CountAsync(session =>
                 session.GroupClass.TrainerId == trainer.Id && session.Status == ClassSessionStatus.Completed &&
-                session.StartsAtUtc >= weekStartUtc && session.StartsAtUtc <= nowUtc) +
+                session.StartsAtUtc >= weekStartUtc && session.StartsAtUtc <= nowUtc);
+        var completedPersonalThisWeek =
             await dbContext.PersonalTrainingSessions.AsNoTracking().CountAsync(session =>
                 session.TrainerId == trainer.Id && session.Status == PersonalTrainingSessionStatus.Completed &&
                 session.StartsAtUtc >= weekStartUtc && session.StartsAtUtc <= nowUtc);
@@ -220,8 +222,12 @@ public class DashboardController(ApplicationDbContext dbContext)
                 activeGroupClassCount,
             UpcomingClassSessionCount =
                 upcomingClassSessionCount,
-            CompletedLessonCountThisMonth = completedLessonCountThisMonth,
-            CompletedLessonCountThisWeek = completedLessonCountThisWeek,
+            CompletedLessonCountThisMonth = completedPersonalThisMonth + completedGroupThisMonth,
+            CompletedLessonCountThisWeek = completedPersonalThisWeek + completedGroupThisWeek,
+            CompletedPersonalThisMonth = completedPersonalThisMonth,
+            CompletedGroupThisMonth = completedGroupThisMonth,
+            CompletedPersonalThisWeek = completedPersonalThisWeek,
+            CompletedGroupThisWeek = completedGroupThisWeek,
             RecentPersonalTrainingRequests =
                 recentRequests,
             UpcomingClassSessions =

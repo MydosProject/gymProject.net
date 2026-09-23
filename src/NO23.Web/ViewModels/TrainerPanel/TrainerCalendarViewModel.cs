@@ -57,9 +57,20 @@ public class CreateTrainerSessionViewModel
 {
     [Range(1, int.MaxValue)] public int MemberProfileId { get; set; }
     [Required] public DateTime StartsAt { get; set; }
-    [Range(15, 240)] public int DurationMinutes { get; set; } = 60;
+    [Range(15, 240)] public int DurationMinutes { get; set; } = 50;
     [StringLength(600)] public string? Note { get; set; }
     public DateTime? Week { get; set; }
+}
+
+public class WeeklyPersonalSessionInput
+{
+    [Range(1, int.MaxValue)] public int MemberProfileId { get; set; }
+    [Required] public DateTime Week { get; set; } = NO23.Web.Services.ClubTime.Monday(NO23.Web.Services.ClubTime.Now);
+    public DayOfWeek[] Days { get; set; } = [];
+    public TimeOnly Time { get; set; } = new(11, 0);
+    [Range(1, 52)] public int Weeks { get; set; } = 1;
+    [Range(15, 240)] public int DurationMinutes { get; set; } = 50;
+    [StringLength(600)] public string? Note { get; set; }
 }
 
 public class UpdateTrainerSessionViewModel

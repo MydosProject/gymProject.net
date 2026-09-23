@@ -47,6 +47,18 @@ public class MessagesController(
             return Forbid();
         }
 
+        var availableMembers = await dbContext.MemberProfiles.AsNoTracking()
+            .Where(member => member.AssignedTrainerId == trainerId.Value)
+            .OrderBy(member => member.ApplicationUser.FirstName)
+            .ThenBy(member => member.ApplicationUser.LastName)
+            .Select(member => new TrainerMessageMemberOptionViewModel
+            {
+                Id = member.Id,
+                Name = ((member.ApplicationUser.FirstName ?? "") + " " +
+                    (member.ApplicationUser.LastName ?? "")).Trim() + " — " +
+                    (member.ApplicationUser.Email ?? "")
+            }).ToListAsync();
+
         var conversationRows =
             await dbContext.TrainerConversations
                 .AsNoTracking()
@@ -130,7 +142,8 @@ public class MessagesController(
                 new TrainerMessagesViewModel
                 {
                     Conversations =
-                        conversations
+                        conversations,
+                    AvailableMembers = availableMembers
                 });
         }
 
@@ -277,8 +290,22 @@ public class MessagesController(
                     conversations,
 
                 ActiveConversation =
-                    activeConversation
+                    activeConversation,
+                AvailableMembers = availableMembers
             });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Start(int memberProfileId)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId)) return Challenge();
+
+        var result = await messagingService.StartByTrainerAsync(userId, memberProfileId);
+        if (!result.Succeeded)
+            TempData["TrainerMessageError"] = result.ErrorMessage;
+        return RedirectToAction(nameof(Index), new { conversationId = result.ConversationId });
     }
 
     [HttpPost]

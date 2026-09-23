@@ -27,6 +27,10 @@ public class Order
 
     public KitchenSubscription? KitchenSubscription { get; set; }
 
+    public int? ServicePackageVariantId { get; set; }
+
+    public ServicePackageVariant? ServicePackageVariant { get; set; }
+
     public string DeliveryFullName { get; set; } = string.Empty;
 
     public string DeliveryPhoneNumber { get; set; } = string.Empty;

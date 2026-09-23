@@ -19,18 +19,22 @@ public class ClassSessionsController(
     ClassReservationService classReservationService,
     UserNotificationRealtimeService notificationService) : Controller
 {
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(bool includeHistory = false)
     {
         var nowUtc = DateTime.UtcNow;
+        ViewBag.IncludeHistory = includeHistory;
         var sessionRows = await dbContext.ClassSessions
             .AsNoTracking()
             .Include(session => session.GroupClass)
             .ThenInclude(groupClass => groupClass.Trainer)
             .Include(session => session.Reservations)
+            .Where(session => includeHistory ||
+                (session.Status == ClassSessionStatus.Scheduled && session.StartsAtUtc >= nowUtc))
             .OrderBy(session => session.StartsAtUtc)
             .Select(session => new
             {
                 Id = session.Id,
+                GroupClassId = session.GroupClassId,
                 ClassName = session.GroupClass.Name,
                 TrainerName = session.GroupClass.Trainer.FirstName + " " + session.GroupClass.Trainer.LastName,
                 IsGroupClassActive = session.GroupClass.IsActive,
@@ -60,6 +64,7 @@ public class ClassSessionsController(
             .Select(session => new ClassSessionListItemViewModel
             {
                 Id = session.Id,
+                GroupClassId = session.GroupClassId,
                 ClassName = session.ClassName,
                 TrainerName = session.TrainerName,
                 IsGroupClassActive = session.IsGroupClassActive,

@@ -99,6 +99,34 @@ public class ClassesController(ApplicationDbContext dbContext)
                 })
             .ToList();
 
-        return View(model);
+        var personalRows = await dbContext.PersonalTrainingSessions.AsNoTracking()
+            .Where(session => session.TrainerId == trainerId.Value &&
+                session.StartsAtUtc >= nowUtc.AddDays(-30))
+            .OrderBy(session => session.StartsAtUtc < nowUtc)
+            .ThenBy(session => session.StartsAtUtc)
+            .Take(100)
+            .Select(session => new
+            {
+                session.Id,
+                FirstName = session.MemberProfile.ApplicationUser.FirstName,
+                LastName = session.MemberProfile.ApplicationUser.LastName,
+                session.StartsAtUtc,
+                session.DurationMinutes,
+                session.Status
+            })
+            .ToListAsync();
+
+        return View(new TrainerClassesIndexViewModel
+        {
+            GroupClasses = model,
+            PersonalClasses = personalRows.Select(session => new TrainerPersonalClassListItemViewModel
+            {
+                Id = session.Id,
+                MemberName = $"{session.FirstName} {session.LastName}".Trim(),
+                StartsAtUtc = session.StartsAtUtc,
+                DurationMinutes = session.DurationMinutes,
+                Status = session.Status.GetDisplayName()
+            }).ToList()
+        });
     }
 }

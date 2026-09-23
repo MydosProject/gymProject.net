@@ -8,5 +8,8 @@ public enum OrderType
     OneTime = 1,
 
     [Display(Name = "Kitchen aboneliği")]
-    KitchenSubscription = 2
+    KitchenSubscription = 2,
+
+    [Display(Name = "Üyelik yenileme")]
+    MembershipRenewal = 3
 }

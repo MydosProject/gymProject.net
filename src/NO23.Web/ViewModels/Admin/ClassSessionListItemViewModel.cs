@@ -4,6 +4,8 @@ public class ClassSessionListItemViewModel
 {
     public int Id { get; init; }
 
+    public int GroupClassId { get; init; }
+
     public string ClassName { get; init; } = string.Empty;
 
     public string TrainerName { get; init; } = string.Empty;

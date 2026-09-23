@@ -126,6 +126,19 @@ public class CalendarController(
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateWeekly(WeeklyPersonalSessionInput model)
+    {
+        var trainerId = await GetTrainerIdAsync();
+        if (trainerId is null) return Forbid();
+        var result = ModelState.IsValid
+            ? await calendarService.CreateWeeklyAsync(trainerId.Value, model)
+            : (false, "Haftalık birebir ders bilgilerini kontrol edin.");
+        TempData[result.Item1 ? "StatusMessage" : "ErrorMessage"] = result.Item2;
+        return RedirectToAction(nameof(Index), new { week = model.Week.ToString("yyyy-MM-dd") });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Update(UpdateTrainerSessionViewModel model)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);

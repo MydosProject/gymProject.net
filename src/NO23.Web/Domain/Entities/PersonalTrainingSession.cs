@@ -10,7 +10,7 @@ public class PersonalTrainingSession
     public int MemberProfileId { get; set; }
     public MemberProfile MemberProfile { get; set; } = null!;
     public DateTime StartsAtUtc { get; set; }
-    public int DurationMinutes { get; set; } = 60;
+    public int DurationMinutes { get; set; } = 50;
     public PersonalTrainingSessionStatus Status { get; set; } = PersonalTrainingSessionStatus.Scheduled;
     public bool CreditConsumed { get; set; }
     public string? Note { get; set; }

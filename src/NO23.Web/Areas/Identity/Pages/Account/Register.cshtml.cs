@@ -127,11 +127,16 @@ public class RegisterModel(
             user,
             ApplicationRoles.Member);
 
+        var membershipStartsAtUtc = selectedOption is null ? (DateTime?)null : DateTime.UtcNow;
         dbContext.MemberProfiles.Add(new MemberProfile
         {
             ApplicationUserId = user.Id,
             MembershipPackageId = selectedPackage!.Id,
             MembershipPackageOptionId = selectedOption?.Id,
+            MembershipStartsAtUtc = membershipStartsAtUtc,
+            MembershipEndsAtUtc = selectedOption is not null && selectedOption.DurationDays > 0
+                ? membershipStartsAtUtc!.Value.AddDays(selectedOption.DurationDays)
+                : null,
             FitnessGoal = Input.FitnessGoal,
             RemainingClassCredits =
                 CalculateInitialClassCredits(selectedPackage, selectedOption),

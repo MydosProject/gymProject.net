@@ -21,6 +21,9 @@ public class MemberEditViewModel
     [Display(Name = "Paket ve süre")]
     public int? ServicePackageVariantId { get; set; }
 
+    [DataType(DataType.Date), Display(Name = "Üyelik bitiş tarihi")]
+    public DateOnly? MembershipEndsOn { get; set; }
+
     [StringLength(32), Display(Name = "Kids aile kodu")]
     public string? FamilyCode { get; set; }
 

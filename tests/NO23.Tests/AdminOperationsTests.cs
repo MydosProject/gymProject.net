@@ -38,6 +38,27 @@ public class AdminOperationsTests
     }
 
     [Fact]
+    public async Task WeeklyProgram_AcceptsSeasonLengthAndRejectsMoreThanFiftyTwoWeeks()
+    {
+        await using var db = Db();
+        var (group, _) = await Seed(db);
+        var service = new WeeklyGroupSchedulingService(db);
+        var input = new WeeklyGroupInput
+        {
+            GroupClassId = group.Id,
+            Week = ClubTime.Now.AddDays(14),
+            Days = [DayOfWeek.Monday],
+            Weeks = 52,
+            Time = new TimeOnly(18, 0)
+        };
+
+        Assert.True((await service.CreateAsync(input)).Succeeded);
+        Assert.Equal(52, await db.ClassSessions.CountAsync());
+        input.Weeks = 53;
+        Assert.False((await service.CreateAsync(input)).Succeeded);
+    }
+
+    [Fact]
     public async Task GroupAndPersonalLessons_RejectTrainerOverlapInBothDirections()
     {
         await using var db = Db();

@@ -108,8 +108,10 @@ public class HomeController(
         {
             MemberName = string.IsNullOrWhiteSpace(memberName) ? profile.ApplicationUser.Email ?? "NO23 Member" : memberName,
             PackageName = currentPackageName,
+            MembershipEndsAtUtc = profile.MembershipEndsAtUtc,
             RemainingClassCredits = profile.RemainingClassCredits,
-            HasUnlimitedClasses = MemberPackageEntitlement.HasUnlimitedClassAccess(profile),
+            HasUnlimitedClasses = MemberPackageEntitlement.IsActive(profile, DateTime.UtcNow) &&
+                MemberPackageEntitlement.HasUnlimitedClassAccess(profile),
             HasActiveKitchenSubscription = hasActiveKitchenSubscription,
             ReferralCode = profile.ReferralCode,
             ReferralDiscountPercent = profile.ReferredByMemberProfileId.HasValue ||

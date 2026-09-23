@@ -1,5 +1,4 @@
-@model IReadOnlyList<
-    TrainerGroupClassListItemViewModel>
+@model TrainerClassesIndexViewModel
 
 @{
     ViewData["Title"] = "Derslerim";
@@ -20,8 +19,7 @@
             </h1>
 
             <p class="trainer-page-description">
-                Sana atanmış grup derslerini ve
-                yaklaşan seans bilgilerini görüntüle.
+                Grup derslerini ve birebir seanslarını birlikte takip et.
             </p>
 
         </div>
@@ -33,7 +31,7 @@
             </span>
 
             <strong>
-                @(Model.Count.ToString("00"))
+                @((Model.GroupClasses.Count + Model.PersonalClasses.Count).ToString("00"))
             </strong>
 
             <small>
@@ -47,7 +45,7 @@
 
     <div class="trainer-class-panel">
 
-        @if (Model.Count == 0)
+        @if (Model.GroupClasses.Count == 0)
         {
             <div class="trainer-class-empty">
 
@@ -91,7 +89,7 @@
 
                     <tbody>
 
-                    @foreach (var groupClass in Model)
+                    @foreach (var groupClass in Model.GroupClasses)
                     {
                         <tr>
 
@@ -200,4 +198,33 @@
 
     </div>
 
+    <div class="trainer-class-panel mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h4 mb-0">Birebir derslerim</h2>
+            <a asp-area="Trainer" asp-controller="Calendar" asp-action="Index">Takvimde yönet →</a>
+        </div>
+        @if (Model.PersonalClasses.Count == 0)
+        {
+            <p class="mb-0">Son 30 günde veya ileride planlanmış birebir ders bulunmuyor.</p>
+        }
+        else
+        {
+            <div class="trainer-class-table-wrap">
+                <table class="trainer-class-table">
+                    <thead><tr><th>Üye</th><th>Tarih ve saat</th><th>Süre</th><th>Durum</th></tr></thead>
+                    <tbody>
+                        @foreach (var session in Model.PersonalClasses)
+                        {
+                            <tr>
+                                <td data-label="Üye"><strong>@session.MemberName</strong></td>
+                                <td data-label="Tarih ve saat">@NO23.Web.Services.ClubTime.ToLocal(session.StartsAtUtc).ToString("dd.MM.yyyy HH:mm")</td>
+                                <td data-label="Süre">@session.DurationMinutes dk</td>
+                                <td data-label="Durum">@session.Status</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
 </section>

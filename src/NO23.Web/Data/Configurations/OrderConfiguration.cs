@@ -92,6 +92,11 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
             .HasForeignKey(order => order.KitchenSubscriptionId)
             .OnDelete(DeleteBehavior.SetNull);
 
+        builder.HasOne(order => order.ServicePackageVariant)
+            .WithMany()
+            .HasForeignKey(order => order.ServicePackageVariantId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasOne(order => order.DiscountCampaign)
             .WithMany(campaign => campaign.Orders)
             .HasForeignKey(order => order.DiscountCampaignId)

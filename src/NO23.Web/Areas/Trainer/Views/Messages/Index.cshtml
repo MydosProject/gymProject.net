@@ -53,6 +53,20 @@
         </div>
     }
 
+    @if (Model.AvailableMembers.Count > 0)
+    {
+        <form asp-action="Start" method="post" class="d-flex flex-wrap align-items-end gap-2 mb-4">
+            <label class="flex-grow-1">Üyeye mesaj gönder
+                <select name="memberProfileId" class="form-select" required>
+                    <option value="">Atanmış üye seç</option>
+                    @foreach (var member in Model.AvailableMembers)
+                    { <option value="@member.Id">@member.Name</option> }
+                </select>
+            </label>
+            <button type="submit" class="btn btn-dark">Konuşmayı aç</button>
+        </form>
+    }
+
 
     @if (Model.Conversations.Count == 0)
     {
@@ -69,9 +83,8 @@
                 </strong>
 
                 <p>
-                    Bir üye sana birebir çalışma
-                    talebi gönderdiğinde konuşma
-                    burada görüntülenir.
+                    Atanmış bir üye seçerek ilk mesajı gönderebilir veya
+                    birebir çalışma talebinden açılan görüşmeleri burada görebilirsin.
                 </p>
 
             </div>

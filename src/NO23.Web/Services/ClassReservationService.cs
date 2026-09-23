@@ -20,6 +20,9 @@ public class ClassReservationService(ApplicationDbContext dbContext)
             return ReservationResult.Fail("Üye profili bulunamadı.");
         }
 
+        if (!MemberPackageEntitlement.IsActive(profile, DateTime.UtcNow))
+            return ReservationResult.Fail("Üyeliğin sona ermiş. Yeni paket satın alarak ders rezervasyonu yapabilirsin.");
+
         var session = await dbContext.ClassSessions
             .Include(classSession => classSession.GroupClass)
             .Include(classSession => classSession.Reservations)
@@ -29,6 +32,9 @@ public class ClassReservationService(ApplicationDbContext dbContext)
         {
             return ReservationResult.Fail("Ders programı bulunamadı.");
         }
+
+        if (!MemberPackageEntitlement.IsActive(profile, session.StartsAtUtc))
+            return ReservationResult.Fail("Bu ders tarihinde üyeliğin aktif olmayacak.");
 
         if (!ClassSessionLifecycle.IsReservationOpen(
                 session.Status,

@@ -5,7 +5,9 @@ using Microsoft.EntityFrameworkCore;
 using NO23.Web.Data;
 using NO23.Web.Data.Seed;
 using NO23.Web.Domain.Entities;
+using NO23.Web.Domain.Enums;
 using NO23.Web.Extensions;
+using NO23.Web.Services;
 using NO23.Web.ViewModels.Admin;
 
 namespace NO23.Web.Areas.Admin.Controllers;
@@ -56,7 +58,7 @@ public class GroupClassesController(ApplicationDbContext dbContext) : Controller
     {
         return View(await PopulateTrainerOptionsAsync(new GroupClassFormViewModel
         {
-            DurationMinutes = 45,
+            DurationMinutes = 50,
             AverageCaloriesBurned = 350,
             Capacity = 12,
             IsActive = true
@@ -126,6 +128,34 @@ public class GroupClassesController(ApplicationDbContext dbContext) : Controller
         ApplyFormModel(groupClass, model);
         await dbContext.SaveChangesAsync();
 
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Remove(int id, [FromServices] UserNotificationRealtimeService notifications)
+    {
+        var result = await new GroupClassRemovalService(dbContext).RemoveAsync(id);
+        TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] = result.Message;
+        if (result.Succeeded && result.CancelledSessionCount > 0)
+        {
+            foreach (var userId in result.AffectedMemberUserIds)
+            {
+                await notifications.CreateAndPublishAsync(
+                    userId, UserNotificationType.GroupClassSessionCancelled,
+                    "Grup dersi iptal edildi",
+                    $"{result.GroupClassName} dersinin gelecek seansları kaldırıldı. Rezervasyonların iptal edildi ve ders hakların iade edildi.",
+                    "/Member/Reservations", id);
+            }
+            if (!string.IsNullOrWhiteSpace(result.TrainerUserId))
+            {
+                await notifications.CreateAndPublishAsync(
+                    result.TrainerUserId, UserNotificationType.GroupClassSessionCancelled,
+                    "Grup dersin kaldırıldı",
+                    $"{result.GroupClassName} dersinin gelecek seansları yönetici tarafından iptal edildi.",
+                    "/Trainer/Classes", id);
+            }
+        }
         return RedirectToAction(nameof(Index));
     }
 

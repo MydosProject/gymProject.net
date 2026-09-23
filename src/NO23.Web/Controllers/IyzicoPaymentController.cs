@@ -70,6 +70,7 @@ public sealed class IyzicoPaymentController(
         var allowedPaths = new[]
         {
             "/Member/Orders",
+            "/Member/Membership",
             "/Shop/Confirmation",
             "/Kitchen/Confirmation"
         };

@@ -59,6 +59,8 @@ public class MembersController(
         }
         await userManager.AddToRoleAsync(user, ApplicationRoles.Member);
         var membershipPackageId = await ResolveLegacyMembershipPackageIdAsync(variant!);
+        var membershipStartsAtUtc = variant!.ServicePackage.Category == ServicePackageCategory.Membership
+            ? DateTime.UtcNow : (DateTime?)null;
         dbContext.MemberProfiles.Add(new MemberProfile
         {
             ApplicationUserId = user.Id,
@@ -66,6 +68,10 @@ public class MembersController(
             ServicePackageVariantId = variant!.Id,
             FitnessGoal = model.FitnessGoal?.Trim(),
             RemainingClassCredits = MemberPackageEntitlement.CalculateInitialCredits(variant),
+            MembershipStartsAtUtc = membershipStartsAtUtc,
+            MembershipEndsAtUtc = membershipStartsAtUtc.HasValue
+                ? MemberPackageEntitlement.CalculateEndDate(variant, membershipStartsAtUtc.Value)
+                : null,
             AssignedTrainerId = model.AssignedTrainerId,
             FamilyCode = family.Code,
             SiblingDiscountPercent = family.DiscountPercent,
@@ -105,6 +111,7 @@ public class MembersController(
                 SiblingDiscountPercent = profile.SiblingDiscountPercent,
                 FitnessGoal = profile.FitnessGoal,
                 RemainingClassCredits = profile.RemainingClassCredits,
+                MembershipEndsAtUtc = profile.MembershipEndsAtUtc,
                 IsUnlimitedPackage = profile.ServicePackageVariantId == null && profile.MembershipPackage.WeeklyClassLimit == null,
                 AssignedTrainerId = profile.AssignedTrainerId,
                 AssignedTrainerName = profile.AssignedTrainer == null
@@ -135,6 +142,9 @@ public class MembersController(
                 Email = item.ApplicationUser.Email ?? string.Empty,
                 PhoneNumber = item.ApplicationUser.PhoneNumber,
                 ServicePackageVariantId = item.ServicePackageVariantId,
+                MembershipEndsOn = item.MembershipEndsAtUtc.HasValue
+                    ? DateOnly.FromDateTime(ClubTime.ToLocal(item.MembershipEndsAtUtc.Value))
+                    : null,
                 FamilyCode = item.FamilyCode,
                 FitnessGoal = item.FitnessGoal,
                 RemainingClassCredits = item.RemainingClassCredits,
@@ -205,9 +215,27 @@ public class MembersController(
         {
             member.MembershipPackageId = await ResolveLegacyMembershipPackageIdAsync(variant);
             if (packageChanged)
+            {
                 member.RemainingClassCredits = MemberPackageEntitlement.CalculateInitialCredits(variant);
+                member.LastMembershipOrderId = null;
+                member.MembershipStartsAtUtc = variant.ServicePackage.Category == ServicePackageCategory.Membership
+                    ? DateTime.UtcNow : null;
+                member.MembershipEndsAtUtc = member.MembershipStartsAtUtc.HasValue
+                    ? MemberPackageEntitlement.CalculateEndDate(variant, member.MembershipStartsAtUtc.Value)
+                    : null;
+            }
         }
         member.ServicePackageVariantId = model.ServicePackageVariantId;
+        if (!packageChanged)
+        {
+            var existingEndDay = member.MembershipEndsAtUtc.HasValue
+                ? DateOnly.FromDateTime(ClubTime.ToLocal(member.MembershipEndsAtUtc.Value))
+                : (DateOnly?)null;
+            if (model.MembershipEndsOn != existingEndDay)
+                member.MembershipEndsAtUtc = model.MembershipEndsOn.HasValue
+                    ? ClubTime.ToUtc(model.MembershipEndsOn.Value.ToDateTime(TimeOnly.MaxValue))
+                    : null;
+        }
         member.FamilyCode = family.Code;
         member.SiblingDiscountPercent = family.DiscountPercent;
         member.FitnessGoal = model.FitnessGoal?.Trim();

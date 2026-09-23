@@ -10,21 +10,34 @@ public class WeeklyGroupSchedulingService(ApplicationDbContext db)
 {
     public async Task<(bool Succeeded, string Message)> CreateAsync(WeeklyGroupInput input)
     {
-        if (input.Weeks is < 1 or > 12 || input.Days.Length == 0 || input.Days.Any(x => !Enum.IsDefined(x)) || input.Capacity is < 1 or > 200)
+        if (input.Weeks is < 1 or > 52 || input.Days.Length == 0 || input.Days.Any(x => !Enum.IsDefined(x)) || input.Capacity is < 1 or > 200)
             return (false, "Günleri, hafta sayısını ve kontenjanı kontrol et.");
         var group = await db.GroupClasses.Include(x => x.Trainer).FirstOrDefaultAsync(x => x.Id == input.GroupClassId && x.IsActive);
         if (group is null || !group.Trainer.IsActive) return (false, "Aktif bir ders ve antrenör seçmelisin.");
         var monday = ClubTime.Monday(input.Week);
         var starts = Enumerable.Range(0, input.Weeks).SelectMany(w => input.Days.Distinct().Select(day =>
-            ClubTime.ToUtc(monday.AddDays(w * 7 + ((int)day + 6) % 7).Add(input.Time.ToTimeSpan())))).ToList();
+            ClubTime.ToUtc(monday.AddDays(w * 7 + ((int)day + 6) % 7).Add(input.Time.ToTimeSpan()))))
+            .OrderBy(start => start).ToList();
         if (starts.Any(x => x <= DateTime.UtcNow)) return (false, "Tüm seanslar gelecekte olmalı. Başlangıç haftasını ve günleri kontrol et.");
+        var windowStart = starts[0].AddDays(-1);
+        var windowEnd = starts[^1].AddDays(1);
+        var existingGroups = await db.ClassSessions.AsNoTracking()
+            .Where(x => x.GroupClass.TrainerId == group.TrainerId &&
+                x.Status == ClassSessionStatus.Scheduled &&
+                x.StartsAtUtc >= windowStart && x.StartsAtUtc < windowEnd)
+            .Select(x => new { x.StartsAtUtc, x.GroupClass.DurationMinutes })
+            .ToListAsync();
+        var existingPersonal = await db.PersonalTrainingSessions.AsNoTracking()
+            .Where(x => x.TrainerId == group.TrainerId &&
+                x.Status == PersonalTrainingSessionStatus.Scheduled &&
+                x.StartsAtUtc >= windowStart && x.StartsAtUtc < windowEnd)
+            .Select(x => new { x.StartsAtUtc, x.DurationMinutes })
+            .ToListAsync();
         foreach (var start in starts)
         {
             var end = start.AddMinutes(group.DurationMinutes);
-            if (await db.ClassSessions.AnyAsync(x => x.GroupClass.TrainerId == group.TrainerId && x.Status == ClassSessionStatus.Scheduled &&
-                    x.StartsAtUtc < end && x.StartsAtUtc.AddMinutes(x.GroupClass.DurationMinutes) > start) ||
-                await db.PersonalTrainingSessions.AnyAsync(x => x.TrainerId == group.TrainerId && x.Status == PersonalTrainingSessionStatus.Scheduled &&
-                    x.StartsAtUtc < end && x.StartsAtUtc.AddMinutes(x.DurationMinutes) > start))
+            if (existingGroups.Any(x => x.StartsAtUtc < end && x.StartsAtUtc.AddMinutes(x.DurationMinutes) > start) ||
+                existingPersonal.Any(x => x.StartsAtUtc < end && x.StartsAtUtc.AddMinutes(x.DurationMinutes) > start))
                 return (false, $"{ClubTime.ToLocal(start):dd.MM.yyyy HH:mm} saatinde antrenörün başka dersi var. Hiçbir seans eklenmedi.");
         }
         db.ClassSessions.AddRange(starts.Select(start => new ClassSession

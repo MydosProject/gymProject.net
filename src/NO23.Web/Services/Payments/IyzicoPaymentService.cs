@@ -14,7 +14,8 @@ public sealed class IyzicoPaymentService(
     KitchenPlanMatchingService kitchenPlanMatchingService,
     IOptions<IyzicoOptions> options,
     ILogger<IyzicoPaymentService> logger,
-    ShopStockNotificationService? shopStockNotificationService = null)
+    ShopStockNotificationService? shopStockNotificationService = null,
+    MembershipRenewalService? membershipRenewalService = null)
 {
     private const string ProviderName = "iyzico";
     private const int LastErrorMaximumLength = 2000;
@@ -183,8 +184,7 @@ public sealed class IyzicoPaymentService(
         paymentTransaction.UpdatedAtUtc =
             checkoutInitializedAtUtc;
 
-        if (order.Type !=
-            OrderType.KitchenSubscription)
+        if (order.Type == OrderType.OneTime)
         {
             await ClearMemberCartAsync(
                 order.MemberProfileId,
@@ -241,6 +241,15 @@ public sealed class IyzicoPaymentService(
             await ActivateKitchenPackageAsync(
                 order,
                 cancellationToken);
+        }
+        else if (order.Type == OrderType.MembershipRenewal)
+        {
+            var activated = await (membershipRenewalService ?? new MembershipRenewalService(dbContext))
+                .ActivatePaidOrderAsync(order.Id, cancellationToken);
+            if (!activated)
+                return IyzicoPaymentCallbackResult.Fail(
+                    "Ödeme alındı ancak üyelik henüz aktifleştirilemedi. Destek ekibiyle iletişime geçin.",
+                    order.Id, paymentTransaction.Id);
         }
 
         return IyzicoPaymentCallbackResult.Success(
@@ -410,7 +419,7 @@ public sealed class IyzicoPaymentService(
                         cancellationToken);
             }
 
-        if (order.Type == OrderType.KitchenSubscription)
+            if (order.Type == OrderType.KitchenSubscription)
             {
                 var kitchenActivated =
                     await ActivateKitchenPackageAsync(
@@ -423,6 +432,18 @@ public sealed class IyzicoPaymentService(
                         "Kitchen paketi ödemesi başarılı olmasına rağmen beslenme planı oluşturulamadı. OrderId: {OrderId}, KitchenSubscriptionId: {KitchenSubscriptionId}",
                         order.Id,
                         order.KitchenSubscriptionId);
+                }
+            }
+            else if (order.Type == OrderType.MembershipRenewal)
+            {
+                var activated = await (membershipRenewalService ?? new MembershipRenewalService(dbContext))
+                    .ActivatePaidOrderAsync(order.Id, cancellationToken);
+                if (!activated)
+                {
+                    logger.LogError("Üyelik ödemesi başarılı ama paket aktifleştirilemedi. OrderId: {OrderId}", order.Id);
+                    return IyzicoPaymentCallbackResult.Fail(
+                        "Ödeme alındı ancak üyelik henüz aktifleştirilemedi. Destek ekibiyle iletişime geçin.",
+                        order.Id, paymentTransaction.Id);
                 }
             }
 
@@ -670,8 +691,7 @@ public sealed class IyzicoPaymentService(
                 Category2 = GetItemCategory2(item),
                 Price = item.LineTotal,
                 ItemType =
-                    item.ItemType ==
-                        CartItemType.KitchenSubscriptionPackage
+                    item.ItemType is CartItemType.KitchenSubscriptionPackage or CartItemType.MembershipPackage
                             ? IyzicoCheckoutItemType.Virtual
                             : IyzicoCheckoutItemType.Physical
             })
@@ -846,6 +866,9 @@ public sealed class IyzicoPaymentService(
             CartItemType.KitchenSubscriptionPackage =>
                 "Kitchen Package",
 
+            CartItemType.MembershipPackage =>
+                "Membership",
+
             _ =>
                 "NO23"
         };
@@ -863,6 +886,9 @@ public sealed class IyzicoPaymentService(
                 item.KitchenMenuItem?.Category.ToString(),
 
             CartItemType.KitchenSubscriptionPackage =>
+                "Package",
+
+            CartItemType.MembershipPackage =>
                 "Package",
 
             _ =>

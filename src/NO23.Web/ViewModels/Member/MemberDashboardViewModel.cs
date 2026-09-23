@@ -6,6 +6,8 @@ public class MemberDashboardViewModel
 
     public string PackageName { get; init; } = string.Empty;
 
+    public DateTime? MembershipEndsAtUtc { get; init; }
+
     public int RemainingClassCredits { get; init; }
 
     public bool HasUnlimitedClasses { get; init; }

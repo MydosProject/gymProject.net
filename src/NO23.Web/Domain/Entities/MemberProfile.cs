@@ -28,6 +28,12 @@ public class MemberProfile
 
     public int RemainingClassCredits { get; set; }
 
+    public DateTime? MembershipStartsAtUtc { get; set; }
+
+    public DateTime? MembershipEndsAtUtc { get; set; }
+
+    public int? LastMembershipOrderId { get; set; }
+
     public int? AssignedTrainerId { get; set; }
 
     public Trainer? AssignedTrainer { get; set; }

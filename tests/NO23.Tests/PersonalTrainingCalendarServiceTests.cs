@@ -3,11 +3,81 @@ using NO23.Web.Data;
 using NO23.Web.Domain.Entities;
 using NO23.Web.Domain.Enums;
 using NO23.Web.Services;
+using NO23.Web.ViewModels.TrainerPanel;
 
 namespace NO23.Tests;
 
 public class PersonalTrainingCalendarServiceTests
 {
+    [Fact]
+    public async Task CreateWeeklyAsync_CreatesFixedDaysWithinAvailableCredits()
+    {
+        await using var db = CreateDbContext();
+        var (trainer, member) = await SeedAsync(db);
+        var input = new WeeklyPersonalSessionInput
+        {
+            MemberProfileId = member.Id,
+            Week = ClubTime.Monday(ClubTime.Now.AddDays(14)),
+            Days = [DayOfWeek.Monday],
+            Time = new TimeOnly(11, 0),
+            Weeks = 4,
+            DurationMinutes = 50
+        };
+
+        var result = await new PersonalTrainingCalendarService(db).CreateWeeklyAsync(trainer.Id, input);
+
+        Assert.True(result.Succeeded);
+        var sessions = await db.PersonalTrainingSessions.OrderBy(item => item.StartsAtUtc).ToListAsync();
+        Assert.Equal(4, sessions.Count);
+        Assert.All(sessions, item => Assert.Equal(50, item.DurationMinutes));
+        Assert.Equal(7, (sessions[1].StartsAtUtc - sessions[0].StartsAtUtc).TotalDays);
+        Assert.Equal(4, member.RemainingClassCredits);
+    }
+
+    [Fact]
+    public async Task CreateWeeklyAsync_RejectsBatchExceedingAvailableCredits()
+    {
+        await using var db = CreateDbContext();
+        var (trainer, member) = await SeedAsync(db);
+        var input = new WeeklyPersonalSessionInput
+        {
+            MemberProfileId = member.Id,
+            Week = ClubTime.Monday(ClubTime.Now.AddDays(14)),
+            Days = [DayOfWeek.Monday],
+            Time = new TimeOnly(11, 0),
+            Weeks = 5
+        };
+
+        var result = await new PersonalTrainingCalendarService(db).CreateWeeklyAsync(trainer.Id, input);
+
+        Assert.False(result.Succeeded);
+        Assert.Empty(db.PersonalTrainingSessions);
+    }
+
+    [Fact]
+    public async Task CreateWeeklyAsync_RejectsGroupOnlyPackage()
+    {
+        await using var db = CreateDbContext();
+        var (trainer, member) = await SeedAsync(db);
+        member.ServicePackageVariant = new ServicePackageVariant
+        {
+            Name = "Group only", TotalPrice = 1000,
+            ServicePackage = new ServicePackage { Name = "Group", Slug = "group-test", Category = ServicePackageCategory.GroupClasses }
+        };
+        await db.SaveChangesAsync();
+        var input = new WeeklyPersonalSessionInput
+        {
+            MemberProfileId = member.Id,
+            Week = ClubTime.Monday(ClubTime.Now.AddDays(14)),
+            Days = [DayOfWeek.Monday], Weeks = 1
+        };
+
+        var result = await new PersonalTrainingCalendarService(db).CreateWeeklyAsync(trainer.Id, input);
+
+        Assert.False(result.Succeeded);
+        Assert.Empty(db.PersonalTrainingSessions);
+    }
+
     [Fact]
     public async Task CreateAsync_RejectsMemberAssignedToAnotherTrainer()
     {
@@ -22,6 +92,23 @@ public class PersonalTrainingCalendarServiceTests
 
         Assert.False(result.Succeeded);
         Assert.Empty(db.PersonalTrainingSessions);
+    }
+
+    [Fact]
+    public async Task CreateByAdminAsync_AllowsDifferentTrainerWithoutChangingMemberAssignment()
+    {
+        await using var db = CreateDbContext();
+        var (assignedTrainer, member) = await SeedAsync(db);
+        var otherTrainer = new Trainer { FirstName = "Other", LastName = "Trainer", Specialty = "PT" };
+        db.Trainers.Add(otherTrainer);
+        await db.SaveChangesAsync();
+
+        var result = await new PersonalTrainingCalendarService(db).CreateByAdminAsync(
+            otherTrainer.Id, member.Id, DateTime.UtcNow.AddDays(1), 50, null);
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(otherTrainer.Id, (await db.PersonalTrainingSessions.SingleAsync()).TrainerId);
+        Assert.Equal(assignedTrainer.Id, member.AssignedTrainerId);
     }
 
     [Fact]

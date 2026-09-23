@@ -116,7 +116,7 @@
                             </div>
                             <div>
                                 <label class="form-label" for="DurationMinutes">Süre (dakika)</label>
-                                <input class="form-control" type="number" min="15" max="240" step="15" value="60" id="DurationMinutes" name="DurationMinutes" required />
+                                <input class="form-control" type="number" min="15" max="240" step="5" value="50" id="DurationMinutes" name="DurationMinutes" required />
                             </div>
                             <div>
                                 <label class="form-label" for="Note">Not</label>
@@ -126,6 +126,26 @@
                         </form>
                     }
                 </div>
+            </div>
+
+            <div class="col-lg-4">
+                <details class="admin-form-card">
+                    <summary class="h5" style="cursor:pointer">Haftalık sabit ders planla</summary>
+                    <form asp-action="CreateWeekly" method="post" class="d-grid gap-2 mt-3">
+                        <label>Üye<select name="MemberProfileId" class="form-select" required><option value="">Üye seç</option>
+                            @foreach (var member in Model.Members) { <option value="@member.Id">@member.Name</option> }
+                        </select></label>
+                        <label>Başlangıç haftası<input name="Week" type="date" value="@Model.WeekStart.ToString("yyyy-MM-dd")" class="form-control" required /></label>
+                        <fieldset><legend class="fs-6">Sabit günler</legend>
+                            @for (var i = 0; i < 7; i++) { var day = (DayOfWeek)((i + 1) % 7); <label class="me-2"><input name="Days" type="checkbox" value="@day" /> @System.Globalization.CultureInfo.GetCultureInfo("tr-TR").DateTimeFormat.GetDayName(day)</label> }
+                        </fieldset>
+                        <label>Saat<input name="Time" type="time" value="11:00" class="form-control" required /></label>
+                        <label>Kaç hafta?<input name="Weeks" type="number" min="1" max="52" value="4" class="form-control" required /></label>
+                        <label>Süre (dakika)<input name="DurationMinutes" type="number" min="15" max="240" value="50" class="form-control" required /></label>
+                        <label>Not<input name="Note" maxlength="600" class="form-control" /></label>
+                        <button class="btn btn-dark" type="submit">Programı oluştur</button>
+                    </form>
+                </details>
             </div>
 
             <div class="col-lg-8">

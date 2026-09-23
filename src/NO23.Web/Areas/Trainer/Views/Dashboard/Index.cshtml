@@ -55,13 +55,13 @@
         <article class="admin-dashboard-metric-card">
             <div class="admin-dashboard-metric-top"><span>00</span><small>Performans</small></div>
             <strong>@Model.CompletedLessonCountThisMonth.ToString("00")</strong>
-            <div class="admin-dashboard-metric-footer"><span>Bu ay tamamlanan ders</span></div>
+            <div class="admin-dashboard-metric-footer"><span>Bu ay: @Model.CompletedPersonalThisMonth birebir · @Model.CompletedGroupThisMonth grup</span></div>
         </article>
 
         <article class="admin-dashboard-metric-card">
             <div class="admin-dashboard-metric-top"><span>00</span><small>Haftalık</small></div>
             <strong>@Model.CompletedLessonCountThisWeek.ToString("00")</strong>
-            <div class="admin-dashboard-metric-footer"><span>Bu hafta tamamlanan ders</span></div>
+            <div class="admin-dashboard-metric-footer"><span>Bu hafta: @Model.CompletedPersonalThisWeek birebir · @Model.CompletedGroupThisWeek grup</span></div>
         </article>
 
         <a class="admin-dashboard-metric-card"

@@ -7,4 +7,12 @@ public class TrainerMessagesViewModel
 
     public TrainerConversationDetailViewModel?
         ActiveConversation { get; init; }
+
+    public IReadOnlyList<TrainerMessageMemberOptionViewModel> AvailableMembers { get; init; } = [];
+}
+
+public class TrainerMessageMemberOptionViewModel
+{
+    public int Id { get; init; }
+    public string Name { get; init; } = string.Empty;
 }

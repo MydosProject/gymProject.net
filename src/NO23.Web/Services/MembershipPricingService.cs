@@ -12,10 +12,12 @@ public class MembershipPricingService(ApplicationDbContext dbContext)
         if (string.IsNullOrWhiteSpace(userId)) return new();
         var member = await dbContext.MemberProfiles.AsNoTracking()
             .Where(x => x.ApplicationUserId == userId)
-            .Select(x => new { x.Id, x.MembershipPackageId, x.ReferredByMemberProfileId,
+            .Select(x => new { x.Id, x.MembershipPackageId, x.MembershipEndsAtUtc, x.ReferredByMemberProfileId,
                 HasReferrals = x.ReferredMembers.Any() })
             .FirstOrDefaultAsync();
         if (member is null) return new();
+        if (member.MembershipEndsAtUtc.HasValue && member.MembershipEndsAtUtc <= DateTime.UtcNow)
+            return new();
         var discounts = await dbContext.ServicePackages.AsNoTracking()
             .Where(x => x.Category == ServicePackageCategory.Membership && x.IsActive && x.MembershipPackageId == member.MembershipPackageId)
             .OrderBy(x => x.DisplayOrder).ThenBy(x => x.Id)

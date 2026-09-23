@@ -1,3 +1,44 @@
+# NO23 V8 – Takvim, ders yönetimi, mesajlaşma ve üyelik yenileme (taslak)
+
+Hazırlanma tarihi: 22 Eylül 2026
+Durum: Kod `no23-V8` çalışma ağacında; henüz commit/push veya canlı yayın yapılmadı.
+
+## İstek / yapılan geliştirme
+
+| Gelen istek | Yapılan geliştirme |
+| --- | --- |
+| Birebir dersleri paket hakkına göre haftalık sabit gün ve saatte planlamak | Admin ve eğitmen takvimine haftalık birebir planlama eklendi. Seçilen günlerde 1–52 hafta için seanslar oluşturuluyor; paket hakkı, aylık birebir sınırı ve çakışmalar kontrol ediliyor. Hata varsa kısmi kayıt yapılmıyor. |
+| Grup dersini silebilmek | Seansı olmayan grup dersi silinebiliyor. Geçmişi olan ders arşivleniyor; gelecek seanslar ve rezervasyonlar iptal edilip ders hakları iade ediliyor, ilgililere panel bildirimi gönderiliyor. |
+| Grup derslerini 12 haftadan uzun, sezon boyunca açmak | Tek işlemde planlama üst sınırı 12 haftadan 52 haftaya çıkarıldı. |
+| Takvimde dersleri eklenme sırası yerine saate göre göstermek | Haftalık takvimde grup ve birebir dersler ortak saat sırasına alındı. |
+| Adminin üyeye atanmış eğitmeninden farklı eğitmenle ders yazabilmesi | Admin tekil ve haftalık birebir derslerde farklı eğitmen seçebiliyor. Üyenin kalıcı eğitmen ataması değişmiyor. |
+| Eğitmenin tamamladığı grup ve birebir ders sayılarını ayrı görmek | Eğitmen dashboard'unda haftalık ve aylık grup/birebir tamamlanan ders sayıları ayrıldı. |
+| Takvimde grup/birebir renklerini daha belirgin yapmak | Kart zeminleri, kenarlıkları ve tür etiketleri farklılaştırıldı. |
+| Paket bitince üyenin yeni paket alabilmesi | Üye paneline üyelik yenileme bağlantısı ve paket/ödeme ekranı eklendi. Üye dönem toplamını iyzico üzerinden kartla ödüyor; doğrulanan ödeme paketi, bitiş tarihini ve ders haklarını otomatik etkinleştiriyor. Tekrarlanan callback ve gecikmiş ödeme mutabakatı ele alındı. |
+| Ders süresinin varsayılan 60 yerine 50 dakika olması | Yeni birebir derslerin ve formların varsayılan süresi 50 dakika yapıldı; yeni oluşturulan grup dersleri ile başlangıç Reformer örneği 50 dakika. |
+| Eğitmenin “Derslerim” ekranında birebir dersleri de görmesi | Eğitmenin grup derslerinin yanına birebir seans listesi eklendi. |
+| Eğitmenin mesaj göndermek için üye seçebilmesi | Atanmış üyelerden seçim yapıp konuşma başlatma veya mevcut konuşmayı açma eklendi. Mevcut SignalR canlı mesaj, okundu ve panel içi bildirim akışı korunuyor. |
+| Admin ders programındaki uzun seans listesini sınıf düzeninde görmek | Program ders türü ve haftalık gün/saat başlıklarına ayrıldı; tarihli seans, kontenjan ve katılımcılar açılarak görülebiliyor. Geçmiş/iptal edilenler isteğe bağlı gösteriliyor. |
+
+## Açık kalanlar ve yayın öncesi işler
+
+- **Aylık otomatik kart tahsilatı yok.** Yenileme ekranındaki ücret, seçilen dönem için tek çekim toplam tutardır. Önceki “her ay otomatik ödeme” talebi ayrı bir abonelik/tahsilat geliştirmesi gerektiriyor.
+- **Site kapalıyken dış bildirim yok.** Mesaj sayacı ve “Yeni mesaj” panel bildirimi mevcut; tarayıcı push, e-posta veya SMS bildirimi eklenmedi.
+- **Üyeden PT'ye ilk mesaj** için tek tıkla konuşma açma henüz yok. Şu an eğitmen atanmış üyeyi seçerek konuşma başlatabiliyor; üye mevcut konuşmadan yazabiliyor.
+- **Farklı eğitmenle yazılan birebir dersin mesajlaşma yetkisi** henüz ilişkilendirilmedi. Mesaj başlatma atanmış eğitmene bağlı; ders bazlı geçici erişim kuralı ayrıca geliştirilmeli.
+- Daha önce kaydedilmiş grup derslerinin süreleri topluca değiştirilmedi; gerekirse admin ekranından güncellenmeli.
+- Yeni üyelik migration'ı ve gerçek iyzico ödeme akışı canlı/staging ortamında henüz doğrulanmadı. Bitiş tarihi bilinmeyen eski üyelerde tarih admin tarafından girilebilir.
+- Bu taslak henüz commit edilmedi, GitHub'a gönderilmedi ve sunucuya alınmadı.
+
+## Teknik doğrulama
+
+- Çözüm 0 hata, 0 uyarıyla derlendi.
+- Otomatik testler: **270/270 başarılı**.
+- EF Core modelinde migration sonrası bekleyen değişiklik bulunmadı.
+- Yeni migration: `20260922082848_AddMembershipRenewalCheckout`.
+
+---
+
 # NO23 V6 Release Notes
 
 Yayın tarihi: 2 Eylül 2026
