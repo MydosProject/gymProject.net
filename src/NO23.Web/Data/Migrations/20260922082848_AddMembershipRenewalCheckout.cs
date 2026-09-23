@@ -11,70 +11,59 @@ namespace NO23.Web.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<int>(
-                name: "ServicePackageVariantId",
-                table: "Orders",
-                type: "integer",
-                nullable: true);
+            // Some deployed databases already contain one or more of these columns,
+            // but do not have this migration in __EFMigrationsHistory. Keep the
+            // migration repeatable so startup can reconcile those databases safely.
+            migrationBuilder.Sql(
+                """
+                ALTER TABLE "Orders"
+                    ADD COLUMN IF NOT EXISTS "ServicePackageVariantId" integer;
 
-            migrationBuilder.AddColumn<int>(
-                name: "LastMembershipOrderId",
-                table: "MemberProfiles",
-                type: "integer",
-                nullable: true);
+                ALTER TABLE "MemberProfiles"
+                    ADD COLUMN IF NOT EXISTS "LastMembershipOrderId" integer,
+                    ADD COLUMN IF NOT EXISTS "MembershipEndsAtUtc" timestamp with time zone,
+                    ADD COLUMN IF NOT EXISTS "MembershipStartsAtUtc" timestamp with time zone;
 
-            migrationBuilder.AddColumn<DateTime>(
-                name: "MembershipEndsAtUtc",
-                table: "MemberProfiles",
-                type: "timestamp with time zone",
-                nullable: true);
+                CREATE INDEX IF NOT EXISTS "IX_Orders_ServicePackageVariantId"
+                    ON "Orders" ("ServicePackageVariantId");
 
-            migrationBuilder.AddColumn<DateTime>(
-                name: "MembershipStartsAtUtc",
-                table: "MemberProfiles",
-                type: "timestamp with time zone",
-                nullable: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Orders_ServicePackageVariantId",
-                table: "Orders",
-                column: "ServicePackageVariantId");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Orders_ServicePackageVariants_ServicePackageVariantId",
-                table: "Orders",
-                column: "ServicePackageVariantId",
-                principalTable: "ServicePackageVariants",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Restrict);
+                DO $$
+                BEGIN
+                    IF NOT EXISTS (
+                        SELECT 1
+                        FROM pg_constraint
+                        WHERE conname = 'FK_Orders_ServicePackageVariants_ServicePackageVariantId'
+                          AND conrelid = '"Orders"'::regclass
+                    ) THEN
+                        ALTER TABLE "Orders"
+                            ADD CONSTRAINT "FK_Orders_ServicePackageVariants_ServicePackageVariantId"
+                            FOREIGN KEY ("ServicePackageVariantId")
+                            REFERENCES "ServicePackageVariants" ("Id")
+                            ON DELETE RESTRICT;
+                    END IF;
+                END
+                $$;
+                """);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Orders_ServicePackageVariants_ServicePackageVariantId",
-                table: "Orders");
+            migrationBuilder.Sql(
+                """
+                ALTER TABLE "Orders"
+                    DROP CONSTRAINT IF EXISTS "FK_Orders_ServicePackageVariants_ServicePackageVariantId";
 
-            migrationBuilder.DropIndex(
-                name: "IX_Orders_ServicePackageVariantId",
-                table: "Orders");
+                DROP INDEX IF EXISTS "IX_Orders_ServicePackageVariantId";
 
-            migrationBuilder.DropColumn(
-                name: "ServicePackageVariantId",
-                table: "Orders");
+                ALTER TABLE "Orders"
+                    DROP COLUMN IF EXISTS "ServicePackageVariantId";
 
-            migrationBuilder.DropColumn(
-                name: "LastMembershipOrderId",
-                table: "MemberProfiles");
-
-            migrationBuilder.DropColumn(
-                name: "MembershipEndsAtUtc",
-                table: "MemberProfiles");
-
-            migrationBuilder.DropColumn(
-                name: "MembershipStartsAtUtc",
-                table: "MemberProfiles");
+                ALTER TABLE "MemberProfiles"
+                    DROP COLUMN IF EXISTS "LastMembershipOrderId",
+                    DROP COLUMN IF EXISTS "MembershipEndsAtUtc",
+                    DROP COLUMN IF EXISTS "MembershipStartsAtUtc";
+                """);
         }
     }
 }
