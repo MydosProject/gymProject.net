@@ -8,6 +8,8 @@ public class MemberProfile
 
     public ApplicationUser ApplicationUser { get; set; } = null!;
 
+    public string? NationalIdentityNumber { get; set; }
+
     public int MembershipPackageId { get; set; }
 
     public MembershipPackage MembershipPackage { get; set; } = null!;

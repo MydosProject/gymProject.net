@@ -86,7 +86,7 @@
                 </div>
 
                 <p class="register-form-description">
-                    Hesabına erişmek için e-posta adresini ve parolanı gir.
+                    Hesabına erişmek için ad soyad bilgini ve parolanı gir.
                 </p>
 
                 <form id="account"
@@ -103,14 +103,14 @@
                     <div class="row g-3 g-lg-4">
                         <div class="col-12">
                             <div class="no23-form-field">
-                                <label asp-for="Input.Email"></label>
+                                <label asp-for="Input.Identifier"></label>
 
-                                <input asp-for="Input.Email"
+                                <input asp-for="Input.Identifier"
                                        class="form-control no23-form-control"
                                        autocomplete="username"
-                                       placeholder="ornek@email.com" />
+                                       placeholder="Adın Soyadın" />
 
-                                <span asp-validation-for="Input.Email"></span>
+                                <span asp-validation-for="Input.Identifier"></span>
                             </div>
                         </div>
 
@@ -139,10 +139,9 @@
                             </label>
                         </div>
 
-                        <a asp-page="./ForgotPassword"
-                           class="small fw-bold text-dark text-decoration-underline ms-auto">
-                            Parolamı unuttum
-                        </a>
+                        <small class="text-muted ms-auto">
+                            Yönetici ve eğitmenler e-posta adresiyle giriş yapabilir.
+                        </small>
                     </div>
 
                     <button id="login-submit"

@@ -1,0 +1,57 @@
+@using NO23.Web.Domain.Enums
+@using System.Globalization
+@model NO23.Web.ViewModels.KitchenSubscriptionAuthChoiceViewModel
+@{
+    ViewData["Title"] = "Kitchen Planına Devam Et";
+    var culture = CultureInfo.GetCultureInfo("tr-TR");
+}
+
+<section class="kitchen-page public-commerce-page kitchen-auth-choice-page">
+    <div class="kitchen-page-grid" aria-hidden="true"></div>
+    <div class="kitchen-page-glow" aria-hidden="true"></div>
+
+    <div class="container position-relative">
+        <section class="kitchen-subscription-section kitchen-auth-choice">
+            <div class="kitchen-section-heading">
+                <div>
+                    <p class="kitchen-section-kicker">Son Adım / Hesabın</p>
+                    <h1>Seçimin hazır.<br />Hesabınla devam et.</h1>
+                </div>
+                <p>Kalori hesabın ve öğün seçimin oturumunda saklandı. Üye olduktan veya giriş yaptıktan sonra ödeme adımına devam edeceksin.</p>
+            </div>
+
+            <article class="kitchen-subscription-card kitchen-auth-choice-card">
+                <span class="kitchen-plan-days">@Model.PackageDays günlük plan</span>
+                <h3>@Model.PackageName</h3>
+                <p>@Model.SelectedMeals</p>
+
+                <div class="kitchen-subscription-prices">
+                    <div><span>Günlük hedef</span><strong>@Model.DailyCalories kcal</strong></div>
+                    <div><span>Paket</span><strong>@Model.PackagePrice.ToString("C0", culture)</strong></div>
+                    <div>
+                        <span>@(Model.DeliveryMethod == OrderDeliveryMethod.ClubPickup ? "Salondan teslim" : "Adrese teslim")</span>
+                        <strong>@(Model.DeliveryPrice == 0 ? "Ücretsiz" : Model.DeliveryPrice.ToString("C0", culture))</strong>
+                    </div>
+                    <div><span>Toplam</span><strong>@Model.TotalPrice.ToString("C0", culture)</strong></div>
+                </div>
+
+                <div class="kitchen-auth-choice-actions">
+                    <a class="kitchen-subscription-cta"
+                       asp-area="Identity"
+                       asp-page="/Account/Register"
+                       asp-route-returnUrl="@Model.ResumeUrl">
+                        Üye Ol <span aria-hidden="true">→</span>
+                    </a>
+                    <a class="kitchen-subscription-cta kitchen-subscription-cta-secondary"
+                       asp-area="Identity"
+                       asp-page="/Account/Login"
+                       asp-route-returnUrl="@Model.ResumeUrl">
+                        Üye Girişi <span aria-hidden="true">→</span>
+                    </a>
+                </div>
+
+                <a class="kitchen-auth-choice-back" asp-action="Index" asp-fragment="plans">← Seçimimi değiştir</a>
+            </article>
+        </section>
+    </div>
+</section>

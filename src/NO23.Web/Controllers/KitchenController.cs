@@ -133,7 +133,7 @@ public class KitchenController(
             PublicCalculatorResultSessionKey,
             JsonSerializer.Serialize(recommendation));
 
-        return LocalRedirect($"{Url.Action(nameof(Index))}#calorie-calculator");
+        return LocalRedirect($"{Url.Action(nameof(Index))}#plans");
     }
 
     [HttpPost]
@@ -141,8 +141,7 @@ public class KitchenController(
     public async Task<IActionResult> StartSubscription(
         KitchenSubscriptionPlan plan,
         KitchenMealSlot[]? selectedMeals,
-        OrderDeliveryMethod deliveryMethod,
-        [Bind(Prefix = "calculator")] CalorieCalculatorInputViewModel calculator)
+        OrderDeliveryMethod deliveryMethod)
     {
         var package = await dbContext.KitchenSubscriptionPackages.AsNoTracking()
             .FirstOrDefaultAsync(x => x.Plan == plan && x.IsActive);
@@ -155,26 +154,15 @@ public class KitchenController(
         }
 
         if (!Enum.IsDefined(deliveryMethod)) deliveryMethod = OrderDeliveryMethod.ClubPickup;
-        CalorieRecommendationViewModel? recommendation = null;
-        CalorieCalculatorInputViewModel? storedInput = null;
-        if (quote!.MainMealCount > 1)
+        var storedInput = ReadSession<CalorieCalculatorInputViewModel>(
+            PublicCalculatorInputSessionKey);
+        var recommendation = ReadSession<CalorieRecommendationViewModel>(
+            PublicCalculatorResultSessionKey);
+        if (storedInput is null || recommendation is null)
         {
-            if (!ModelState.IsValid)
-            {
-                TempData["ErrorMessage"] = "2+1 ve 3+1 paketleri için kalori bilgilerini kontrol etmelisin.";
-                return LocalRedirect($"{Url.Action(nameof(Index))}#plans");
-            }
-            var result = calorieCalculator.Calculate(new CalorieCalculationRequest
-            {
-                HeightCm = calculator.HeightCm, WeightKg = calculator.WeightKg, Age = calculator.Age,
-                Gender = calculator.Gender, ActivityLevel = calculator.ActivityLevel, Goal = calculator.Goal
-            });
-            storedInput = calculator;
-            recommendation = new CalorieRecommendationViewModel
-            {
-                Goal = calculator.Goal, DailyCalories = result.DailyCalories,
-                ProteinGrams = result.ProteinGrams, CarbohydrateGrams = result.CarbohydrateGrams, FatGrams = result.FatGrams
-            };
+            TempData["ErrorMessage"] =
+                "Kitchen planını seçmeden önce kalori ve makro hedefini hesaplamalısın.";
+            return LocalRedirect($"{Url.Action(nameof(Index))}#calorie-calculator");
         }
 
         HttpContext.Session.SetString(PendingKitchenSubscription.SessionKey, JsonSerializer.Serialize(
@@ -183,7 +171,78 @@ public class KitchenController(
         var resumeUrl = Url.Action("ResumePendingSubscription", "Kitchen", new { area = "Member" }) ?? "/Member/Kitchen/ResumePendingSubscription";
         if (User.Identity?.IsAuthenticated == true && User.IsInRole(NO23.Web.Data.Seed.ApplicationRoles.Member))
             return LocalRedirect(resumeUrl);
-        return RedirectToPage("/Account/Register", new { area = "Identity", returnUrl = resumeUrl });
+        return RedirectToAction(nameof(ContinueSubscription));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ContinueSubscription()
+    {
+        var raw = HttpContext.Session.GetString(PendingKitchenSubscription.SessionKey);
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            return LocalRedirect($"{Url.Action(nameof(Index))}#plans");
+        }
+
+        PendingKitchenSubscriptionData? pending;
+        try
+        {
+            pending = JsonSerializer.Deserialize<PendingKitchenSubscriptionData>(raw);
+        }
+        catch (JsonException)
+        {
+            pending = null;
+        }
+
+        if (pending is null)
+        {
+            HttpContext.Session.Remove(PendingKitchenSubscription.SessionKey);
+            return LocalRedirect($"{Url.Action(nameof(Index))}#plans");
+        }
+
+        var resumeUrl = Url.Action(
+            "ResumePendingSubscription",
+            "Kitchen",
+            new { area = "Member" }) ?? "/Member/Kitchen/ResumePendingSubscription";
+
+        if (User.Identity?.IsAuthenticated == true &&
+            User.IsInRole(NO23.Web.Data.Seed.ApplicationRoles.Member))
+        {
+            return LocalRedirect(resumeUrl);
+        }
+
+        var package = await dbContext.KitchenSubscriptionPackages
+            .AsNoTracking()
+            .FirstOrDefaultAsync(item =>
+                item.Plan == pending.Plan && item.IsActive);
+
+        if (package is null ||
+            !KitchenSubscriptionPricing.TryCalculate(
+                package,
+                pending.SelectedMeals,
+                out var quote,
+                out _))
+        {
+            HttpContext.Session.Remove(PendingKitchenSubscription.SessionKey);
+            TempData["ErrorMessage"] = "Seçtiğin Kitchen paketi artık kullanılamıyor.";
+            return LocalRedirect($"{Url.Action(nameof(Index))}#plans");
+        }
+
+        var deliveryPrice = pending.DeliveryMethod == OrderDeliveryMethod.AddressDelivery
+            ? package.DailyDeliveryFee * package.Days
+            : 0m;
+
+        return View(new KitchenSubscriptionAuthChoiceViewModel
+        {
+            PackageName = package.Name,
+            PackageDays = package.Days,
+            SelectedMeals = string.Join(", ", pending.SelectedMeals.Select(KitchenMealSelection.Name)),
+            DailyCalories = pending.Recommendation?.DailyCalories ?? 0,
+            PackagePrice = quote!.PackagePrice,
+            DeliveryPrice = deliveryPrice,
+            TotalPrice = quote.PackagePrice + deliveryPrice,
+            DeliveryMethod = pending.DeliveryMethod,
+            ResumeUrl = resumeUrl
+        });
     }
 
     private T? ReadSession<T>(string key)

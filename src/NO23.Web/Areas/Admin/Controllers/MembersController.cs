@@ -347,7 +347,7 @@ public class MembersController(
                 PersonalTrainingSessionCount = item.PersonalTrainingSessions.Count,
                 KitchenSubscriptionCount = item.KitchenSubscriptions.Count,
                 HasProtectedHistory = item.Orders.Any() || item.PersonalTrainingSessions.Any() || item.KitchenSubscriptions.Any()
-            }).FirstOrDefaultAsync();
+            }).FirstOrDefaultAsync(); //AEO Silinemez Kuralı burada
     }
 
     private async Task<bool> HasProtectedHistoryAsync(int id) =>

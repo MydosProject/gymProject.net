@@ -7,6 +7,7 @@ using NO23.Web.Data;
 using NO23.Web.Data.Seed;
 using NO23.Web.Domain.Entities;
 using NO23.Web.Domain.Enums;
+using NO23.Web.Infrastructure.Validation;
 using NO23.Web.ViewModels.Member;
 
 namespace NO23.Web.Areas.Member.Controllers;
@@ -149,6 +150,7 @@ public class ProfileController(
                     .FirstOrDefault() ?? member.MembershipPackage.Name
                     : member.ServicePackageVariant.ServicePackage.Name + " — " + member.ServicePackageVariant.Name,
                 OptionName = member.MembershipPackageOption != null ? member.MembershipPackageOption.Name : null,
+                member.NationalIdentityNumber,
                 member.CreatedAtUtc
             })
             .FirstOrDefaultAsync();
@@ -169,6 +171,8 @@ public class ProfileController(
             }).ToListAsync();
 
         model.Email = user.Email ?? string.Empty;
+        model.MaskedNationalIdentityNumber = TurkishNationalIdentityNumber.Mask(
+            membership?.NationalIdentityNumber);
         model.MembershipPackageName = membership?.PackageName ?? "Üyelik bilgisi bulunamadı";
         model.MembershipPackageOptionName = membership?.OptionName;
         model.MemberSinceUtc = membership?.CreatedAtUtc ?? user.CreatedAtUtc;

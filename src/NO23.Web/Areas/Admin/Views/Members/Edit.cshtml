@@ -31,6 +31,11 @@
                     <span asp-validation-for="LastName" class="text-danger"></span>
                 </div>
                 <div class="col-md-6">
+                    <label asp-for="NationalIdentityNumber" class="form-label"></label>
+                    <input asp-for="NationalIdentityNumber" class="form-control" inputmode="numeric" pattern="[0-9]{11}" maxlength="11" autocomplete="off" />
+                    <span asp-validation-for="NationalIdentityNumber" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
                     <label asp-for="Email" class="form-label"></label>
                     <input asp-for="Email" class="form-control" autocomplete="email" />
                     <span asp-validation-for="Email" class="text-danger"></span>

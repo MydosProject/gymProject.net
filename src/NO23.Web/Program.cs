@@ -115,11 +115,12 @@ builder.Services.AddTransient<IEmailSender>(serviceProvider =>
 
 builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
     {
-        options.SignIn.RequireConfirmedAccount = true;
-        options.User.RequireUniqueEmail = true;
+        options.SignIn.RequireConfirmedAccount = false;
+        options.User.RequireUniqueEmail = false;
     })
     .AddRoles<IdentityRole>()
     .AddErrorDescriber<TurkishIdentityErrorDescriber>()
+    .AddUserValidator<OptionalEmailUserValidator>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>

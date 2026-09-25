@@ -670,7 +670,7 @@
                         <p>@package.Description</p>
                         <ul><li>1, 2 veya 3 ana öğün + 1 ara öğün seçimi</li><li>Kişisel kalori ve makro hedefine göre planlama</li><li>@package.DailyDeliveryFee.ToString("N0", CultureInfo.GetCultureInfo("tr-TR")) ₺ / gün kurye</li></ul>
                         <strong>@package.UnitPrice.ToString("N0", CultureInfo.GetCultureInfo("tr-TR")) – @package.ThreeMainMealsPrice.ToString("N0", CultureInfo.GetCultureInfo("tr-TR")) ₺ / paket</strong>
-                        <a asp-area="Member" asp-controller="Kitchen" asp-action="Index" asp-fragment="plans">Öğünlerini seç →</a>
+                        <a asp-area="" asp-controller="Kitchen" asp-action="Index" asp-fragment="calorie-calculator">Öğünlerini seç →</a>
                     </article>
                 }
             </div>

@@ -21,6 +21,8 @@ public class MemberProfileIndexViewModel
 
     public string Email { get; set; } = string.Empty;
 
+    public string MaskedNationalIdentityNumber { get; set; } = "Tanımlanmamış";
+
     public string MembershipPackageName { get; set; } = string.Empty;
 
     public string? MembershipPackageOptionName { get; set; }

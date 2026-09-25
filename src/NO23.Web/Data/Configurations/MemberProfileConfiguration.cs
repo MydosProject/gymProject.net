@@ -15,6 +15,13 @@ public class MemberProfileConfiguration : IEntityTypeConfiguration<MemberProfile
             .HasMaxLength(450)
             .IsRequired();
 
+        builder.Property(profile => profile.NationalIdentityNumber)
+            .HasMaxLength(11);
+
+        builder.HasIndex(profile => profile.NationalIdentityNumber)
+            .IsUnique()
+            .HasFilter("\"NationalIdentityNumber\" IS NOT NULL");
+
         builder.Property(profile => profile.FitnessGoal)
             .HasMaxLength(160);
 

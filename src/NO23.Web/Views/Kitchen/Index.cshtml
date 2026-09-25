@@ -47,7 +47,7 @@
                     <p class="kitchen-section-kicker">Ücretsiz Kalori Hesaplama</p>
                     <h2>Üye olmadan günlük hedefini öğren.</h2>
                 </div>
-                <p>Sonuç, 2+1 veya 3+1 Kitchen aboneliğinde tabağının hazırlanmasına yardımcı olur. 1+1 pakette hesaplama zorunlu değildir.</p>
+                <p>Öğün planını seçmeden önce günlük kalori ve makro hedefini hesapla. Sonucun sonraki adımlarda korunur.</p>
             </div>
 
             <form asp-action="CalculateCalories" method="post" class="kitchen-subscription-card">
@@ -65,7 +65,7 @@
                     </div>
                     <div class="col-md-4">
                         <label asp-for="CalculatorInput.Goal">Hedef</label>
-                        <select asp-for="CalculatorInput.Goal" class="form-select"><option value="LoseWeight">Kilo verme</option><option value="HealthyLifestyle">Sağlıklı yaşam</option><option value="GainMuscle">Kas kazanımı</option></select>
+                        <select asp-for="CalculatorInput.Goal" class="form-select"><option value="FatLoss">Kilo verme</option><option value="HealthyLifestyle">Sağlıklı yaşam</option><option value="MuscleGain">Kas kazanımı</option></select>
                     </div>
                 </div>
                 <button type="submit" class="kitchen-subscription-cta mt-3">Kalorimi Hesapla <span aria-hidden="true">→</span></button>
@@ -98,6 +98,30 @@
                 </div>
 
                 <div class="kitchen-subscription-grid">
+                    @if (Model.Recommendation is null)
+                    {
+                        <div class="kitchen-plan-required" style="grid-column: 1 / -1">
+                            <span>01</span>
+                            <div>
+                                <h3>Önce kalori ve makro hedefini hesapla.</h3>
+                                <p>Hesaplamanı tamamladıktan sonra paket ve günlük öğün seçenekleri burada açılacak.</p>
+                            </div>
+                            <a href="#calorie-calculator">Kalorimi Hesapla <span aria-hidden="true">↑</span></a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="kitchen-plan-target" style="grid-column: 1 / -1">
+                            <div>
+                                <span>Günlük kişisel hedefin</span>
+                                <strong>@Model.Recommendation.DailyCalories kcal</strong>
+                            </div>
+                            <dl>
+                                <div><dt>Protein</dt><dd>@Model.Recommendation.ProteinGrams g</dd></div>
+                                <div><dt>Karbonhidrat</dt><dd>@Model.Recommendation.CarbohydrateGrams g</dd></div>
+                                <div><dt>Yağ</dt><dd>@Model.Recommendation.FatGrams g</dd></div>
+                            </dl>
+                        </div>
                     @foreach (var plan in Model.SubscriptionPlans)
                     {
                         <form class="kitchen-subscription-card" asp-action="StartSubscription" method="post"
@@ -133,18 +157,6 @@
                                 <label><input type="radio" name="deliveryMethod" value="AddressDelivery" /> Eve teslim · @plan.DailyDeliveryFee.ToString("C0")/gün</label>
                             </fieldset>
 
-                            <div data-public-calorie-fields hidden>
-                                <p><strong>2+1 ve 3+1 için kalori hedefini hesapla</strong></p>
-                                <div class="row g-2">
-                                    <div class="col-4"><label>Boy<input class="form-control" type="number" name="calculator.HeightCm" value="@Model.CalculatorInput.HeightCm" min="120" max="230" /></label></div>
-                                    <div class="col-4"><label>Kilo<input class="form-control" type="number" name="calculator.WeightKg" value="@Model.CalculatorInput.WeightKg.ToString(CultureInfo.InvariantCulture)" min="35" max="250" step="0.1" /></label></div>
-                                    <div class="col-4"><label>Yaş<input class="form-control" type="number" name="calculator.Age" value="@Model.CalculatorInput.Age" min="13" max="90" /></label></div>
-                                    <div class="col-6"><label>Cinsiyet<select class="form-select" name="calculator.Gender"><option value="Female">Kadın</option><option value="Male">Erkek</option></select></label></div>
-                                    <div class="col-6"><label>Aktivite<select class="form-select" name="calculator.ActivityLevel"><option value="Sedentary">Hareketsiz</option><option value="LightlyActive">Az aktif</option><option value="ModeratelyActive" selected>Orta aktif</option><option value="VeryActive">Çok aktif</option></select></label></div>
-                                    <div class="col-12"><label>Hedef<select class="form-select" name="calculator.Goal"><option value="LoseWeight">Kilo verme</option><option value="HealthyLifestyle" selected>Sağlıklı yaşam</option><option value="GainMuscle">Kas kazanımı</option></select></label></div>
-                                </div>
-                            </div>
-
                             <div class="kitchen-subscription-prices mt-3">
                                 <div><span>Seçimin</span><strong data-public-package-price>@plan.UnitPrice.ToString("C0")</strong></div>
                                 <div><span>Teslimat</span><strong data-public-delivery-price>Ücretsiz</strong></div>
@@ -152,6 +164,7 @@
                             </div>
                             <button type="submit" class="kitchen-subscription-cta">Seçimi kaydet ve devam et <span aria-hidden="true">→</span></button>
                         </form>
+                    }
                     }
                 </div>
             </section>
@@ -361,7 +374,6 @@
                     const packagePrice = prices[mainCount] || 0;
                     const address = form.querySelector("[name='deliveryMethod'][value='AddressDelivery']")?.checked;
                     const delivery = address ? Number(form.dataset.deliveryDaily) * Number(form.dataset.days) : 0;
-                    form.querySelector("[data-public-calorie-fields]").hidden = mainCount <= 1;
                     form.querySelector("[data-public-package-price]").textContent = money(packagePrice);
                     form.querySelector("[data-public-delivery-price]").textContent = delivery ? money(delivery) : "Ücretsiz";
                     form.querySelector("[data-public-total-price]").textContent = money(packagePrice + delivery);

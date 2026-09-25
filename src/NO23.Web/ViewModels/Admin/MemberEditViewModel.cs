@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using NO23.Web.Infrastructure.Validation;
 
 namespace NO23.Web.ViewModels.Admin;
 
@@ -11,6 +12,12 @@ public class MemberEditViewModel
 
     [Required, StringLength(80), Display(Name = "Soyad")]
     public string LastName { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "TC Kimlik No alanı zorunludur.")]
+    [RegularExpression(@"^[1-9][0-9]{10}$", ErrorMessage = "TC Kimlik No 11 rakamdan oluşmalıdır.")]
+    [TurkishNationalIdentityNumber]
+    [Display(Name = "TC Kimlik No")]
+    public string NationalIdentityNumber { get; set; } = string.Empty;
 
     [Required, EmailAddress, StringLength(256), Display(Name = "E-posta")]
     public string Email { get; set; } = string.Empty;
@@ -43,6 +50,11 @@ public class MemberCreateViewModel
     public string FirstName { get; set; } = string.Empty;
     [Required, StringLength(80), Display(Name = "Soyad")]
     public string LastName { get; set; } = string.Empty;
+    [Required(ErrorMessage = "TC Kimlik No alanı zorunludur.")]
+    [RegularExpression(@"^[1-9][0-9]{10}$", ErrorMessage = "TC Kimlik No 11 rakamdan oluşmalıdır.")]
+    [TurkishNationalIdentityNumber]
+    [Display(Name = "TC Kimlik No")]
+    public string NationalIdentityNumber { get; set; } = string.Empty;
     [Required, EmailAddress, StringLength(256), Display(Name = "E-posta")]
     public string Email { get; set; } = string.Empty;
     [Phone, StringLength(40), Display(Name = "Telefon")]

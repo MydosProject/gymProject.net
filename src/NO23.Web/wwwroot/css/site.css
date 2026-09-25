@@ -20832,6 +20832,56 @@ body.has-content-reading-modal {
     color: #11150d;
     background: #beff1c;
 }
+
+/* PRO üyeliğin açık renk kartında güçlü ve okunaklı metin kontrastı. */
+.service-package-card.is-pro-membership {
+    border-color: rgba(10, 12, 9, .24);
+    color: #090b08;
+    background: linear-gradient(155deg, #fff, #efeee8);
+}
+.service-package-card.is-pro-membership .service-package-head {
+    border-color: rgba(10, 12, 9, .16);
+}
+.service-package-card.is-pro-membership .service-package-head small,
+.service-package-card.is-pro-membership .service-package-head strong,
+.service-package-card.is-pro-membership > p,
+.service-package-card.is-pro-membership > ul li,
+.service-package-card.is-pro-membership .service-package-variants legend,
+.service-package-card.is-pro-membership .service-variant strong,
+.service-package-card.is-pro-membership .service-variant b,
+.service-package-card.is-pro-membership .service-variant small,
+.service-package-card.is-pro-membership .service-package-highlights-title,
+.service-package-card.is-pro-membership .service-package-highlights strong,
+.service-package-card.is-pro-membership .service-billing-note,
+.service-package-card.is-pro-membership .service-billing-note small {
+    color: #11130f;
+}
+.service-package-card.is-pro-membership > ul li,
+.service-package-card.is-pro-membership .service-variant,
+.service-package-card.is-pro-membership > .service-billing-note {
+    border-color: rgba(10, 12, 9, .18);
+}
+.service-package-card.is-pro-membership > ul li::before {
+    color: #3e5300;
+}
+.service-package-card.is-pro-membership .service-variant {
+    background: rgba(10, 12, 9, .035);
+}
+.service-package-card.is-pro-membership .service-variant.is-recommended,
+.service-package-card.is-pro-membership .service-variant:has(input:checked) {
+    border-color: rgba(82, 111, 0, .62);
+    background: rgba(136, 184, 0, .12);
+}
+.service-package-card.is-pro-membership .service-variant-check {
+    border-color: rgba(10, 12, 9, .58);
+}
+.service-package-card.is-pro-membership .service-package-highlights {
+    border-color: rgba(82, 111, 0, .42);
+    background: rgba(136, 184, 0, .1);
+}
+.service-package-card.is-pro-membership > .service-billing-note {
+    background: rgba(10, 12, 9, .04);
+}
 @media (max-width: 480px) {
     .service-variant { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: .65rem; }
     .service-variant-price { grid-column: 2; max-width: none; text-align: left; }
@@ -20860,12 +20910,19 @@ body.has-content-reading-modal {
 .kitchen-delivery-note { color: #9b9b95; font-size: .75rem; }
 .kitchen-subscription-cta { margin-top: auto; border: 1px solid #b7ff00; color: #b7ff00; display: flex; justify-content: space-between; padding: .8rem 1rem; font-weight: 700; }
 .kitchen-subscription-cta:hover { background: #b7ff00; color: #10130f; }
+.kitchen-auth-choice { max-width: 880px; margin-right: auto; margin-left: auto; padding-top: 5rem; }
+.kitchen-auth-choice-card { max-width: 620px; margin: 0 auto; }
+.kitchen-auth-choice-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }
+.kitchen-auth-choice-actions .kitchen-subscription-cta { margin-top: 0; text-decoration: none; }
+.kitchen-subscription-cta-secondary { border-color: rgba(255,255,255,.38); color: #fff; }
+.kitchen-auth-choice-back { align-self: center; color: #aaa; font-size: .75rem; text-decoration: underline; }
 .member-kitchen-checkout-price-breakdown { display: grid; gap: .45rem; border: 1px solid rgba(255,255,255,.14); padding: 1rem 1.25rem; margin: 1rem 0 1.5rem; }
 .member-kitchen-checkout-price-breakdown span { display: flex; justify-content: space-between; gap: 1rem; color: #aaa; }
 .member-kitchen-checkout-price-breakdown span:last-child { border-top: 1px solid rgba(255,255,255,.14); padding-top: .65rem; color: #b7ff00; }
 .kitchen-plan-card button:disabled { opacity: .45; cursor: not-allowed; }
 @media (max-width: 760px) {
   .kitchen-subscription-grid { grid-template-columns: 1fr; }
+  .kitchen-auth-choice-actions { grid-template-columns: 1fr; }
 }
 .member-progress-history-section {
     margin-top: 1.25rem;

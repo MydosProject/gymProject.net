@@ -7,6 +7,8 @@ using NO23.Web.Data;
 using NO23.Web.Data.Seed;
 using NO23.Web.Domain.Entities;
 using NO23.Web.Domain.Enums;
+using NO23.Web.Infrastructure.Identity;
+using NO23.Web.Infrastructure.Validation;
 
 namespace NO23.Web.Areas.Identity.Pages.Account;
 
@@ -98,11 +100,38 @@ public class RegisterModel(
             return Page();
         }
 
+        Input.FirstName = MemberLoginName.CleanPart(Input.FirstName);
+        Input.LastName = MemberLoginName.CleanPart(Input.LastName);
+        Input.NationalIdentityNumber = Input.NationalIdentityNumber.Trim();
+        var memberUserName = MemberLoginName.BuildUserName(
+            Input.FirstName,
+            Input.LastName);
+
+        if (await dbContext.MemberProfiles.AnyAsync(profile =>
+                profile.NationalIdentityNumber == Input.NationalIdentityNumber))
+        {
+            ModelState.AddModelError(
+                "Input.NationalIdentityNumber",
+                "Bu TC Kimlik No ile daha önce bir üyelik oluşturulmuş.");
+
+            return Page();
+        }
+
+        if (await userManager.FindByNameAsync(memberUserName) is not null ||
+            await HasExistingMemberWithSameNameAsync(
+                Input.FirstName,
+                Input.LastName))
+        {
+            ModelState.AddModelError(
+                string.Empty,
+                "Bu ad soyad ile daha önce bir üyelik oluşturulmuş.");
+
+            return Page();
+        }
+
         var user = new ApplicationUser
         {
-            UserName = Input.Email,
-            Email = Input.Email,
-            EmailConfirmed = true,
+            UserName = memberUserName,
             PhoneNumber = Input.PhoneNumber,
             FirstName = Input.FirstName,
             LastName = Input.LastName
@@ -131,6 +160,7 @@ public class RegisterModel(
         dbContext.MemberProfiles.Add(new MemberProfile
         {
             ApplicationUserId = user.Id,
+            NationalIdentityNumber = Input.NationalIdentityNumber,
             MembershipPackageId = selectedPackage!.Id,
             MembershipPackageOptionId = selectedOption?.Id,
             MembershipStartsAtUtc = membershipStartsAtUtc,
@@ -243,6 +273,28 @@ public class RegisterModel(
             : 0;
     }
 
+    private async Task<bool> HasExistingMemberWithSameNameAsync(
+        string firstName,
+        string lastName)
+    {
+        var existingMemberNames = await dbContext.MemberProfiles
+            .AsNoTracking()
+            .Select(profile => new
+            {
+                profile.ApplicationUser.FirstName,
+                profile.ApplicationUser.LastName
+            })
+            .ToListAsync();
+
+        var fullName = $"{firstName} {lastName}";
+
+        return existingMemberNames.Any(member =>
+            MemberLoginName.Matches(
+                fullName,
+                member.FirstName,
+                member.LastName));
+    }
+
     public class InputModel
     {
         [Required(ErrorMessage = "Ad alanı zorunludur.")]
@@ -255,10 +307,13 @@ public class RegisterModel(
         [Display(Name = "Soyad")]
         public string LastName { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "E-posta alanı zorunludur.")]
-        [EmailAddress]
-        [Display(Name = "E-posta")]
-        public string Email { get; set; } = string.Empty;
+        [Required(ErrorMessage = "TC Kimlik No alanı zorunludur.")]
+        [RegularExpression(
+            @"^[1-9][0-9]{10}$",
+            ErrorMessage = "TC Kimlik No 11 rakamdan oluşmalıdır.")]
+        [TurkishNationalIdentityNumber]
+        [Display(Name = "TC Kimlik No")]
+        public string NationalIdentityNumber { get; set; } = string.Empty;
 
         [Phone]
         [Display(Name = "Telefon")]

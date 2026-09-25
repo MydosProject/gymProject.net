@@ -118,18 +118,21 @@
                             </div>
                         </div>
 
-                        <div class="col-md-6">
+                        <div class="col-12">
                             <div class="no23-form-field">
-                                <label asp-for="Input.Email"></label>
-                                <input asp-for="Input.Email"
+                                <label asp-for="Input.NationalIdentityNumber"></label>
+                                <input asp-for="Input.NationalIdentityNumber"
                                        class="form-control no23-form-control"
-                                       autocomplete="username"
-                                       placeholder="ornek@email.com" />
-                                <span asp-validation-for="Input.Email"></span>
+                                       inputmode="numeric"
+                                       pattern="[0-9]{11}"
+                                       maxlength="11"
+                                       autocomplete="off"
+                                       placeholder="11 haneli TC Kimlik No" />
+                                <span asp-validation-for="Input.NationalIdentityNumber"></span>
                             </div>
                         </div>
 
-                        <div class="col-md-6">
+                        <div class="col-12">
                             <div class="no23-form-field">
                                 <label asp-for="Input.PhoneNumber"></label>
                                 <input asp-for="Input.PhoneNumber"
