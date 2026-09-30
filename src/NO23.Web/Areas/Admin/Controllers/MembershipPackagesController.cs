@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using NO23.Web.Data;
 using NO23.Web.Data.Seed;
 using NO23.Web.Domain.Entities;
+using NO23.Web.Domain.Enums;
 using NO23.Web.ViewModels.Admin;
 
 namespace NO23.Web.Areas.Admin.Controllers;
@@ -12,26 +13,10 @@ namespace NO23.Web.Areas.Admin.Controllers;
 [Authorize(Roles = ApplicationRoles.Admin)]
 public class MembershipPackagesController(ApplicationDbContext dbContext) : Controller
 {
-    public async Task<IActionResult> Index()
-    {
-        var packages = await dbContext.MembershipPackages
-            .AsNoTracking()
-            .OrderBy(package => package.DisplayOrder)
-            .Select(package => new MembershipPackageListItemViewModel
-            {
-                Id = package.Id,
-                Code = package.Code.ToString().ToUpper(),
-                Name = package.Name,
-                Audience = package.Audience,
-                WeeklyClassLimit = package.WeeklyClassLimit,
-                IsActive = package.IsActive,
-                DisplayOrder = package.DisplayOrder,
-                MemberCount = package.MemberProfiles.Count
-            })
-            .ToListAsync();
-
-        return View(packages);
-    }
+    public IActionResult Index() => RedirectToAction(
+        "Index",
+        "ServicePackages",
+        new { area = "Admin", category = ServicePackageCategory.Membership });
 
     public IActionResult Create()
     {

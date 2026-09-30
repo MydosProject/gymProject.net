@@ -3,6 +3,10 @@
     var pageTitle = ViewData["Title"]?.ToString() ?? "Yönetim Paneli";
     var userName = User.Identity?.Name ?? "NO23 Yönetici";
     var userInitial = string.IsNullOrWhiteSpace(userName) ? "N" : userName.Trim()[0].ToString().ToUpperInvariant();
+    var selectedPackageCategory = Context.Request.Query["category"].ToString();
+    var isMembershipPackageCatalog =
+        currentController.Equals("ServicePackages", StringComparison.OrdinalIgnoreCase) &&
+        selectedPackageCategory.Equals("Membership", StringComparison.OrdinalIgnoreCase);
     var isKitchenSection =
         currentController.Equals("KitchenMenuItems", StringComparison.OrdinalIgnoreCase) ||
         currentController.Equals("KitchenAllergens", StringComparison.OrdinalIgnoreCase) ||
@@ -174,13 +178,14 @@
                            asp-action="Index">
                             Üyeler
                         </a>
-                        <a class="admin-nav-sublink @ActiveClass("MembershipPackages")"
+                        <a class="admin-nav-sublink @(isMembershipPackageCatalog || currentController.Equals("MembershipPackages", StringComparison.OrdinalIgnoreCase) ? "is-active" : string.Empty)"
                            asp-area="Admin"
-                           asp-controller="MembershipPackages"
-                           asp-action="Index">
+                           asp-controller="ServicePackages"
+                           asp-action="Index"
+                           asp-route-category="Membership">
                             Üyelik Paketleri
                         </a>
-                        <a class="admin-nav-sublink @ActiveClass("ServicePackages")"
+                        <a class="admin-nav-sublink @(currentController.Equals("ServicePackages", StringComparison.OrdinalIgnoreCase) && !isMembershipPackageCatalog ? "is-active" : string.Empty)"
                            asp-area="Admin" asp-controller="ServicePackages" asp-action="Index">
                             Paket Kataloğu
                         </a>

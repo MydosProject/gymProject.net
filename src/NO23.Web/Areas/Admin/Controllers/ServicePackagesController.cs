@@ -14,20 +14,27 @@ namespace NO23.Web.Areas.Admin.Controllers;
 [Authorize(Roles = ApplicationRoles.Admin)]
 public class ServicePackagesController(ApplicationDbContext dbContext) : Controller
 {
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(ServicePackageCategory? category = null)
     {
-        var items = await dbContext.ServicePackages.AsNoTracking()
+        var query = dbContext.ServicePackages.AsNoTracking();
+        if (category.HasValue)
+        {
+            query = query.Where(x => x.Category == category.Value);
+        }
+
+        var items = await query
             .OrderBy(x => x.Category).ThenBy(x => x.DisplayOrder)
             .Select(x => new { x.Id, x.Category, x.Name, x.Subtitle, x.IsFeatured,
                 x.IsActive, x.DisplayOrder, VariantCount = x.Variants.Count }).ToListAsync();
+        ViewData["PackageCategory"] = category;
         return View(items.Select(x => new ServicePackageListItemViewModel
         { Id=x.Id,Category=CategoryName(x.Category),Name=x.Name,Subtitle=x.Subtitle,
           IsFeatured=x.IsFeatured,IsActive=x.IsActive,DisplayOrder=x.DisplayOrder,VariantCount=x.VariantCount }).ToList());
     }
 
     [HttpGet]
-    public async Task<IActionResult> Create()
-    { var model = new ServicePackageFormViewModel { IsActive = true, DisplayOrder = 10 }; await PopulateAsync(model); return View(model); }
+    public async Task<IActionResult> Create(ServicePackageCategory? category = null)
+    { var model = new ServicePackageFormViewModel { Category = category ?? ServicePackageCategory.Membership, IsActive = true, DisplayOrder = 10 }; await PopulateAsync(model); return View(model); }
 
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(ServicePackageFormViewModel model)
