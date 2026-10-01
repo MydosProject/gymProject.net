@@ -17,12 +17,12 @@
             <h2>@(string.IsNullOrWhiteSpace(Model.FullName) ? "İsimsiz üye" : Model.FullName)</h2>
             <p class="text-muted">@Model.Email · @Model.PackageName</p>
 
-            @if (Model.HasProtectedHistory)
+            @if (Model.HasRelatedHistory)
             {
                 <div class="alert alert-warning">
-                    Bu üye kalıcı olarak silinemez. Korunması gereken
-                    @Model.OrderCount sipariş, @Model.KitchenSubscriptionCount mutfak aboneliği ve
-                    @Model.PersonalTrainingSessionCount birebir ders kaydı bulunuyor.
+                    Bu üyeye bağlı @Model.OrderCount sipariş, @Model.KitchenSubscriptionCount mutfak aboneliği ve
+                    @Model.PersonalTrainingSessionCount birebir ders kaydı bulunuyor. Siparişler finansal kayıt olarak
+                    korunur ve üyeden ayrılır; diğer üye verileri ve birebir ders kayıtları kalıcı olarak silinir.
                 </div>
             }
             else
@@ -32,13 +32,10 @@
 
             <div class="d-flex justify-content-end gap-2">
                 <a class="btn btn-outline-secondary" asp-action="Index">Vazgeç</a>
-                @if (!Model.HasProtectedHistory)
-                {
-                    <form method="post">
-                        <input type="hidden" name="id" value="@Model.Id" />
-                        <button class="btn btn-danger" type="submit">Üyeyi kalıcı olarak sil</button>
-                    </form>
-                }
+                <form method="post">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button class="btn btn-danger" type="submit">Üyeyi kalıcı olarak sil</button>
+                </form>
             </div>
         </div>
     </div>

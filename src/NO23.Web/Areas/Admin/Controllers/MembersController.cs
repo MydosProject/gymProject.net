@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Identity;
 using NO23.Web.Domain.Entities;
 using NO23.Web.Domain.Enums;
+using NO23.Web.Infrastructure.Identity;
 using NO23.Web.Services;
 
 namespace NO23.Web.Areas.Admin.Controllers;
@@ -30,14 +31,27 @@ public class MembersController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(MemberCreateViewModel model)
     {
+        model.FirstName = MemberLoginName.CleanPart(model.FirstName ?? string.Empty);
+        model.LastName = MemberLoginName.CleanPart(model.LastName ?? string.Empty);
+        model.NationalIdentityNumber = model.NationalIdentityNumber?.Trim() ?? string.Empty;
+        model.Email = string.IsNullOrWhiteSpace(model.Email) ? null : model.Email.Trim();
+
         var variant = await FindSelectableVariantAsync(model.ServicePackageVariantId);
         if (variant is null)
             ModelState.AddModelError(nameof(model.ServicePackageVariantId), "Aktif bir üyelik, grup dersi veya Kids paketi seçmelisiniz.");
         var family = await ResolveKidsFamilyAsync(variant, model.FamilyCode);
         if (family.Error is not null)
             ModelState.AddModelError(nameof(model.FamilyCode), family.Error);
-        if (await userManager.FindByEmailAsync(model.Email.Trim()) is not null)
+        if (model.Email is not null && await userManager.FindByEmailAsync(model.Email) is not null)
             ModelState.AddModelError(nameof(model.Email), "Bu e-posta adresi zaten kullanılıyor.");
+        if (await dbContext.MemberProfiles.AnyAsync(profile =>
+                profile.NationalIdentityNumber == model.NationalIdentityNumber))
+            ModelState.AddModelError(nameof(model.NationalIdentityNumber), "Bu TC Kimlik No ile daha önce bir üyelik oluşturulmuş.");
+
+        var memberUserName = MemberLoginName.BuildUserName(model.FirstName, model.LastName);
+        if (await userManager.FindByNameAsync(memberUserName) is not null)
+            ModelState.AddModelError(string.Empty, "Bu ad soyad ile daha önce bir üyelik oluşturulmuş.");
+
         if (!ModelState.IsValid)
         {
             await LoadCreateOptionsAsync(model);
@@ -46,10 +60,17 @@ public class MembersController(
 
         var user = new ApplicationUser
         {
-            UserName = model.Email.Trim(), Email = model.Email.Trim(), EmailConfirmed = true,
-            FirstName = model.FirstName.Trim(), LastName = model.LastName.Trim(),
+            UserName = memberUserName,
+            Email = model.Email,
+            EmailConfirmed = model.Email is not null,
+            FirstName = model.FirstName,
+            LastName = model.LastName,
             PhoneNumber = string.IsNullOrWhiteSpace(model.PhoneNumber) ? null : model.PhoneNumber.Trim()
         };
+
+        await using var transaction = dbContext.Database.IsRelational()
+            ? await dbContext.Database.BeginTransactionAsync()
+            : null;
         var result = await userManager.CreateAsync(user, model.Password);
         if (!result.Succeeded)
         {
@@ -57,27 +78,34 @@ public class MembersController(
             await LoadCreateOptionsAsync(model);
             return View(model);
         }
-        await userManager.AddToRoleAsync(user, ApplicationRoles.Member);
+        var roleResult = await userManager.AddToRoleAsync(user, ApplicationRoles.Member);
+        if (!roleResult.Succeeded)
+        {
+            foreach (var error in roleResult.Errors) ModelState.AddModelError(string.Empty, error.Description);
+            await LoadCreateOptionsAsync(model);
+            return View(model);
+        }
         var membershipPackageId = await ResolveLegacyMembershipPackageIdAsync(variant!);
-        var membershipStartsAtUtc = variant!.ServicePackage.Category == ServicePackageCategory.Membership
-            ? DateTime.UtcNow : (DateTime?)null;
+        var membershipStartsAtUtc = DateTime.UtcNow;
         dbContext.MemberProfiles.Add(new MemberProfile
         {
             ApplicationUserId = user.Id,
+            NationalIdentityNumber = model.NationalIdentityNumber,
             MembershipPackageId = membershipPackageId,
             ServicePackageVariantId = variant!.Id,
             FitnessGoal = model.FitnessGoal?.Trim(),
             RemainingClassCredits = MemberPackageEntitlement.CalculateInitialCredits(variant),
             MembershipStartsAtUtc = membershipStartsAtUtc,
-            MembershipEndsAtUtc = membershipStartsAtUtc.HasValue
-                ? MemberPackageEntitlement.CalculateEndDate(variant, membershipStartsAtUtc.Value)
-                : null,
+            MembershipEndsAtUtc = MemberPackageEntitlement.CalculateEndDate(
+                variant,
+                membershipStartsAtUtc),
             AssignedTrainerId = model.AssignedTrainerId,
             FamilyCode = family.Code,
             SiblingDiscountPercent = family.DiscountPercent,
             ReferralCode = $"NO23-{Guid.NewGuid():N}"[..13].ToUpperInvariant()
         });
         await dbContext.SaveChangesAsync();
+        if (transaction is not null) await transaction.CommitAsync();
         TempData["StatusMessage"] = family.Code is null
             ? "Üye hesabı ve paket hakları oluşturuldu. Geçici parolayı üyeyle paylaşabilirsiniz."
             : $"Üye hesabı ve Kids paketi oluşturuldu. Aile kodu: {family.Code}";
@@ -139,6 +167,7 @@ public class MembersController(
                 Id = item.Id,
                 FirstName = item.ApplicationUser.FirstName ?? string.Empty,
                 LastName = item.ApplicationUser.LastName ?? string.Empty,
+                NationalIdentityNumber = item.NationalIdentityNumber ?? string.Empty,
                 Email = item.ApplicationUser.Email ?? string.Empty,
                 PhoneNumber = item.ApplicationUser.PhoneNumber,
                 ServicePackageVariantId = item.ServicePackageVariantId,
@@ -179,10 +208,21 @@ public class MembersController(
             ModelState.AddModelError(nameof(model.ServicePackageVariantId), "Aktif bir üyelik, grup dersi veya Kids paketi seçmelisiniz.");
         if (!trainerExists) ModelState.AddModelError(nameof(model.AssignedTrainerId), "Aktif bir trainer seçmelisiniz.");
 
-        var email = model.Email.Trim();
-        var emailOwner = await userManager.FindByEmailAsync(email);
+        model.FirstName = MemberLoginName.CleanPart(model.FirstName ?? string.Empty);
+        model.LastName = MemberLoginName.CleanPart(model.LastName ?? string.Empty);
+        model.NationalIdentityNumber = model.NationalIdentityNumber?.Trim() ?? string.Empty;
+        var email = string.IsNullOrWhiteSpace(model.Email) ? null : model.Email.Trim();
+        var emailOwner = email is null ? null : await userManager.FindByEmailAsync(email);
         if (emailOwner is not null && emailOwner.Id != member.ApplicationUserId)
             ModelState.AddModelError(nameof(model.Email), "Bu e-posta adresi başka bir hesap tarafından kullanılıyor.");
+        if (await dbContext.MemberProfiles.AnyAsync(profile =>
+                profile.NationalIdentityNumber == model.NationalIdentityNumber && profile.Id != id))
+            ModelState.AddModelError(nameof(model.NationalIdentityNumber), "Bu TC Kimlik No başka bir üyede kayıtlı.");
+
+        var memberUserName = MemberLoginName.BuildUserName(model.FirstName, model.LastName);
+        var userNameOwner = await userManager.FindByNameAsync(memberUserName);
+        if (userNameOwner is not null && userNameOwner.Id != member.ApplicationUserId)
+            ModelState.AddModelError(string.Empty, "Bu ad soyad ile daha önce bir üyelik oluşturulmuş.");
 
         if (!ModelState.IsValid)
         {
@@ -199,16 +239,19 @@ public class MembersController(
             return View(model);
         }
 
-        await using var transaction = await dbContext.Database.BeginTransactionAsync();
+        await using var transaction = dbContext.Database.IsRelational()
+            ? await dbContext.Database.BeginTransactionAsync()
+            : null;
         var user = member.ApplicationUser;
-        user.FirstName = model.FirstName.Trim();
-        user.LastName = model.LastName.Trim();
+        user.FirstName = model.FirstName;
+        user.LastName = model.LastName;
         user.Email = email;
-        user.UserName = email;
-        user.NormalizedEmail = userManager.NormalizeEmail(email);
-        user.NormalizedUserName = userManager.NormalizeName(email);
-        user.EmailConfirmed = true;
+        user.UserName = memberUserName;
+        user.NormalizedEmail = email is null ? null : userManager.NormalizeEmail(email);
+        user.NormalizedUserName = userManager.NormalizeName(memberUserName);
+        user.EmailConfirmed = email is not null;
         user.PhoneNumber = string.IsNullOrWhiteSpace(model.PhoneNumber) ? null : model.PhoneNumber.Trim();
+        member.NationalIdentityNumber = model.NationalIdentityNumber;
 
         var packageChanged = member.ServicePackageVariantId != model.ServicePackageVariantId;
         if (variant is not null)
@@ -218,8 +261,7 @@ public class MembersController(
             {
                 member.RemainingClassCredits = MemberPackageEntitlement.CalculateInitialCredits(variant);
                 member.LastMembershipOrderId = null;
-                member.MembershipStartsAtUtc = variant.ServicePackage.Category == ServicePackageCategory.Membership
-                    ? DateTime.UtcNow : null;
+                member.MembershipStartsAtUtc = DateTime.UtcNow;
                 member.MembershipEndsAtUtc = member.MembershipStartsAtUtc.HasValue
                     ? MemberPackageEntitlement.CalculateEndDate(variant, member.MembershipStartsAtUtc.Value)
                     : null;
@@ -253,7 +295,7 @@ public class MembersController(
             return View(model);
         }
         await dbContext.SaveChangesAsync();
-        await transaction.CommitAsync();
+        if (transaction is not null) await transaction.CommitAsync();
         TempData["StatusMessage"] = "Üye bilgileri güncellendi.";
         return RedirectToAction(nameof(Index));
     }
@@ -274,23 +316,43 @@ public class MembersController(
             .FirstOrDefaultAsync(item => item.Id == id);
         if (member is null) return NotFound();
 
-        var protectedHistory = await HasProtectedHistoryAsync(id);
-        if (protectedHistory)
+        await using var transaction = dbContext.Database.IsRelational()
+            ? await dbContext.Database.BeginTransactionAsync()
+            : null;
+
+        var orders = await dbContext.Orders
+            .Where(item => item.MemberProfileId == id)
+            .ToListAsync();
+        foreach (var order in orders)
         {
-            TempData["ErrorMessage"] =
-                "Bu üyenin sipariş, mutfak aboneliği veya birebir ders geçmişi bulunduğu için kalıcı olarak silinemez.";
-            return RedirectToAction(nameof(Index));
+            order.GuestEmail ??= member.ApplicationUser.Email;
+            order.MemberProfileId = null;
         }
 
-        await using var transaction = await dbContext.Database.BeginTransactionAsync();
+        var referredMembers = await dbContext.MemberProfiles
+            .Where(item => item.ReferredByMemberProfileId == id)
+            .ToListAsync();
+        foreach (var referredMember in referredMembers)
+        {
+            referredMember.ReferredByMemberProfileId = null;
+        }
+
+        var personalTrainingSessions = await dbContext.PersonalTrainingSessions
+            .Where(item => item.MemberProfileId == id)
+            .ToListAsync();
+        dbContext.PersonalTrainingSessions.RemoveRange(personalTrainingSessions);
+        await dbContext.SaveChangesAsync();
+
         var result = await userManager.DeleteAsync(member.ApplicationUser);
         if (!result.Succeeded)
         {
             TempData["ErrorMessage"] = string.Join(" ", result.Errors.Select(item => item.Description));
             return RedirectToAction(nameof(Index));
         }
-        await transaction.CommitAsync();
-        TempData["StatusMessage"] = "Üye ve giriş hesabı kalıcı olarak silindi.";
+        if (transaction is not null) await transaction.CommitAsync();
+        TempData["StatusMessage"] = personalTrainingSessions.Count == 0
+            ? "Üye profili ve giriş hesabı kalıcı olarak silindi."
+            : $"Üye profili, giriş hesabı ve {personalTrainingSessions.Count} birebir ders kaydı kalıcı olarak silindi.";
         return RedirectToAction(nameof(Index));
     }
 
@@ -346,19 +408,16 @@ public class MembersController(
                 OrderCount = item.Orders.Count,
                 PersonalTrainingSessionCount = item.PersonalTrainingSessions.Count,
                 KitchenSubscriptionCount = item.KitchenSubscriptions.Count,
-                HasProtectedHistory = item.Orders.Any() || item.PersonalTrainingSessions.Any() || item.KitchenSubscriptions.Any()
+                HasRelatedHistory = item.Orders.Any() || item.PersonalTrainingSessions.Any() || item.KitchenSubscriptions.Any()
             }).FirstOrDefaultAsync(); //AEO Silinemez Kuralı burada
     }
-
-    private async Task<bool> HasProtectedHistoryAsync(int id) =>
-        await dbContext.MemberProfiles.AnyAsync(item => item.Id == id &&
-            (item.Orders.Any() || item.PersonalTrainingSessions.Any() || item.KitchenSubscriptions.Any()));
 
     private async Task<List<ManualMemberPackageOptionViewModel>> ManualPackageOptionsAsync(int? selectedId)
     {
         var variants = await dbContext.ServicePackageVariants.AsNoTracking()
             .Where(item => (item.IsActive || item.Id == selectedId) && item.ServicePackage.IsActive &&
                 (item.ServicePackage.Category == ServicePackageCategory.Membership ||
+                 item.ServicePackage.Category == ServicePackageCategory.PersonalTraining ||
                  item.ServicePackage.Category == ServicePackageCategory.GroupClasses ||
                  item.ServicePackage.Category == ServicePackageCategory.KidsClub))
             .OrderBy(item => item.ServicePackage.Category)
@@ -380,6 +439,7 @@ public class MembersController(
             GroupName = item.Category switch
             {
                 ServicePackageCategory.Membership => "Üyelik paketleri",
+                ServicePackageCategory.PersonalTraining => "Personal Training paketleri",
                 ServicePackageCategory.GroupClasses => "Grup dersi paketleri",
                 _ => "Kids paketleri"
             },
@@ -394,6 +454,7 @@ public class MembersController(
             .Include(item => item.ServicePackage)
             .FirstOrDefaultAsync(item => item.Id == variantId && item.IsActive && item.ServicePackage.IsActive &&
                 (item.ServicePackage.Category == ServicePackageCategory.Membership ||
+                 item.ServicePackage.Category == ServicePackageCategory.PersonalTraining ||
                  item.ServicePackage.Category == ServicePackageCategory.GroupClasses ||
                  item.ServicePackage.Category == ServicePackageCategory.KidsClub));
     }

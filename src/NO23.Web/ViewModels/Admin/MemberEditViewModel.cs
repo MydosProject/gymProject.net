@@ -19,8 +19,8 @@ public class MemberEditViewModel
     [Display(Name = "TC Kimlik No")]
     public string NationalIdentityNumber { get; set; } = string.Empty;
 
-    [Required, EmailAddress, StringLength(256), Display(Name = "E-posta")]
-    public string Email { get; set; } = string.Empty;
+    [EmailAddress, StringLength(256), Display(Name = "E-posta (opsiyonel)")]
+    public string? Email { get; set; }
 
     [Phone, StringLength(40), Display(Name = "Telefon")]
     public string? PhoneNumber { get; set; }
@@ -55,8 +55,8 @@ public class MemberCreateViewModel
     [TurkishNationalIdentityNumber]
     [Display(Name = "TC Kimlik No")]
     public string NationalIdentityNumber { get; set; } = string.Empty;
-    [Required, EmailAddress, StringLength(256), Display(Name = "E-posta")]
-    public string Email { get; set; } = string.Empty;
+    [EmailAddress, StringLength(256), Display(Name = "E-posta (opsiyonel)")]
+    public string? Email { get; set; }
     [Phone, StringLength(40), Display(Name = "Telefon")]
     public string? PhoneNumber { get; set; }
     [Required, StringLength(100, MinimumLength = 6), DataType(DataType.Password), Display(Name = "Geçici parola")]
@@ -85,7 +85,7 @@ public class MemberDeleteViewModel
     public string FullName { get; init; } = string.Empty;
     public string Email { get; init; } = string.Empty;
     public string PackageName { get; init; } = string.Empty;
-    public bool HasProtectedHistory { get; init; }
+    public bool HasRelatedHistory { get; init; }
     public int OrderCount { get; init; }
     public int PersonalTrainingSessionCount { get; init; }
     public int KitchenSubscriptionCount { get; init; }

@@ -117,7 +117,18 @@ public class RegisterModel(
             return Page();
         }
 
-        if (await userManager.FindByNameAsync(memberUserName) is not null ||
+        var existingUser = await userManager.FindByNameAsync(memberUserName);
+        var recoverableOrphan = existingUser is not null &&
+            !await dbContext.MemberProfiles.AnyAsync(profile =>
+                profile.ApplicationUserId == existingUser.Id) &&
+            await userManager.IsInRoleAsync(existingUser, ApplicationRoles.Member) &&
+            await userManager.CheckPasswordAsync(existingUser, Input.Password) &&
+            MemberLoginName.Matches(
+                $"{Input.FirstName} {Input.LastName}",
+                existingUser.FirstName,
+                existingUser.LastName);
+
+        if ((existingUser is not null && !recoverableOrphan) ||
             await HasExistingMemberWithSameNameAsync(
                 Input.FirstName,
                 Input.LastName))
@@ -129,7 +140,11 @@ public class RegisterModel(
             return Page();
         }
 
-        var user = new ApplicationUser
+        await using var transaction = dbContext.Database.IsRelational()
+            ? await dbContext.Database.BeginTransactionAsync()
+            : null;
+
+        var user = existingUser ?? new ApplicationUser
         {
             UserName = memberUserName,
             PhoneNumber = Input.PhoneNumber,
@@ -137,26 +152,51 @@ public class RegisterModel(
             LastName = Input.LastName
         };
 
-        var createResult =
-            await userManager.CreateAsync(user, Input.Password);
-
-        if (!createResult.Succeeded)
+        if (existingUser is null)
         {
-            foreach (var error in createResult.Errors)
+            var createResult = await userManager.CreateAsync(user, Input.Password);
+            if (!createResult.Succeeded)
             {
-                ModelState.AddModelError(
-                    string.Empty,
-                    error.Description);
-            }
+                foreach (var error in createResult.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
 
-            return Page();
+                return Page();
+            }
+        }
+        else
+        {
+            user.PhoneNumber = Input.PhoneNumber;
+            user.FirstName = Input.FirstName;
+            user.LastName = Input.LastName;
+            var updateResult = await userManager.UpdateAsync(user);
+            if (!updateResult.Succeeded)
+            {
+                foreach (var error in updateResult.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
+
+                return Page();
+            }
         }
 
-        await userManager.AddToRoleAsync(
-            user,
-            ApplicationRoles.Member);
+        if (!await userManager.IsInRoleAsync(user, ApplicationRoles.Member))
+        {
+            var roleResult = await userManager.AddToRoleAsync(user, ApplicationRoles.Member);
+            if (!roleResult.Succeeded)
+            {
+                foreach (var error in roleResult.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
 
-        var membershipStartsAtUtc = selectedOption is null ? (DateTime?)null : DateTime.UtcNow;
+                return Page();
+            }
+        }
+
+        var membershipStartsAtUtc = DateTime.UtcNow;
         dbContext.MemberProfiles.Add(new MemberProfile
         {
             ApplicationUserId = user.Id,
@@ -165,7 +205,7 @@ public class RegisterModel(
             MembershipPackageOptionId = selectedOption?.Id,
             MembershipStartsAtUtc = membershipStartsAtUtc,
             MembershipEndsAtUtc = selectedOption is not null && selectedOption.DurationDays > 0
-                ? membershipStartsAtUtc!.Value.AddDays(selectedOption.DurationDays)
+                ? membershipStartsAtUtc.AddDays(selectedOption.DurationDays)
                 : null,
             FitnessGoal = Input.FitnessGoal,
             RemainingClassCredits =
@@ -175,6 +215,7 @@ public class RegisterModel(
         });
 
         await dbContext.SaveChangesAsync();
+        if (transaction is not null) await transaction.CommitAsync();
 
         await signInManager.SignInAsync(
             user,
