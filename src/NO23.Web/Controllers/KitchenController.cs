@@ -9,6 +9,7 @@ using NO23.Web.ViewModels;
 using NO23.Web.ViewModels.Member;
 using NO23.Web.Services.Payments;
 using Microsoft.Extensions.Options;
+using Npgsql;
 using System.Text.Json;
 using System.Security.Claims;
 
@@ -21,14 +22,54 @@ public class KitchenController(
     IyzicoPaymentService iyzicoPaymentService,
     IOptions<IyzicoOptions> paymentOptions,
     IOptions<ClubPickupOptions> clubPickupOptions,
-    CalorieCalculatorService calorieCalculator) : Controller
+    CalorieCalculatorService calorieCalculator,
+    ILogger<KitchenController> logger) : Controller
 {
     private const string PublicCalculatorInputSessionKey = "NO23.PublicKitchen.CalculatorInput";
     private const string PublicCalculatorResultSessionKey = "NO23.PublicKitchen.CalculatorResult";
+    private const int CatalogReadMaxAttempts = 3;
     private readonly IyzicoOptions paymentSettings = paymentOptions.Value;
     private readonly ClubPickupOptions clubPickupSettings = clubPickupOptions.Value;
 
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(CancellationToken cancellationToken)
+    {
+        IReadOnlyList<GuestOrderPageViewModel> menuItems = [];
+        IReadOnlyList<KitchenSubscriptionPlanViewModel> subscriptionPlans = [];
+        var isCatalogTemporarilyUnavailable = false;
+
+        try
+        {
+            menuItems = await ExecuteCatalogReadWithRetryAsync(
+                LoadMenuItemsAsync,
+                cancellationToken);
+            subscriptionPlans = await ExecuteCatalogReadWithRetryAsync(
+                LoadSubscriptionPlansAsync,
+                cancellationToken);
+        }
+        catch (Exception exception) when (IsTransientDatabaseFailure(exception))
+        {
+            isCatalogTemporarilyUnavailable = true;
+            Response.Headers.CacheControl = "no-store";
+            logger.LogError(
+                exception,
+                "Kitchen public catalog could not be loaded after {AttemptCount} attempts. " +
+                "The page will be rendered with the available fallback content.",
+                CatalogReadMaxAttempts);
+        }
+
+        return View(new KitchenPublicPageViewModel
+        {
+            IsCatalogTemporarilyUnavailable = isCatalogTemporarilyUnavailable,
+            MenuItems = menuItems,
+            SubscriptionPlans = subscriptionPlans,
+            CalculatorInput = ReadSession<CalorieCalculatorInputViewModel>(PublicCalculatorInputSessionKey)
+                ?? new CalorieCalculatorInputViewModel(),
+            Recommendation = ReadSession<CalorieRecommendationViewModel>(PublicCalculatorResultSessionKey)
+        });
+    }
+
+    private async Task<IReadOnlyList<GuestOrderPageViewModel>> LoadMenuItemsAsync(
+        CancellationToken cancellationToken)
     {
         var menuItems = await dbContext.KitchenMenuItems
             .AsNoTracking()
@@ -50,9 +91,9 @@ public class KitchenController(
                 AllergenNames = item.MenuItemAllergens.OrderBy(x => x.KitchenAllergen.DisplayOrder)
                     .Select(x => x.KitchenAllergen.Name).ToList()
             })
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
-        var model = menuItems
+        return menuItems
             .Select(item => new GuestOrderPageViewModel
             {
                 ItemId = item.ItemId,
@@ -68,8 +109,12 @@ public class KitchenController(
                 Allergens = string.Join(", ", item.AllergenNames)
             })
             .ToList();
+    }
 
-        var subscriptionPlans = await dbContext.KitchenSubscriptionPackages
+    private async Task<IReadOnlyList<KitchenSubscriptionPlanViewModel>> LoadSubscriptionPlansAsync(
+        CancellationToken cancellationToken)
+    {
+        return await dbContext.KitchenSubscriptionPackages
             .AsNoTracking()
             .Where(package => package.IsActive && (package.Days == 5 || package.Days == 20))
             .OrderBy(package => package.DisplayOrder)
@@ -85,16 +130,48 @@ public class KitchenController(
                 DailyDeliveryFee = package.DailyDeliveryFee,
                 IsActive = package.IsActive
             })
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
+    }
 
-        return View(new KitchenPublicPageViewModel
+    private async Task<T> ExecuteCatalogReadWithRetryAsync<T>(
+        Func<CancellationToken, Task<T>> operation,
+        CancellationToken cancellationToken)
+    {
+        for (var attempt = 1; ; attempt++)
         {
-            MenuItems = model,
-            SubscriptionPlans = subscriptionPlans,
-            CalculatorInput = ReadSession<CalorieCalculatorInputViewModel>(PublicCalculatorInputSessionKey)
-                ?? new CalorieCalculatorInputViewModel(),
-            Recommendation = ReadSession<CalorieRecommendationViewModel>(PublicCalculatorResultSessionKey)
-        });
+            try
+            {
+                return await operation(cancellationToken);
+            }
+            catch (Exception exception) when (
+                attempt < CatalogReadMaxAttempts &&
+                IsTransientDatabaseFailure(exception))
+            {
+                var retryDelay = TimeSpan.FromMilliseconds(250 * attempt);
+                logger.LogWarning(
+                    exception,
+                    "Transient database failure while loading the Kitchen public catalog. " +
+                    "Retrying attempt {NextAttempt}/{MaxAttempts} after {RetryDelayMs} ms.",
+                    attempt + 1,
+                    CatalogReadMaxAttempts,
+                    retryDelay.TotalMilliseconds);
+                await Task.Delay(retryDelay, cancellationToken);
+            }
+        }
+    }
+
+    private static bool IsTransientDatabaseFailure(Exception exception)
+    {
+        for (Exception? current = exception; current is not null; current = current.InnerException)
+        {
+            if (current is TimeoutException ||
+                current is NpgsqlException { IsTransient: true })
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     [HttpPost]

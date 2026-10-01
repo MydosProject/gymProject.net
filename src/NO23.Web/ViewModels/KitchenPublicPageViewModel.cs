@@ -6,6 +6,8 @@ namespace NO23.Web.ViewModels;
 
 public class KitchenPublicPageViewModel
 {
+    public bool IsCatalogTemporarilyUnavailable { get; init; }
+
     public IReadOnlyList<GuestOrderPageViewModel> MenuItems { get; init; } = [];
 
     public IReadOnlyList<KitchenSubscriptionPlanViewModel> SubscriptionPlans { get; init; } = [];

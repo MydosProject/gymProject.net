@@ -10,6 +10,14 @@
     <div class="kitchen-page-glow" aria-hidden="true"></div>
 
     <div class="container position-relative">
+        @if (Model.IsCatalogTemporarilyUnavailable)
+        {
+            <div class="alert alert-warning mt-3" role="status" aria-live="polite">
+                Menü veya paket bilgilerinin bir bölümüne şu anda ulaşılamıyor. Kalori hesaplama aracını kullanmaya
+                devam edebilir, eksik içeriği görmek için kısa bir süre sonra sayfayı yenileyebilirsin.
+            </div>
+        }
+
         <section class="kitchen-hero public-kitchen-hero">
             <div>
                 <p class="kitchen-kicker">NO23 / Nutrition System</p>
@@ -182,7 +190,17 @@
                 </p>
             </div>
 
-            @if (Model.MenuItems.Count == 0)
+            @if (Model.IsCatalogTemporarilyUnavailable && Model.MenuItems.Count == 0)
+            {
+                <div class="kitchen-menu-empty">
+                    <span>!</span>
+                    <div>
+                        <h3>Menü geçici olarak görüntülenemiyor.</h3>
+                        <p>Bağlantı yeniden kurulduğunda ürünler burada otomatik olarak yayınlanacak.</p>
+                    </div>
+                </div>
+            }
+            else if (Model.MenuItems.Count == 0)
             {
                 <div class="kitchen-menu-empty">
                     <span>00</span>
