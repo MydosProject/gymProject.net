@@ -10,14 +10,25 @@ public class PersonalTrainingCalendarService(ApplicationDbContext dbContext)
 {
     public Task<(bool Succeeded, string Message)> CreateWeeklyAsync(
         int trainerId, WeeklyPersonalSessionInput input) =>
-        CreateWeeklyCoreAsync(trainerId, input, allowUnassignedMember: false);
+        CreateWeeklyCoreAsync(
+            trainerId,
+            input,
+            allowUnassignedMember: false,
+            allowPastDates: false);
 
     public Task<(bool Succeeded, string Message)> CreateWeeklyByAdminAsync(
         int trainerId, WeeklyPersonalSessionInput input) =>
-        CreateWeeklyCoreAsync(trainerId, input, allowUnassignedMember: true);
+        CreateWeeklyCoreAsync(
+            trainerId,
+            input,
+            allowUnassignedMember: true,
+            allowPastDates: true);
 
     private async Task<(bool Succeeded, string Message)> CreateWeeklyCoreAsync(
-        int trainerId, WeeklyPersonalSessionInput input, bool allowUnassignedMember)
+        int trainerId,
+        WeeklyPersonalSessionInput input,
+        bool allowUnassignedMember,
+        bool allowPastDates)
     {
         if (input.Weeks is < 1 or > 52 || input.Days.Length == 0 ||
             input.Days.Any(day => !Enum.IsDefined(day)) ||
@@ -46,10 +57,14 @@ public class PersonalTrainingCalendarService(ApplicationDbContext dbContext)
                     .Add(input.Time.ToTimeSpan()))))
             .OrderBy(start => start).ToList();
         var nowUtc = DateTime.UtcNow;
-        if (starts.Any(start => start <= nowUtc))
+        if (!allowPastDates && starts.Any(start => start <= nowUtc))
             return (false, "Tüm birebir dersler gelecekte olmalı.");
 
-        var entitlementError = await ValidateEntitlementsAsync(member, starts, nowUtc);
+        var entitlementError = await ValidateEntitlementsAsync(
+            member,
+            starts,
+            nowUtc,
+            allowPastDates);
         if (entitlementError is not null)
             return (false, entitlementError);
 
@@ -90,9 +105,12 @@ public class PersonalTrainingCalendarService(ApplicationDbContext dbContext)
     }
 
     private async Task<string?> ValidateEntitlementsAsync(
-        MemberProfile member, IReadOnlyList<DateTime> starts, DateTime nowUtc)
+        MemberProfile member,
+        IReadOnlyList<DateTime> starts,
+        DateTime nowUtc,
+        bool allowPastDates = false)
     {
-        if (!MemberPackageEntitlement.IsActive(member, nowUtc) ||
+        if ((!allowPastDates && !MemberPackageEntitlement.IsActive(member, nowUtc)) ||
             starts.Any(start => !MemberPackageEntitlement.IsActive(member, start)))
             return "Ders tarihleri üyenin aktif üyelik dönemi içinde olmalı.";
 
@@ -146,17 +164,31 @@ public class PersonalTrainingCalendarService(ApplicationDbContext dbContext)
 
     public Task<(bool Succeeded, string Message)> CreateAsync(
         int trainerId, int memberProfileId, DateTime startsAtUtc, int durationMinutes, string? note) =>
-        CreateCoreAsync(trainerId, memberProfileId, startsAtUtc, durationMinutes, note, allowUnassignedMember: false);
+        CreateCoreAsync(
+            trainerId,
+            memberProfileId,
+            startsAtUtc,
+            durationMinutes,
+            note,
+            allowUnassignedMember: false,
+            allowPastDates: false);
 
     public Task<(bool Succeeded, string Message)> CreateByAdminAsync(
         int trainerId, int memberProfileId, DateTime startsAtUtc, int durationMinutes, string? note) =>
-        CreateCoreAsync(trainerId, memberProfileId, startsAtUtc, durationMinutes, note, allowUnassignedMember: true);
+        CreateCoreAsync(
+            trainerId,
+            memberProfileId,
+            startsAtUtc,
+            durationMinutes,
+            note,
+            allowUnassignedMember: true,
+            allowPastDates: true);
 
     private async Task<(bool Succeeded, string Message)> CreateCoreAsync(
         int trainerId, int memberProfileId, DateTime startsAtUtc, int durationMinutes, string? note,
-        bool allowUnassignedMember)
+        bool allowUnassignedMember, bool allowPastDates)
     {
-        if (startsAtUtc <= DateTime.UtcNow)
+        if (!allowPastDates && startsAtUtc <= DateTime.UtcNow)
             return (false, "Ders için gelecekte bir tarih ve saat seçmelisiniz.");
         if (!await dbContext.Trainers.AnyAsync(x => x.Id == trainerId && x.IsActive))
             return (false, "Aktif bir antrenör seçmelisiniz.");
@@ -173,7 +205,11 @@ public class PersonalTrainingCalendarService(ApplicationDbContext dbContext)
         if (durationMinutes is < 15 or > 240)
             return (false, "Ders süresi 15 ile 240 dakika arasında olmalıdır.");
 
-        var entitlementError = await ValidateEntitlementsAsync(member, [startsAtUtc], DateTime.UtcNow);
+        var entitlementError = await ValidateEntitlementsAsync(
+            member,
+            [startsAtUtc],
+            DateTime.UtcNow,
+            allowPastDates);
         if (entitlementError is not null)
             return (false, entitlementError);
 

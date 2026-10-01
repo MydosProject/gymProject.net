@@ -79,6 +79,53 @@ public class PersonalTrainingCalendarServiceTests
     }
 
     [Fact]
+    public async Task CreateWeeklyByAdminAsync_AllowsCurrentAndPastWeeks()
+    {
+        await using var db = CreateDbContext();
+        var (trainer, member) = await SeedAsync(db);
+        var input = new WeeklyPersonalSessionInput
+        {
+            MemberProfileId = member.Id,
+            Week = ClubTime.Monday(ClubTime.Now.AddDays(-7)),
+            Days = [DayOfWeek.Monday],
+            Time = new TimeOnly(11, 0),
+            Weeks = 2,
+            DurationMinutes = 50
+        };
+
+        var result = await new PersonalTrainingCalendarService(db)
+            .CreateWeeklyByAdminAsync(trainer.Id, input);
+
+        Assert.True(result.Succeeded);
+        var sessions = await db.PersonalTrainingSessions
+            .OrderBy(item => item.StartsAtUtc)
+            .ToListAsync();
+        Assert.Equal(2, sessions.Count);
+        Assert.Contains(sessions, item => item.StartsAtUtc <= DateTime.UtcNow);
+    }
+
+    [Fact]
+    public async Task CreateWeeklyAsync_StillRejectsPastDatesForTrainer()
+    {
+        await using var db = CreateDbContext();
+        var (trainer, member) = await SeedAsync(db);
+        var input = new WeeklyPersonalSessionInput
+        {
+            MemberProfileId = member.Id,
+            Week = ClubTime.Monday(ClubTime.Now.AddDays(-7)),
+            Days = [DayOfWeek.Monday],
+            Time = new TimeOnly(11, 0),
+            Weeks = 1
+        };
+
+        var result = await new PersonalTrainingCalendarService(db)
+            .CreateWeeklyAsync(trainer.Id, input);
+
+        Assert.False(result.Succeeded);
+        Assert.Empty(db.PersonalTrainingSessions);
+    }
+
+    [Fact]
     public async Task CreateAsync_RejectsMemberAssignedToAnotherTrainer()
     {
         await using var db = CreateDbContext();
@@ -109,6 +156,20 @@ public class PersonalTrainingCalendarServiceTests
         Assert.True(result.Succeeded);
         Assert.Equal(otherTrainer.Id, (await db.PersonalTrainingSessions.SingleAsync()).TrainerId);
         Assert.Equal(assignedTrainer.Id, member.AssignedTrainerId);
+    }
+
+    [Fact]
+    public async Task CreateByAdminAsync_AllowsPastManualSession()
+    {
+        await using var db = CreateDbContext();
+        var (trainer, member) = await SeedAsync(db);
+        var startsAtUtc = DateTime.UtcNow.AddDays(-1);
+
+        var result = await new PersonalTrainingCalendarService(db)
+            .CreateByAdminAsync(trainer.Id, member.Id, startsAtUtc, 50, "Geçmiş ders kaydı");
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(startsAtUtc, (await db.PersonalTrainingSessions.SingleAsync()).StartsAtUtc);
     }
 
     [Fact]

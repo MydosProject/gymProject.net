@@ -33,7 +33,7 @@
             <form asp-action="CreatePersonal" method="post" class="mt-3">
                 <label class="form-label">Antrenör</label><select name="TrainerId" asp-items="Model.Trainers" class="form-select" required><option value="">Antrenör seç</option></select>
                 <label class="form-label">Üye</label><select name="MemberProfileId" asp-items="Model.Members" class="form-select" required><option value="">Üye seç</option></select>
-                <p>Yönetici olarak üyeyi atanmış antrenöründen farklı bir antrenöre de planlayabilirsin. Kalıcı atama değişmez.</p>
+                <p>Yönetici olarak üyeyi atanmış antrenöründen farklı bir antrenöre planlayabilir; bugün, geçmiş veya gelecek tarihli manuel kayıt girebilirsin. Kalıcı atama değişmez.</p>
                 <label>Tarih ve saat <input name="StartsAt" type="datetime-local" required class="form-control" /></label>
                 <label>Süre (dakika) <input name="DurationMinutes" type="number" min="15" max="240" value="50" required class="form-control" /></label>
                 <label class="d-block">Not <textarea name="Note" maxlength="600" class="form-control"></textarea></label>
@@ -53,7 +53,7 @@
             </fieldset>
             <div class="col-md-4"><label class="form-label">Süre (dakika)</label><input name="DurationMinutes" type="number" min="15" max="240" value="50" class="form-control" required /></div>
             <div class="col-md-8"><label class="form-label">Not</label><input name="Note" maxlength="600" class="form-control" /></div>
-            <p class="mb-0">Paketin birebir ders hakkı ve çakışmalar kontrol edilir; hata varsa hiçbir ders eklenmez.</p>
+            <p class="mb-0">Başlangıç haftası bugün, geçmiş veya gelecek olabilir. Paketin birebir ders hakkı ve çakışmalar kontrol edilir; hata varsa hiçbir ders eklenmez.</p>
             <div><button class="btn btn-dark">Haftalık birebir programı oluştur</button></div>
         </form>
     </details>
