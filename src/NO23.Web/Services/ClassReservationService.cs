@@ -7,6 +7,22 @@ namespace NO23.Web.Services;
 
 public class ClassReservationService(ApplicationDbContext dbContext)
 {
+    public static int CancelSessionReservations(ClassSession session, DateTime nowUtc, string reason)
+    {
+        var count = 0;
+        foreach (var reservation in session.Reservations.Where(item => item.Status == ClassReservationStatus.Reserved))
+        {
+            reservation.Status = ClassReservationStatus.Cancelled;
+            reservation.CancelledAtUtc = nowUtc;
+            reservation.CancellationReason = reason;
+            if (!MemberPackageEntitlement.HasUnlimitedClassAccess(reservation.MemberProfile))
+                reservation.MemberProfile.RemainingClassCredits++;
+            reservation.MemberProfile.UpdatedAtUtc = nowUtc;
+            count++;
+        }
+        return count;
+    }
+
     private static readonly TimeSpan CancellationWindow = TimeSpan.FromHours(2);
 
     public async Task<ReservationResult> ReserveAsync(string userId, int classSessionId)

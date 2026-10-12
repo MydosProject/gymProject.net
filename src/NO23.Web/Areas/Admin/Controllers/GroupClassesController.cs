@@ -126,8 +126,18 @@ public class GroupClassesController(ApplicationDbContext dbContext) : Controller
         }
 
         ApplyFormModel(groupClass, model);
-        await dbContext.SaveChangesAsync();
+        if (!groupClass.IsActive) await new GroupClassRemovalService(dbContext).DeactivateAsync(id);
+        else await dbContext.SaveChangesAsync();
 
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Deactivate(int id)
+    {
+        var result = await new GroupClassRemovalService(dbContext).DeactivateAsync(id);
+        TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] = result.Message;
         return RedirectToAction(nameof(Index));
     }
 

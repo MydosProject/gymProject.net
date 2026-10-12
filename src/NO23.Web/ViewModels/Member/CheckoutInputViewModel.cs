@@ -6,6 +6,10 @@ namespace NO23.Web.ViewModels.Member;
 
 public class CheckoutInputViewModel : IValidatableObject
 {
+    [EnumDataType(typeof(PaymentMethod), ErrorMessage = "Geçerli bir ödeme yöntemi seçmelisin.")]
+    [Display(Name = "Ödeme yöntemi")]
+    public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.CreditCard;
+
     [EnumDataType(typeof(OrderDeliveryMethod), ErrorMessage = "Geçerli bir teslimat yöntemi seçmelisin.")]
     [Display(Name = "Teslimat yöntemi")]
     public OrderDeliveryMethod DeliveryMethod { get; set; } =

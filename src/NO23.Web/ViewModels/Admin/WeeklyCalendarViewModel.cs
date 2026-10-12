@@ -9,9 +9,11 @@ public class WeeklyCalendarViewModel
 {
     public DateTime Week { get; set; }
     public int? TrainerId { get; set; }
+    public int? MemberId { get; set; }
     public List<SelectListItem> Trainers { get; set; } = [];
     public List<SelectListItem> Classes { get; set; } = [];
     public List<SelectListItem> Members { get; set; } = [];
+    public List<MemberPackagePeriodViewModel> MemberPackagePeriods { get; set; } = [];
     public List<ClassSession> Groups { get; set; } = [];
     public List<PersonalTrainingSession> Personal { get; set; } = [];
 
@@ -25,6 +27,11 @@ public class WeeklyCalendarViewModel
             .ToList();
 }
 
+public record MemberPackagePeriodViewModel(
+    int Id,
+    DateTime? MembershipStartsAtUtc,
+    DateTime? MembershipEndsAtUtc);
+
 public record WeeklyCalendarEntryViewModel(
     DateTime StartsAtUtc,
     ClassSession? Group,
@@ -32,6 +39,8 @@ public record WeeklyCalendarEntryViewModel(
 
 public class WeeklyGroupInput
 {
+    public int? FilterMemberId { get; set; }
+    public int? FilterTrainerId { get; set; }
     [Range(1, int.MaxValue)] public int GroupClassId { get; set; }
     public DateTime Week { get; set; } = ClubWeek();
     public DayOfWeek[] Days { get; set; } = [];

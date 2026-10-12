@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +12,7 @@ using NO23.Web.Domain.Entities;
 using NO23.Web.Domain.Enums;
 using NO23.Web.Infrastructure.Identity;
 using NO23.Web.Services;
+using NO23.Web.Infrastructure.Validation;
 
 namespace NO23.Web.Areas.Admin.Controllers;
 
@@ -19,6 +22,42 @@ public class MembersController(
     ApplicationDbContext dbContext,
     UserManager<ApplicationUser> userManager) : Controller
 {
+    [HttpGet]
+    public async Task<IActionResult> ResetPassword(int id)
+    {
+        var member = await dbContext.MemberProfiles.AsNoTracking().Include(item => item.ApplicationUser)
+            .FirstOrDefaultAsync(item => item.Id == id);
+        return member is null ? NotFound() : View(new MemberPasswordResetViewModel
+        {
+            Id = id, MemberName = $"{member.ApplicationUser.FirstName} {member.ApplicationUser.LastName}".Trim()
+        });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> ResetPassword(int id, MemberPasswordResetViewModel model)
+    {
+        if (id != model.Id) return BadRequest();
+        var member = await dbContext.MemberProfiles.Include(item => item.ApplicationUser).FirstOrDefaultAsync(item => item.Id == id);
+        if (member is null) return NotFound();
+        model.MemberName = $"{member.ApplicationUser.FirstName} {member.ApplicationUser.LastName}".Trim();
+        if (model.Password != model.ConfirmPassword) ModelState.AddModelError(nameof(model.ConfirmPassword), "Parolalar aynı olmalıdır.");
+        if (!ModelState.IsValid) return View(model);
+        var token = await userManager.GeneratePasswordResetTokenAsync(member.ApplicationUser);
+        var result = await userManager.ResetPasswordAsync(member.ApplicationUser, token, model.Password);
+        if (!result.Succeeded)
+        {
+            model.Password = model.ConfirmPassword = string.Empty;
+            ModelState.Remove(nameof(model.Password));
+            foreach (var error in result.Errors) ModelState.AddModelError(nameof(model.Password), error.Description);
+            ModelState.Remove(nameof(model.ConfirmPassword));
+            return View(model);
+        }
+        await userManager.ResetAccessFailedCountAsync(member.ApplicationUser);
+        await userManager.SetLockoutEndDateAsync(member.ApplicationUser, null);
+        TempData["SuccessMessage"] = "Üyenin geçici parolası yenilendi. Gerektiğinde yeniden yenileyebilirsiniz.";
+        return RedirectToAction(nameof(Index));
+    }
+
     [HttpGet]
     public async Task<IActionResult> Create()
     {
@@ -36,12 +75,22 @@ public class MembersController(
         model.NationalIdentityNumber = model.NationalIdentityNumber?.Trim() ?? string.Empty;
         model.Email = string.IsNullOrWhiteSpace(model.Email) ? null : model.Email.Trim();
 
+        var birthDateError = BirthDateValidation.GetError(model.BirthDate, required: true);
+        if (birthDateError is not null)
+            ModelState.AddModelError(nameof(model.BirthDate), birthDateError);
+
         var variant = await FindSelectableVariantAsync(model.ServicePackageVariantId);
         if (variant is null)
             ModelState.AddModelError(nameof(model.ServicePackageVariantId), "Aktif bir üyelik, grup dersi veya Kids paketi seçmelisiniz.");
         var family = await ResolveKidsFamilyAsync(variant, model.FamilyCode);
         if (family.Error is not null)
             ModelState.AddModelError(nameof(model.FamilyCode), family.Error);
+        var payment = variant is null ? (Order: (Order?)null, Errors: (IReadOnlyList<System.ComponentModel.DataAnnotations.ValidationResult>)[])
+            : ManualOrderPaymentService.PreparePackageOrder(variant, model.Payment ?? new(), family.DiscountPercent,
+                User.FindFirstValue(ClaimTypes.NameIdentifier));
+        foreach (var error in payment.Errors)
+            foreach (var field in error.MemberNames)
+                ModelState.AddModelError(field, error.ErrorMessage!);
         if (model.Email is not null && await userManager.FindByEmailAsync(model.Email) is not null)
             ModelState.AddModelError(nameof(model.Email), "Bu e-posta adresi zaten kullanılıyor.");
         if (await dbContext.MemberProfiles.AnyAsync(profile =>
@@ -87,10 +136,11 @@ public class MembersController(
         }
         var membershipPackageId = await ResolveLegacyMembershipPackageIdAsync(variant!);
         var membershipStartsAtUtc = DateTime.UtcNow;
-        dbContext.MemberProfiles.Add(new MemberProfile
+        var profile = new MemberProfile
         {
             ApplicationUserId = user.Id,
             NationalIdentityNumber = model.NationalIdentityNumber,
+            BirthDate = model.BirthDate,
             MembershipPackageId = membershipPackageId,
             ServicePackageVariantId = variant!.Id,
             FitnessGoal = model.FitnessGoal?.Trim(),
@@ -103,7 +153,13 @@ public class MembersController(
             FamilyCode = family.Code,
             SiblingDiscountPercent = family.DiscountPercent,
             ReferralCode = $"NO23-{Guid.NewGuid():N}"[..13].ToUpperInvariant()
-        });
+        };
+        dbContext.MemberProfiles.Add(profile);
+        var paymentOrder = payment.Order!;
+        paymentOrder.MemberProfile = profile;
+        paymentOrder.DeliveryFullName = $"{model.FirstName} {model.LastName}";
+        paymentOrder.DeliveryPhoneNumber = user.PhoneNumber ?? "-";
+        dbContext.Orders.Add(paymentOrder);
         await dbContext.SaveChangesAsync();
         if (transaction is not null) await transaction.CommitAsync();
         TempData["StatusMessage"] = family.Code is null
@@ -168,6 +224,7 @@ public class MembersController(
                 FirstName = item.ApplicationUser.FirstName ?? string.Empty,
                 LastName = item.ApplicationUser.LastName ?? string.Empty,
                 NationalIdentityNumber = item.NationalIdentityNumber ?? string.Empty,
+                BirthDate = item.BirthDate,
                 Email = item.ApplicationUser.Email ?? string.Empty,
                 PhoneNumber = item.ApplicationUser.PhoneNumber,
                 ServicePackageVariantId = item.ServicePackageVariantId,
@@ -195,9 +252,13 @@ public class MembersController(
             .FirstOrDefaultAsync(item => item.Id == id);
         if (member is null) return NotFound();
 
+        var birthDateError = BirthDateValidation.GetError(model.BirthDate);
+        if (birthDateError is not null)
+            ModelState.AddModelError(nameof(model.BirthDate), birthDateError);
+
         var variant = model.ServicePackageVariantId is null && member.ServicePackageVariantId is null
             ? null
-            : await FindSelectableVariantAsync(model.ServicePackageVariantId);
+            : await FindSelectableVariantAsync(model.ServicePackageVariantId, member.ServicePackageVariantId);
         var packageExists = model.ServicePackageVariantId is null
             ? member.ServicePackageVariantId is null
             : variant is not null;
@@ -252,6 +313,7 @@ public class MembersController(
         user.EmailConfirmed = email is not null;
         user.PhoneNumber = string.IsNullOrWhiteSpace(model.PhoneNumber) ? null : model.PhoneNumber.Trim();
         member.NationalIdentityNumber = model.NationalIdentityNumber;
+        member.BirthDate = model.BirthDate;
 
         var packageChanged = member.ServicePackageVariantId != model.ServicePackageVariantId;
         if (variant is not null)
@@ -384,7 +446,7 @@ public class MembersController(
 
     private async Task LoadCreateOptionsAsync(MemberCreateViewModel model)
     {
-        ViewBag.PackageOptions = await ManualPackageOptionsAsync(model.ServicePackageVariantId);
+        ViewBag.PackageOptions = await ManualPackageOptionsAsync(null);
         ViewBag.Trainers = new SelectList(await dbContext.Trainers.AsNoTracking().Where(x => x.IsActive)
             .OrderBy(x => x.FirstName).ThenBy(x => x.LastName).Select(x => new { x.Id, Name = x.FirstName + " " + x.LastName }).ToListAsync(), "Id", "Name", model.AssignedTrainerId);
     }
@@ -415,7 +477,8 @@ public class MembersController(
     private async Task<List<ManualMemberPackageOptionViewModel>> ManualPackageOptionsAsync(int? selectedId)
     {
         var variants = await dbContext.ServicePackageVariants.AsNoTracking()
-            .Where(item => (item.IsActive || item.Id == selectedId) && item.ServicePackage.IsActive &&
+            .Include(item => item.ServicePackage)
+            .Where(item => ((item.IsActive && item.ServicePackage.IsActive) || item.Id == selectedId) &&
                 (item.ServicePackage.Category == ServicePackageCategory.Membership ||
                  item.ServicePackage.Category == ServicePackageCategory.PersonalTraining ||
                  item.ServicePackage.Category == ServicePackageCategory.GroupClasses ||
@@ -423,36 +486,43 @@ public class MembersController(
             .OrderBy(item => item.ServicePackage.Category)
             .ThenBy(item => item.ServicePackage.DisplayOrder)
             .ThenBy(item => item.DisplayOrder)
-            .Select(item => new
-            {
-                item.Id,
-                item.Name,
-                item.TotalPrice,
-                item.ServicePackage.Category,
-                PackageName = item.ServicePackage.Name
-            }).ToListAsync();
+            .ToListAsync();
 
-        return variants.Select(item => new ManualMemberPackageOptionViewModel
+        return variants.Select(item =>
         {
-            Id = item.Id,
-            Category = item.Category.ToString(),
-            GroupName = item.Category switch
+            var presentation = ServicePackageCatalogService.Present(item);
+            return new ManualMemberPackageOptionViewModel
             {
-                ServicePackageCategory.Membership => "Üyelik paketleri",
-                ServicePackageCategory.PersonalTraining => "Personal Training paketleri",
-                ServicePackageCategory.GroupClasses => "Grup dersi paketleri",
-                _ => "Kids paketleri"
-            },
-            Label = $"{item.PackageName} — {item.Name} — {item.TotalPrice:N0} ₺"
+                Id = item.Id,
+                PackageId = item.ServicePackageId,
+                PackageName = item.ServicePackage.Name,
+                VariantName = item.Name,
+                Category = item.ServicePackage.Category.ToString(),
+                GroupName = ServicePackageCatalogService.CategoryTitle(item.ServicePackage.Category),
+                Price = presentation.Price,
+                PriceNote = presentation.PriceNote,
+                TotalPrice = item.BillingType == ServicePackageBillingType.MonthlySubscription &&
+                    item.DurationMonths is > 0 && !item.PriceOnRequest
+                    ? $"{((item.MonthlyPrice ?? 0) * item.DurationMonths.Value).ToString("N2", CultureInfo.GetCultureInfo("tr-TR"))} ₺"
+                    : null,
+                Duration = item.DurationDays is > 0
+                    ? $"{item.DurationDays} gün"
+                    : $"{(item.DurationMonths ?? 1) + item.BonusMonths} ay",
+                Rights = presentation.Rights,
+                PaymentAmount = item.PriceOnRequest ? null : ManualOrderPaymentService.PackageTotal(item),
+                PriceOnRequest = item.PriceOnRequest,
+                Label = $"{item.ServicePackage.Name} — {item.Name} — {presentation.Price} ({presentation.PriceNote})"
+            };
         }).ToList();
     }
 
-    private async Task<ServicePackageVariant?> FindSelectableVariantAsync(int? variantId)
+    private async Task<ServicePackageVariant?> FindSelectableVariantAsync(int? variantId, int? currentVariantId = null)
     {
         if (variantId is null) return null;
         return await dbContext.ServicePackageVariants
             .Include(item => item.ServicePackage)
-            .FirstOrDefaultAsync(item => item.Id == variantId && item.IsActive && item.ServicePackage.IsActive &&
+            .FirstOrDefaultAsync(item => item.Id == variantId &&
+                ((item.IsActive && item.ServicePackage.IsActive) || item.Id == currentVariantId) &&
                 (item.ServicePackage.Category == ServicePackageCategory.Membership ||
                  item.ServicePackage.Category == ServicePackageCategory.PersonalTraining ||
                  item.ServicePackage.Category == ServicePackageCategory.GroupClasses ||

@@ -10,6 +10,8 @@ public class MemberProfile
 
     public string? NationalIdentityNumber { get; set; }
 
+    public DateOnly? BirthDate { get; set; }
+
     public int MembershipPackageId { get; set; }
 
     public MembershipPackage MembershipPackage { get; set; } = null!;

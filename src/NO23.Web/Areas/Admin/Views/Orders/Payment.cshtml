@@ -1,0 +1,96 @@
+@model NO23.Web.Domain.Entities.Order
+@using NO23.Web.Extensions
+@using NO23.Web.Services
+@using System.Globalization
+@{
+    ViewData["Title"] = "Ödeme ve taksitler";
+    var culture = CultureInfo.GetCultureInfo("tr-TR");
+    var today = DateOnly.FromDateTime(ClubTime.Now);
+    var installments = Model.PaymentInstallments.OrderBy(item => item.Number).ThenBy(item => item.DueDate).ToList();
+    var collected = installments.Count > 0
+        ? installments.Where(item => item.PaidOn.HasValue).Sum(item => item.Amount)
+        : Model.PaymentStatus == PaymentStatus.Paid ? Model.Total : 0m;
+    var remaining = Math.Max(0m, Model.Total - collected);
+    var canCollect = Model.IsManualPayment && Model.Status != OrderStatus.Cancelled && Model.PaymentStatus != PaymentStatus.Refunded;
+    var canRetryKitchenActivation = canCollect && Model.Type == OrderType.KitchenSubscription &&
+        installments.Count > 0 && installments.All(item => item.PaidOn.HasValue) &&
+        (Model.KitchenSubscription?.Status != KitchenSubscriptionStatus.Active ||
+         Model.KitchenSubscription?.MealPlan?.Status != KitchenMealPlanStatus.Generated);
+    var memberName = Model.MemberProfile is null
+        ? Model.DeliveryFullName
+        : $"{Model.MemberProfile.ApplicationUser.FirstName} {Model.MemberProfile.ApplicationUser.LastName}".Trim();
+    string Money(decimal value) => $"{value.ToString("N2", culture)} ₺";
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/manual-payment.css" asp-append-version="true" />
+}
+<section class="admin-page">
+    <div class="container">
+        <header class="admin-page-head">
+            <div>
+                <p class="admin-eyebrow">ÖDEME TAKİBİ / @Model.OrderNumber</p>
+                <h1>Ödeme ve taksitler</h1>
+                <p class="admin-page-description">@memberName · @(Model.ServicePackageVariant is null ? Model.Type.GetDisplayName() : Model.ServicePackageVariant.ServicePackage.Name + " — " + Model.ServicePackageVariant.Name)</p>
+            </div>
+            <a class="btn btn-outline-dark" asp-action="Index">Siparişlere dön</a>
+        </header>
+        @if (TempData["SuccessMessage"] is string success)
+        { <div class="alert alert-success" role="status">@success</div> }
+        @if (TempData["ErrorMessage"] is string error)
+        { <div class="alert alert-danger" role="alert">@error</div> }
+        @if (canRetryKitchenActivation)
+        {
+            <div class="alert alert-warning" role="status">
+                <p>Tüm taksitler tahsil edildi. Kitchen planı henüz aktif değil; paket aktifleştirmesini yeniden deneyebilirsiniz.</p>
+                <form asp-action="RetryActivation" method="post">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button type="submit" class="btn btn-dark btn-sm">Kitchen paketini aktifleştirmeyi yeniden dene</button>
+                </form>
+            </div>
+        }
+        <div class="admin-metrics">
+            <article><span>Toplam tutar</span><strong>@Money(Model.Total)</strong><small>@Model.PaymentMethod.GetDisplayName()</small></article>
+            <article><span>Tahsil edilen</span><strong>@Money(collected)</strong><small>@Model.PaymentStatus.GetDisplayName()</small></article>
+            <article><span>Kalan tutar</span><strong>@Money(remaining)</strong><small>@Model.Status.GetDisplayName()</small></article>
+        </div>
+        <div class="admin-form-card mb-4">
+            <p class="mb-1"><strong>Ödeme yöntemi:</strong> @Model.PaymentMethod.GetDisplayName()</p>
+            <p class="mb-0"><strong>POS / dekont referansı:</strong> @(string.IsNullOrWhiteSpace(Model.PaymentReference) ? "—" : Model.PaymentReference)</p>
+        </div>
+        <div class="table-responsive admin-table-card">
+            <table class="table align-middle mb-0">
+                <thead><tr><th>Taksit</th><th>Vade</th><th>Tutar</th><th>Tahsilat tarihi</th><th>Referans</th><th>İşlem</th></tr></thead>
+                <tbody>
+                    @if (installments.Count == 0)
+                    { <tr><td colspan="6"><div class="admin-empty-row">Bu ödeme için taksit planı bulunmuyor.</div></td></tr> }
+                    @foreach (var installment in installments)
+                    {
+                        <tr>
+                            <td data-label="Taksit"><strong>@(installment.Number). taksit</strong></td>
+                            <td data-label="Vade">@installment.DueDate.ToString("dd.MM.yyyy")</td>
+                            <td data-label="Tutar">@Money(installment.Amount)</td>
+                            <td data-label="Tahsilat tarihi">@(installment.PaidOn?.ToString("dd.MM.yyyy") ?? "Tahsilat bekliyor")</td>
+                            <td data-label="Referans">@(installment.PaymentReference ?? "—")</td>
+                            <td data-label="İşlem">
+                                @if (!installment.PaidOn.HasValue && canCollect)
+                                {
+                                    <form asp-action="RecordInstallment" method="post" class="manual-payment-collection">
+                                        <input type="hidden" name="id" value="@Model.Id" />
+                                        <input type="hidden" name="installmentId" value="@installment.Id" />
+                                        <label for="paidOn-@installment.Id" class="form-label mb-0">Tahsilat tarihi</label>
+                                        <input id="paidOn-@installment.Id" name="paidOn" type="date" class="form-control" value="@today.ToString("yyyy-MM-dd")" min="@today.AddYears(-10).ToString("yyyy-MM-dd")" max="@today.ToString("yyyy-MM-dd")" required />
+                                        <label for="reference-@installment.Id" class="form-label mb-0">POS / dekont referansı</label>
+                                        <input id="reference-@installment.Id" name="reference" class="form-control" maxlength="160" placeholder="Opsiyonel" />
+                                        <button type="submit" class="btn btn-dark btn-sm">Tahsilatı kaydet</button>
+                                    </form>
+                                }
+                                else
+                                { <span class="text-muted small">@(installment.PaidOn.HasValue ? "Tahsil edildi" : "Tahsilat kapalı")</span> }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>

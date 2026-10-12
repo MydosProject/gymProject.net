@@ -222,8 +222,14 @@ public class CommerceService
     public async Task<CommerceResult> CreateOneTimeOrderFromCartAsync(
         string userId,
         DeliveryDetails deliveryDetails,
-        string? discountCode = null)
+        string? discountCode = null,
+        PaymentMethod paymentMethod = PaymentMethod.CreditCard)
     {
+        if (!Enum.IsDefined(paymentMethod))
+        {
+            return CommerceResult.Fail("Geçerli bir ödeme yöntemi seçmelisin.");
+        }
+
         var deliveryResult = NormalizeDeliveryDetails(deliveryDetails);
 
         if (!deliveryResult.Succeeded)
@@ -314,6 +320,8 @@ public class CommerceService
             discounts,
             campaignResult.Campaign);
 
+        SetPaymentMethod(order, paymentMethod);
+
         if (campaignResult.Campaign is not null)
         {
             campaignResult.Campaign.UsedCount++;
@@ -333,16 +341,33 @@ public class CommerceService
         }
 
         dbContext.Orders.Add(order);
+        if (paymentMethod != PaymentMethod.CreditCard)
+        {
+            dbContext.CartItems.RemoveRange(cart.Items);
+            cart.UpdatedAtUtc = DateTime.UtcNow;
+        }
         await dbContext.SaveChangesAsync();
 
         return CommerceResult.Ok(order.Id);
     }
 
-        public async Task<CommerceResult> CreateKitchenPackageOrderAsync(
+    public async Task<CommerceResult> CreateKitchenPackageOrderAsync(
         string userId,
         int kitchenSubscriptionId,
-        DeliveryDetails addressDetails)
+        DeliveryDetails addressDetails,
+        PaymentMethod paymentMethod = PaymentMethod.CreditCard)
     {
+        if (!Enum.IsDefined(paymentMethod))
+        {
+            return CommerceResult.Fail("Geçerli bir ödeme yöntemi seçmelisin.");
+        }
+
+        var deliveryResult = NormalizeDeliveryDetails(addressDetails);
+        if (!deliveryResult.Succeeded)
+        {
+            return deliveryResult;
+        }
+
         var profile = await GetMemberProfileAsync(userId);
 
         if (profile is null)
@@ -386,6 +411,10 @@ public class CommerceService
 
         if (existingOrder is not null)
         {
+            if (existingOrder.PaymentMethod != paymentMethod)
+            {
+                return CommerceResult.Fail("Bu paket için başka bir ödeme yöntemiyle bekleyen sipariş var. Siparişlerim ekranından kontrol et veya kulüple iletişime geç.");
+            }
             return CommerceResult.Ok(
                 existingOrder.Id);
         }
@@ -420,6 +449,8 @@ public class CommerceService
             [orderItem],
             deliveryFee);
 
+        SetPaymentMethod(order, paymentMethod);
+
         dbContext.Orders.Add(order);
 
         await dbContext.SaveChangesAsync();
@@ -432,6 +463,11 @@ public class CommerceService
         int quantity,
         GuestOrderInputViewModel input)
     {
+        if (!Enum.IsDefined(input.PaymentMethod))
+        {
+            return CommerceResult.Fail("Geçerli bir ödeme yöntemi seçmelisin.");
+        }
+
         if (quantity <= 0)
         {
             return CommerceResult.Fail("Adet sıfırdan büyük olmalıdır.");
@@ -501,6 +537,8 @@ public class CommerceService
             deliveryDetails,
             orderItem);
 
+        SetPaymentMethod(order, input.PaymentMethod);
+
         product.StockQuantity -= quantity;
         product.UpdatedAtUtc = DateTime.UtcNow;
 
@@ -521,6 +559,11 @@ public class CommerceService
         int quantity,
         GuestOrderInputViewModel input)
     {
+        if (!Enum.IsDefined(input.PaymentMethod))
+        {
+            return CommerceResult.Fail("Geçerli bir ödeme yöntemi seçmelisin.");
+        }
+
         if (quantity <= 0)
         {
             return CommerceResult.Fail("Adet sıfırdan büyük olmalıdır.");
@@ -570,6 +613,8 @@ public class CommerceService
             input.Email,
             deliveryDetails,
             orderItem);
+
+        SetPaymentMethod(order, input.PaymentMethod);
 
         dbContext.Orders.Add(order);
         await dbContext.SaveChangesAsync();
@@ -718,6 +763,15 @@ public class CommerceService
         OrderItem orderItem)
     {
         return BuildOrder(null, guestEmail, OrderType.OneTime, deliveryDetails, null, [orderItem]);
+    }
+
+    private static void SetPaymentMethod(Order order, PaymentMethod paymentMethod)
+    {
+        order.PaymentMethod = paymentMethod;
+        if (paymentMethod != PaymentMethod.CreditCard)
+        {
+            ManualOrderPaymentService.ConfigureOfflineOrder(order);
+        }
     }
 
     private static Order BuildOrder(

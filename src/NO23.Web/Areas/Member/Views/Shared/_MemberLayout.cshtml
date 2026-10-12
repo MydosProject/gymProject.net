@@ -50,6 +50,7 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     @await RenderSectionAsync("Styles", required: false)
+    <link rel="stylesheet" href="~/css/payment-method.css" asp-append-version="true" />
 </head>
 <body class="no23-member-body">
     <div class="member-shell">
@@ -780,5 +781,6 @@
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)
+    <script src="~/js/payment-method.js" asp-append-version="true"></script>
 </body>
 </html>

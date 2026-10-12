@@ -151,6 +151,7 @@ public class ProfileController(
                     : member.ServicePackageVariant.ServicePackage.Name + " — " + member.ServicePackageVariant.Name,
                 OptionName = member.MembershipPackageOption != null ? member.MembershipPackageOption.Name : null,
                 member.NationalIdentityNumber,
+                member.BirthDate,
                 member.CreatedAtUtc
             })
             .FirstOrDefaultAsync();
@@ -173,6 +174,7 @@ public class ProfileController(
         model.Email = user.Email ?? string.Empty;
         model.MaskedNationalIdentityNumber = TurkishNationalIdentityNumber.Mask(
             membership?.NationalIdentityNumber);
+        model.BirthDate = membership?.BirthDate;
         model.MembershipPackageName = membership?.PackageName ?? "Üyelik bilgisi bulunamadı";
         model.MembershipPackageOptionName = membership?.OptionName;
         model.MemberSinceUtc = membership?.CreatedAtUtc ?? user.CreatedAtUtc;

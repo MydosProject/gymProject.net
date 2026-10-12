@@ -29,7 +29,7 @@ public class ClassSessionsController(
             .ThenInclude(groupClass => groupClass.Trainer)
             .Include(session => session.Reservations)
             .Where(session => includeHistory ||
-                (session.Status == ClassSessionStatus.Scheduled && session.StartsAtUtc >= nowUtc))
+                (session.GroupClass.IsActive && session.Status == ClassSessionStatus.Scheduled && session.StartsAtUtc >= nowUtc))
             .OrderBy(session => session.StartsAtUtc)
             .Select(session => new
             {
@@ -366,7 +366,7 @@ public class ClassSessionsController(
         if (group is null) return;
         var start = ClubTime.ToUtc(model.StartsAtLocal);
         var end = start.AddMinutes(group.DurationMinutes);
-        if (await dbContext.ClassSessions.AnyAsync(x => x.Id != id && x.GroupClass.TrainerId == group.TrainerId &&
+        if (await dbContext.ClassSessions.AnyAsync(x => x.Id != id && x.GroupClass.IsActive && x.GroupClass.TrainerId == group.TrainerId &&
                 x.Status == ClassSessionStatus.Scheduled && x.StartsAtUtc < end && x.StartsAtUtc.AddMinutes(x.GroupClass.DurationMinutes) > start) ||
             await dbContext.PersonalTrainingSessions.AnyAsync(x => x.TrainerId == group.TrainerId &&
                 x.Status == PersonalTrainingSessionStatus.Scheduled && x.StartsAtUtc < end && x.StartsAtUtc.AddMinutes(x.DurationMinutes) > start))

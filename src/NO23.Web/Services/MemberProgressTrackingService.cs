@@ -102,6 +102,7 @@ public class MemberProgressTrackingService(ApplicationDbContext dbContext)
             entry.LeftArmCm = Normalize(input.LeftArmCm);
             entry.WaistCm = Normalize(input.WaistCm);
             entry.AbdomenCm = Normalize(input.AbdomenCm);
+            entry.GluteCm = Normalize(input.GluteCm);
             entry.HipCm = Normalize(input.HipCm);
             entry.RightUpperLegCm = Normalize(input.RightUpperLegCm);
             entry.LeftUpperLegCm = Normalize(input.LeftUpperLegCm);
@@ -223,6 +224,7 @@ public class MemberProgressTrackingService(ApplicationDbContext dbContext)
                input.LeftArmCm.HasValue ||
                input.WaistCm.HasValue ||
                input.AbdomenCm.HasValue ||
+               input.GluteCm.HasValue ||
                input.HipCm.HasValue ||
                input.RightUpperLegCm.HasValue ||
                input.LeftUpperLegCm.HasValue;
@@ -237,6 +239,7 @@ public class MemberProgressTrackingService(ApplicationDbContext dbContext)
                entry.LeftArmCm.HasValue ||
                entry.WaistCm.HasValue ||
                entry.AbdomenCm.HasValue ||
+               entry.GluteCm.HasValue ||
                entry.HipCm.HasValue ||
                entry.RightUpperLegCm.HasValue ||
                entry.LeftUpperLegCm.HasValue;

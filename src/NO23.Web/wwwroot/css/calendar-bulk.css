@@ -1,0 +1,13 @@
+.calendar-bulk-toolbar {
+    padding: 1.1rem;
+    border: 1px solid rgba(255, 255, 255, .12);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, .025);
+}
+.calendar-bulk-toolbar .form-text { color: inherit; opacity: .8; }
+.calendar-bulk-toolbar summary { cursor: pointer; }
+.calendar-bulk-toolbar label { overflow-wrap: anywhere; }
+.trainer-calendar-page .admin-page-head h1 { color: #fff; }
+.trainer-calendar-page .admin-page-description { color: #b3bbb0; }
+.trainer-calendar-page .trainer-week-toolbar { flex-wrap: wrap; }
+.trainer-calendar-page .trainer-week-toolbar .text-muted { color: #b3bbb0 !important; }

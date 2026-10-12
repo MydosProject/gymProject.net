@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using NO23.Web.Data;
+using NO23.Web.Domain.Enums;
 using NO23.Web.Services.Payments;
 using NO23.Web.ViewModels.Member;
 
@@ -48,7 +49,10 @@ public class MemberCartQueryService(
         return new MemberCartPanelViewModel
         {
             CartItems = (await new MembershipPricingService(dbContext).GetAsync(userId)).ApplyTo(items),
-            CheckoutInput = checkoutInput ?? new CheckoutInputViewModel(),
+            CheckoutInput = checkoutInput ?? new CheckoutInputViewModel
+            {
+                PaymentMethod = paymentSettings.Enabled ? PaymentMethod.CreditCard : PaymentMethod.Cash
+            },
             IsPaymentAvailable = paymentSettings.Enabled,
             ClubPickupDisplayName = clubPickupSettings.EffectiveDisplayName
         };

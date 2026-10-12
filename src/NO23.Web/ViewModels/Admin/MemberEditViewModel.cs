@@ -19,6 +19,9 @@ public class MemberEditViewModel
     [Display(Name = "TC Kimlik No")]
     public string NationalIdentityNumber { get; set; } = string.Empty;
 
+    [MemberBirthDate, DataType(DataType.Date), Display(Name = "Doğum tarihi")]
+    public DateOnly? BirthDate { get; set; }
+
     [EmailAddress, StringLength(256), Display(Name = "E-posta (opsiyonel)")]
     public string? Email { get; set; }
 
@@ -46,6 +49,7 @@ public class MemberEditViewModel
 
 public class MemberCreateViewModel
 {
+    public ManualPaymentInputViewModel Payment { get; set; } = new();
     [Required, StringLength(80), Display(Name = "Ad")]
     public string FirstName { get; set; } = string.Empty;
     [Required, StringLength(80), Display(Name = "Soyad")]
@@ -55,6 +59,9 @@ public class MemberCreateViewModel
     [TurkishNationalIdentityNumber]
     [Display(Name = "TC Kimlik No")]
     public string NationalIdentityNumber { get; set; } = string.Empty;
+    [Required(ErrorMessage = BirthDateValidation.RequiredMessage)]
+    [MemberBirthDate, DataType(DataType.Date), Display(Name = "Doğum tarihi")]
+    public DateOnly? BirthDate { get; set; }
     [EmailAddress, StringLength(256), Display(Name = "E-posta (opsiyonel)")]
     public string? Email { get; set; }
     [Phone, StringLength(40), Display(Name = "Telefon")]
@@ -74,9 +81,19 @@ public class MemberCreateViewModel
 public class ManualMemberPackageOptionViewModel
 {
     public int Id { get; init; }
+    public int PackageId { get; init; }
+    public string PackageName { get; init; } = string.Empty;
+    public string VariantName { get; init; } = string.Empty;
     public string GroupName { get; init; } = string.Empty;
     public string Label { get; init; } = string.Empty;
     public string Category { get; init; } = string.Empty;
+    public string Price { get; init; } = string.Empty;
+    public string PriceNote { get; init; } = string.Empty;
+    public string? TotalPrice { get; init; }
+    public string? Duration { get; init; }
+    public string Rights { get; init; } = string.Empty;
+    public decimal? PaymentAmount { get; init; }
+    public bool PriceOnRequest { get; init; }
 }
 
 public class MemberDeleteViewModel

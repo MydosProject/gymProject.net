@@ -1,9 +1,13 @@
 @model NO23.Web.ViewModels.Admin.WeeklyCalendarViewModel
-@section Styles { <link rel="stylesheet" href="~/css/admin-calendar.css" asp-append-version="true" /> }
+@section Styles { <link rel="stylesheet" href="~/css/admin-calendar.css" asp-append-version="true" /><link rel="stylesheet" href="~/css/calendar-bulk.css" asp-append-version="true" /> }
 @using NO23.Web.Services
 @using NO23.Web.Domain.Enums
 @using NO23.Web.Extensions
-@{ ViewData["Title"] = "Haftalık Takvim"; var culture = System.Globalization.CultureInfo.GetCultureInfo("tr-TR"); }
+@{
+    ViewData["Title"] = "Haftalık Takvim";
+    var culture = System.Globalization.CultureInfo.GetCultureInfo("tr-TR");
+    var memberPeriods = Model.MemberPackagePeriods.ToDictionary(item => item.Id);
+}
 <section class="admin-page">
     <header class="admin-page-head"><div><h1>Haftalık takvim</h1><p>Grup derslerini ve birebir seansları aynı haftada planla. Tüm saatler Türkiye saatidir.</p></div></header>
     @foreach (var key in new[] { "SuccessMessage", "ErrorMessage" })
@@ -11,26 +15,27 @@
     <form method="get" class="d-flex flex-wrap gap-2 mb-3">
         <label>Hafta <input type="date" name="week" value="@Model.Week.ToString("yyyy-MM-dd")" class="form-control" /></label>
         <label>Antrenör <select name="trainerId" class="form-select"><option value="">Tüm antrenörler</option>@foreach(var trainer in Model.Trainers){<option value="@trainer.Value" selected="@(trainer.Value == Model.TrainerId?.ToString())">@trainer.Text</option>}</select></label>
+        <label>Üye <select name="memberId" class="form-select"><option value="">Tüm üyeler</option>@foreach(var member in Model.Members){<option value="@member.Value" selected="@(member.Value == Model.MemberId?.ToString())">@member.Text</option>}</select></label>
         <button class="btn btn-dark">Göster</button>
-        <a class="btn btn-outline-dark" asp-route-week="@Model.Week.AddDays(-7).ToString("yyyy-MM-dd")" asp-route-trainerId="@Model.TrainerId">← Önceki hafta</a>
-        <a class="btn btn-outline-dark" asp-route-week="@Model.Week.AddDays(7).ToString("yyyy-MM-dd")" asp-route-trainerId="@Model.TrainerId">Sonraki hafta →</a>
+        <a class="btn btn-outline-dark" asp-route-week="@Model.Week.AddDays(-7).ToString("yyyy-MM-dd")" asp-route-trainerId="@Model.TrainerId" asp-route-memberId="@Model.MemberId">← Önceki hafta</a>
+        <a class="btn btn-outline-dark" asp-route-week="@Model.Week.AddDays(7).ToString("yyyy-MM-dd")" asp-route-trainerId="@Model.TrainerId" asp-route-memberId="@Model.MemberId">Sonraki hafta →</a>
     </form>
     <div class="row g-3 mb-4">
         <div class="col-lg-6"><details class="border rounded p-3 bg-white text-dark"><summary>+ Haftalık grup dersi ekle</summary>
-            <form asp-action="CreateGroup" method="post" class="mt-3">
+            <form asp-action="CreateGroup" method="post" class="mt-3"><input type="hidden" name="FilterMemberId" value="@Model.MemberId" /><input type="hidden" name="FilterTrainerId" value="@Model.TrainerId" />
                 <label class="form-label">Grup dersi</label><select name="GroupClassId" class="form-select mb-2" asp-items="Model.Classes" required><option value="">Ders seç</option></select>
                 <label>Başlangıç haftası <input name="Week" type="date" value="@Model.Week.ToString("yyyy-MM-dd")" class="form-control" required /></label>
                 <fieldset class="my-2"><legend class="fs-6">Haftanın günleri</legend>
                     @for(var i=0;i<7;i++){ var day=(DayOfWeek)((i+1)%7); <label class="me-2"><input type="checkbox" name="Days" value="@day" /> @culture.DateTimeFormat.GetDayName(day)</label> }
                 </fieldset>
                 <label>Saat <input type="time" name="Time" value="18:00" required class="form-control" /></label>
-                <label>Kaç hafta? <input type="number" name="Weeks" min="1" max="52" value="1" class="form-control" required /></label>
+                <label>Sezon süresi (hafta) <input type="number" name="Weeks" min="1" max="52" value="1" class="form-control" required /></label>
                 <label>Kontenjan (boşsa dersin kontenjanı) <input type="number" name="Capacity" min="1" max="200" class="form-control" /></label>
                 <p class="mt-2">Seçtiğin gün ve saatte 52 haftaya kadar sezonluk seans oluşturabilirsin. Çakışma varsa hiçbir seans eklenmez.</p>
                 <button class="btn btn-dark">Haftalık programı oluştur</button>
             </form></details></div>
         <div class="col-lg-6"><details class="border rounded p-3 bg-white text-dark"><summary>+ Birebir ders ekle</summary>
-            <form asp-action="CreatePersonal" method="post" class="mt-3">
+            <form asp-action="CreatePersonal" method="post" class="mt-3"><input type="hidden" name="FilterMemberId" value="@Model.MemberId" /><input type="hidden" name="FilterTrainerId" value="@Model.TrainerId" />
                 <label class="form-label">Antrenör</label><select name="TrainerId" asp-items="Model.Trainers" class="form-select" required><option value="">Antrenör seç</option></select>
                 <label class="form-label">Üye</label><select name="MemberProfileId" asp-items="Model.Members" class="form-select" required><option value="">Üye seç</option></select>
                 <p>Yönetici olarak üyeyi atanmış antrenöründen farklı bir antrenöre planlayabilir; bugün, geçmiş veya gelecek tarihli manuel kayıt girebilirsin. Kalıcı atama değişmez.</p>
@@ -42,21 +47,30 @@
     </div>
     <details class="border rounded p-3 bg-white text-dark mb-4">
         <summary>+ Haftalık sabit birebir program ekle</summary>
-        <form asp-action="CreateWeeklyPersonal" method="post" class="row g-2 mt-2">
+        <form asp-action="CreateWeeklyPersonal" method="post" class="row g-2 mt-2" data-weekly-personal-schedule><input type="hidden" name="FilterMemberId" value="@Model.MemberId" /><input type="hidden" name="FilterTrainerId" value="@Model.TrainerId" />
             <div class="col-md-6"><label class="form-label">Antrenör</label><select name="TrainerId" asp-items="Model.Trainers" class="form-select" required><option value="">Antrenör seç</option></select></div>
-            <div class="col-md-6"><label class="form-label">Üye</label><select name="MemberProfileId" asp-items="Model.Members" class="form-select" required><option value="">Üye seç</option></select></div>
+            <div class="col-md-6"><label class="form-label">Üye</label><select name="MemberProfileId" class="form-select" required data-schedule-member><option value="">Üye seç</option>
+                @foreach (var member in Model.Members)
+                {
+                    var period = memberPeriods.GetValueOrDefault(int.Parse(member.Value));
+                    <option value="@member.Value" data-package-start-utc="@period?.MembershipStartsAtUtc?.ToString("yyyy-MM-ddTHH:mm:ss.fff'Z'")" data-package-end-utc="@period?.MembershipEndsAtUtc?.ToString("yyyy-MM-ddTHH:mm:ss.fff'Z'")">@member.Text</option>
+                }
+            </select></div>
             <div class="col-md-4"><label class="form-label">Başlangıç haftası</label><input name="Week" type="date" value="@Model.Week.ToString("yyyy-MM-dd")" class="form-control" required /></div>
             <div class="col-md-4"><label class="form-label">Saat</label><input name="Time" type="time" value="11:00" class="form-control" required /></div>
-            <div class="col-md-4"><label class="form-label">Kaç hafta?</label><input name="Weeks" type="number" min="1" max="52" value="4" class="form-control" required /></div>
+            <div class="col-md-4" data-automatic-schedule-field><label class="form-label" for="automaticScheduleLength">Program süresi (otomatik)</label><output id="automaticScheduleLength" class="form-control" data-automatic-schedule-length aria-live="polite">Üye seçin</output></div>
+            <div class="col-md-4" data-manual-schedule-field hidden><label class="form-label" for="manualScheduleWeeks">Hafta sayısı (bitiş tarihi bilinmiyor)</label><input id="manualScheduleWeeks" name="Weeks" type="number" min="1" max="52" value="4" class="form-control" disabled /></div>
             <fieldset class="col-12"><legend class="fs-6">Sabit günler</legend>
                 @for(var i=0;i<7;i++){ var day=(DayOfWeek)((i+1)%7); <label class="me-3"><input type="checkbox" name="Days" value="@day" /> @culture.DateTimeFormat.GetDayName(day)</label> }
             </fieldset>
             <div class="col-md-4"><label class="form-label">Süre (dakika)</label><input name="DurationMinutes" type="number" min="15" max="240" value="50" class="form-control" required /></div>
             <div class="col-md-8"><label class="form-label">Not</label><input name="Note" maxlength="600" class="form-control" /></div>
-            <p class="mb-0">Başlangıç haftası bugün, geçmiş veya gelecek olabilir. Paketin birebir ders hakkı ve çakışmalar kontrol edilir; hata varsa hiçbir ders eklenmez.</p>
+            <p class="mb-0" data-schedule-description aria-live="polite">Üyeyi seçin; program süresi paket bitişinden otomatik hesaplanır. Bitiş tarihi bilinmeyen eski üyeler için hafta sayısı girilir.</p>
+            <p class="mb-0">Başlangıç haftası bugün, geçmiş veya gelecek olabilir. Dersler paket dönemi içinde kalır. Birebir ders hakkı ve çakışmalar kontrol edilir; hata varsa hiçbir ders eklenmez.</p>
             <div><button class="btn btn-dark">Haftalık birebir programı oluştur</button></div>
         </form>
     </details>
+    @await Html.PartialAsync("_CalendarBulkToolbar", new NO23.Web.ViewModels.Admin.CalendarBulkInput { Week = Model.Week, TrainerId = Model.TrainerId, MemberId = Model.MemberId })
     <div class="weekly-calendar">
     @for(var i=0;i<7;i++)
     {
@@ -70,13 +84,14 @@
         {
             var participants=session.Reservations.Where(x=>x.Status==ClassReservationStatus.Reserved).ToList();
             <article id="group-session-@session.Id" class="weekly-calendar-session"><span>GRUP · @ClubTime.ToLocal(session.StartsAtUtc).ToString("HH:mm")</span><h3>@session.GroupClass.Name</h3>
+                @if(session.Status==ClassSessionStatus.Scheduled){<label class="small mb-2"><input id="select-group-@session.Id" type="checkbox" name="GroupIds" value="@session.Id" form="calendar-bulk-form" /> Toplu işlem için grup seansını seç</label>}
                 <p>@session.GroupClass.Trainer.FirstName @session.GroupClass.Trainer.LastName<br />@session.Status.GetDisplayName() · @participants.Count / @(session.CapacityOverride??session.GroupClass.Capacity)</p>
                 <a asp-controller="ClassSessions" asp-action="Edit" asp-route-id="@session.Id">Seansı düzenle</a>
                 <details><summary>Katılımcılar (@participants.Count)</summary>
                     @foreach(var person in participants){<div class="border-bottom py-2">@person.MemberProfile.ApplicationUser.FirstName @person.MemberProfile.ApplicationUser.LastName
-                        <form asp-controller="ClassSessions" asp-action="RemoveReservation" method="post"><input name="id" type="hidden" value="@session.Id" /><input name="reservationId" type="hidden" value="@person.Id" /><button class="btn btn-sm btn-outline-danger">Çıkar</button></form></div>}
+                        <form asp-controller="ClassSessions" asp-action="RemoveReservation" method="post"><input type="hidden" name="FilterMemberId" value="@Model.MemberId" /><input type="hidden" name="FilterTrainerId" value="@Model.TrainerId" /><input name="id" type="hidden" value="@session.Id" /><input name="reservationId" type="hidden" value="@person.Id" /><button class="btn btn-sm btn-outline-danger">Çıkar</button></form></div>}
                     @if(session.Status==ClassSessionStatus.Scheduled && session.StartsAtUtc>DateTime.UtcNow){
-                    <form asp-action="AddParticipant" method="post" class="mt-2"><input name="sessionId" type="hidden" value="@session.Id" /><input name="week" type="hidden" value="@Model.Week.ToString("yyyy-MM-dd")" />
+                    <form asp-action="AddParticipant" method="post" class="mt-2"><input type="hidden" name="FilterMemberId" value="@Model.MemberId" /><input type="hidden" name="FilterTrainerId" value="@Model.TrainerId" /><input name="sessionId" type="hidden" value="@session.Id" /><input name="week" type="hidden" value="@Model.Week.ToString("yyyy-MM-dd")" />
                         <label>Katılımcı seç<select name="memberId" asp-items="Model.Members" required class="form-select"><option value="">Üye seç</option></select></label><button class="btn btn-dark btn-sm mt-2">Katılımcı ekle</button>
                     </form>}
                 </details>
@@ -86,14 +101,15 @@
         {
             <article class="weekly-calendar-session is-personal"><span>BİREBİR · @ClubTime.ToLocal(personalSession.StartsAtUtc).ToString("HH:mm") · @personalSession.DurationMinutes dk</span>
                 <h3>@personalSession.MemberProfile.ApplicationUser.FirstName @personalSession.MemberProfile.ApplicationUser.LastName</h3>
+                @if(personalSession.Status==PersonalTrainingSessionStatus.Scheduled){<label class="small mb-2"><input id="select-personal-@personalSession.Id" type="checkbox" name="PersonalIds" value="@personalSession.Id" form="calendar-bulk-form" /> Toplu işlem için dersi seç</label>}
                 <p>@personalSession.Trainer.FirstName @personalSession.Trainer.LastName<br />@personalSession.Status.GetDisplayName()</p>
                 @if(personalSession.Status==PersonalTrainingSessionStatus.Scheduled){<details><summary>Dersi düzenle</summary>
-                <form asp-action="UpdatePersonal" method="post">
+                <form asp-action="UpdatePersonal" method="post"><input type="hidden" name="FilterMemberId" value="@Model.MemberId" /><input type="hidden" name="FilterTrainerId" value="@Model.TrainerId" />
                     <input name="Id" type="hidden" value="@personalSession.Id" /><input name="TrainerId" type="hidden" value="@personalSession.TrainerId" /><input name="Week" type="hidden" value="@Model.Week.ToString("yyyy-MM-dd")" />
                     <label>İşlem<select name="Status" class="form-select"><option value="Postponed">Tarih / saat değiştir</option><option value="Completed">Tamamlandı</option><option value="Cancelled">İptal edildi</option><option value="NoShow">Katılmadı</option></select></label>
                     <label>Yeni tarih ve saat<input name="PostponedStartsAt" type="datetime-local" class="form-control" /></label>
                     <label>Not<textarea name="Note" maxlength="600" class="form-control"></textarea></label>
-                    <small>Ertelemede hak korunur. Mevcut kurala göre tamamlandı, iptal veya katılmadı işlemi bir ders hakkı düşer.</small>
+                    <small>Erteleme ve iptalde ders hakkı korunur. Tamamlandı veya katılmadı işlemi bir ders hakkı düşer.</small>
                     <button class="btn btn-dark btn-sm mt-2">Kaydet</button>
                 </form></details>}
             </article>
@@ -103,3 +119,7 @@
     }
     </div>
 </section>
+@section Scripts {
+    <script src="~/js/calendar-bulk.js" asp-append-version="true"></script>
+    <script src="~/js/weekly-personal-schedule.js" asp-append-version="true"></script>
+}

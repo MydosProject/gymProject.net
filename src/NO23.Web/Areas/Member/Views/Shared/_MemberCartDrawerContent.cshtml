@@ -96,9 +96,15 @@ else
             @if (!Model.IsPaymentAvailable)
             {
                 <div class="alert alert-warning" role="status">
-                    Online ödeme şu anda kullanılamıyor. Sipariş oluşturma geçici olarak durduruldu.
+                    Kredi kartı ödemesi şu anda kullanılamıyor. Nakit veya havale ile sipariş oluşturabilirsin.
                 </div>
             }
+
+            <partial name="_PaymentMethodSelector" model="@(new NO23.Web.ViewModels.PaymentMethodSelectorViewModel
+            {
+                InputName = "CheckoutInput.PaymentMethod", SelectedMethod = Model.CheckoutInput.PaymentMethod,
+                IsCardPaymentAvailable = Model.IsPaymentAvailable
+            })" />
 
             <fieldset class="shop-delivery-method"
                       data-delivery-method-root>
@@ -196,15 +202,13 @@ else
             </div>
 
             <button type="submit"
-                    class="shop-checkout-button"
-                    disabled="@(!Model.IsPaymentAvailable)">
-                <span>@(Model.IsPaymentAvailable ? "Ödemeye Geç" : "Ödeme Kullanılamıyor")</span>
+                    class="shop-checkout-button">
+                <span data-payment-submit-label>Siparişi oluştur</span>
                 <strong>@Model.CartSubtotal.ToString("N0") ₺</strong>
             </button>
 
             <p class="shop-checkout-note">
-                Sipariş kaydı, güvenli iyzico ödeme ekranı başarıyla
-                başlatıldığında tamamlanır.
+                Sipariş ve ödeme durumunu Siparişlerim ekranından takip edebilirsin.
             </p>
         </form>
     </section>

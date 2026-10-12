@@ -20,6 +20,14 @@ public class Order
 
     public PaymentStatus PaymentStatus { get; set; } = PaymentStatus.Pending;
 
+    public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.CreditCard;
+
+    public bool IsManualPayment { get; set; }
+
+    public string? PaymentReference { get; set; }
+
+    public string? PaymentRecordedByUserId { get; set; }
+
     public OrderDeliveryMethod DeliveryMethod { get; set; } =
         OrderDeliveryMethod.AddressDelivery;
 
@@ -74,4 +82,6 @@ public class Order
     public ICollection<OrderItem> Items { get; set; } = [];
 
     public ICollection<PaymentTransaction> PaymentTransactions { get; set; } = [];
+
+    public ICollection<OrderPaymentInstallment> PaymentInstallments { get; set; } = [];
 }

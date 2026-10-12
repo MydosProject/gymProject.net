@@ -110,6 +110,9 @@ UserNotificationRealtimeService? notificationService = null)
             return OrderWorkflowResult.Ok(order.Id);
         }
 
+        if (order.IsManualPayment && order.PaymentInstallments.Count > 0 && requestedPaymentStatus == PaymentStatus.Paid)
+            return OrderWorkflowResult.Fail("Tahsilatları ödeme / taksitler ekranından kaydedin.");
+
         var availablePaymentStatuses = GetAvailablePaymentStatuses(
             order.Status,
             order.PaymentStatus);
@@ -202,6 +205,7 @@ UserNotificationRealtimeService? notificationService = null)
     {
         return await dbContext.Orders
             .Include(order => order.MemberProfile)
+            .Include(order => order.PaymentInstallments)
             .Include(order => order.Items)
             .ThenInclude(item => item.ShopProduct)
             .Include(order => order.Items)

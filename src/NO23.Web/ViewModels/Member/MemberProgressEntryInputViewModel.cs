@@ -52,6 +52,10 @@ public class MemberProgressEntryInputViewModel
     [Microsoft.AspNetCore.Mvc.ModelBinder(BinderType = typeof(NO23.Web.Services.MeasurementDecimalBinder))]
     public decimal? AbdomenCm { get; set; }
 
+    [Range(10, 300, ErrorMessage = "Kalça ölçüsü 10 ile 300 cm arasında olmalıdır.")]
+    [Display(Name = "Kalça")]
+    public decimal? GluteCm { get; set; }
+
     [Range(10, 300, ErrorMessage = "Basen ölçüsü 10 ile 300 cm arasında olmalıdır.")]
     [Display(Name = "Basen")]
     [Microsoft.AspNetCore.Mvc.ModelBinder(BinderType = typeof(NO23.Web.Services.MeasurementDecimalBinder))]

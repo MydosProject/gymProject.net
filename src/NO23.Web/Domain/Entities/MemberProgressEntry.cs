@@ -28,6 +28,8 @@ public class MemberProgressEntry
 
     public decimal? AbdomenCm { get; set; }
 
+    public decimal? GluteCm { get; set; }
+
     public decimal? HipCm { get; set; }
 
     public decimal? RightUpperLegCm { get; set; }

@@ -16,6 +16,7 @@ public class MemberProgressEntryConfiguration : IEntityTypeConfiguration<MemberP
         builder.Property(entry => entry.LeftArmCm).HasPrecision(6, 2);
         builder.Property(entry => entry.WaistCm).HasPrecision(6, 2);
         builder.Property(entry => entry.AbdomenCm).HasPrecision(6, 2);
+        builder.Property(entry => entry.GluteCm).HasPrecision(6, 2);
         builder.Property(entry => entry.HipCm).HasPrecision(6, 2);
         builder.Property(entry => entry.RightUpperLegCm).HasPrecision(6, 2);
         builder.Property(entry => entry.LeftUpperLegCm).HasPrecision(6, 2);

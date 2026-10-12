@@ -25,6 +25,7 @@
           asp-append-version="true" />
 
     @await RenderSectionAsync("Styles", required: false)
+    <link rel="stylesheet" href="~/css/payment-method.css" asp-append-version="true" />
 </head>
 
 <body class="d-flex flex-column min-vh-100">
@@ -279,5 +280,6 @@
             asp-append-version="true"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
+    <script src="~/js/payment-method.js" asp-append-version="true"></script>
 </body>
 </html>

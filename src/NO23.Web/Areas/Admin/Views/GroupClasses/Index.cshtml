@@ -71,9 +71,13 @@
                                 <td data-label="Durum"><span class="badge @(groupClass.IsActive ? "text-bg-success" : "text-bg-secondary")">@(groupClass.IsActive ? "Aktif" : "Pasif")</span></td>
                                 <td class="text-end" data-label="İşlem">
                                     <a class="btn btn-sm btn-outline-dark" asp-action="Edit" asp-route-id="@groupClass.Id">Düzenle</a>
+                                    @if (groupClass.IsActive)
+                                    {
+                                        <form asp-action="Deactivate" asp-route-id="@groupClass.Id" method="post" class="d-inline" onsubmit="return confirm('Grup pasife alınsın mı? Gelecek seansları iptal edilir ve ders hakları iade edilir.');"><button class="btn btn-sm btn-outline-dark" type="submit">Pasife al</button></form>
+                                    }
                                     <form asp-action="Remove" asp-route-id="@groupClass.Id" method="post" class="d-inline"
-                                          onsubmit="return confirm('Bu grup dersi kaldırılsın mı? Ders geçmişi varsa arşivlenir; gelecek seanslar iptal edilir ve katılımcı hakları iade edilir.');">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">@(groupClass.SessionCount == 0 ? "Sil" : "Kaldır")</button>
+                                          onsubmit="return confirm('Grup dersi, tüm seansları ve katılım geçmişi kalıcı olarak silinsin mi? Planlanmış rezervasyonların hakları iade edilir.');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Sil</button>
                                     </form>
                                 </td>
                             </tr>

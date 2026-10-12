@@ -10,6 +10,12 @@ public class MemberOrderListItemViewModel
 
     public string PaymentStatus { get; init; } = string.Empty;
 
+    public string PaymentMethod { get; init; } = "CreditCard";
+
+    public bool IsManualPayment { get; init; }
+
+    public IReadOnlyList<MemberOrderPaymentInstallmentViewModel> PaymentInstallments { get; init; } = [];
+
     public DateTime CreatedAtUtc { get; init; }
 
     public DateTime CreatedAtLocal { get; init; }
@@ -31,4 +37,12 @@ public class MemberOrderListItemViewModel
     public int ItemCount { get; init; }
 
     public IReadOnlyList<MemberOrderItemViewModel> Items { get; init; } = [];
+}
+
+public class MemberOrderPaymentInstallmentViewModel
+{
+    public int Number { get; init; }
+    public decimal Amount { get; init; }
+    public DateOnly DueDate { get; init; }
+    public DateOnly? PaidOn { get; init; }
 }

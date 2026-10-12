@@ -105,7 +105,9 @@ public class MemberProgressTrackingServiceTests
                 EntryDate = entryDate,
                 CaloriesConsumed = 1900,
                 BodyWeightKg = 82.4m,
-                BodyFatPercent = 22.1m
+                BodyFatPercent = 22.1m,
+                GluteCm = 94.5m,
+                HipCm = 98.3m
             });
 
         var result = await service.UpsertAsync(
@@ -115,13 +117,16 @@ public class MemberProgressTrackingServiceTests
                 EntryDate = entryDate,
                 CaloriesConsumed = 2100
             },
-            preserveMeasurements: true);
+            preserveMeasurements: true,
+            preserveTrainerMeasurements: true);
 
         Assert.True(result.Succeeded);
         var entry = await dbContext.MemberProgressEntries.SingleAsync();
         Assert.Equal(2100, entry.CaloriesConsumed);
         Assert.Equal(82.4m, entry.BodyWeightKg);
         Assert.Equal(22.1m, entry.BodyFatPercent);
+        Assert.Equal(94.5m, entry.GluteCm);
+        Assert.Equal(98.3m, entry.HipCm);
     }
 
     [Fact]
@@ -145,6 +150,7 @@ public class MemberProgressTrackingServiceTests
                 LeftArmCm = 37.1m,
                 WaistCm = 84.6m,
                 AbdomenCm = 87.2m,
+                GluteCm = 94.5m,
                 HipCm = 98.3m,
                 RightUpperLegCm = 57.8m,
                 LeftUpperLegCm = 57.6m,
@@ -156,6 +162,8 @@ public class MemberProgressTrackingServiceTests
         var entry = await dbContext.MemberProgressEntries.SingleAsync();
         Assert.Equal(178.5m, entry.HeightCm);
         Assert.Equal(112.2m, entry.ShoulderCm);
+        Assert.Equal(94.5m, entry.GluteCm);
+        Assert.Equal(98.3m, entry.HipCm);
         Assert.Equal(57.6m, entry.LeftUpperLegCm);
         Assert.Equal(18.2m, entry.BodyFatPercent);
         Assert.Equal(42.7m, entry.MuscleMassPercent);
@@ -291,6 +299,21 @@ public class MemberProgressTrackingServiceTests
 
         Assert.True(result.Succeeded);
         Assert.Empty(dbContext.ChallengeProgressEntries);
+    }
+
+    [Fact]
+    public async Task UpsertAsync_AcceptsGluteAsOnlyMeasurementAndKeepsItDuringMemberEdit()
+    {
+        await using var db = CreateDbContext();
+        var member = await SeedMemberAsync(db);
+        var service = new MemberProgressTrackingService(db);
+        var date = DateOnly.FromDateTime(DateTime.Today);
+        Assert.True((await service.UpsertAsync(member.ApplicationUserId, new() { EntryDate = date, GluteCm = 94.555m })).Succeeded);
+        var result = await service.UpsertAsync(member.ApplicationUserId, new() { EntryDate = date }, preserveTrainerMeasurements: true);
+        Assert.True(result.Succeeded);
+        var entry = await db.MemberProgressEntries.SingleAsync();
+        Assert.Equal(94.56m, entry.GluteCm);
+        Assert.Null(entry.HipCm);
     }
 
     private static ApplicationDbContext CreateDbContext()

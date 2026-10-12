@@ -1703,6 +1703,9 @@ namespace NO23.Web.Data.Migrations
                     b.Property<int?>("AssignedTrainerId")
                         .HasColumnType("integer");
 
+                    b.Property<DateOnly?>("BirthDate")
+                        .HasColumnType("date");
+
                     b.Property<DateTime>("CreatedAtUtc")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -1832,6 +1835,10 @@ namespace NO23.Web.Data.Migrations
 
                     b.Property<DateOnly>("EntryDate")
                         .HasColumnType("date");
+
+                    b.Property<decimal?>("GluteCm")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("numeric(6,2)");
 
                     b.Property<decimal?>("HeightCm")
                         .HasPrecision(6, 2)
@@ -2138,6 +2145,9 @@ namespace NO23.Web.Data.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
 
+                    b.Property<bool>("IsManualPayment")
+                        .HasColumnType("boolean");
+
                     b.Property<int?>("KitchenSubscriptionId")
                         .HasColumnType("integer");
 
@@ -2152,6 +2162,21 @@ namespace NO23.Web.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(40)
                         .HasColumnType("character varying(40)");
+
+                    b.Property<string>("PaymentMethod")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasDefaultValue("CreditCard");
+
+                    b.Property<string>("PaymentRecordedByUserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<string>("PaymentReference")
+                        .HasMaxLength(160)
+                        .HasColumnType("character varying(160)");
 
                     b.Property<string>("PaymentStatus")
                         .IsRequired()
@@ -2265,6 +2290,46 @@ namespace NO23.Web.Data.Migrations
                     b.HasIndex("ShopProductVariantId");
 
                     b.ToTable("OrderItems");
+                });
+
+            modelBuilder.Entity("NO23.Web.Domain.Entities.OrderPaymentInstallment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<DateOnly>("DueDate")
+                        .HasColumnType("date");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateOnly?>("PaidOn")
+                        .HasColumnType("date");
+
+                    b.Property<string>("PaymentReference")
+                        .HasMaxLength(160)
+                        .HasColumnType("character varying(160)");
+
+                    b.Property<string>("RecordedByUserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId", "Number")
+                        .IsUnique();
+
+                    b.ToTable("OrderPaymentInstallments");
                 });
 
             modelBuilder.Entity("NO23.Web.Domain.Entities.PaymentTransaction", b =>
@@ -3683,6 +3748,17 @@ namespace NO23.Web.Data.Migrations
                     b.Navigation("ShopProductVariant");
                 });
 
+            modelBuilder.Entity("NO23.Web.Domain.Entities.OrderPaymentInstallment", b =>
+                {
+                    b.HasOne("NO23.Web.Domain.Entities.Order", "Order")
+                        .WithMany("PaymentInstallments")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+                });
+
             modelBuilder.Entity("NO23.Web.Domain.Entities.PaymentTransaction", b =>
                 {
                     b.HasOne("NO23.Web.Domain.Entities.Order", "Order")
@@ -4027,6 +4103,8 @@ namespace NO23.Web.Data.Migrations
             modelBuilder.Entity("NO23.Web.Domain.Entities.Order", b =>
                 {
                     b.Navigation("Items");
+
+                    b.Navigation("PaymentInstallments");
 
                     b.Navigation("PaymentTransactions");
                 });

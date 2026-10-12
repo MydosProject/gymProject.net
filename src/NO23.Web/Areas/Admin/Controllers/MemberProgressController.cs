@@ -29,7 +29,7 @@ public class MemberProgressController(ApplicationDbContext db, MemberProgressTra
         var userId = await db.MemberProfiles.Where(x => x.Id == memberId).Select(x => x.ApplicationUserId).FirstOrDefaultAsync();
         if (userId is null) return NotFound();
         if (input.EntryDate == default || new decimal?[] { input.BodyWeightKg, input.HeightCm, input.ShoulderCm,
-                input.ChestCm, input.RightArmCm, input.LeftArmCm, input.WaistCm, input.AbdomenCm, input.HipCm,
+                input.ChestCm, input.RightArmCm, input.LeftArmCm, input.WaistCm, input.AbdomenCm, input.GluteCm, input.HipCm,
                 input.RightUpperLegCm, input.LeftUpperLegCm, input.BodyFatKg, input.BodyFatPercent,
                 input.MuscleMassKg, input.MuscleMassPercent, input.BodyWaterAmount, input.BodyWaterPercent,
                 input.DailyWaterIntakeLiters }.All(x => x is null))
@@ -103,7 +103,7 @@ public class MemberProgressController(ApplicationDbContext db, MemberProgressTra
         page.Entries = await db.MemberProgressEntries.AsNoTracking().Where(x => x.MemberProfileId == member.Id &&
             (x.BodyWeightKg != null || x.HeightCm != null || x.ShoulderCm != null || x.ChestCm != null ||
              x.RightArmCm != null || x.LeftArmCm != null || x.WaistCm != null || x.AbdomenCm != null ||
-             x.HipCm != null || x.RightUpperLegCm != null || x.LeftUpperLegCm != null ||
+             x.GluteCm != null || x.HipCm != null || x.RightUpperLegCm != null || x.LeftUpperLegCm != null ||
              x.BodyFatKg != null || x.BodyFatPercent != null || x.MuscleMassKg != null ||
              x.MuscleMassPercent != null || x.BodyWaterAmount != null || x.BodyWaterPercent != null ||
              x.DailyWaterIntakeLiters != null))
@@ -118,7 +118,7 @@ public class MemberProgressController(ApplicationDbContext db, MemberProgressTra
             BodyWeightKg = entry?.BodyWeightKg, BodyFatKg = entry?.BodyFatKg,
             HeightCm = entry?.HeightCm, ShoulderCm = entry?.ShoulderCm, ChestCm = entry?.ChestCm,
             RightArmCm = entry?.RightArmCm, LeftArmCm = entry?.LeftArmCm, WaistCm = entry?.WaistCm,
-            AbdomenCm = entry?.AbdomenCm, HipCm = entry?.HipCm, RightUpperLegCm = entry?.RightUpperLegCm,
+            AbdomenCm = entry?.AbdomenCm, GluteCm = entry?.GluteCm, HipCm = entry?.HipCm, RightUpperLegCm = entry?.RightUpperLegCm,
             LeftUpperLegCm = entry?.LeftUpperLegCm,
             BodyFatPercent = entry?.BodyFatPercent, MuscleMassKg = entry?.MuscleMassKg, MuscleMassPercent = entry?.MuscleMassPercent,
             BodyWaterAmount = entry?.BodyWaterAmount, BodyWaterPercent = entry?.BodyWaterPercent,

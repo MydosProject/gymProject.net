@@ -1,7 +1,9 @@
 @model MemberEditViewModel
 @using NO23.Web.ViewModels.Admin
+@using NO23.Web.Services
 @{
     ViewData["Title"] = "Üyeyi Düzenle";
+    var clubToday = DateOnly.FromDateTime(ClubTime.Now);
     var packageOptions = ViewBag.PackageOptions as List<ManualMemberPackageOptionViewModel> ?? [];
 }
 
@@ -13,7 +15,7 @@
                 <h1>Üyeyi düzenle</h1>
                 <p class="admin-page-description">İletişim, paket, ders hakkı ve personel trainer atamasını güncelleyin.</p>
             </div>
-            <a class="btn btn-outline-dark" asp-action="Index">Üyelere dön</a>
+            <div class="d-flex flex-wrap gap-2"><a class="btn btn-outline-dark" asp-action="ResetPassword" asp-route-id="@Model.Id">Geçici parola yenile</a><a class="btn btn-outline-dark" asp-action="Index">Üyelere dön</a></div>
         </header>
 
         <form method="post" class="admin-form-card">
@@ -39,6 +41,13 @@
                     <label asp-for="Email" class="form-label"></label>
                     <input asp-for="Email" class="form-control" autocomplete="email" placeholder="Boş bırakılabilir" />
                     <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="BirthDate" class="form-label"></label>
+                    <input asp-for="BirthDate" type="date" class="form-control" autocomplete="bday"
+                           min="@clubToday.AddYears(-120).ToString("yyyy-MM-dd")" max="@clubToday.ToString("yyyy-MM-dd")" />
+                    <span asp-validation-for="BirthDate" class="text-danger"></span>
+                    <small class="form-text text-muted">Eski üyelerde doğum tarihi bilinmiyorsa boş bırakılabilir.</small>
                 </div>
                 <div class="col-md-6">
                     <label asp-for="PhoneNumber" class="form-label"></label>

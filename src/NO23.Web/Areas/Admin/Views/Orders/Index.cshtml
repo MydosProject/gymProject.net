@@ -85,7 +85,14 @@
                                 </td>
                                 <td data-label="Tür">@order.Type</td>
                                 <td data-label="Durum"><span class="admin-status">@order.Status</span></td>
-                                <td data-label="Ödeme">@order.PaymentStatus</td>
+                                <td data-label="Ödeme">
+                                    @order.PaymentStatus
+                                    <small class="admin-cell-note">@order.PaymentMethod</small>
+                                    @if (order.IsManualPayment)
+                                    {
+                                        <a asp-action="Payment" asp-route-id="@order.Id" class="small d-block mt-1">Ödeme / taksitler</a>
+                                    }
+                                </td>
                                 <td data-label="Teslimat">
                                 <strong>@order.DeliveryMethod</strong>
                                 @if (order.DeliveryDate.HasValue)

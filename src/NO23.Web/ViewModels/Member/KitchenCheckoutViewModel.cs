@@ -6,6 +6,10 @@ namespace NO23.Web.ViewModels.Member;
 
 public class KitchenCheckoutViewModel : IValidatableObject
 {
+    [EnumDataType(typeof(PaymentMethod), ErrorMessage = "Geçerli bir ödeme yöntemi seçmelisin.")]
+    [Display(Name = "Ödeme yöntemi")]
+    public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.CreditCard;
+
     public int KitchenSubscriptionId { get; set; }
 
     public string PackageName { get; set; } = string.Empty;

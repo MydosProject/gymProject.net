@@ -27,6 +27,12 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
             .HasConversion<string>()
             .HasMaxLength(40);
 
+        builder.Property(order => order.PaymentMethod).HasConversion<string>().HasMaxLength(40)
+            .HasSentinel(NO23.Web.Domain.Enums.PaymentMethod.CreditCard)
+            .HasDefaultValue(NO23.Web.Domain.Enums.PaymentMethod.CreditCard);
+        builder.Property(order => order.PaymentReference).HasMaxLength(160);
+        builder.Property(order => order.PaymentRecordedByUserId).HasMaxLength(450);
+
         builder.Property(order => order.DeliveryMethod)
             .HasConversion<string>()
             .HasMaxLength(40);

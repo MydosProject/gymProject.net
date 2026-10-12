@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NO23.Web.Data;
 using NO23.Web.Data.Seed;
+using NO23.Web.Domain.Enums;
 using NO23.Web.Services;
 using NO23.Web.ViewModels.Member;
 using NO23.Web.ViewModels;
@@ -25,7 +26,10 @@ public class ShopController(
 
     public async Task<IActionResult> Index()
     {
-        return View(await BuildDashboardAsync(new CheckoutInputViewModel()));
+        return View(await BuildDashboardAsync(new CheckoutInputViewModel
+        {
+            PaymentMethod = paymentSettings.Enabled ? PaymentMethod.CreditCard : PaymentMethod.Cash
+        }));
     }
 
     [HttpPost]
@@ -102,7 +106,7 @@ public class ShopController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Checkout([Bind(Prefix = "CheckoutInput")] CheckoutInputViewModel input)
     {
-        if (!paymentSettings.Enabled)
+        if (input.PaymentMethod == PaymentMethod.CreditCard && !paymentSettings.Enabled)
         {
             var paymentUnavailableResult =
                 CommerceResult.Fail("Online ödeme şu anda kullanılamıyor. Lütfen daha sonra tekrar dene.");
@@ -127,7 +131,7 @@ public class ShopController(
                 return BadRequest(new
                 {
                     succeeded = false,
-                    message = "Teslimat bilgilerini kontrol et.",
+                    message = "Teslimat ve ödeme bilgilerini kontrol et.",
                     errors = ModelState
                         .Where(item => item.Value?.Errors.Count > 0)
                         .ToDictionary(
@@ -165,7 +169,8 @@ public class ShopController(
                 DeliveryTimeSlot = input.DeliveryTimeSlot,
                 Notes = input.Notes
             },
-            input.DiscountCode);
+            input.DiscountCode,
+            input.PaymentMethod);
 
     if (!result.Succeeded || result.EntityId is null)
     {
@@ -173,6 +178,23 @@ public class ShopController(
             result,
             userId,
             string.Empty);
+    }
+
+    if (input.PaymentMethod != PaymentMethod.CreditCard)
+    {
+        var redirectUrl = Url.Action("Index", "Orders", new { area = "Member", payment = "pending" });
+        if (IsAjaxRequest())
+        {
+            return Json(new
+            {
+                succeeded = true,
+                message = "Siparişin oluşturuldu. Ödemen kulüp tarafından onaylanacak.",
+                itemCount = await cartQueryService.GetItemCountAsync(userId),
+                redirectUrl
+            });
+        }
+
+        return RedirectToAction("Index", "Orders", new { area = "Member", payment = "pending" });
     }
 
     var returnUrl = Url.Action(

@@ -1,0 +1,23 @@
+@model NO23.Web.ViewModels.Admin.CalendarBulkInput
+<form id="calendar-bulk-form" asp-action="Bulk" method="post" class="admin-form-card calendar-bulk-toolbar mb-4" data-calendar-bulk>
+    <h2 class="h5">Toplu ders işlemleri</h2>
+    <input name="Week" type="hidden" value="@Model.Week.ToString("yyyy-MM-dd")" />
+    <input name="TrainerId" type="hidden" value="@Model.TrainerId" />
+    <input name="MemberId" type="hidden" value="@Model.MemberId" />
+    <p>Ders kartlarından işlem yapılacak dersleri seçin. Grup seansını güncellemek veya silmek tüm katılımcılarını etkiler.</p>
+    <div class="row g-3">
+        <div class="col-md-4"><label class="form-label" for="bulkTime">Yeni saat</label><input id="bulkTime" name="Time" type="time" class="form-control" /></div>
+        <div class="col-md-8 d-flex align-items-end flex-wrap gap-2">
+            <button type="button" class="btn btn-outline-dark" data-calendar-select-all>Görünen dersleri seç</button>
+            <output data-calendar-selection-count aria-live="polite">0 ders seçili</output>
+        </div>
+    </div>
+    <details class="mt-3"><summary>Üyenin birden fazla haftadaki birebir derslerini toplu düzenle</summary>
+        <label class="d-block mt-2"><input type="checkbox" name="AllMemberLessons" value="true" disabled="@(Model.MemberId is null)" /> Seçili üyenin tarih aralığındaki tüm planlanmış birebir derslerine uygula</label>
+        @if (Model.MemberId is null) { <small class="form-text">Önce üstteki filtreden üyeyi seçin.</small> }
+        <div class="row g-2 mt-1"><div class="col-md-6"><label for="bulkFrom" class="form-label">İlk tarih</label><input id="bulkFrom" name="From" type="date" value="@Model.From.ToString("yyyy-MM-dd")" class="form-control" /></div><div class="col-md-6"><label for="bulkUntil" class="form-label">Son tarih (dahil)</label><input id="bulkUntil" name="Until" type="date" value="@Model.Until.ToString("yyyy-MM-dd")" class="form-control" /></div></div>
+    </details>
+    <p class="form-text mt-3">Saat güncellemesi ders tarihlerini ve haklarını korur. Silme işleminde planlanmış dersler kaldırılır ve ayrılmış grup ders hakları iade edilir.</p>
+    <div class="d-flex flex-wrap gap-2"><button type="submit" class="btn btn-dark" name="Operation" value="UpdateTime">Saatleri güncelle</button><button type="submit" class="btn btn-outline-danger" name="Operation" value="Delete">Seçilen dersleri sil</button></div>
+    <p class="text-danger mt-2 mb-0" data-calendar-bulk-error role="alert" hidden></p>
+</form>

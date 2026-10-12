@@ -22,7 +22,7 @@ public class WeeklyGroupSchedulingService(ApplicationDbContext db)
         var windowStart = starts[0].AddDays(-1);
         var windowEnd = starts[^1].AddDays(1);
         var existingGroups = await db.ClassSessions.AsNoTracking()
-            .Where(x => x.GroupClass.TrainerId == group.TrainerId &&
+            .Where(x => x.GroupClass.IsActive && x.GroupClass.TrainerId == group.TrainerId &&
                 x.Status == ClassSessionStatus.Scheduled &&
                 x.StartsAtUtc >= windowStart && x.StartsAtUtc < windowEnd)
             .Select(x => new { x.StartsAtUtc, x.GroupClass.DurationMinutes })

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NO23.Web.Data;
@@ -33,6 +34,9 @@ public class OrdersController(
                 order.Type,
                 order.Status,
                 order.PaymentStatus,
+                order.PaymentMethod,
+                order.IsManualPayment,
+                InstallmentCount = order.PaymentInstallments.Count,
                 order.DeliveryMethod,
                 DeliveryDate = order.DeliveryDate,
                 DeliveryTimeSlot = order.DeliveryTimeSlot,
@@ -66,10 +70,13 @@ public class OrdersController(
                 RawStatus = order.Status,
                 PaymentStatus = order.PaymentStatus.GetDisplayName(),
                 RawPaymentStatus = order.PaymentStatus,
-                AvailableOrderStatuses = OrderWorkflowService.GetAvailableOrderStatuses(
+                PaymentMethod = order.PaymentMethod.GetDisplayName(),
+                IsManualPayment = order.IsManualPayment,
+                AvailableOrderStatuses = order.Type == OrderType.ServicePackagePurchase ? [] : OrderWorkflowService.GetAvailableOrderStatuses(
                     order.Status,
                     order.PaymentStatus),
-                AvailablePaymentStatuses = OrderWorkflowService.GetAvailablePaymentStatuses(
+                AvailablePaymentStatuses = order.IsManualPayment && order.InstallmentCount > 0 && order.PaymentStatus != PaymentStatus.Paid
+                    ? [] : OrderWorkflowService.GetAvailablePaymentStatuses(
                     order.Status,
                     order.PaymentStatus),
                 DeliveryDate = order.DeliveryDate,
@@ -119,5 +126,38 @@ public class OrdersController(
                 : result.Message;
 
         return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Payment(int id)
+    {
+        var order = await dbContext.Orders.AsNoTracking()
+            .Include(item => item.MemberProfile).ThenInclude(item => item!.ApplicationUser)
+            .Include(item => item.ServicePackageVariant).ThenInclude(item => item!.ServicePackage)
+            .Include(item => item.PaymentInstallments)
+            .Include(item => item.KitchenSubscription).ThenInclude(item => item!.MealPlan)
+            .FirstOrDefaultAsync(item => item.Id == id);
+        return order is null ? NotFound() : View(order);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RecordInstallment(int id, int installmentId, DateOnly paidOn, string? reference)
+    {
+        var error = ModelState.IsValid
+            ? await new ManualOrderPaymentService(dbContext).RecordInstallmentAsync(id, installmentId, paidOn,
+                reference, User.FindFirstValue(ClaimTypes.NameIdentifier))
+            : "Tahsilat bilgilerini kontrol edin.";
+        TempData[error is null ? "SuccessMessage" : "ErrorMessage"] = error ?? "Taksit tahsilatı kaydedildi.";
+        return RedirectToAction(nameof(Payment), new { id });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RetryActivation(int id)
+    {
+        var error = await new ManualOrderPaymentService(dbContext).RetryActivationAsync(id);
+        TempData[error is null ? "SuccessMessage" : "ErrorMessage"] = error ?? "Kitchen paketi aktifleştirildi.";
+        return RedirectToAction(nameof(Payment), new { id });
     }
 }

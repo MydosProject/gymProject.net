@@ -1,6 +1,27 @@
 @model NO23.Web.ViewModels.Admin.MemberCreateViewModel
 @using NO23.Web.ViewModels.Admin
-@{ ViewData["Title"] = "Yeni üye"; var packageOptions = ViewBag.PackageOptions as List<ManualMemberPackageOptionViewModel> ?? []; }
+@using NO23.Web.Services
+@using System.Globalization
+@{
+    ViewData["Title"] = "Yeni üye";
+    var packageOptions = ViewBag.PackageOptions as List<ManualMemberPackageOptionViewModel> ?? [];
+    var selectedPackage = packageOptions.FirstOrDefault(option => option.Id == Model.ServicePackageVariantId);
+    var selectedCategory = selectedPackage?.Category ?? "Membership";
+    var clubToday = DateOnly.FromDateTime(ClubTime.Now);
+    var hasInstallmentRows = Model.Payment.Installments.Count > 0;
+    if (!hasInstallmentRows)
+    {
+        Model.Payment.Installments.Add(new PaymentInstallmentInputViewModel
+        {
+            Amount = Model.Payment.Amount ?? selectedPackage?.PaymentAmount,
+            DueDate = Model.Payment.FirstDueDate
+        });
+    }
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/package-selector.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/manual-payment.css" asp-append-version="true" />
+}
 <section class="admin-page"><div class="container">
     <header class="admin-page-head"><div><p class="admin-eyebrow">ÜYE YÖNETİMİ</p><h1>Yeni üye ekle</h1><p class="admin-page-description">Üye adına hesap ve üyelik profili oluşturun.</p></div><a class="btn btn-outline-dark" asp-action="Index">Listeye dön</a></header>
     <form asp-action="Create" method="post" class="admin-form-card">
@@ -9,25 +30,66 @@
             <div class="col-md-6"><label asp-for="FirstName" class="form-label"></label><input asp-for="FirstName" class="form-control" /><span asp-validation-for="FirstName" class="text-danger"></span></div>
             <div class="col-md-6"><label asp-for="LastName" class="form-label"></label><input asp-for="LastName" class="form-control" /><span asp-validation-for="LastName" class="text-danger"></span></div>
             <div class="col-md-6"><label asp-for="NationalIdentityNumber" class="form-label"></label><input asp-for="NationalIdentityNumber" class="form-control" inputmode="numeric" pattern="[0-9]{11}" maxlength="11" autocomplete="off" /><span asp-validation-for="NationalIdentityNumber" class="text-danger"></span></div>
+            <div class="col-md-6"><label asp-for="BirthDate" class="form-label"></label><input asp-for="BirthDate" type="date" class="form-control" autocomplete="bday" min="@clubToday.AddYears(-120).ToString("yyyy-MM-dd")" max="@clubToday.ToString("yyyy-MM-dd")" required /><span asp-validation-for="BirthDate" class="text-danger"></span></div>
             <div class="col-md-6"><label asp-for="Email" class="form-label"></label><input asp-for="Email" class="form-control" autocomplete="email" placeholder="Boş bırakılabilir" /><span asp-validation-for="Email" class="text-danger"></span></div>
             <div class="col-md-6"><label asp-for="PhoneNumber" class="form-label"></label><input asp-for="PhoneNumber" class="form-control" /><span asp-validation-for="PhoneNumber" class="text-danger"></span></div>
             <div class="col-md-6"><label asp-for="Password" class="form-label"></label><input asp-for="Password" class="form-control" /><span asp-validation-for="Password" class="text-danger"></span></div>
-            <div class="col-md-6">
-                <label asp-for="ServicePackageVariantId" class="form-label"></label>
-                <select asp-for="ServicePackageVariantId" class="form-select" id="packageVariant">
-                    <option value="">Paket seçin</option>
-                    @foreach (var group in packageOptions.GroupBy(item => item.GroupName))
-                    {
-                        <optgroup label="@group.Key">
-                            @foreach (var option in group)
+            <div class="col-md-6"><label asp-for="AssignedTrainerId" class="form-label"></label><select asp-for="AssignedTrainerId" asp-items="ViewBag.Trainers" class="form-select"><option value="">Atanmamış</option></select></div>
+            <div class="col-12" data-package-selector data-family-field="familyCodeField">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="packageCategory" class="form-label">Paket türü</label>
+                        <select id="packageCategory" class="form-select" data-package-category>
+                            @foreach (var category in packageOptions.GroupBy(item => item.Category))
                             {
-                                <option value="@option.Id" data-category="@option.Category">@option.Label</option>
+                                <option value="@category.Key" selected="@(category.Key == selectedCategory ? "selected" : null)">@category.First().GroupName</option>
                             }
-                        </optgroup>
-                    }
-                </select>
-                <span asp-validation-for="ServicePackageVariantId" class="text-danger"></span>
-                <small class="form-text text-muted">Ders hakkı, seçilen paket ve süreye göre otomatik tanımlanır.</small>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="memberPackage" class="form-label">Paket</label>
+                        <select id="memberPackage" class="form-select" data-package-choice>
+                            <option value="">Paket seçin</option>
+                            @foreach (var package in packageOptions.GroupBy(item => item.PackageId))
+                            {
+                                var item = package.First();
+                                <option value="@item.PackageId" data-category="@item.Category" selected="@(item.PackageId == selectedPackage?.PackageId ? "selected" : null)">@item.PackageName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="ServicePackageVariantId" for="packageVariant" class="form-label">Süre / ders sayısı</label>
+                        <select asp-for="ServicePackageVariantId" class="form-select" id="packageVariant" data-package-variant aria-describedby="memberPackageHelp">
+                            <option value="">Süre / ders sayısı seçin</option>
+                            @foreach (var package in packageOptions.GroupBy(item => item.PackageId))
+                            {
+                                <optgroup label="@package.First().PackageName">
+                                    @foreach (var option in package)
+                                    {
+                                        <option value="@option.Id" data-package="@option.PackageId" data-category="@option.Category"
+                                                data-label="@option.VariantName" data-price="@option.Price" data-price-note="@option.PriceNote" data-total-price="@option.TotalPrice"
+                                                data-duration="@option.Duration" data-rights="@option.Rights"
+                                                data-payment-amount="@option.PaymentAmount?.ToString("0.00", CultureInfo.InvariantCulture)" data-price-on-request="@option.PriceOnRequest.ToString().ToLowerInvariant()">@option.Label</option>
+                                    }
+                                </optgroup>
+                            }
+                        </select>
+                        <span asp-validation-for="ServicePackageVariantId" class="text-danger"></span>
+                    </div>
+                </div>
+                <small id="memberPackageHelp" class="form-text text-muted">Paket türünü, paketi ve süreyi seçin. Ders hakları seçime göre otomatik tanımlanır.</small>
+                @if (packageOptions.Count == 0)
+                {
+                    <p class="text-danger mt-3" role="status">Şu anda seçilebilecek aktif bir paket bulunmuyor.</p>
+                }
+                <div class="package-choice-summary" data-package-summary hidden="@(selectedPackage is null)" aria-live="polite" aria-atomic="true">
+                    <dl>
+                        <div><dt>Fiyat</dt><dd><strong data-package-price>@selectedPackage?.Price</strong> <span data-package-price-note>@selectedPackage?.PriceNote</span></dd></div>
+                        <div><dt>Süre</dt><dd data-package-duration>@(selectedPackage?.Duration ?? "Seçilen paket koşullarına göre")</dd></div>
+                        <div data-package-total-row hidden="@(selectedPackage?.TotalPrice is null)"><dt>Dönem toplamı</dt><dd data-package-total-price>@selectedPackage?.TotalPrice</dd></div>
+                        <div><dt>Ders hakkı</dt><dd data-package-rights>@selectedPackage?.Rights</dd></div>
+                    </dl>
+                </div>
             </div>
             <div class="col-md-6" id="familyCodeField">
                 <label asp-for="FamilyCode" class="form-label"></label>
@@ -35,20 +97,63 @@
                 <span asp-validation-for="FamilyCode" class="text-danger"></span>
                 <small class="form-text text-muted">İlk çocukta kod otomatik üretilir. İkinci çocukta mevcut kod girilince %25 indirim tanımlanır.</small>
             </div>
-            <div class="col-md-6"><label asp-for="AssignedTrainerId" class="form-label"></label><select asp-for="AssignedTrainerId" asp-items="ViewBag.Trainers" class="form-select"><option value="">Atanmamış</option></select></div>
             <div class="col-12"><label asp-for="FitnessGoal" class="form-label"></label><input asp-for="FitnessGoal" class="form-control" /></div>
+            <section class="col-12 manual-payment-plan" data-manual-payment-plan data-has-installment-rows="@hasInstallmentRows.ToString().ToLowerInvariant()" data-today="@clubToday.ToString("yyyy-MM-dd")" data-earliest-date="@clubToday.AddYears(-10).ToString("yyyy-MM-dd")" data-latest-due="@clubToday.AddYears(5).ToString("yyyy-MM-dd")">
+                <h2>Ödeme ve taksit planı</h2>
+                <p class="text-muted">Ödeme yöntemini ve vadeleri belirleyin. Tahsilat tarihi girilen taksitler ödenmiş olarak kaydedilir.</p>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label asp-for="Payment.Method" class="form-label"></label>
+                        <select asp-for="Payment.Method" asp-items="Html.GetEnumSelectList<NO23.Web.Domain.Enums.PaymentMethod>()" class="form-select" data-payment-method></select>
+                        <span asp-validation-for="Payment.Method" class="text-danger"></span>
+                        <small class="form-text text-muted" data-payment-method-help>Üyelik paketlerinde kredi kartı kullanılır.</small>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="Payment.Amount" class="form-label"></label>
+                        <input asp-for="Payment.Amount" type="number" min="0.01" step="0.01" class="form-control" readonly data-payment-amount />
+                        <span asp-validation-for="Payment.Amount" class="text-danger"></span>
+                        <small class="form-text text-muted" data-payment-amount-help>Paket toplamından otomatik hesaplanır.</small>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="Payment.Reference" class="form-label"></label>
+                        <input asp-for="Payment.Reference" class="form-control" maxlength="160" placeholder="Varsa ödeme referansı" />
+                        <span asp-validation-for="Payment.Reference" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="Payment.InstallmentCount" class="form-label"></label>
+                        <input asp-for="Payment.InstallmentCount" type="number" min="1" max="36" class="form-control" data-payment-count />
+                        <span asp-validation-for="Payment.InstallmentCount" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="Payment.FirstDueDate" class="form-label"></label>
+                        <input asp-for="Payment.FirstDueDate" type="date" min="@clubToday.AddYears(-10).ToString("yyyy-MM-dd")" max="@clubToday.AddYears(5).ToString("yyyy-MM-dd")" class="form-control" data-payment-first-due />
+                        <span asp-validation-for="Payment.FirstDueDate" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="button" class="btn btn-outline-dark" data-payment-regenerate>Taksitleri yeniden oluştur</button>
+                    </div>
+                </div>
+                <div class="manual-payment-installments mt-3" data-payment-installments>
+                    @for (var index = 0; index < Model.Payment.Installments.Count; index++)
+                    {
+                        <div class="manual-payment-row">
+                            <strong class="manual-payment-row-number">@(index + 1). taksit</strong>
+                            <div><label asp-for="Payment.Installments[index].Amount" class="form-label"></label><input asp-for="Payment.Installments[index].Amount" type="number" min="0.01" step="0.01" class="form-control" required data-installment-amount /><span asp-validation-for="Payment.Installments[index].Amount" class="text-danger"></span></div>
+                            <div><label asp-for="Payment.Installments[index].DueDate" class="form-label"></label><input asp-for="Payment.Installments[index].DueDate" type="date" min="@clubToday.AddYears(-10).ToString("yyyy-MM-dd")" max="@clubToday.AddYears(5).ToString("yyyy-MM-dd")" class="form-control" required data-installment-due /><span asp-validation-for="Payment.Installments[index].DueDate" class="text-danger"></span></div>
+                            <div><label asp-for="Payment.Installments[index].PaidOn" class="form-label"></label><input asp-for="Payment.Installments[index].PaidOn" type="date" min="@clubToday.AddYears(-10).ToString("yyyy-MM-dd")" max="@clubToday.ToString("yyyy-MM-dd")" class="form-control" data-installment-paid /><span asp-validation-for="Payment.Installments[index].PaidOn" class="text-danger"></span><small class="form-text text-muted">Boşsa tahsilat bekliyor.</small></div>
+                        </div>
+                    }
+                </div>
+                <span asp-validation-for="Payment.Installments" class="text-danger"></span>
+                <p class="manual-payment-summary mt-3 mb-0" data-payment-summary aria-live="polite"></p>
+                <p class="text-danger mt-2 mb-0" data-payment-plan-error role="alert" hidden></p>
+            </section>
         </div>
-        <button type="submit" class="btn btn-dark mt-4">Üyeyi oluştur</button>
+        <button type="submit" class="btn btn-dark mt-4" disabled="@(packageOptions.Count == 0)">Üyeyi oluştur</button>
     </form>
 </div></section>
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-    <script>
-        (() => {
-            const select = document.getElementById('packageVariant');
-            const family = document.getElementById('familyCodeField');
-            const toggle = () => family.hidden = select.selectedOptions[0]?.dataset.category !== 'KidsClub';
-            select.addEventListener('change', toggle); toggle();
-        })();
-    </script>
+    <script src="~/js/package-selector.js" asp-append-version="true"></script>
+    <script src="~/js/manual-payment-plan.js" asp-append-version="true"></script>
 }

@@ -14,6 +14,8 @@
         {
             "OneTime" => "Tek Seferlik Sipariş",
             "KitchenSubscription" => "Kitchen Paketi",
+            "MembershipRenewal" => "Üyelik Yenileme",
+            "ServicePackagePurchase" => "Paket Kaydı",
             _ => type
         };
     }
@@ -55,6 +57,13 @@
             _ => status
         };
     }
+
+    string GetPaymentMethodName(string method) => method switch
+    {
+        "Cash" => "Nakit",
+        "BankTransfer" => "Havale / EFT",
+        _ => "Kredi kartı"
+    };
 
     string GetPaymentStatusClass(string status)
     {
@@ -111,6 +120,13 @@
                     data-bs-dismiss="alert"
                     aria-label="Kapat">
             </button>
+        </div>
+    }
+    else if ((ViewData["PaymentNotice"] as string) == "pending")
+    {
+        <div class="alert alert-info mt-4" role="status">
+            <strong>Siparişin oluşturuldu.</strong>
+            Ödemen kulüp tarafından onaylandığında siparişin işleme alınacak.
         </div>
     }
         <header class="member-orders-hero">
@@ -197,6 +213,10 @@
                             </header>
 
                             <dl class="member-order-summary">
+                                <div>
+                                    <dt>Ödeme yöntemi</dt>
+                                    <dd>@GetPaymentMethodName(order.PaymentMethod)</dd>
+                                </div>
                                     @if (order.Type == "KitchenSubscription")
                                     {
                                         <div>
@@ -236,6 +256,32 @@
                                     }
                                 </div>
                             </dl>
+
+                            @if (order.IsManualPayment && order.PaymentStatus == "Pending")
+                            {
+                                <p class="px-3 pb-2">Ödeme kaydın kulüp onayı bekliyor.
+                                    @if (order.PaymentMethod == "BankTransfer")
+                                    {
+                                        <text>Havale hesap bilgileri için kulüple iletişime geç. Ödeme açıklamasına sipariş numaranı yaz.</text>
+                                    }
+                                </p>
+                            }
+
+                            @if (order.PaymentInstallments.Count > 1)
+                            {
+                                <details class="member-order-items">
+                                    <summary><span>Taksit planı</span><strong>@order.PaymentInstallments.Count</strong><i aria-hidden="true"></i></summary>
+                                    <div class="member-order-items-list">
+                                        @foreach (var installment in order.PaymentInstallments)
+                                        {
+                                            <div class="member-order-item">
+                                                <div><strong>@installment.Number. taksit</strong><span>Vade: @installment.DueDate.ToString("dd.MM.yyyy")</span></div>
+                                                <div><strong>@installment.Amount.ToString("N2") ₺</strong><span>@(installment.PaidOn.HasValue ? $"Ödendi · {installment.PaidOn.Value:dd.MM.yyyy}" : "Ödeme bekliyor")</span></div>
+                                            </div>
+                                        }
+                                    </div>
+                                </details>
+                            }
 
                             @if (order.Items.Count > 0)
                             {

@@ -6,6 +6,10 @@ namespace NO23.Web.ViewModels.GuestOrders;
 
 public class GuestOrderInputViewModel : IValidatableObject
 {
+    [EnumDataType(typeof(PaymentMethod), ErrorMessage = "Geçerli bir ödeme yöntemi seçmelisin.")]
+    [Display(Name = "Ödeme yöntemi")]
+    public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.CreditCard;
+
     [Range(1, 99, ErrorMessage = "Adet 1 ile 99 arasında olmalıdır.")]
     [Display(Name = "Adet")]
     public int Quantity { get; set; } = 1;

@@ -362,7 +362,7 @@ public class KitchenController(
         return NotFound();
     }
 
-    if (!paymentSettings.Enabled)
+    if (input.PaymentMethod == PaymentMethod.CreditCard && !paymentSettings.Enabled)
     {
         ModelState.AddModelError(
             string.Empty,
@@ -393,6 +393,11 @@ public class KitchenController(
         .Where(order => order.Id == result.EntityId)
         .Select(order => order.OrderNumber)
         .FirstAsync();
+
+    if (input.PaymentMethod != PaymentMethod.CreditCard)
+    {
+        return RedirectToAction(nameof(Confirmation), new { orderNumber });
+    }
 
     var returnUrl = Url.Action(
         nameof(KitchenController.Confirmation),
@@ -469,6 +474,7 @@ public class KitchenController(
             DeliveryTimeSlot = order.DeliveryTimeSlot,
             DeliveryMethodText = GetDeliveryMethodLabel(order.DeliveryMethod),
             PaymentStatus = order.PaymentStatus,
+            PaymentMethod = order.PaymentMethod,
             PaymentStatusText = GetPaymentStatusLabel(order.PaymentStatus)
         });
     }
@@ -541,7 +547,10 @@ public class KitchenController(
                 AdditionalIngredients = additionalIngredients,
                 IsPaymentAvailable = paymentSettings.Enabled,
                 ClubPickupDisplayName = clubPickupSettings.EffectiveDisplayName,
-                Input = input ?? new GuestOrderInputViewModel()
+                Input = input ?? new GuestOrderInputViewModel
+                {
+                    PaymentMethod = paymentSettings.Enabled ? PaymentMethod.CreditCard : PaymentMethod.Cash
+                }
             };
     }
 

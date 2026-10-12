@@ -23,6 +23,8 @@ public class MemberProfileIndexViewModel
 
     public string MaskedNationalIdentityNumber { get; set; } = "Tanımlanmamış";
 
+    public DateOnly? BirthDate { get; set; }
+
     public string MembershipPackageName { get; set; } = string.Empty;
 
     public string? MembershipPackageOptionName { get; set; }

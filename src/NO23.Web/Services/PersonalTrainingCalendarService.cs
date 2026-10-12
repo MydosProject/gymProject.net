@@ -30,10 +30,10 @@ public class PersonalTrainingCalendarService(ApplicationDbContext dbContext)
         bool allowUnassignedMember,
         bool allowPastDates)
     {
-        if (input.Weeks is < 1 or > 52 || input.Days.Length == 0 ||
+        if (input.Days.Length == 0 ||
             input.Days.Any(day => !Enum.IsDefined(day)) ||
             input.DurationMinutes is < 15 or > 240)
-            return (false, "Günleri, hafta sayısını ve ders süresini kontrol edin.");
+            return (false, "Günleri ve ders süresini kontrol edin.");
 
         var trainerExists = await dbContext.Trainers.AnyAsync(trainer =>
             trainer.Id == trainerId && trainer.IsActive);
@@ -50,12 +50,25 @@ public class PersonalTrainingCalendarService(ApplicationDbContext dbContext)
                 ? "Üye bulunamadı."
                 : "Yalnızca size atanmış bir üyeye ders planlayabilirsiniz.");
 
-        var starts = Enumerable.Range(0, input.Weeks)
+        if (member.MembershipEndsAtUtc is null && input.Weeks is < 1 or > 52)
+            return (false, "Paket bitiş tarihi bilinmeyen üyelerde hafta sayısı 1 ile 52 arasında olmalıdır.");
+
+        var monday = ClubTime.Monday(input.Week);
+        var weeks = member.MembershipEndsAtUtc is { } packageEnd
+            ? Math.Max(0, (int)((ClubTime.Monday(ClubTime.ToLocal(packageEnd)) - monday).TotalDays / 7) + 1)
+            : input.Weeks;
+        var starts = Enumerable.Range(0, weeks)
             .SelectMany(week => input.Days.Distinct().Select(day =>
-                ClubTime.ToUtc(ClubTime.Monday(input.Week)
+                ClubTime.ToUtc(monday
                     .AddDays(week * 7 + ((int)day + 6) % 7)
                     .Add(input.Time.ToTimeSpan()))))
+            .Where(start => member.MembershipEndsAtUtc is null ||
+                ((!member.MembershipStartsAtUtc.HasValue || start >= member.MembershipStartsAtUtc.Value) &&
+                 start < member.MembershipEndsAtUtc.Value &&
+                 start.AddMinutes(input.DurationMinutes) <= member.MembershipEndsAtUtc.Value))
             .OrderBy(start => start).ToList();
+        if (starts.Count == 0)
+            return (false, "Seçilen gün ve saatlerde paket bitişine kadar planlanabilecek ders bulunmuyor.");
         var nowUtc = DateTime.UtcNow;
         if (!allowPastDates && starts.Any(start => start <= nowUtc))
             return (false, "Tüm birebir dersler gelecekte olmalı.");
@@ -64,6 +77,7 @@ public class PersonalTrainingCalendarService(ApplicationDbContext dbContext)
             member,
             starts,
             nowUtc,
+            input.DurationMinutes,
             allowPastDates);
         if (entitlementError is not null)
             return (false, entitlementError);
@@ -77,7 +91,7 @@ public class PersonalTrainingCalendarService(ApplicationDbContext dbContext)
             .Select(session => new { session.StartsAtUtc, session.DurationMinutes })
             .ToListAsync();
         var groups = await dbContext.ClassSessions.AsNoTracking()
-            .Where(session => session.GroupClass.TrainerId == trainerId &&
+            .Where(session => session.GroupClass.IsActive && session.GroupClass.TrainerId == trainerId &&
                 session.Status == ClassSessionStatus.Scheduled &&
                 session.StartsAtUtc >= windowStart && session.StartsAtUtc < windowEnd)
             .Select(session => new { session.StartsAtUtc, session.GroupClass.DurationMinutes })
@@ -108,14 +122,19 @@ public class PersonalTrainingCalendarService(ApplicationDbContext dbContext)
         MemberProfile member,
         IReadOnlyList<DateTime> starts,
         DateTime nowUtc,
-        bool allowPastDates = false)
+        int durationMinutes,
+        bool allowPastDates = false,
+        int? excludedSessionId = null)
     {
         if ((!allowPastDates && !MemberPackageEntitlement.IsActive(member, nowUtc)) ||
-            starts.Any(start => !MemberPackageEntitlement.IsActive(member, start)))
+            starts.Any(start => !MemberPackageEntitlement.IsActive(member, start) ||
+                (member.MembershipStartsAtUtc.HasValue && start < member.MembershipStartsAtUtc.Value) ||
+                (member.MembershipEndsAtUtc.HasValue && start.AddMinutes(durationMinutes) > member.MembershipEndsAtUtc.Value)))
             return "Ders tarihleri üyenin aktif üyelik dönemi içinde olmalı.";
 
         var futureReserved = await dbContext.PersonalTrainingSessions.CountAsync(session =>
             session.MemberProfileId == member.Id &&
+            session.Id != excludedSessionId &&
             session.Status == PersonalTrainingSessionStatus.Scheduled &&
             session.StartsAtUtc > nowUtc);
         if (!MemberPackageEntitlement.HasUnlimitedClassAccess(member) &&
@@ -135,6 +154,8 @@ public class PersonalTrainingCalendarService(ApplicationDbContext dbContext)
                 var lastMonthEnd = ClubTime.ToUtc(new DateTime(lastLocal.Year, lastLocal.Month, 1).AddMonths(1));
                 var existing = await dbContext.PersonalTrainingSessions.AsNoTracking()
                     .Where(session => session.MemberProfileId == member.Id &&
+                        session.Status != PersonalTrainingSessionStatus.Cancelled &&
+                        session.Id != excludedSessionId &&
                         session.StartsAtUtc >= firstMonth && session.StartsAtUtc < lastMonthEnd &&
                         (!member.MembershipStartsAtUtc.HasValue || session.StartsAtUtc >= member.MembershipStartsAtUtc.Value))
                     .Select(session => session.StartsAtUtc)
@@ -154,6 +175,8 @@ public class PersonalTrainingCalendarService(ApplicationDbContext dbContext)
             {
                 var used = await dbContext.PersonalTrainingSessions.CountAsync(session =>
                     session.MemberProfileId == member.Id &&
+                    session.Status != PersonalTrainingSessionStatus.Cancelled &&
+                    session.Id != excludedSessionId &&
                     (!member.MembershipStartsAtUtc.HasValue || session.StartsAtUtc >= member.MembershipStartsAtUtc.Value));
                 if (used + starts.Count > variant.PersonalTrainingSessionCount)
                     return "Planlanan dersler paketin birebir ders sayısını aşıyor.";
@@ -209,6 +232,7 @@ public class PersonalTrainingCalendarService(ApplicationDbContext dbContext)
             member,
             [startsAtUtc],
             DateTime.UtcNow,
+            durationMinutes,
             allowPastDates);
         if (entitlementError is not null)
             return (false, entitlementError);
@@ -239,6 +263,8 @@ public class PersonalTrainingCalendarService(ApplicationDbContext dbContext)
         var session = await dbContext.PersonalTrainingSessions
             .Include(item => item.MemberProfile)
             .ThenInclude(item => item.MembershipPackage)
+            .Include(item => item.MemberProfile)
+            .ThenInclude(item => item.ServicePackageVariant)
             .FirstOrDefaultAsync(item => item.Id == sessionId && item.TrainerId == trainerId);
         if (session is null)
             return (false, "Ders bulunamadı.");
@@ -252,6 +278,12 @@ public class PersonalTrainingCalendarService(ApplicationDbContext dbContext)
         {
             if (postponedStartsAtUtc is null || postponedStartsAtUtc <= DateTime.UtcNow)
                 return (false, "Erteleme için ileri bir tarih ve saat seçmelisiniz.");
+
+            var entitlementError = await ValidateEntitlementsAsync(session.MemberProfile,
+                [postponedStartsAtUtc.Value], DateTime.UtcNow, session.DurationMinutes,
+                excludedSessionId: session.Id);
+            if (entitlementError is not null)
+                return (false, entitlementError);
 
             var newEnd = postponedStartsAtUtc.Value.AddMinutes(session.DurationMinutes);
             var hasConflict = await dbContext.PersonalTrainingSessions.AnyAsync(item =>
@@ -270,7 +302,14 @@ public class PersonalTrainingCalendarService(ApplicationDbContext dbContext)
                  PersonalTrainingSessionStatus.NoShow)
         {
             session.Status = status;
-            if (!session.CreditConsumed)
+            if (status == PersonalTrainingSessionStatus.Cancelled)
+            {
+                if (session.CreditConsumed && !MemberPackageEntitlement.HasUnlimitedClassAccess(session.MemberProfile))
+                    session.MemberProfile.RemainingClassCredits++;
+                session.CreditConsumed = false;
+                session.MemberProfile.UpdatedAtUtc = DateTime.UtcNow;
+            }
+            else if (!session.CreditConsumed)
             {
                 if (!MemberPackageEntitlement.HasUnlimitedClassAccess(session.MemberProfile))
                     session.MemberProfile.RemainingClassCredits--;
@@ -299,7 +338,7 @@ public class PersonalTrainingCalendarService(ApplicationDbContext dbContext)
             ? "Ders ertelendi; ders hakkı düşülmedi." : "Ders durumu güncellendi.");
     }
     private Task<bool> HasGroupConflictAsync(int trainerId, DateTime start, DateTime end) =>
-        dbContext.ClassSessions.AnyAsync(x => x.GroupClass.TrainerId == trainerId &&
+        dbContext.ClassSessions.AnyAsync(x => x.GroupClass.IsActive && x.GroupClass.TrainerId == trainerId &&
             x.Status == ClassSessionStatus.Scheduled && x.StartsAtUtc < end &&
             x.StartsAtUtc.AddMinutes(x.GroupClass.DurationMinutes) > start);
 }

@@ -8,19 +8,33 @@ public class GroupClassRemovalService(ApplicationDbContext dbContext)
 {
     public async Task<GroupClassRemovalResult> RemoveAsync(int groupClassId)
     {
+        var group = await dbContext.GroupClasses.Include(item => item.Trainer)
+            .FirstOrDefaultAsync(item => item.Id == groupClassId);
+        if (group is null) return GroupClassRemovalResult.Fail("Grup dersi bulunamadı.");
+        var sessions = await dbContext.ClassSessions.Include(item => item.Reservations)
+            .ThenInclude(item => item.MemberProfile).ThenInclude(item => item.MembershipPackage)
+            .Where(item => item.GroupClassId == groupClassId).AsSplitQuery().ToListAsync();
+        var nowUtc = DateTime.UtcNow;
+        var affected = sessions.Where(item => item.Status == ClassSessionStatus.Scheduled)
+            .SelectMany(item => item.Reservations).Where(item => item.Status == ClassReservationStatus.Reserved)
+            .Select(item => item.MemberProfile.ApplicationUserId).Distinct().ToList();
+        foreach (var session in sessions.Where(item => item.Status == ClassSessionStatus.Scheduled))
+            ClassReservationService.CancelSessionReservations(session, nowUtc, "Grup dersi yönetici tarafından silindi.");
+        dbContext.ClassReservations.RemoveRange(sessions.SelectMany(item => item.Reservations));
+        dbContext.ClassSessions.RemoveRange(sessions);
+        dbContext.GroupClasses.Remove(group);
+        await dbContext.SaveChangesAsync();
+        return new(true, true, group.Name, sessions.Count(item => item.Status == ClassSessionStatus.Scheduled),
+            affected, group.Trainer.ApplicationUserId, "Grup dersi ve seansları silindi; planlanmış rezervasyonların ders hakları iade edildi.");
+    }
+
+    public async Task<GroupClassRemovalResult> DeactivateAsync(int groupClassId)
+    {
         var group = await dbContext.GroupClasses
             .Include(item => item.Trainer)
             .FirstOrDefaultAsync(item => item.Id == groupClassId);
         if (group is null)
             return GroupClassRemovalResult.Fail("Grup dersi bulunamadı.");
-
-        var hasSessions = await dbContext.ClassSessions.AnyAsync(item => item.GroupClassId == groupClassId);
-        if (!hasSessions)
-        {
-            dbContext.GroupClasses.Remove(group);
-            await dbContext.SaveChangesAsync();
-            return new GroupClassRemovalResult(true, true, group.Name, 0, [], null, "Grup dersi silindi.");
-        }
 
         var nowUtc = DateTime.UtcNow;
         var futureSessions = await dbContext.ClassSessions
@@ -38,15 +52,8 @@ public class GroupClassRemovalService(ApplicationDbContext dbContext)
             session.Status = ClassSessionStatus.Cancelled;
             session.UpdatedAtUtc = nowUtc;
             foreach (var reservation in session.Reservations.Where(item => item.Status == ClassReservationStatus.Reserved))
-            {
-                reservation.Status = ClassReservationStatus.Cancelled;
-                reservation.CancelledAtUtc = nowUtc;
-                reservation.CancellationReason = "Grup dersi yönetici tarafından kaldırıldı.";
-                if (!MemberPackageEntitlement.HasUnlimitedClassAccess(reservation.MemberProfile))
-                    reservation.MemberProfile.RemainingClassCredits++;
-                reservation.MemberProfile.UpdatedAtUtc = nowUtc;
                 affectedMemberIds.Add(reservation.MemberProfile.ApplicationUserId);
-            }
+            ClassReservationService.CancelSessionReservations(session, nowUtc, "Grup dersi yönetici tarafından pasife alındı.");
         }
 
         group.IsActive = false;
@@ -56,8 +63,8 @@ public class GroupClassRemovalService(ApplicationDbContext dbContext)
             true, false, group.Name, futureSessions.Count, affectedMemberIds.ToList(),
             group.Trainer.ApplicationUserId,
             futureSessions.Count == 0
-                ? "Grup dersi geçmişi korunarak arşivlendi."
-                : $"Grup dersi arşivlendi; {futureSessions.Count} gelecek seans iptal edildi ve katılımcı hakları iade edildi.");
+                ? "Grup dersi pasife alındı; takvimde gösterilmeyecek."
+                : $"Grup dersi pasife alındı; {futureSessions.Count} gelecek seans iptal edildi ve katılımcı hakları iade edildi.");
     }
 }
 

@@ -436,6 +436,8 @@ public class KitchenController(
                 IsPaymentAvailable =
                     paymentSettings.Enabled,
 
+                PaymentMethod = paymentSettings.Enabled ? PaymentMethod.CreditCard : PaymentMethod.Cash,
+
                 ClubPickupDisplayName =
                     clubPickupSettings.EffectiveDisplayName,
 
@@ -502,7 +504,7 @@ public class KitchenController(
         model.ClubPickupDisplayName =
             clubPickupSettings.EffectiveDisplayName;
 
-        if (!paymentSettings.Enabled)
+        if (model.PaymentMethod == PaymentMethod.CreditCard && !paymentSettings.Enabled)
         {
             ModelState.AddModelError(
                 string.Empty,
@@ -547,7 +549,8 @@ public class KitchenController(
 
                         DeliveryTimeSlot =
                             null
-                    });
+                    },
+                    model.PaymentMethod);
 
         if (!result.Succeeded ||
             result.EntityId is null)
@@ -558,6 +561,11 @@ public class KitchenController(
                 ?? "Kitchen siparişi oluşturulamadı.");
 
             return View(model);
+        }
+
+        if (model.PaymentMethod != PaymentMethod.CreditCard)
+        {
+            return RedirectToAction("Index", "Orders", new { area = "Member", payment = "pending" });
         }
 
         var returnUrl = Url.Action(

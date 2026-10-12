@@ -1,10 +1,15 @@
 using System.ComponentModel.DataAnnotations;
 using NO23.Web.Domain.Enums;
+using NO23.Web.Domain.Entities;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace NO23.Web.ViewModels.TrainerPanel;
 
 public class TrainerCalendarViewModel
 {
+    public int? MemberId { get; init; }
+    public IReadOnlyList<SelectListItem> FilterMembers { get; init; } = [];
+    public IReadOnlyList<ClassSession> Groups { get; init; } = [];
     public IReadOnlyList<TrainerCalendarSessionViewModel> Sessions { get; init; } = [];
     public IReadOnlyList<TrainerAssignedMemberViewModel> Members { get; init; } = [];
     public DateTime WeekStart { get; init; }
@@ -14,6 +19,7 @@ public class TrainerCalendarViewModel
 
 public class TrainerCalendarDayViewModel
 {
+    public IReadOnlyList<ClassSession> Groups { get; init; } = [];
     public DateTime Date { get; init; }
     public string DayName { get; init; } = string.Empty;
     public bool IsToday { get; init; }
@@ -51,10 +57,14 @@ public class TrainerAssignedMemberViewModel
     public string Name { get; init; } = string.Empty;
     public int RemainingCredits { get; init; }
     public bool IsUnlimited { get; init; }
+    public DateTime? MembershipStartsAtUtc { get; init; }
+    public DateTime? MembershipEndsAtUtc { get; init; }
 }
 
 public class CreateTrainerSessionViewModel
 {
+    public int? FilterMemberId { get; set; }
+    public int? FilterTrainerId { get; set; }
     [Range(1, int.MaxValue)] public int MemberProfileId { get; set; }
     [Required] public DateTime StartsAt { get; set; }
     [Range(15, 240)] public int DurationMinutes { get; set; } = 50;
@@ -64,17 +74,21 @@ public class CreateTrainerSessionViewModel
 
 public class WeeklyPersonalSessionInput
 {
+    public int? FilterMemberId { get; set; }
+    public int? FilterTrainerId { get; set; }
     [Range(1, int.MaxValue)] public int MemberProfileId { get; set; }
     [Required] public DateTime Week { get; set; } = NO23.Web.Services.ClubTime.Monday(NO23.Web.Services.ClubTime.Now);
     public DayOfWeek[] Days { get; set; } = [];
     public TimeOnly Time { get; set; } = new(11, 0);
-    [Range(1, 52)] public int Weeks { get; set; } = 1;
+    public int Weeks { get; set; } = 1;
     [Range(15, 240)] public int DurationMinutes { get; set; } = 50;
     [StringLength(600)] public string? Note { get; set; }
 }
 
 public class UpdateTrainerSessionViewModel
 {
+    public int? FilterMemberId { get; set; }
+    public int? FilterTrainerId { get; set; }
     public int Id { get; set; }
     public PersonalTrainingSessionStatus Status { get; set; }
     public DateTime? PostponedStartsAt { get; set; }

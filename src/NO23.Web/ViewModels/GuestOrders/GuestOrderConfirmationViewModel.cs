@@ -24,5 +24,14 @@ public class GuestOrderConfirmationViewModel
 
     public PaymentStatus PaymentStatus { get; init; }
 
+    public PaymentMethod PaymentMethod { get; init; } = PaymentMethod.CreditCard;
+
+    public string PaymentMethodText => PaymentMethod switch
+    {
+        PaymentMethod.Cash => "Nakit",
+        PaymentMethod.BankTransfer => "Havale / EFT",
+        _ => "Kredi kartı"
+    };
+
     public string PaymentStatusText { get; init; } = "Ödeme Bekliyor";
 }

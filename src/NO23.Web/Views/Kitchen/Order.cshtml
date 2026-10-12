@@ -74,12 +74,18 @@
 
                 <partial name="_GuestOrderDeliveryMethod" model="Model" />
 
+                <partial name="_PaymentMethodSelector" model="@(new NO23.Web.ViewModels.PaymentMethodSelectorViewModel
+                {
+                    InputName = "input.PaymentMethod", SelectedMethod = Model.Input.PaymentMethod,
+                    IsCardPaymentAvailable = Model.IsPaymentAvailable
+                })" />
+
                 <div asp-validation-summary="ModelOnly" class="public-order-validation"></div>
 
                 @if (!Model.IsPaymentAvailable)
                 {
                     <div class="public-order-stock-warning">
-                        Online ödeme şu anda kullanılamıyor. Sipariş oluşturma geçici olarak durduruldu.
+                        Kredi kartı ödemesi şu anda kullanılamıyor. Nakit veya havale ile sipariş oluşturabilirsin.
                     </div>
                 }
 
@@ -212,9 +218,8 @@
                 </div>
 
                 <button class="public-order-submit"
-                        type="submit"
-                        disabled="@(!Model.IsPaymentAvailable)">
-                    <span>@(Model.IsPaymentAvailable ? "Ödemeye Geç" : "Ödeme Kullanılamıyor")</span>
+                        type="submit">
+                    <span data-payment-submit-label>Siparişi oluştur</span>
                     <strong>@Model.UnitPrice.ToString("C0")</strong>
                 </button>
             </form>

@@ -38,6 +38,9 @@ public sealed class IyzicoPaymentService(
                 "Ödeme başlatılacak sipariş bulunamadı.");
         }
 
+        if (order.PaymentMethod != PaymentMethod.CreditCard || order.IsManualPayment)
+            return IyzicoPaymentStartResult.Fail("Bu siparişin ödemesi admin tarafından takip ediliyor.", order.Id);
+
         if (order.Status != OrderStatus.Pending ||
             order.PaymentStatus != PaymentStatus.Pending)
         {

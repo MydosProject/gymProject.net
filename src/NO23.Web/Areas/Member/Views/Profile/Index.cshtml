@@ -136,6 +136,10 @@
                         <dd>@Model.Email</dd>
                     </div>
                     <div>
+                        <dt>Doğum tarihi</dt>
+                        <dd>@(Model.BirthDate?.ToString("dd MMMM yyyy", turkishCulture) ?? "Tanımlanmamış")</dd>
+                    </div>
+                    <div>
                         <dt>Aktif paket</dt>
                         <dd>@Model.MembershipPackageName</dd>
                     </div>

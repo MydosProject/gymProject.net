@@ -102,6 +102,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<PaymentTransaction> PaymentTransactions => Set<PaymentTransaction>();
 
+    public DbSet<OrderPaymentInstallment> OrderPaymentInstallments => Set<OrderPaymentInstallment>();
+
     public DbSet<CommunityEvent> CommunityEvents => Set<CommunityEvent>();
 
     public DbSet<CommunityEventReservation> CommunityEventReservations =>

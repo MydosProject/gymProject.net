@@ -1,0 +1,29 @@
+@using NO23.Web.Domain.Enums
+@model NO23.Web.ViewModels.PaymentMethodSelectorViewModel
+
+<fieldset class="payment-method-selector" data-payment-method-root>
+    <legend>Ödeme yöntemi</legend>
+    <div class="payment-method-options">
+        <label>
+            <input type="radio" name="@Model.InputName" value="@PaymentMethod.CreditCard"
+                   checked="@(Model.SelectedMethod == PaymentMethod.CreditCard)"
+                   disabled="@(!Model.IsCardPaymentAvailable)" />
+            <span>Kredi kartı<small>iyzico güvenli ödeme</small></span>
+        </label>
+        <label>
+            <input type="radio" name="@Model.InputName" value="@PaymentMethod.Cash"
+                   checked="@(Model.SelectedMethod == PaymentMethod.Cash)" />
+            <span>Nakit<small>Kulüpte ödeme</small></span>
+        </label>
+        <label>
+            <input type="radio" name="@Model.InputName" value="@PaymentMethod.BankTransfer"
+                   checked="@(Model.SelectedMethod == PaymentMethod.BankTransfer)" />
+            <span>Havale / EFT<small>Banka hesabına ödeme</small></span>
+        </label>
+    </div>
+    @Html.ValidationMessage(Model.InputName, null, new { @class = "payment-method-error" })
+    <p class="payment-method-help" data-payment-method-help>
+        Siparişini oluşturduktan sonra nakit ve havale ödemesi kulüp tarafından onaylanır.
+        Havale hesap bilgileri için kulüple iletişime geç.
+    </p>
+</fieldset>

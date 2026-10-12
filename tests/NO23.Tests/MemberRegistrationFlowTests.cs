@@ -26,6 +26,7 @@ public class MemberRegistrationFlowTests
             FirstName = "Merve",
             LastName = "Kırcıoğlu",
             NationalIdentityNumber = "10000000146",
+            BirthDate = new DateOnly(1995, 6, 15),
             Password = "Test123!",
             ServicePackageVariantId = 1
         };
@@ -97,6 +98,7 @@ public class MemberRegistrationFlowTests
             FirstName = "Merve",
             LastName = "Kırcıoğlu",
             NationalIdentityNumber = "10000000146",
+            BirthDate = new DateOnly(1995, 6, 15),
             PhoneNumber = "+905530048000",
             Password = "Test123!",
             ServicePackageVariantId = variant.Id
@@ -109,6 +111,7 @@ public class MemberRegistrationFlowTests
         Assert.Null(user.Email);
         var profile = await dbContext.MemberProfiles.SingleAsync();
         Assert.Equal("10000000146", profile.NationalIdentityNumber);
+        Assert.Equal(new DateOnly(1995, 6, 15), profile.BirthDate);
         Assert.NotNull(profile.MembershipStartsAtUtc);
         Assert.NotNull(profile.MembershipEndsAtUtc);
     }

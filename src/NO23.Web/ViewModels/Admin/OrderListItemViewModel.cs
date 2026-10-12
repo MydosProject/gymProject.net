@@ -20,6 +20,10 @@ public class OrderListItemViewModel
 
     public string PaymentStatus { get; init; } = string.Empty;
 
+    public string PaymentMethod { get; init; } = string.Empty;
+
+    public bool IsManualPayment { get; init; }
+
     public PaymentStatus RawPaymentStatus { get; init; }
 
     public IReadOnlyList<OrderStatus> AvailableOrderStatuses { get; init; } = [];

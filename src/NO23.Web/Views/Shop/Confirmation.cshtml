@@ -106,6 +106,24 @@
                         sipariş iptal edildi. Yeniden sipariş oluşturabilirsin.
                     </p>
                 }
+                else
+                {
+                    <p class="public-order-kicker">NO23 / Sipariş kaydı</p>
+                    <span class="public-confirmation-status">Ödeme bekliyor</span>
+                    <h1>Siparişin<br /><em>oluşturuldu.</em></h1>
+                    @if (Model.PaymentMethod == PaymentMethod.CreditCard)
+                    {
+                        <p>Kredi kartı ödemenin sonucu bekleniyor. Sipariş numaranı saklayabilirsin.</p>
+                    }
+                    else
+                    {
+                        <p>@Model.PaymentMethodText ödemen kulüp tarafından onaylandığında siparişin işleme alınacak.</p>
+                        @if (Model.PaymentMethod == PaymentMethod.BankTransfer)
+                        {
+                            <p>Havale hesap bilgileri için kulüple iletişime geç. Ödeme açıklamasına sipariş numaranı yaz.</p>
+                        }
+                    }
+                }
 
 
                 <a class="public-order-back"
@@ -152,7 +170,7 @@
 
                     <div>
                         <dt>Ödeme</dt>
-                        <dd>@Model.PaymentStatusText</dd>
+                        <dd>@Model.PaymentMethodText<br />@Model.PaymentStatusText</dd>
                     </div>
                 </dl>
 

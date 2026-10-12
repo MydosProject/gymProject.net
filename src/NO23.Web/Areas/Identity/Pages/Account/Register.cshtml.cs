@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -9,6 +10,7 @@ using NO23.Web.Domain.Entities;
 using NO23.Web.Domain.Enums;
 using NO23.Web.Infrastructure.Identity;
 using NO23.Web.Infrastructure.Validation;
+using NO23.Web.Services;
 
 namespace NO23.Web.Areas.Identity.Pages.Account;
 
@@ -29,7 +31,8 @@ public class RegisterModel(
     public async Task<IActionResult> OnGetAsync(
         string? package = null,
         int? option = null,
-        string? returnUrl = null)
+        string? returnUrl = null,
+        int? variant = null)
     {
         if (User.Identity?.IsAuthenticated == true)
         {
@@ -37,7 +40,7 @@ public class RegisterModel(
         }
 
         ReturnUrl = returnUrl;
-        await LoadPackageOptionsAsync(package, option);
+        await LoadPackageOptionsAsync(package, variant);
 
         return Page();
     }
@@ -52,15 +55,15 @@ public class RegisterModel(
 
         ReturnUrl = returnUrl ?? ReturnUrl;
         var postedPackageCode = Input.PackageCode;
-        var postedOptionId = Input.PackageOptionId;
+        var postedOptionId = Input.ServicePackageVariantId;
         await LoadPackageOptionsAsync(postedPackageCode, postedOptionId);
         Input.PackageCode = postedPackageCode;
-        Input.PackageOptionId = postedOptionId;
+        Input.ServicePackageVariantId = postedOptionId;
 
         var selectedPackage =
             await FindSelectedPackageAsync(Input.PackageCode);
 
-        MembershipPackageOption? selectedOption = null;
+        ServicePackageVariant? selectedVariant = null;
         MemberProfile? referringMember = null;
 
         if (!string.IsNullOrWhiteSpace(Input.ReferralCode))
@@ -69,30 +72,36 @@ public class RegisterModel(
                 .FirstOrDefaultAsync(profile => profile.ReferralCode == Input.ReferralCode.Trim().ToUpper());
             if (referringMember is null)
             {
-                ModelState.AddModelError(nameof(Input.ReferralCode), "Davet kodu geçerli değil.");
+                ModelState.AddModelError("Input.ReferralCode", "Davet kodu geçerli değil.");
             }
         }
 
         if (selectedPackage is null)
         {
             ModelState.AddModelError(
-                nameof(Input.PackageCode),
+                "Input.PackageCode",
                 "Geçerli bir üyelik paketi seçmelisin.");
         }
-        else if (Input.PackageOptionId.HasValue)
+        else
         {
-            selectedOption = await dbContext.MembershipPackageOptions
-                .FirstOrDefaultAsync(option =>
-                    option.Id == Input.PackageOptionId.Value &&
-                    option.MembershipPackageId == selectedPackage.Id &&
-                    option.IsActive);
+            selectedVariant = await dbContext.ServicePackageVariants
+                .FirstOrDefaultAsync(variant =>
+                    variant.Id == Input.ServicePackageVariantId &&
+                    variant.ServicePackageId == selectedPackage.Id &&
+                    variant.IsActive);
 
-            if (selectedOption is null)
+            if (selectedVariant is null)
             {
                 ModelState.AddModelError(
-                    nameof(Input.PackageOptionId),
-                    "Seçtiğin hizmet seçeneği bu üyelik paketi için geçerli değil.");
+                    "Input.ServicePackageVariantId",
+                    "Bu üyelik paketine ait aktif bir süre seçmelisin.");
             }
+        }
+
+        var birthDateError = BirthDateValidation.GetError(Input.BirthDate, required: true);
+        if (birthDateError is not null)
+        {
+            ModelState.AddModelError("Input.BirthDate", birthDateError);
         }
 
         if (!ModelState.IsValid)
@@ -201,15 +210,15 @@ public class RegisterModel(
         {
             ApplicationUserId = user.Id,
             NationalIdentityNumber = Input.NationalIdentityNumber,
-            MembershipPackageId = selectedPackage!.Id,
-            MembershipPackageOptionId = selectedOption?.Id,
+            BirthDate = Input.BirthDate,
+            MembershipPackageId = selectedPackage!.MembershipPackageId!.Value,
+            ServicePackageVariantId = selectedVariant!.Id,
             MembershipStartsAtUtc = membershipStartsAtUtc,
-            MembershipEndsAtUtc = selectedOption is not null && selectedOption.DurationDays > 0
-                ? membershipStartsAtUtc.AddDays(selectedOption.DurationDays)
-                : null,
+            MembershipEndsAtUtc = MemberPackageEntitlement.CalculateEndDate(
+                selectedVariant, membershipStartsAtUtc),
             FitnessGoal = Input.FitnessGoal,
             RemainingClassCredits =
-                CalculateInitialClassCredits(selectedPackage, selectedOption),
+                MemberPackageEntitlement.CalculateInitialCredits(selectedVariant),
             ReferralCode = await GenerateReferralCodeAsync(),
             ReferredByMemberProfileId = referringMember?.Id
         });
@@ -229,89 +238,65 @@ public class RegisterModel(
         string? selectedPackageCode,
         int? selectedOptionId = null)
     {
-        var packages = await dbContext.MembershipPackages
+        var packages = await dbContext.ServicePackages
             .AsNoTracking()
-            .Where(package => package.IsActive)
+            .Include(package => package.MembershipPackage)
+            .Include(package => package.Variants)
+            .Where(package => package.IsActive &&
+                package.Category == ServicePackageCategory.Membership &&
+                package.MembershipPackageId != null &&
+                package.Variants.Any(variant => variant.IsActive))
             .OrderBy(package => package.DisplayOrder)
-            .Select(package => new
-            {
-                package.Code,
-                package.Name,
-                package.Audience
-            })
             .ToListAsync();
 
         PackageOptions = packages
             .Select(package => new PackageOption(
-                package.Code
-                    .ToString()
-                    .ToUpperInvariant(),
+                package.Slug,
                 package.Name,
-                package.Audience))
+                package.Subtitle))
             .ToList();
 
-        Input.PackageCode =
-            ResolvePackageCode(selectedPackageCode)
+        // Old public links may contain a legacy code. Resolve it through the
+        // published catalog; legacy records themselves are never selectable.
+        var selectedPackage = packages.FirstOrDefault(package =>
+            package.Slug.Equals(selectedPackageCode, StringComparison.OrdinalIgnoreCase))
+            ?? packages.FirstOrDefault(package =>
+                package.MembershipPackage!.Code.ToString()
+                    .Equals(selectedPackageCode, StringComparison.OrdinalIgnoreCase));
+        Input.PackageCode = selectedPackage?.Slug
             ?? PackageOptions.FirstOrDefault()?.Code
             ?? string.Empty;
 
-        var serviceOptions = await dbContext.MembershipPackageOptions.AsNoTracking()
-            .Where(x => x.IsActive && x.MembershipPackage.IsActive)
-            .OrderBy(x => x.MembershipPackage.DisplayOrder).ThenBy(x => x.DisplayOrder)
-            .Select(x => new { x.Id, x.MembershipPackage.Code, x.Name, x.DurationDays,
-                x.PersonalTrainingSessionCount, x.GroupClassCreditCount })
-            .ToListAsync();
-        ServiceOptions = serviceOptions.Select(x => new ServiceOption(
-            x.Id, x.Code.ToString().ToUpperInvariant(), x.Name, x.DurationDays,
-            x.PersonalTrainingSessionCount, x.GroupClassCreditCount)).ToList();
+        ServiceOptions = packages.SelectMany(package => package.Variants
+            .Where(variant => variant.IsActive)
+            .OrderBy(variant => variant.DisplayOrder)
+            .Select(variant =>
+            {
+                var presentation = ServicePackageCatalogService.Present(variant, package.Variants);
+                var duration = variant.DurationDays is > 0
+                    ? $"{variant.DurationDays} gün"
+                    : $"{(variant.DurationMonths ?? 1) + variant.BonusMonths} ay";
+                var totalPrice = variant.BillingType == ServicePackageBillingType.MonthlySubscription &&
+                    variant.DurationMonths is > 0 && !variant.PriceOnRequest
+                    ? $"{((variant.MonthlyPrice ?? 0) * variant.DurationMonths.Value).ToString("N2", CultureInfo.GetCultureInfo("tr-TR"))} ₺"
+                    : null;
+                return new ServiceOption(variant.Id, package.Slug, variant.Name,
+                    presentation.Price, presentation.PriceNote, duration, presentation.Rights, totalPrice);
+            })).ToList();
         var validSelectedOption = ServiceOptions.FirstOrDefault(x =>
             x.Id == selectedOptionId && x.PackageCode.Equals(Input.PackageCode, StringComparison.OrdinalIgnoreCase));
-        Input.PackageOptionId = validSelectedOption?.Id ?? ServiceOptions
+        Input.ServicePackageVariantId = validSelectedOption?.Id ?? ServiceOptions
             .FirstOrDefault(x => x.PackageCode.Equals(Input.PackageCode, StringComparison.OrdinalIgnoreCase))?.Id;
     }
 
-    private async Task<MembershipPackage?>
+    private async Task<ServicePackage?>
         FindSelectedPackageAsync(string? packageCode)
     {
-        if (!Enum.TryParse<MembershipPackageCode>(
-                packageCode,
-                ignoreCase: true,
-                out var parsedCode))
-        {
-            return null;
-        }
-
-        return await dbContext.MembershipPackages
+        return await dbContext.ServicePackages
             .FirstOrDefaultAsync(package =>
-                package.Code == parsedCode
-                && package.IsActive);
-    }
-
-    private static string? ResolvePackageCode(
-        string? packageCode)
-    {
-        return Enum.TryParse<MembershipPackageCode>(
-            packageCode,
-            ignoreCase: true,
-            out var parsedCode)
-                ? parsedCode
-                    .ToString()
-                    .ToUpperInvariant()
-                : null;
-    }
-
-    private static int CalculateInitialClassCredits(
-        MembershipPackage package,
-        MembershipPackageOption? option)
-    {
-        if (option is not null)
-        {
-            return option.GroupClassCreditCount;
-        }
-
-        return package.WeeklyClassLimit.HasValue
-            ? package.WeeklyClassLimit.Value * 4
-            : 0;
+                package.Slug == packageCode &&
+                package.Category == ServicePackageCategory.Membership &&
+                package.MembershipPackageId != null && package.IsActive);
     }
 
     private async Task<bool> HasExistingMemberWithSameNameAsync(
@@ -356,6 +341,12 @@ public class RegisterModel(
         [Display(Name = "TC Kimlik No")]
         public string NationalIdentityNumber { get; set; } = string.Empty;
 
+        [Required(ErrorMessage = BirthDateValidation.RequiredMessage)]
+        [MemberBirthDate]
+        [DataType(DataType.Date)]
+        [Display(Name = "Doğum tarihi")]
+        public DateOnly? BirthDate { get; set; }
+
         [Phone]
         [Display(Name = "Telefon")]
         public string? PhoneNumber { get; set; }
@@ -364,8 +355,10 @@ public class RegisterModel(
         [Display(Name = "Üyelik paketi")]
         public string PackageCode { get; set; } = string.Empty;
 
-        [Display(Name = "Hizmet seçeneği")]
-        public int? PackageOptionId { get; set; }
+        [Required(ErrorMessage = "Üyelik süresi seçmelisin.")]
+        [Range(1, int.MaxValue)]
+        [Display(Name = "Üyelik süresi")]
+        public int? ServicePackageVariantId { get; set; }
 
         [StringLength(160)]
         [Display(Name = "Hedef")]
@@ -403,9 +396,11 @@ public class RegisterModel(
         int Id,
         string PackageCode,
         string Name,
-        int DurationDays,
-        int PersonalTrainingSessionCount,
-        int GroupClassCreditCount);
+        string Price,
+        string PriceNote,
+        string? Duration,
+        string Rights,
+        string? TotalPrice);
 
     private async Task<string> GenerateReferralCodeAsync()
     {

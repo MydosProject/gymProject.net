@@ -122,6 +122,8 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
     .AddErrorDescriber<TurkishIdentityErrorDescriber>()
     .AddUserValidator<OptionalEmailUserValidator>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
+Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.RemoveAll<IPasswordValidator<ApplicationUser>>(builder.Services);
+builder.Services.AddScoped<IPasswordValidator<ApplicationUser>, UnicodePasswordValidator>();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {

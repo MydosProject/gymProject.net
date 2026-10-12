@@ -122,7 +122,7 @@ public class MeasurementsController(
                  item.ShoulderCm.HasValue || item.ChestCm.HasValue ||
                  item.RightArmCm.HasValue || item.LeftArmCm.HasValue ||
                  item.WaistCm.HasValue || item.AbdomenCm.HasValue ||
-                 item.HipCm.HasValue || item.RightUpperLegCm.HasValue ||
+                 item.GluteCm.HasValue || item.HipCm.HasValue || item.RightUpperLegCm.HasValue ||
                  item.LeftUpperLegCm.HasValue || item.BodyFatPercent.HasValue ||
                  item.MuscleMassPercent.HasValue || item.DailyWaterIntakeLiters.HasValue))
             .OrderByDescending(item => item.EntryDate)
@@ -149,6 +149,7 @@ public class MeasurementsController(
                 LeftArmCm = entry?.LeftArmCm,
                 WaistCm = entry?.WaistCm,
                 AbdomenCm = entry?.AbdomenCm,
+                GluteCm = entry?.GluteCm,
                 HipCm = entry?.HipCm,
                 RightUpperLegCm = entry?.RightUpperLegCm,
                 LeftUpperLegCm = entry?.LeftUpperLegCm,
@@ -167,7 +168,7 @@ public class MeasurementsController(
                input.ShoulderCm.HasValue || input.ChestCm.HasValue ||
                input.RightArmCm.HasValue || input.LeftArmCm.HasValue ||
                input.WaistCm.HasValue || input.AbdomenCm.HasValue ||
-               input.HipCm.HasValue || input.RightUpperLegCm.HasValue ||
+               input.GluteCm.HasValue || input.HipCm.HasValue || input.RightUpperLegCm.HasValue ||
                input.LeftUpperLegCm.HasValue || input.BodyFatPercent.HasValue ||
                input.MuscleMassPercent.HasValue || input.DailyWaterIntakeLiters.HasValue;
     }

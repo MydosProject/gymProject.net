@@ -1,9 +1,16 @@
 @page
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @model NO23.Web.Areas.Identity.Pages.Account.RegisterModel
+@using NO23.Web.Services
 @{
     ViewData["Title"] = "Bize Katıl";
     Layout = "/Views/Shared/_Layout.cshtml";
+    var clubToday = DateOnly.FromDateTime(ClubTime.Now);
+    var selectedOption = Model.ServiceOptions.FirstOrDefault(option => option.Id == Model.Input.ServicePackageVariantId &&
+        string.Equals(option.PackageCode, Model.Input.PackageCode, StringComparison.OrdinalIgnoreCase));
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/package-selector.css" asp-append-version="true" />
 }
 
 <section class="no23-register-page">
@@ -118,7 +125,7 @@
                             </div>
                         </div>
 
-                        <div class="col-12">
+                        <div class="col-md-6">
                             <div class="no23-form-field">
                                 <label asp-for="Input.NationalIdentityNumber"></label>
                                 <input asp-for="Input.NationalIdentityNumber"
@@ -129,6 +136,20 @@
                                        autocomplete="off"
                                        placeholder="11 haneli TC Kimlik No" />
                                 <span asp-validation-for="Input.NationalIdentityNumber"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="no23-form-field">
+                                <label asp-for="Input.BirthDate"></label>
+                                <input asp-for="Input.BirthDate"
+                                       type="date"
+                                       class="form-control no23-form-control"
+                                       autocomplete="bday"
+                                       min="@clubToday.AddYears(-120).ToString("yyyy-MM-dd")"
+                                       max="@clubToday.ToString("yyyy-MM-dd")"
+                                       required />
+                                <span asp-validation-for="Input.BirthDate"></span>
                             </div>
                         </div>
 
@@ -143,43 +164,53 @@
                             </div>
                         </div>
 
-                        <div class="col-12">
-                            <div class="no23-form-field no23-package-field">
-                                <label asp-for="Input.PackageCode"></label>
-                                <select asp-for="Input.PackageCode"
-                                        class="form-select no23-form-select">
-                                    @foreach (var package in Model.PackageOptions)
-                                    {
-                                        <option value="@package.Code"
-                                                selected="@(string.Equals(
-                                                    package.Code,
-                                                    Model.Input.PackageCode,
-                                                    StringComparison.OrdinalIgnoreCase)
-                                                        ? "selected"
-                                                        : null)">
-                                            @package.Name — @package.Audience
-                                        </option>
-                                    }
-                                </select>
-                                <span asp-validation-for="Input.PackageCode"></span>
+                        <div class="col-12" data-package-selector>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="no23-form-field no23-package-field">
+                                        <label asp-for="Input.PackageCode"></label>
+                                        <select asp-for="Input.PackageCode" class="form-select no23-form-select" data-package-choice>
+                                            <option value="">Üyelik paketi seçin</option>
+                                            @foreach (var package in Model.PackageOptions)
+                                            {
+                                                <option value="@package.Code">@package.Name</option>
+                                            }
+                                        </select>
+                                        <span asp-validation-for="Input.PackageCode"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="no23-form-field no23-package-option-field">
+                                        <label asp-for="Input.ServicePackageVariantId"></label>
+                                        <select asp-for="Input.ServicePackageVariantId" class="form-select no23-form-select" data-package-variant>
+                                            <option value="">Üyelik süresi seçin</option>
+                                            @foreach (var package in Model.PackageOptions)
+                                            {
+                                                <optgroup label="@package.Name">
+                                                    @foreach (var option in Model.ServiceOptions.Where(option => option.PackageCode == package.Code))
+                                                    {
+                                                        <option value="@option.Id" data-package="@option.PackageCode" data-label="@option.Name"
+                                                                data-price="@option.Price" data-price-note="@option.PriceNote" data-total-price="@option.TotalPrice"
+                                                                data-duration="@option.Duration" data-rights="@option.Rights">@package.Name — @option.Name</option>
+                                                    }
+                                                </optgroup>
+                                            }
+                                        </select>
+                                        <span asp-validation-for="Input.ServicePackageVariantId"></span>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-
-                        <div class="col-12">
-                            <div class="no23-form-field no23-package-option-field">
-                                <label asp-for="Input.PackageOptionId"></label>
-                                <select asp-for="Input.PackageOptionId"
-                                        class="form-select no23-form-select"
-                                        data-package-option-select>
-                                    @foreach (var option in Model.ServiceOptions)
-                                    {
-                                        <option value="@option.Id"
-                                                data-package-code="@option.PackageCode">
-                                            @option.Name — @option.DurationDays gün
-                                        </option>
-                                    }
-                                </select>
-                                <span asp-validation-for="Input.PackageOptionId"></span>
+                            @if (Model.PackageOptions.Count == 0)
+                            {
+                                <p class="register-validation-summary" role="status">Şu anda başvuruya açık üyelik paketi bulunmuyor.</p>
+                            }
+                            <div class="package-choice-summary" data-package-summary hidden="@(selectedOption is null)" aria-live="polite" aria-atomic="true">
+                                <dl>
+                                    <div><dt>Fiyat</dt><dd><strong data-package-price>@selectedOption?.Price</strong> <span data-package-price-note>@selectedOption?.PriceNote</span></dd></div>
+                                    <div><dt>Süre</dt><dd data-package-duration>@selectedOption?.Duration</dd></div>
+                                    <div data-package-total-row hidden="@(selectedOption?.TotalPrice is null)"><dt>Dönem toplamı</dt><dd data-package-total-price>@selectedOption?.TotalPrice</dd></div>
+                                    <div><dt>Ders hakkı</dt><dd data-package-rights>@selectedOption?.Rights</dd></div>
+                                </dl>
                             </div>
                         </div>
 
@@ -230,7 +261,8 @@
 
                     <button id="registerSubmit"
                             type="submit"
-                            class="no23-register-submit">
+                            class="no23-register-submit"
+                            disabled="@(Model.PackageOptions.Count == 0)">
                         <span>Üyeliği Başlat</span>
                         <span aria-hidden="true">→</span>
                     </button>
@@ -249,43 +281,5 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-    <script>
-        (() => {
-            const packageSelect = document.getElementById("Input_PackageCode");
-            const optionSelect = document.querySelector("[data-package-option-select]");
-
-            if (!packageSelect || !optionSelect) {
-                return;
-            }
-
-            const options = Array.from(optionSelect.options);
-
-            function syncPackageOptions() {
-                const packageCode = packageSelect.value.toUpperCase();
-                let firstVisibleOption = null;
-
-                options.forEach(option => {
-                    const isVisible = option.dataset.packageCode?.toUpperCase() === packageCode;
-                    option.hidden = !isVisible;
-                    option.disabled = !isVisible;
-
-                    if (isVisible && !firstVisibleOption) {
-                        firstVisibleOption = option;
-                    }
-                });
-
-                const selectedOption = optionSelect.selectedOptions[0];
-                if (!selectedOption || selectedOption.disabled) {
-                    optionSelect.value = firstVisibleOption?.value ?? "";
-                }
-
-                optionSelect.closest(".no23-package-option-field")?.toggleAttribute(
-                    "hidden",
-                    !firstVisibleOption);
-            }
-
-            packageSelect.addEventListener("change", syncPackageOptions);
-            syncPackageOptions();
-        })();
-    </script>
+    <script src="~/js/package-selector.js" asp-append-version="true"></script>
 }

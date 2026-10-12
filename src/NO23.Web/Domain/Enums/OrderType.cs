@@ -11,5 +11,8 @@ public enum OrderType
     KitchenSubscription = 2,
 
     [Display(Name = "Üyelik yenileme")]
-    MembershipRenewal = 3
+    MembershipRenewal = 3,
+
+    [Display(Name = "Paket satışı")]
+    ServicePackagePurchase = 4
 }

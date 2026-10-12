@@ -77,7 +77,7 @@ public class ClassSessionFlowTests
     }
 
     [Fact]
-    public async Task GroupClassEdit_DeactivatesClassWithoutCancellingFutureSessions()
+    public async Task GroupClassEdit_DeactivatesClassAndCancelsFutureSessions()
     {
         await using var dbContext = CreateDbContext();
         var trainer = new Trainer
@@ -121,7 +121,7 @@ public class ClassSessionFlowTests
 
         var session = await dbContext.ClassSessions.SingleAsync();
         Assert.False(groupClass.IsActive);
-        Assert.Equal(ClassSessionStatus.Scheduled, session.Status);
+        Assert.Equal(ClassSessionStatus.Cancelled, session.Status);
     }
 
     private static ApplicationDbContext CreateDbContext()

@@ -1,0 +1,53 @@
+.manual-payment-plan {
+    margin-top: 1rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(128, 128, 128, .3);
+}
+
+.manual-payment-plan h2 {
+    font-size: 1.25rem;
+}
+
+.manual-payment-installments {
+    display: grid;
+    gap: .85rem;
+}
+
+.manual-payment-row {
+    display: grid;
+    grid-template-columns: minmax(80px, .5fr) repeat(3, minmax(0, 1fr));
+    align-items: start;
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px solid rgba(128, 128, 128, .3);
+    border-radius: 12px;
+}
+
+.manual-payment-row-number {
+    padding-top: 2rem;
+}
+
+.manual-payment-summary {
+    line-height: 1.6;
+}
+
+.manual-payment-collection {
+    display: grid;
+    gap: .6rem;
+    min-width: 190px;
+}
+
+.manual-payment-plan [hidden] {
+    display: none;
+}
+
+@media (max-width: 767.98px) {
+    .manual-payment-row {
+        grid-template-columns: minmax(0, 1fr);
+        gap: .8rem;
+    }
+
+    .manual-payment-row-number {
+        padding-top: 0;
+    }
+}

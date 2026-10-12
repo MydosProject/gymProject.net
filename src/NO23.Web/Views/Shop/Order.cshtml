@@ -71,6 +71,12 @@
 
                 <partial name="_GuestOrderDeliveryMethod" model="Model" />
 
+                <partial name="_PaymentMethodSelector" model="@(new NO23.Web.ViewModels.PaymentMethodSelectorViewModel
+                {
+                    InputName = "input.PaymentMethod", SelectedMethod = Model.Input.PaymentMethod,
+                    IsCardPaymentAvailable = Model.IsPaymentAvailable
+                })" />
+
                 @if (isOutOfStock)
                 {
                     <div class="public-order-stock-warning">Bu ürün şu anda stokta yok.</div>
@@ -78,7 +84,7 @@
                 else if (!Model.IsPaymentAvailable)
                 {
                     <div class="public-order-stock-warning">
-                        Online ödeme şu anda kullanılamıyor. Sipariş oluşturma geçici olarak durduruldu.
+                        Kredi kartı ödemesi şu anda kullanılamıyor. Nakit veya havale ile sipariş oluşturabilirsin.
                     </div>
                 }
                 <div asp-validation-summary="ModelOnly" class="public-order-validation"></div>
@@ -177,12 +183,15 @@
 
                 <button class="public-order-submit"
                         type="submit"
-                        disabled="@(isOutOfStock || !Model.IsPaymentAvailable)">
-                    <span>@(isOutOfStock
-                        ? "Stokta Yok"
-                        : Model.IsPaymentAvailable
-                            ? "Ödemeye Geç"
-                            : "Ödeme Kullanılamıyor")</span>
+                        disabled="@isOutOfStock">
+                    @if (isOutOfStock)
+                    {
+                        <span>Stokta Yok</span>
+                    }
+                    else
+                    {
+                        <span data-payment-submit-label>Siparişi oluştur</span>
+                    }
                     <strong>@Model.UnitPrice.ToString("C0")</strong>
                 </button>
             </form>

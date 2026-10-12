@@ -20,6 +20,7 @@ public async Task<IActionResult> Index(
         {
             "success" => "success",
             "failed" => "failed",
+            "pending" => "pending",
             _ => null
         };
 
@@ -46,6 +47,13 @@ public async Task<IActionResult> Index(
                 order.Type,
                 order.Status,
                 order.PaymentStatus,
+                order.PaymentMethod,
+                order.IsManualPayment,
+                PaymentInstallments = order.PaymentInstallments.OrderBy(item => item.Number)
+                    .Select(item => new MemberOrderPaymentInstallmentViewModel
+                    {
+                        Number = item.Number, Amount = item.Amount, DueDate = item.DueDate, PaidOn = item.PaidOn
+                    }).ToList(),
                 order.CreatedAtUtc,
                 order.DeliveryDate,
                 order.DeliveryTimeSlot,
@@ -77,6 +85,9 @@ public async Task<IActionResult> Index(
                 Type = order.Type.ToString(),
                 Status = order.Status.ToString(),
                 PaymentStatus = order.PaymentStatus.ToString(),
+                PaymentMethod = order.PaymentMethod.ToString(),
+                IsManualPayment = order.IsManualPayment,
+                PaymentInstallments = order.PaymentInstallments,
                 CreatedAtUtc = order.CreatedAtUtc,
                 CreatedAtLocal = order.CreatedAtUtc.ToLocalTime(),
                 DeliveryDate = order.DeliveryDate,
