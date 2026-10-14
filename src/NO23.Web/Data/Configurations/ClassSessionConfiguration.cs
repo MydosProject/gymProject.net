@@ -16,6 +16,7 @@ public class ClassSessionConfiguration : IEntityTypeConfiguration<ClassSession>
             .HasDefaultValueSql("NOW()");
 
         builder.HasIndex(session => session.StartsAtUtc);
+        builder.HasIndex(session => session.RecurrenceId);
 
         builder.HasOne(session => session.GroupClass)
             .WithMany(groupClass => groupClass.Sessions)

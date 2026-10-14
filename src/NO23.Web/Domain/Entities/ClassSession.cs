@@ -12,6 +12,8 @@ public class ClassSession
 
     public DateTime StartsAtUtc { get; set; }
 
+    public Guid? RecurrenceId { get; set; }
+
     public int? CapacityOverride { get; set; }
 
     public ClassSessionStatus Status { get; set; } = ClassSessionStatus.Scheduled;

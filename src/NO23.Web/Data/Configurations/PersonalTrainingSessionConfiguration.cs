@@ -11,6 +11,7 @@ public class PersonalTrainingSessionConfiguration : IEntityTypeConfiguration<Per
         builder.Property(item => item.Note).HasMaxLength(600);
         builder.Property(item => item.CreatedAtUtc).HasDefaultValueSql("NOW()");
         builder.HasIndex(item => new { item.TrainerId, item.StartsAtUtc });
+        builder.HasIndex(item => item.RecurrenceId);
         builder.HasOne(item => item.Trainer).WithMany(item => item.PersonalTrainingSessions)
             .HasForeignKey(item => item.TrainerId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne(item => item.MemberProfile).WithMany(item => item.PersonalTrainingSessions)

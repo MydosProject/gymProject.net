@@ -106,11 +106,13 @@ public class PersonalTrainingCalendarService(ApplicationDbContext dbContext)
                 return (false, $"{ClubTime.ToLocal(start):dd.MM.yyyy HH:mm} saatinde eğitmen veya üyenin başka dersi var. Hiçbir ders eklenmedi.");
         }
 
+        var recurrenceIds = input.Days.Distinct().ToDictionary(day => day, _ => Guid.NewGuid());
         dbContext.PersonalTrainingSessions.AddRange(starts.Select(start => new PersonalTrainingSession
         {
             TrainerId = trainerId,
             MemberProfileId = member.Id,
             StartsAtUtc = start,
+            RecurrenceId = recurrenceIds[ClubTime.ToLocal(start).DayOfWeek],
             DurationMinutes = input.DurationMinutes,
             Note = input.Note?.Trim()
         }));
@@ -249,6 +251,7 @@ public class PersonalTrainingCalendarService(ApplicationDbContext dbContext)
             TrainerId = trainerId,
             MemberProfileId = memberProfileId,
             StartsAtUtc = startsAtUtc,
+            RecurrenceId = Guid.NewGuid(),
             DurationMinutes = durationMinutes,
             Note = note?.Trim()
         });
@@ -294,6 +297,12 @@ public class PersonalTrainingCalendarService(ApplicationDbContext dbContext)
             if (hasConflict || await HasGroupConflictAsync(trainerId, postponedStartsAtUtc.Value, newEnd))
                 return (false, "Yeni saat aralığında başka bir dersiniz bulunuyor.");
 
+            if (session.RecurrenceId is null)
+            {
+                var recurrences = new CalendarRecurrenceResolver(dbContext);
+                await recurrences.PersonalIdsAsync(session, NO23.Web.ViewModels.Admin.CalendarBulkScope.SelectedLessons, DateTime.UtcNow);
+                await recurrences.AssignLegacyIdentitiesAsync();
+            }
             session.StartsAtUtc = postponedStartsAtUtc.Value;
             session.Status = PersonalTrainingSessionStatus.Scheduled;
         }

@@ -1,23 +1,50 @@
 @model NO23.Web.ViewModels.Admin.CalendarBulkInput
-<form id="calendar-bulk-form" asp-action="Bulk" method="post" class="admin-form-card calendar-bulk-toolbar mb-4" data-calendar-bulk>
+<form id="calendar-bulk-form" asp-action="Bulk" method="post" class="admin-form-card calendar-bulk-toolbar mb-4" data-calendar-bulk data-calendar-member-available="@(Model.MemberId is not null ? "true" : "false")">
     <h2 class="h5">Toplu ders işlemleri</h2>
     <input name="Week" type="hidden" value="@Model.Week.ToString("yyyy-MM-dd")" />
     <input name="TrainerId" type="hidden" value="@Model.TrainerId" />
     <input name="MemberId" type="hidden" value="@Model.MemberId" />
     <p>Ders kartlarından işlem yapılacak dersleri seçin. Grup seansını güncellemek veya silmek tüm katılımcılarını etkiler.</p>
     <div class="row g-3">
-        <div class="col-md-4"><label class="form-label" for="bulkTime">Yeni saat</label><input id="bulkTime" name="Time" type="time" class="form-control" /></div>
-        <div class="col-md-8 d-flex align-items-end flex-wrap gap-2">
-            <button type="button" class="btn btn-outline-dark" data-calendar-select-all>Görünen dersleri seç</button>
-            <output data-calendar-selection-count aria-live="polite">0 ders seçili</output>
+        <div class="col-md-4">
+            <label class="form-label" for="bulkScope">İşlem kapsamı</label>
+            <select asp-for="Scope" id="bulkScope" class="form-select" aria-describedby="bulkScopeHelp bulkMemberScopeHelp">
+                <option value="0">Yalnızca seçilen dersler</option>
+                <option value="1">Bu ve sonraki tekrarlar</option>
+                <option value="2">Tüm gelecek tekrarlar</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="bulkDay">Yeni gün</label>
+            <select asp-for="Day" id="bulkDay" class="form-select" aria-describedby="bulkUpdateHelp">
+                <option value="">Günü koru</option>
+                <option value="1">Pazartesi</option>
+                <option value="2">Salı</option>
+                <option value="3">Çarşamba</option>
+                <option value="4">Perşembe</option>
+                <option value="5">Cuma</option>
+                <option value="6">Cumartesi</option>
+                <option value="0">Pazar</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="bulkTime">Yeni saat (isteğe bağlı)</label>
+            <input asp-for="Time" id="bulkTime" type="time" class="form-control" aria-describedby="bulkUpdateHelp" />
         </div>
     </div>
+    <p id="bulkScopeHelp" class="form-text mt-2">Tekrar kapsamı, seçtiğiniz derslerle aynı programa ait gelecekteki planlanmış dersleri de içerir. “Bu ve sonraki tekrarlar” seçilen dersin tarihinden başlar; “Tüm gelecek tekrarlar” seçilen dersten önceki gelecek dersleri de içerir. Geçmiş ve sonuçlandırılmış dersler değiştirilmez.</p>
+    <p id="bulkUpdateHelp" class="form-text">Gün / saat güncellemek için en az bir alanı doldurun. Gün değişikliği her dersi kendi haftasındaki yeni güne taşır. Boş bıraktığınız alan korunur.</p>
+    <div class="d-flex align-items-center flex-wrap gap-2">
+        <button type="button" class="btn btn-outline-dark" data-calendar-select-all>Görünen dersleri seç</button>
+        <output data-calendar-selection-count aria-live="polite">Ders kartlarından seçtiğiniz dersler belirtilen kapsama göre işleme alınır. Tekrar kapsamındaki toplam ders sayısı işlem sırasında belirlenir.</output>
+    </div>
     <details class="mt-3"><summary>Üyenin birden fazla haftadaki birebir derslerini toplu düzenle</summary>
-        <label class="d-block mt-2"><input type="checkbox" name="AllMemberLessons" value="true" disabled="@(Model.MemberId is null)" /> Seçili üyenin tarih aralığındaki tüm planlanmış birebir derslerine uygula</label>
+        <label class="d-block mt-2"><input type="checkbox" name="AllMemberLessons" value="true" checked="@Model.AllMemberLessons" disabled="@(Model.MemberId is null)" aria-describedby="bulkMemberScopeHelp" /> Seçili üyenin tarih aralığındaki tüm planlanmış birebir derslerine uygula</label>
         @if (Model.MemberId is null) { <small class="form-text">Önce üstteki filtreden üyeyi seçin.</small> }
+        <p id="bulkMemberScopeHelp" class="form-text mt-2">Üye tarih aralığı seçeneği yalnızca “Yalnızca seçilen dersler” kapsamıyla birlikte kullanılabilir. Tekrar kapsamı kullanmak için bu seçeneği kaldırın.</p>
         <div class="row g-2 mt-1"><div class="col-md-6"><label for="bulkFrom" class="form-label">İlk tarih</label><input id="bulkFrom" name="From" type="date" value="@Model.From.ToString("yyyy-MM-dd")" class="form-control" /></div><div class="col-md-6"><label for="bulkUntil" class="form-label">Son tarih (dahil)</label><input id="bulkUntil" name="Until" type="date" value="@Model.Until.ToString("yyyy-MM-dd")" class="form-control" /></div></div>
     </details>
-    <p class="form-text mt-3">Saat güncellemesi ders tarihlerini ve haklarını korur. Silme işleminde planlanmış dersler kaldırılır ve ayrılmış grup ders hakları iade edilir.</p>
-    <div class="d-flex flex-wrap gap-2"><button type="submit" class="btn btn-dark" name="Operation" value="UpdateTime">Saatleri güncelle</button><button type="submit" class="btn btn-outline-danger" name="Operation" value="Delete">Seçilen dersleri sil</button></div>
+    <p class="form-text mt-3">Gün / saat güncellemesi ders haklarını korur. Silme işleminde planlanmış dersler kaldırılır ve ayrılmış grup ders hakları iade edilir.</p>
+    <div class="d-flex flex-wrap gap-2"><button type="submit" class="btn btn-dark" name="Operation" value="UpdateTime">Gün / saati güncelle</button><button type="submit" class="btn btn-outline-danger" name="Operation" value="Delete">Dersleri sil</button></div>
     <p class="text-danger mt-2 mb-0" data-calendar-bulk-error role="alert" hidden></p>
 </form>

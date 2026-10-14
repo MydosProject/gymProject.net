@@ -40,8 +40,10 @@ public class WeeklyGroupSchedulingService(ApplicationDbContext db)
                 existingPersonal.Any(x => x.StartsAtUtc < end && x.StartsAtUtc.AddMinutes(x.DurationMinutes) > start))
                 return (false, $"{ClubTime.ToLocal(start):dd.MM.yyyy HH:mm} saatinde antrenörün başka dersi var. Hiçbir seans eklenmedi.");
         }
+        var recurrenceIds = input.Days.Distinct().ToDictionary(day => day, _ => Guid.NewGuid());
         db.ClassSessions.AddRange(starts.Select(start => new ClassSession
-            { GroupClassId = group.Id, StartsAtUtc = start, CapacityOverride = input.Capacity, Status = ClassSessionStatus.Scheduled }));
+            { GroupClassId = group.Id, StartsAtUtc = start, RecurrenceId = recurrenceIds[ClubTime.ToLocal(start).DayOfWeek],
+                CapacityOverride = input.Capacity, Status = ClassSessionStatus.Scheduled }));
         await db.SaveChangesAsync();
         return (true, $"{starts.Count} grup dersi haftalık takvime eklendi.");
     }

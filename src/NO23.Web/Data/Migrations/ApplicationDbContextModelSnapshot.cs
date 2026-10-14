@@ -529,6 +529,9 @@ namespace NO23.Web.Data.Migrations
                     b.Property<int>("GroupClassId")
                         .HasColumnType("integer");
 
+                    b.Property<Guid?>("RecurrenceId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("StartsAtUtc")
                         .HasColumnType("timestamp with time zone");
 
@@ -543,6 +546,8 @@ namespace NO23.Web.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("GroupClassId");
+
+                    b.HasIndex("RecurrenceId");
 
                     b.HasIndex("StartsAtUtc");
 
@@ -2545,6 +2550,9 @@ namespace NO23.Web.Data.Migrations
                         .HasMaxLength(600)
                         .HasColumnType("character varying(600)");
 
+                    b.Property<Guid?>("RecurrenceId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("StartsAtUtc")
                         .HasColumnType("timestamp with time zone");
 
@@ -2560,6 +2568,8 @@ namespace NO23.Web.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("MemberProfileId");
+
+                    b.HasIndex("RecurrenceId");
 
                     b.HasIndex("TrainerId", "StartsAtUtc");
 

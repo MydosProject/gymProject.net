@@ -194,6 +194,14 @@ public class ClassSessionsController(
 
         var previousStartsAtUtc = session.StartsAtUtc;
 
+        if (session.RecurrenceId is null && session.GroupClassId == model.GroupClassId &&
+            (previousStartsAtUtc != ClubTime.ToUtc(model.StartsAtLocal) || session.CapacityOverride != model.CapacityOverride))
+        {
+            var recurrences = new CalendarRecurrenceResolver(dbContext);
+            await recurrences.GroupIdsAsync(session, CalendarBulkScope.SelectedLessons, DateTime.UtcNow);
+            await recurrences.AssignLegacyIdentitiesAsync();
+        }
+        if (session.GroupClassId != model.GroupClassId) session.RecurrenceId = Guid.NewGuid();
         ApplyFormModel(session, model);
 
         var scheduleChanged = previousStartsAtUtc != session.StartsAtUtc;
@@ -377,7 +385,7 @@ public class ClassSessionsController(
 
     private static ClassSession MapToEntity(ClassSessionFormViewModel model)
     {
-        var session = new ClassSession();
+        var session = new ClassSession { RecurrenceId = Guid.NewGuid() };
         ApplyFormModel(session, model);
         return session;
     }
