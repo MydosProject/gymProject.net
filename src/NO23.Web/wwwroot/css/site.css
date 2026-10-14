@@ -20636,6 +20636,64 @@ body.has-content-reading-modal {
 .service-catalog-cards {
     align-items: start;
 }
+/* Keep the four PT packages together without a lone Duet card. */
+@media (min-width: 768px) {
+    .service-catalog-personaltraining .service-catalog-cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .service-catalog-personaltraining .service-package-head {
+        min-height: 12rem;
+    }
+    .service-catalog-personaltraining .service-package-card > p:not(.service-package-unavailable) {
+        min-height: 6rem;
+    }
+    .service-catalog-personaltraining .service-package-card > ul {
+        min-height: 7rem;
+        align-content: start;
+    }
+    .service-catalog-personaltraining .service-package-highlights {
+        min-height: 7rem;
+    }
+}
+@media (min-width: 1400px) {
+    .service-catalog-personaltraining .service-catalog-cards {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .service-catalog-personaltraining .service-package-card {
+        display: grid;
+        grid-template-rows: minmax(12rem, auto) minmax(8rem, auto) minmax(8.5rem, auto) minmax(8.5rem, auto) auto;
+        align-content: start;
+    }
+    .service-catalog-personaltraining .service-package-head {
+        grid-row: 1;
+    }
+    .service-catalog-personaltraining .service-package-card > p:not(.service-package-unavailable) {
+        grid-row: 2;
+        align-self: start;
+    }
+    .service-catalog-personaltraining .service-package-card > ul {
+        grid-row: 3;
+        align-self: start;
+    }
+    .service-catalog-personaltraining .service-package-highlights {
+        grid-row: 4;
+        align-self: start;
+    }
+    .service-catalog-personaltraining .service-package-application-form,
+    .service-catalog-personaltraining .service-package-unavailable {
+        grid-row: 5;
+        align-self: start;
+    }
+    .service-catalog-personaltraining .service-variant {
+        grid-template-columns: 16px minmax(0, 1fr);
+    }
+    .service-catalog-personaltraining .service-variant-price {
+        grid-column: 2;
+        min-width: 0;
+        max-width: none;
+        text-align: left;
+    }
+}
 .service-package-card {
     min-height: 0;
     align-self: start;
