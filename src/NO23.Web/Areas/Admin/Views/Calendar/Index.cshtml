@@ -7,6 +7,7 @@
     ViewData["Title"] = "Haftalık Takvim";
     var culture = System.Globalization.CultureInfo.GetCultureInfo("tr-TR");
     var memberPeriods = Model.MemberPackagePeriods.ToDictionary(item => item.Id);
+    var today = ClubTime.Now.Date;
 }
 <section class="admin-page">
     <header class="admin-page-head"><div><h1>Haftalık takvim</h1><p>Grup derslerini ve birebir seansları aynı haftada planla. Tüm saatler Türkiye saatidir.</p></div></header>
@@ -71,22 +72,37 @@
         </form>
     </details>
     @await Html.PartialAsync("_CalendarBulkToolbar", new NO23.Web.ViewModels.Admin.CalendarBulkInput { Week = Model.Week, TrainerId = Model.TrainerId, MemberId = Model.MemberId })
+    <div class="weekly-calendar-legend" aria-label="Ders türleri">
+        <span class="calendar-kind is-personal">Birebir</span><span class="calendar-kind">Grup</span>
+        <p>Toplu işlem için ders kartındaki seçim kutusunu işaretleyin.</p>
+    </div>
     <div class="weekly-calendar">
     @for(var i=0;i<7;i++)
     {
         var date=Model.Week.AddDays(i);
         var entries=Model.EntriesFor(date);
-        <section class="weekly-calendar-day"><h2>@date.ToString("dddd",culture)<small>@date.ToString("dd.MM.yyyy")</small></h2>
-        @if(entries.Count==0){<p>Planlanmış ders yok.</p>}
+        <section class="weekly-calendar-day @(date.Date == today ? "is-today" : null)" aria-label="@date.ToString("dddd dd MMMM", culture)">
+        <header class="calendar-day-head">
+            <h2>@date.ToString("dddd",culture)<time datetime="@date.ToString("yyyy-MM-dd")">@date.ToString("dd MMM", culture)</time></h2>
+            <div class="calendar-day-indicators">
+                @if(date.Date == today){<span class="calendar-today">Bugün</span>}
+                <span class="calendar-day-count">@entries.Count ders</span>
+            </div>
+        </header>
+        @if(entries.Count==0){<div class="calendar-day-empty"><strong>Ders yok</strong><p>Bu gün için ders planlanmamış.</p></div>}
         @foreach(var entry in entries)
         {
         if (entry.Group is { } session)
         {
             var participants=session.Reservations.Where(x=>x.Status==ClassReservationStatus.Reserved).ToList();
-            <article id="group-session-@session.Id" class="weekly-calendar-session"><span>GRUP · @ClubTime.ToLocal(session.StartsAtUtc).ToString("HH:mm")</span><h3>@session.GroupClass.Name</h3>
-                @if(session.Status==ClassSessionStatus.Scheduled){<label class="small mb-2"><input id="select-group-@session.Id" type="checkbox" name="GroupIds" value="@session.Id" form="calendar-bulk-form" /> Toplu işlem için grup seansını seç</label>}
-                <p>@session.GroupClass.Trainer.FirstName @session.GroupClass.Trainer.LastName<br />@session.Status.GetDisplayName() · @participants.Count / @(session.CapacityOverride??session.GroupClass.Capacity)</p>
-                <a asp-controller="ClassSessions" asp-action="Edit" asp-route-id="@session.Id">Seansı düzenle</a>
+            <article id="group-session-@session.Id" class="weekly-calendar-session">
+                <div class="calendar-session-top"><span class="calendar-kind">Grup</span><span class="calendar-duration">@session.GroupClass.DurationMinutes dk</span></div>
+                <time class="calendar-session-time" datetime="@ClubTime.ToLocal(session.StartsAtUtc).ToString("yyyy-MM-ddTHH:mm")">@ClubTime.ToLocal(session.StartsAtUtc).ToString("HH:mm")</time>
+                <h3>@session.GroupClass.Name</h3>
+                <p class="calendar-session-trainer"><span>Eğitmen</span><strong>@session.GroupClass.Trainer.FirstName @session.GroupClass.Trainer.LastName</strong></p>
+                <div class="calendar-session-state"><span class="calendar-status is-@session.Status.ToString().ToLowerInvariant()">@session.Status.GetDisplayName()</span><span class="calendar-capacity">@participants.Count / @(session.CapacityOverride??session.GroupClass.Capacity) kişi</span></div>
+                @if(session.Status==ClassSessionStatus.Scheduled){<label class="calendar-session-select"><input id="select-group-@session.Id" type="checkbox" name="GroupIds" value="@session.Id" form="calendar-bulk-form" /><span>Toplu seçime ekle</span></label>}
+                <a class="calendar-session-edit" asp-controller="ClassSessions" asp-action="Edit" asp-route-id="@session.Id">Seansı düzenle <span aria-hidden="true">→</span></a>
                 <details><summary>Katılımcılar (@participants.Count)</summary>
                     @foreach(var person in participants){<div class="border-bottom py-2">@person.MemberProfile.ApplicationUser.FirstName @person.MemberProfile.ApplicationUser.LastName
                         <form asp-controller="ClassSessions" asp-action="RemoveReservation" method="post"><input type="hidden" name="FilterMemberId" value="@Model.MemberId" /><input type="hidden" name="FilterTrainerId" value="@Model.TrainerId" /><input name="id" type="hidden" value="@session.Id" /><input name="reservationId" type="hidden" value="@person.Id" /><button class="btn btn-sm btn-outline-danger">Çıkar</button></form></div>}
@@ -99,10 +115,13 @@
         }
         else if (entry.Personal is { } personalSession)
         {
-            <article class="weekly-calendar-session is-personal"><span>BİREBİR · @ClubTime.ToLocal(personalSession.StartsAtUtc).ToString("HH:mm") · @personalSession.DurationMinutes dk</span>
+            <article id="personal-session-@personalSession.Id" class="weekly-calendar-session is-personal">
+                <div class="calendar-session-top"><span class="calendar-kind is-personal">Birebir</span><span class="calendar-duration">@personalSession.DurationMinutes dk</span></div>
+                <time class="calendar-session-time" datetime="@ClubTime.ToLocal(personalSession.StartsAtUtc).ToString("yyyy-MM-ddTHH:mm")">@ClubTime.ToLocal(personalSession.StartsAtUtc).ToString("HH:mm")</time>
                 <h3>@personalSession.MemberProfile.ApplicationUser.FirstName @personalSession.MemberProfile.ApplicationUser.LastName</h3>
-                @if(personalSession.Status==PersonalTrainingSessionStatus.Scheduled){<label class="small mb-2"><input id="select-personal-@personalSession.Id" type="checkbox" name="PersonalIds" value="@personalSession.Id" form="calendar-bulk-form" /> Toplu işlem için dersi seç</label>}
-                <p>@personalSession.Trainer.FirstName @personalSession.Trainer.LastName<br />@personalSession.Status.GetDisplayName()</p>
+                <p class="calendar-session-trainer"><span>Eğitmen</span><strong>@personalSession.Trainer.FirstName @personalSession.Trainer.LastName</strong></p>
+                <div class="calendar-session-state"><span class="calendar-status is-@personalSession.Status.ToString().ToLowerInvariant()">@personalSession.Status.GetDisplayName()</span></div>
+                @if(personalSession.Status==PersonalTrainingSessionStatus.Scheduled){<label class="calendar-session-select"><input id="select-personal-@personalSession.Id" type="checkbox" name="PersonalIds" value="@personalSession.Id" form="calendar-bulk-form" /><span>Toplu seçime ekle</span></label>}
                 @if(personalSession.Status==PersonalTrainingSessionStatus.Scheduled){<details><summary>Dersi düzenle</summary>
                 <form asp-action="UpdatePersonal" method="post"><input type="hidden" name="FilterMemberId" value="@Model.MemberId" /><input type="hidden" name="FilterTrainerId" value="@Model.TrainerId" />
                     <input name="Id" type="hidden" value="@personalSession.Id" /><input name="TrainerId" type="hidden" value="@personalSession.TrainerId" /><input name="Week" type="hidden" value="@Model.Week.ToString("yyyy-MM-dd")" />

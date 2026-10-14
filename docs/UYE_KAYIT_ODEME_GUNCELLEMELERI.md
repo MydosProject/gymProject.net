@@ -75,3 +75,11 @@ Talep tarihi: 8 Ekim 2026
 - Seçim gerçek paket kaydının radyo düğmesini günceller. Fiyat, tasarruf, süre ve haklar mevcut sunucu sunumundan alınır; JavaScript kullanılamazsa tüm seçenekler radyo düğmeleriyle seçilebilir. Tarayıcı geri dönüşünde özet seçime tekrar eşitlenir.
 - 1200 piksel ve üzerinde dört kart aynı satırda, tablette iki sütunda, telefonda tek sütunda görünür. Önceki uzun açıklamalar için ayrılan boş satırlar kaldırıldı; sayfa başlığı ve üst boşluklar kısaltıldı.
 - 502/502 test geçti. Tarayıcıda 14 aktif seçeneğin fiyat / kimlik eşleşmesi, Düet 100 ve Flex 12 dersin başvuru sayfasına geçişi ve 320–1440 piksel ekranlarda taşma kontrolü doğrulandı. Veritabanı şeması ve paket verileri değişmedi.
+
+## 14 Ekim 2026 — Yönetici takviminde okunabilir ders kartları
+
+- Gün başlıkları, tarih ve günlük ders sayısı ayrı gösterilir; Türkiye saatine göre bugünün sütunu vurgulanır. Boş günler açık bir boş durum mesajı içerir.
+- Ders saati büyük ve kalın gösterilir; üye / ders adı, eğitmen ve süre ayrı bilgi seviyeleridir. Birebir ve grup dersleri renkli tür etiketleriyle; ders durumları metinli renk etiketleriyle ayrılır.
+- Toplu seçim kutuları geniş tıklama alanına sahiptir; seçili dersin tüm kartı altın çerçeve ve açık zeminle belirginleşir. Düzenleme formunun alanları açık kart üzerinde koyu yazıyla okunur.
+- 767.98 piksel ve altında günler tek sütunda gösterilir; daha dar masaüstü ekranlarında yalnızca takvim yatay kaydırılır. Ders işlemleri, form alanları, yetki ve hak kuralları değişmedi.
+- Derleme hatasız tamamlandı; takvim sıralama, toplu işlem ve tekrar kapsamlarını kapsayan 44 mevcut test geçti. Tarayıcıda tekli / toplu seçim, düzenleme paneli, 320–1920 piksel görünüm ve kart taşmaları kontrol edildi. Görsel testler ayrı geçici veritabanında yapıldı.
