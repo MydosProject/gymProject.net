@@ -59,3 +59,11 @@ Talep tarihi: 8 Ekim 2026
 - `20261014080736_AddCalendarRecurrenceIds` migration'ı derslere nullable tekrar kimliği ve indeks ekler. Yayında bu migration uygulanmalıdır; canlı veritabanına bu çalışma kapsamında işlem yapılmadı.
 - Çözüm derlemesi başarılı; 499/499 test geçti. Tekrar kapsamı, gün / saat taşıma, eski derslerin bağlantısı, yetki sınırı, hak iadesi, çakışma / paket / aylık limitte tüm işlemin reddi ve tekrarlar dahil 500 ders sınırı doğrulandı. JavaScript sözdizimi ve form etkileşimleri de kontrol edildi.
 - Ayrı ve geçici PostgreSQL 18 veritabanında 55 migration'ın tamamı uygulandı. Gerçek Npgsql / Serializable işlem yolunda tekrarları taşıma, eski kayıtları bağlama, tüm grup katılımcılarını kapsama, tek seferlik hak iadesi ve çakışma / paket / aylık limitte hiçbir değişiklik yapılmaması doğrulandı. Test konteyneri kaldırıldı.
+
+## 14 Ekim 2026 — Grup derslerinde kısa paket seçimi
+
+- Performance kartında önce **8 / 12 ders**, ardından **1 / 6 / 12 ay** seçilir. Reformer ve Reformer Plus'ta ders içeriği sabittir; yalnızca süre seçilir.
+- Fiyat, ders hakları, hediye ay, ders başı ücret ve tasarruf seçilen gerçek paket kaydından gösterilir. Başvuru formuna bu kaydın kimliği gönderilir; istemcide yeni fiyat veya hak hesaplanmaz.
+- **24 ders · 3 ay** gibi özel paketler **Diğer paketler** bölümünde korunur. Aktif olmayan seçenekler gösterilmez; aynı ders hakları ve süresi için birden fazla farklı kayıt varsa bunlar tek seçeneğe indirgenmez.
+- Süreye bağlı hediye bilgileri süre düğmelerinde ve seçilen paket özetinde gösterilir; aynı bilgiyi tekrar eden ayrı kutu kaldırıldı. JavaScript kullanılamazsa önceki radyo düğmeli seçim kullanılabilir.
+- 502/502 test geçti. Tarayıcıda altı Performance kombinasyonu, yıllık paket başvurusu, özel 24 ders paketinin başvurusu ve masaüstü / mobil taşma kontrolü doğrulandı. Veritabanı şeması ve mevcut paket fiyat / hak kuralları değişmedi.

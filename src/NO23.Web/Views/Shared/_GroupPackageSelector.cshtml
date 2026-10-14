@@ -1,0 +1,73 @@
+@model NO23.Web.ViewModels.Plans.ServicePackageCardViewModel
+@{
+    var selected = Model.Variants.FirstOrDefault(x => x.IsRecommended) ?? Model.Variants.First();
+    var selectedLesson = Model.GroupLessonOptions.FirstOrDefault(x => x.Variants.Any(v => v.Id == selected.Id)) ?? Model.GroupLessonOptions.First();
+    var groupKeys = Model.GroupLessonOptions.SelectMany(option => option.Variants.Select(variant => new { variant.Id, option.Key })).ToDictionary(x => x.Id, x => x.Key);
+    var months = Model.GroupLessonOptions.SelectMany(option => option.Variants).Select(x => x.DurationMonths!.Value).Distinct().Order().ToList();
+}
+<div class="group-package-selector" data-group-package-controls hidden>
+    <div class="group-package-lesson-choice">
+        @if (Model.GroupLessonOptions.Count > 1)
+        {
+            <fieldset class="group-package-choice">
+                <legend>Ders sayısı</legend>
+                <div class="group-package-options">
+                    @foreach (var option in Model.GroupLessonOptions)
+                    {
+                        <button type="button" data-group-lesson="@option.Key" aria-pressed="@(option == selectedLesson ? "true" : "false")">
+                            <strong>@option.Label</strong>
+                            @if (option.IsRecommended) { <small>Önerilen</small> }
+                        </button>
+                    }
+                </div>
+            </fieldset>
+        }
+        else
+        {
+            <div class="group-package-fixed-lessons"><span>Ders içeriği</span><strong>@selectedLesson.Variants.First().Rights</strong></div>
+        }
+    </div>
+    <fieldset class="group-package-choice">
+        <legend>Paket süresi</legend>
+        <div class="group-package-options group-package-periods">
+            @foreach (var month in months)
+            {
+                var option = selectedLesson.Variants.FirstOrDefault(x => x.DurationMonths == month);
+                <button type="button" data-group-months="@month" aria-pressed="@(groupKeys.ContainsKey(selected.Id) && selected.DurationMonths == month ? "true" : "false")" disabled="@(option is null)">
+                    <strong>@month ay</strong>
+                    <small data-group-gift hidden="@(option is null || option.BonusMonths == 0)">@(option?.BonusMonths) ay hediye</small>
+                </button>
+            }
+        </div>
+    </fieldset>
+    <section class="group-package-summary" data-group-package-summary aria-live="polite" aria-atomic="true" aria-label="Seçilen paket"></section>
+    @if (Model.OtherGroupVariants.Count > 0)
+    {
+        <details class="group-package-other" data-group-package-other>
+            <summary>Diğer paketler (@Model.OtherGroupVariants.Count)</summary>
+            <div class="group-package-other-options">
+                @foreach (var variant in Model.OtherGroupVariants)
+                {
+                    <button type="button" data-group-other="@variant.Id" aria-pressed="@(selected.Id == variant.Id ? "true" : "false")">
+                        <span>@variant.Name</span><strong>@variant.Price</strong>
+                    </button>
+                }
+            </div>
+        </details>
+    }
+    @foreach (var variant in Model.Variants)
+    {
+        <template data-group-variant="@variant.Id" data-option-family="@groupKeys.GetValueOrDefault(variant.Id)" data-option-months="@variant.DurationMonths" data-option-bonus="@variant.BonusMonths">
+            <span class="group-package-selected-name">@variant.Name</span>
+            <strong class="group-package-selected-price">@variant.Price</strong>
+            <small class="group-package-price-note">@(variant.PriceNote == "tek seferlik" ? "Toplam paket bedeli · tek seferlik" : variant.PriceNote)</small>
+            <div class="group-package-value-row">
+                @if (variant.UnitPrice is not null) { <span>@variant.UnitPrice</span> }
+                @if (variant.Savings is not null) { <strong>@variant.Savings</strong> }
+            </div>
+            <small>@variant.Rights</small>
+            @if (variant.CommitmentNote is not null) { <small>@variant.CommitmentNote</small> }
+            @if (variant.ComparisonNote is not null) { <small>@variant.ComparisonNote</small> }
+        </template>
+    }
+</div>

@@ -25,6 +25,27 @@ public class ServicePackageCatalogService(ApplicationDbContext dbContext)
         return packages.Select(package =>
         {
             var featureTexts = package.Features.OrderBy(x => x.DisplayOrder).Select(x => x.Text).ToList();
+            var activeVariants = package.Variants.Where(x => x.IsActive &&
+                (category != ServicePackageCategory.KidsClub || x.KidsClassCreditCount == 8)).OrderBy(x => x.DisplayOrder).ToList();
+            var variants = activeVariants.Select(x => Present(x, package.Variants, PtReference(package, regularPtReference))).ToList();
+            // Ambiguous options for the same rights and term remain individually
+            // selectable instead of silently choosing one price or entitlement.
+            var standardVariants = activeVariants.Where(IsStandardGroupOption)
+                .GroupBy(x => (x.ReformerClassCreditCount, x.PerformanceClassCreditCount, x.GroupClassCreditCount, x.DurationMonths))
+                .Where(group => group.Count() == 1).Select(group => group.Single()).OrderBy(x => x.DisplayOrder).ToList();
+            var lessonOptions = category == ServicePackageCategory.GroupClasses
+                ? standardVariants
+                    .GroupBy(x => (x.ReformerClassCreditCount, x.PerformanceClassCreditCount, x.GroupClassCreditCount))
+                    .Select(group => new GroupPackageLessonOptionViewModel
+                    {
+                        Key = $"r{group.Key.ReformerClassCreditCount}-p{group.Key.PerformanceClassCreditCount}-g{group.Key.GroupClassCreditCount}",
+                        Label = $"{group.Key.ReformerClassCreditCount + group.Key.PerformanceClassCreditCount + group.Key.GroupClassCreditCount} ders",
+                        IsRecommended = group.Any(x => x.IsRecommended),
+                        Variants = group.OrderBy(x => x.DurationMonths).ThenBy(x => x.DisplayOrder)
+                            .Select(x => variants.Single(item => item.Id == x.Id)).ToList()
+                    }).ToList()
+                : [];
+            var groupedIds = lessonOptions.SelectMany(x => x.Variants).Select(x => x.Id).ToHashSet();
             return new ServicePackageCardViewModel
             {
                 CategoryTitle = CategoryTitle(category), Slug = package.Slug,
@@ -33,10 +54,9 @@ public class ServicePackageCatalogService(ApplicationDbContext dbContext)
                 MembershipCode = package.MembershipPackage?.Code.ToString().ToUpperInvariant(),
                 Features = featureTexts.Where(x => !IsCommercialHighlight(x)).ToList(),
                 Highlights = featureTexts.Where(IsCommercialHighlight).Concat(BenefitLabels(package)).ToList(),
-                Variants = package.Variants.Where(x => x.IsActive &&
-                        (category != ServicePackageCategory.KidsClub || x.KidsClassCreditCount == 8))
-                    .OrderBy(x => x.DisplayOrder)
-                    .Select(x => Present(x, package.Variants, PtReference(package, regularPtReference))).ToList()
+                Variants = variants,
+                GroupLessonOptions = lessonOptions,
+                OtherGroupVariants = lessonOptions.Count > 0 ? variants.Where(x => !groupedIds.Contains(x.Id)).ToList() : []
             };
         }).ToList();
     }
@@ -110,6 +130,7 @@ public class ServicePackageCatalogService(ApplicationDbContext dbContext)
         return new ServicePackageVariantCardViewModel
         {
             Id = variant.Id, Name = variant.Name, Rights = Rights(variant), IsRecommended = variant.IsRecommended,
+            DurationMonths = variant.DurationMonths, BonusMonths = variant.BonusMonths,
             Price = variant.PriceOnRequest ? "Fiyat için bilgi al" : Money(monthly ? variant.MonthlyPrice ?? 0 : variant.TotalPrice),
             PriceNote = variant.PriceOnRequest ? "Başvuru sonrası teklif" : monthly ? "aylık" : "tek seferlik",
             UnitPrice = unitPrice, Savings = savings, ComparisonNote = comparison,
@@ -141,6 +162,11 @@ public class ServicePackageCatalogService(ApplicationDbContext dbContext)
     };
 
     private static string Money(decimal amount) => $"{amount.ToString("N2", Turkish)} ₺";
+    private static bool IsStandardGroupOption(ServicePackageVariant variant) =>
+        variant.BillingType == ServicePackageBillingType.OneTime && variant.DurationDays is null &&
+        variant.DurationMonths is 1 or 6 or 12 && (variant.DurationMonths == 1 || variant.LessonsRenewMonthly) &&
+        variant.PersonalTrainingSessionCount == 0 && variant.KidsClassCreditCount == 0 &&
+        variant.ReformerClassCreditCount + variant.PerformanceClassCreditCount + variant.GroupClassCreditCount > 0;
     private static IEnumerable<string> BenefitLabels(ServicePackage package)
     {
         if (package.KitchenDiscountPercent > 0) yield return $"Kitchen aboneliğinde %{package.KitchenDiscountPercent} indirim";

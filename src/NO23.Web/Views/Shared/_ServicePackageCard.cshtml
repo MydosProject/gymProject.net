@@ -4,6 +4,10 @@
     var billingNote = Model.Variants.Select(x => x.BillingNote).FirstOrDefault(x => x is not null);
     var isKidsPackage = string.Equals(Model.Slug, "kids-club", StringComparison.OrdinalIgnoreCase);
     var isProMembership = string.Equals(Model.Slug, "pro-membership", StringComparison.OrdinalIgnoreCase);
+    var hasGroupSelector = Model.GroupLessonOptions.Count > 0;
+    var highlights = Model.Highlights.Where(text => !hasGroupSelector ||
+        (!string.Equals(text, "6 aylık paketin 1 ayı hediye", StringComparison.OrdinalIgnoreCase) &&
+         !string.Equals(text, "Yıllık paketin 2 ayı hediye", StringComparison.OrdinalIgnoreCase))).ToList();
 }
 <article id="@Model.Slug" class="service-package-card @(Model.IsFeatured ? "is-featured" : null) @(isKidsPackage ? "is-kids-package" : null) @(isProMembership ? "is-pro-membership" : null)">
     @if (Model.IsFeatured) { <span class="service-package-badge">En Çok Tercih Edilen</span> }
@@ -16,12 +20,12 @@
     <ul>
         @foreach (var feature in Model.Features) { <li>@feature</li> }
     </ul>
-    @if (Model.Highlights.Count > 0)
+    @if (highlights.Count > 0)
     {
         <section class="service-package-highlights" aria-label="Paket avantajları">
             <span class="service-package-highlights-title">Paket Avantajları</span>
             <div>
-                @foreach (var highlight in Model.Highlights)
+                @foreach (var highlight in highlights)
                 {
                     <strong>@highlight</strong>
                 }
@@ -40,9 +44,10 @@
     }
     @if (Model.Variants.Count > 0)
     {
-        <form asp-area="" asp-controller="Plans" asp-action="Apply" method="get" class="service-package-application-form">
+        <form asp-area="" asp-controller="Plans" asp-action="Apply" method="get" class="service-package-application-form" data-group-package-selector="@(hasGroupSelector ? "true" : null)">
             <input type="hidden" name="package" value="@Model.Slug" />
-            <fieldset class="service-package-variants">
+            @if (hasGroupSelector) { <partial name="_GroupPackageSelector" model="Model" /> }
+            <fieldset class="service-package-variants" data-group-package-fallback="@(hasGroupSelector ? "true" : null)">
                 <legend>Başvurmak istediğin seçeneği belirle</legend>
                 @foreach (var variant in Model.Variants)
                 {

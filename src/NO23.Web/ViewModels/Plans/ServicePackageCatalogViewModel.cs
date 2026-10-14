@@ -23,6 +23,16 @@ public class ServicePackageCardViewModel
     public IReadOnlyList<string> Features { get; init; } = [];
     public IReadOnlyList<string> Highlights { get; init; } = [];
     public IReadOnlyList<ServicePackageVariantCardViewModel> Variants { get; init; } = [];
+    public IReadOnlyList<GroupPackageLessonOptionViewModel> GroupLessonOptions { get; init; } = [];
+    public IReadOnlyList<ServicePackageVariantCardViewModel> OtherGroupVariants { get; init; } = [];
+}
+
+public class GroupPackageLessonOptionViewModel
+{
+    public string Key { get; init; } = string.Empty;
+    public string Label { get; init; } = string.Empty;
+    public bool IsRecommended { get; init; }
+    public IReadOnlyList<ServicePackageVariantCardViewModel> Variants { get; init; } = [];
 }
 
 public class ServicePackageVariantCardViewModel
@@ -39,4 +49,6 @@ public class ServicePackageVariantCardViewModel
     public string? BillingNote { get; init; }
     public string? CommitmentNote { get; init; }
     public bool IsRecommended { get; init; }
+    public int? DurationMonths { get; init; }
+    public int BonusMonths { get; init; }
 }
