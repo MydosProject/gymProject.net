@@ -42,7 +42,7 @@ public class RegistrationPackageCatalogTests
         Assert.Equal("4.000,00 ₺", hybrid.Price);
         Assert.Equal("aylık", hybrid.PriceNote);
         Assert.Equal("8.000,00 ₺", hybrid.TotalPrice);
-        Assert.Equal("3 ay", hybrid.Duration);
+        Assert.Equal("2 ay", hybrid.Duration);
         Assert.Contains("12 grup dersi", hybrid.Rights);
         Assert.Contains("8 Reformer dersi", hybrid.Rights);
     }
@@ -141,7 +141,7 @@ public class RegistrationPackageCatalogTests
         Assert.Equal(catalog.Hybrid.ServicePackage.MembershipPackageId, profile.MembershipPackageId);
         Assert.NotNull(profile.MembershipStartsAtUtc);
         Assert.InRange(profile.MembershipStartsAtUtc.Value, beforeRegistration, DateTime.UtcNow);
-        Assert.Equal(profile.MembershipStartsAtUtc.Value.AddMonths(3), profile.MembershipEndsAtUtc);
+        Assert.Equal(profile.MembershipStartsAtUtc.Value.AddMonths(2), profile.MembershipEndsAtUtc);
         Assert.Equal(48, profile.RemainingClassCredits);
         var user = await dbContext.Users.SingleAsync();
         Assert.Equal(user.Id, profile.ApplicationUserId);
@@ -252,11 +252,11 @@ public class RegistrationPackageCatalogTests
         var hybrid = Assert.Single(options, option => option.Id == catalog.Hybrid.Id);
         Assert.Equal(catalog.Hybrid.ServicePackageId, hybrid.PackageId);
         Assert.Equal("HYBRID", hybrid.PackageName);
-        Assert.Equal("2 Ay + 1 Ay Hediye", hybrid.VariantName);
+        Assert.Equal("2 Aylık (1 ayı hediye)", hybrid.VariantName);
         Assert.Equal("4.000,00 ₺", hybrid.Price);
         Assert.Equal("aylık", hybrid.PriceNote);
         Assert.Equal("8.000,00 ₺", hybrid.TotalPrice);
-        Assert.Equal("3 ay", hybrid.Duration);
+        Assert.Equal("2 ay", hybrid.Duration);
         Assert.Contains("12 grup dersi", hybrid.Rights);
         Assert.DoesNotContain(options, option => option.Id == catalog.InactiveHybrid.Id || option.Id == catalog.Retired.Id);
     }
@@ -331,7 +331,7 @@ public class RegistrationPackageCatalogTests
         Assert.Equal(8000m, order.Total);
         Assert.Equal("POS-TEST", order.PaymentReference);
         Assert.Equal("admin-1", order.PaymentRecordedByUserId);
-        Assert.Equal("HYBRID — 2 Ay + 1 Ay Hediye", Assert.Single(order.Items).ProductName);
+        Assert.Equal("HYBRID — 2 Aylık (1 ayı hediye)", Assert.Single(order.Items).ProductName);
         var installments = order.PaymentInstallments.OrderBy(item => item.Number).ToArray();
         Assert.Equal(new[] { 3000m, 5000m }, installments.Select(item => item.Amount));
         Assert.Equal(new[] { today, today.AddMonths(1) }, installments.Select(item => item.DueDate));
@@ -483,7 +483,7 @@ public class RegistrationPackageCatalogTests
         });
 
         var hybrid = AddPackage("hybrid", "HYBRID", MembershipPackageCode.Plus, 1);
-        hybrid.Name = "2 Ay + 1 Ay Hediye";
+        hybrid.Name = "2 Aylık (1 ayı hediye)";
         hybrid.BillingType = ServicePackageBillingType.MonthlySubscription;
         hybrid.MonthlyPrice = 4000m;
         hybrid.DurationMonths = 2;

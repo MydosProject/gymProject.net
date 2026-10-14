@@ -1,3 +1,4 @@
+using System.Data;
 using Microsoft.EntityFrameworkCore;
 using NO23.Web.Data;
 using NO23.Web.Domain.Entities;
@@ -263,6 +264,20 @@ public class PersonalTrainingCalendarService(ApplicationDbContext dbContext)
         int trainerId, int sessionId, PersonalTrainingSessionStatus status,
         DateTime? postponedStartsAtUtc, string changedByUserId, string? note)
     {
+        try { return await ChangeStatusCoreAsync(trainerId, sessionId, status, postponedStartsAtUtc, changedByUserId, note); }
+        catch (DbUpdateException) { return (false, "Ders başka bir işlemle değişti. Takvimi yenileyip tekrar deneyin."); }
+        catch (InvalidOperationException exception) when (exception.GetBaseException() is Npgsql.PostgresException { SqlState: "40001" or "40P01" })
+        { return (false, "Ders başka bir işlemle değişti. Takvimi yenileyip tekrar deneyin."); }
+        catch (Npgsql.PostgresException exception) when (exception.SqlState is "40001" or "40P01")
+        { return (false, "Ders başka bir işlemle değişti. Takvimi yenileyip tekrar deneyin."); }
+    }
+
+    private async Task<(bool Succeeded, string Message)> ChangeStatusCoreAsync(
+        int trainerId, int sessionId, PersonalTrainingSessionStatus status,
+        DateTime? postponedStartsAtUtc, string changedByUserId, string? note)
+    {
+        await using var transaction = dbContext.Database.IsRelational()
+            ? await dbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable) : null;
         var session = await dbContext.PersonalTrainingSessions
             .Include(item => item.MemberProfile)
             .ThenInclude(item => item.MembershipPackage)
@@ -276,6 +291,7 @@ public class PersonalTrainingCalendarService(ApplicationDbContext dbContext)
 
         var previousStart = session.StartsAtUtc;
         var historyStatus = status;
+        var now = DateTime.UtcNow;
 
         if (status == PersonalTrainingSessionStatus.Postponed)
         {
@@ -305,44 +321,31 @@ public class PersonalTrainingCalendarService(ApplicationDbContext dbContext)
             }
             session.StartsAtUtc = postponedStartsAtUtc.Value;
             session.Status = PersonalTrainingSessionStatus.Scheduled;
+            session.UpdatedAtUtc = now;
+            session.History.Add(new PersonalTrainingSessionHistory
+            {
+                PreviousStatus = PersonalTrainingSessionStatus.Scheduled,
+                NewStatus = historyStatus,
+                PreviousStartsAtUtc = previousStart,
+                NewStartsAtUtc = session.StartsAtUtc,
+                Note = note?.Trim(),
+                ChangedByUserId = changedByUserId,
+                ChangedAtUtc = now
+            });
         }
         else if (status is PersonalTrainingSessionStatus.Completed or
                  PersonalTrainingSessionStatus.Cancelled or
                  PersonalTrainingSessionStatus.NoShow)
         {
-            session.Status = status;
-            if (status == PersonalTrainingSessionStatus.Cancelled)
-            {
-                if (session.CreditConsumed && !MemberPackageEntitlement.HasUnlimitedClassAccess(session.MemberProfile))
-                    session.MemberProfile.RemainingClassCredits++;
-                session.CreditConsumed = false;
-                session.MemberProfile.UpdatedAtUtc = DateTime.UtcNow;
-            }
-            else if (!session.CreditConsumed)
-            {
-                if (!MemberPackageEntitlement.HasUnlimitedClassAccess(session.MemberProfile))
-                    session.MemberProfile.RemainingClassCredits--;
-                session.CreditConsumed = true;
-                session.MemberProfile.UpdatedAtUtc = DateTime.UtcNow;
-            }
+            PersonalTrainingSessionFinalizer.Apply(session, status, changedByUserId, note, now);
         }
         else
         {
             return (false, "Geçersiz ders durumu.");
         }
 
-        session.UpdatedAtUtc = DateTime.UtcNow;
-        dbContext.PersonalTrainingSessionHistories.Add(new PersonalTrainingSessionHistory
-        {
-            PersonalTrainingSessionId = session.Id,
-            PreviousStatus = PersonalTrainingSessionStatus.Scheduled,
-            NewStatus = historyStatus,
-            PreviousStartsAtUtc = previousStart,
-            NewStartsAtUtc = session.StartsAtUtc,
-            Note = note?.Trim(),
-            ChangedByUserId = changedByUserId
-        });
         await dbContext.SaveChangesAsync();
+        if (transaction is not null) await transaction.CommitAsync();
         return (true, status == PersonalTrainingSessionStatus.Postponed
             ? "Ders ertelendi; ders hakkı düşülmedi." : "Ders durumu güncellendi.");
     }

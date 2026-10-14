@@ -273,9 +273,7 @@ public class RegisterModel(
             .Select(variant =>
             {
                 var presentation = ServicePackageCatalogService.Present(variant, package.Variants);
-                var duration = variant.DurationDays is > 0
-                    ? $"{variant.DurationDays} gün"
-                    : $"{(variant.DurationMonths ?? 1) + variant.BonusMonths} ay";
+                var duration = MemberPackageEntitlement.DurationLabel(variant);
                 var totalPrice = variant.BillingType == ServicePackageBillingType.MonthlySubscription &&
                     variant.DurationMonths is > 0 && !variant.PriceOnRequest
                     ? $"{((variant.MonthlyPrice ?? 0) * variant.DurationMonths.Value).ToString("N2", CultureInfo.GetCultureInfo("tr-TR"))} ₺"

@@ -6,11 +6,32 @@ using NO23.Web.Data.Seed;
 using NO23.Web.Domain.Entities;
 using NO23.Web.Domain.Enums;
 using NO23.Web.ViewModels.Plans;
+using NO23.Web.ViewModels.Admin;
 
 namespace NO23.Tests;
 
 public class ServicePackageCatalogTests
 {
+    [Fact]
+    public async Task AdminCannotCreateGiftMonthsBeyondTheTotalUsagePeriod()
+    {
+        await using var db = CreateDbContext();
+        var package = Package(ServicePackageCategory.GroupClasses, "gift-validation", true);
+        db.ServicePackages.Add(package);
+        await db.SaveChangesAsync();
+        var controller = new NO23.Web.Areas.Admin.Controllers.ServicePackagesController(db);
+        var result = await controller.CreateVariant(new ServicePackageVariantFormViewModel
+        {
+            ServicePackageId = package.Id, Name = "6 aylık", DurationMonths = 6, BonusMonths = 7,
+            LessonsRenewMonthly = true, BillingType = ServicePackageBillingType.OneTime, TotalPrice = 25000
+        });
+
+        Assert.IsType<ViewResult>(result);
+        Assert.Contains(controller.ModelState[nameof(ServicePackageVariantFormViewModel.BonusMonths)]!.Errors,
+            error => error.ErrorMessage.Contains("toplam paket süresinden"));
+        Assert.Single(await db.ServicePackageVariants.ToListAsync());
+    }
+
     [Fact]
     public void Defaults_CoverAllPublicCategories()
     {

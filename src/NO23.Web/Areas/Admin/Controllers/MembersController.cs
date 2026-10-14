@@ -505,9 +505,7 @@ public class MembersController(
                     item.DurationMonths is > 0 && !item.PriceOnRequest
                     ? $"{((item.MonthlyPrice ?? 0) * item.DurationMonths.Value).ToString("N2", CultureInfo.GetCultureInfo("tr-TR"))} ₺"
                     : null,
-                Duration = item.DurationDays is > 0
-                    ? $"{item.DurationDays} gün"
-                    : $"{(item.DurationMonths ?? 1) + item.BonusMonths} ay",
+                Duration = MemberPackageEntitlement.DurationLabel(item),
                 Rights = presentation.Rights,
                 PaymentAmount = item.PriceOnRequest ? null : ManualOrderPaymentService.PackageTotal(item),
                 PriceOnRequest = item.PriceOnRequest,

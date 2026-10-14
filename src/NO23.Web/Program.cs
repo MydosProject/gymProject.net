@@ -181,6 +181,7 @@ builder.Services.AddScoped<MembershipRenewalService>();
 builder.Services.AddScoped<IyzicoPendingPaymentService>();
 builder.Services.AddHostedService<IyzicoPendingPaymentWorker>();
 builder.Services.AddHostedService<SessionCompletionHostedService>();
+builder.Services.AddScoped<SessionCompletionService>();
 builder.Services.AddScoped<UserNotificationService>();
 builder.Services.AddScoped<UserNotificationRealtimeService>();
 builder.Services.AddScoped<AdminStockNotificationService>();

@@ -10,7 +10,10 @@ public static class MemberPackageEntitlement
     public static DateTime CalculateEndDate(ServicePackageVariant variant, DateTime startsAtUtc) =>
         variant.DurationDays is > 0
             ? startsAtUtc.AddDays(variant.DurationDays.Value)
-            : startsAtUtc.AddMonths((variant.DurationMonths ?? 1) + variant.BonusMonths);
+            : startsAtUtc.AddMonths(variant.DurationMonths ?? 1);
+
+    public static string DurationLabel(ServicePackageVariant variant) =>
+        variant.DurationDays is > 0 ? $"{variant.DurationDays} gün" : $"{variant.DurationMonths ?? 1} ay";
 
     public static int CalculateInitialCredits(ServicePackageVariant variant)
     {

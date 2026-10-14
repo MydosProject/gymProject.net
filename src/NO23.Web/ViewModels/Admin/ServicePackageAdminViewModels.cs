@@ -43,9 +43,9 @@ public class ServicePackageVariantFormViewModel
     public string PackageName { get; set; } = string.Empty;
     [Required, StringLength(100), Display(Name = "Varyant adı")] public string Name { get; set; } = string.Empty;
     [Display(Name = "Ödeme tipi")] public ServicePackageBillingType BillingType { get; set; }
-    [Range(1, 60), Display(Name = "Süre (ay)")] public int? DurationMonths { get; set; }
+    [Range(1, 60), Display(Name = "Toplam süre (ay, hediye dahil)")] public int? DurationMonths { get; set; }
     [Range(1, 365), Display(Name = "Süre (gün)")] public int? DurationDays { get; set; }
-    [Range(0, 12), Display(Name = "Hediye ay")] public int BonusMonths { get; set; }
+    [Range(0, 12), Display(Name = "Süreye dahil hediye ay")] public int BonusMonths { get; set; }
     [Display(Name = "Ders hakları her ay yenilenir")] public bool LessonsRenewMonthly { get; set; }
     [Display(Name = "Fiyat teklif ile belirlenir")] public bool PriceOnRequest { get; set; }
     [Range(0, 10000000), Display(Name = "Aylık fiyat")] public decimal? MonthlyPrice { get; set; }

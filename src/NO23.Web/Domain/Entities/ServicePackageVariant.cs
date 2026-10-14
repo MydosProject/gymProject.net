@@ -9,8 +9,10 @@ public class ServicePackageVariant
     public ServicePackage ServicePackage { get; set; } = null!;
     public string Name { get; set; } = string.Empty;
     public ServicePackageBillingType BillingType { get; set; }
+    // Total usage period, including any gift months.
     public int? DurationMonths { get; set; }
     public int? DurationDays { get; set; }
+    // Promotional months already included in DurationMonths, not an extension.
     public int BonusMonths { get; set; }
     public bool LessonsRenewMonthly { get; set; }
     public decimal? MonthlyPrice { get; set; }

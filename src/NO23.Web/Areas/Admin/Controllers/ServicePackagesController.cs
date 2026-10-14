@@ -151,6 +151,8 @@ public class ServicePackagesController(ApplicationDbContext dbContext) : Control
             ModelState.AddModelError(nameof(model.TotalPrice), "Toplam fiyat sıfırdan büyük olmalıdır veya teklif seçeneğini işaretlemelisin.");
         if (model.BonusMonths > 0 && (model.DurationMonths is not > 0 || !model.LessonsRenewMonthly))
             ModelState.AddModelError(nameof(model.BonusMonths), "Hediye ay için paket süresini ve aylık yenilenen ders haklarını belirtmelisin.");
+        if (model.DurationMonths.HasValue && model.BonusMonths > model.DurationMonths.Value)
+            ModelState.AddModelError(nameof(model.BonusMonths), "Hediye ay, toplam paket süresinden fazla olamaz.");
     }
 
     private async Task SetPackageNameAsync(ServicePackageVariantFormViewModel model) => model.PackageName =
