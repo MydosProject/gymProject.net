@@ -80,6 +80,7 @@ Talep tarihi: 8 Ekim 2026
 
 - Gün başlıkları, tarih ve günlük ders sayısı ayrı gösterilir; Türkiye saatine göre bugünün sütunu vurgulanır. Boş günler açık bir boş durum mesajı içerir.
 - Ders saati büyük ve kalın gösterilir; üye / ders adı, eğitmen ve süre ayrı bilgi seviyeleridir. Birebir ve grup dersleri renkli tür etiketleriyle; ders durumları metinli renk etiketleriyle ayrılır.
-- Toplu seçim kutuları geniş tıklama alanına sahiptir; seçili dersin tüm kartı altın çerçeve ve açık zeminle belirginleşir. Düzenleme formunun alanları açık kart üzerinde koyu yazıyla okunur.
+- Toplu seçim kutuları geniş tıklama alanına sahiptir; seçili dersin tüm kartı altın çerçeve ve altın tonuyla belirginleşir. Düzenleme formunun alanları koyu zemin üzerinde açık yazıyla okunur.
 - 767.98 piksel ve altında günler tek sütunda gösterilir; daha dar masaüstü ekranlarında yalnızca takvim yatay kaydırılır. Ders işlemleri, form alanları, yetki ve hak kuralları değişmedi.
 - Derleme hatasız tamamlandı; takvim sıralama, toplu işlem ve tekrar kapsamlarını kapsayan 44 mevcut test geçti. Tarayıcıda tekli / toplu seçim, düzenleme paneli, 320–1920 piksel görünüm ve kart taşmaları kontrol edildi. Görsel testler ayrı geçici veritabanında yapıldı.
+- Renkler yönetici panelinin siyah / altın temasına uyarlandı: antrasit kart, açık yazı, birebir derslerde panelin altın rengi ve grup derslerinde turkuaz vurgu. Durum etiketleri doygun renkler kullanır. Kart, tarih, tür, durum ve seçim metinlerinde ölçülen en düşük kontrast 5.87:1; mobil düzenleme alanları ve seçili kart ayrıca tarayıcıda doğrulandı.
