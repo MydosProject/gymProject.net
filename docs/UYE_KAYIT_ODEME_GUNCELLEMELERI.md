@@ -67,3 +67,11 @@ Talep tarihi: 8 Ekim 2026
 - **24 ders · 3 ay** gibi özel paketler **Diğer paketler** bölümünde korunur. Aktif olmayan seçenekler gösterilmez; aynı ders hakları ve süresi için birden fazla farklı kayıt varsa bunlar tek seçeneğe indirgenmez.
 - Süreye bağlı hediye bilgileri süre düğmelerinde ve seçilen paket özetinde gösterilir; aynı bilgiyi tekrar eden ayrı kutu kaldırıldı. JavaScript kullanılamazsa önceki radyo düğmeli seçim kullanılabilir.
 - 502/502 test geçti. Tarayıcıda altı Performance kombinasyonu, yıllık paket başvurusu, özel 24 ders paketinin başvurusu ve masaüstü / mobil taşma kontrolü doğrulandı. Veritabanı şeması ve mevcut paket fiyat / hak kuralları değişmedi.
+
+## 14 Ekim 2026 — Personal Training kartlarında ortak kısa düzen
+
+- FLEX, ROUTINE, COMMIT ve DÜET aynı kart düzenini kullanır: kısa başlık, ders sayısı seçimi, seçilen paketin fiyat / hak / kullanım süresi özeti, açılabilir paket detayları ve başvuru düğmesi.
+- DÜET'in yedi seçeneği tek ders seçicisinde yer alır. Kişi başı fiyat bilgisi başlıkta ve fiyatın altında görünür; özellikler ve koşullu 50 ders avantajları paket detaylarında korunur.
+- Seçim gerçek paket kaydının radyo düğmesini günceller. Fiyat, tasarruf, süre ve haklar mevcut sunucu sunumundan alınır; JavaScript kullanılamazsa tüm seçenekler radyo düğmeleriyle seçilebilir. Tarayıcı geri dönüşünde özet seçime tekrar eşitlenir.
+- 1200 piksel ve üzerinde dört kart aynı satırda, tablette iki sütunda, telefonda tek sütunda görünür. Önceki uzun açıklamalar için ayrılan boş satırlar kaldırıldı; sayfa başlığı ve üst boşluklar kısaltıldı.
+- 502/502 test geçti. Tarayıcıda 14 aktif seçeneğin fiyat / kimlik eşleşmesi, Düet 100 ve Flex 12 dersin başvuru sayfasına geçişi ve 320–1440 piksel ekranlarda taşma kontrolü doğrulandı. Veritabanı şeması ve paket verileri değişmedi.

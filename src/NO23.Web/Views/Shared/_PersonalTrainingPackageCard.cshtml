@@ -1,0 +1,90 @@
+@model NO23.Web.ViewModels.Plans.ServicePackageCardViewModel
+@{
+    var selectedId = Model.Variants.FirstOrDefault(x => x.IsRecommended)?.Id ?? Model.Variants.FirstOrDefault()?.Id;
+    var isDuet = string.Equals(Model.Slug, "duet-pt", StringComparison.OrdinalIgnoreCase);
+    var title = isDuet && string.Equals(Model.Name, "DÜET PERSONAL TRAINING", StringComparison.OrdinalIgnoreCase) ? "DÜET" : Model.Name;
+}
+<article id="@Model.Slug" class="service-package-card pt-package-card @(Model.IsFeatured ? "is-featured" : null)">
+    @if (Model.IsFeatured) { <span class="service-package-badge">En Çok Tercih Edilen</span> }
+    <div class="service-package-head pt-package-head">
+        <small>@(isDuet ? "2 kişi · Kişi başı fiyat" : "Birebir antrenman")</small>
+        <h3>@title</h3>
+        <strong>@Model.Subtitle</strong>
+    </div>
+    @if (Model.Variants.Count > 0)
+    {
+        <form asp-area="" asp-controller="Plans" asp-action="Apply" method="get" class="service-package-application-form pt-package-form" data-pt-package-selector>
+            <input type="hidden" name="package" value="@Model.Slug" />
+            <div class="pt-package-controls" data-pt-controls hidden>
+                <label for="pt-option-@Model.Slug">Ders sayısı</label>
+                <select id="pt-option-@Model.Slug" data-pt-select>
+                    @foreach (var variant in Model.Variants)
+                    {
+                        <option value="@variant.Id" selected="@(variant.Id == selectedId)">@variant.Name</option>
+                    }
+                </select>
+                <div class="pt-package-summary" data-pt-summary aria-live="polite" aria-atomic="true"></div>
+            </div>
+            <fieldset class="service-package-variants" data-pt-fallback>
+                <legend>Ders sayısını seç</legend>
+                @foreach (var variant in Model.Variants)
+                {
+                    <label class="service-variant @(variant.IsRecommended ? "is-recommended" : null)">
+                        <input type="radio" name="variant" value="@variant.Id" checked="@(variant.Id == selectedId)" required />
+                        <span class="service-variant-check" aria-hidden="true"></span>
+                        <span class="service-variant-copy">
+                            <strong>@variant.Name</strong>
+                            <small>@variant.Rights</small>
+                            @if (variant.CommitmentNote is not null) { <small>@variant.CommitmentNote</small> }
+                            @if (variant.UnitPrice is not null) { <small>@variant.UnitPrice</small> }
+                            @if (variant.Savings is not null) { <small>@variant.Savings</small><small>@variant.ComparisonNote</small> }
+                            @if (variant.BillingNote is not null) { <small>@variant.BillingNote</small> }
+                        </span>
+                        <span class="service-variant-price"><b>@variant.Price</b><small>@variant.PriceNote</small></span>
+                    </label>
+                }
+            </fieldset>
+            @foreach (var variant in Model.Variants)
+            {
+                <template data-pt-variant="@variant.Id">
+                    <div class="pt-package-price">
+                        <strong>@variant.Price</strong>
+                        <small>@variant.PriceNote@(isDuet ? " · kişi başı" : "")</small>
+                    </div>
+                    <p>@variant.Rights</p>
+                    @if (variant.CommitmentNote is not null) { <p>@variant.CommitmentNote</p> }
+                    @if (variant.UnitPrice is not null) { <p class="pt-package-unit">@variant.UnitPrice</p> }
+                    @if (variant.Savings is not null)
+                    {
+                        <div class="pt-package-savings"><strong>@variant.Savings</strong><small>@variant.ComparisonNote</small></div>
+                    }
+                    @if (variant.IsRecommended) { <span class="pt-package-recommendation">Önerilen seçenek</span> }
+                    @if (variant.BillingNote is not null)
+                    {
+                        <details class="pt-package-details"><summary>Aylık ödeme koşulları</summary><p>@variant.BillingNote</p></details>
+                    }
+                </template>
+            }
+            <details class="pt-package-details">
+                <summary>Paket detayları</summary>
+                <p>@Model.Description</p>
+                <ul>
+                    @foreach (var feature in Model.Features) { <li>@feature</li> }
+                </ul>
+                @if (Model.Highlights.Count > 0)
+                {
+                    <div class="pt-package-benefits">
+                        <strong>Paket avantajları</strong>
+                        @foreach (var highlight in Model.Highlights) { <p>@highlight</p> }
+                    </div>
+                }
+            </details>
+            <button type="submit" class="service-package-submit">Başvuru Yap <span aria-hidden="true">→</span></button>
+        </form>
+    }
+    else
+    {
+        <p>@Model.Description</p>
+        <p class="service-package-unavailable">Bu paket için aktif seçenek bulunmuyor.</p>
+    }
+</article>

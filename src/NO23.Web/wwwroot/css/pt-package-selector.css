@@ -1,0 +1,77 @@
+/* A common compact layout for every Personal Training card. */
+.service-catalog-personaltraining { padding-top: 1.5rem; }
+.service-catalog-personaltraining .service-catalog-hero { padding: .75rem 0; }
+.service-catalog-personaltraining .service-catalog-hero h1 { font-size: clamp(2.3rem, 4vw, 3.4rem); line-height: 1; }
+.service-catalog-personaltraining .service-catalog-hero h2 { font-size: 1.4rem; margin: .75rem 0 .5rem; }
+.service-catalog-personaltraining .service-catalog-hero > p:last-child { margin-bottom: 0; }
+.service-catalog-personaltraining .service-catalog-tabs { margin: .75rem 0 1.25rem; padding-bottom: .75rem; }
+.pt-package-card.service-package-card {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.5rem;
+}
+.pt-package-card .pt-package-head {
+    min-height: 0;
+    padding: .35rem 0 .75rem;
+}
+.pt-package-card .pt-package-head h3 {
+    font-size: clamp(1.7rem, 2.3vw, 2.2rem);
+    overflow-wrap: anywhere;
+    margin: .4rem 0;
+}
+.pt-package-card .pt-package-head strong {
+    font-size: .85rem;
+    line-height: 1.4;
+    letter-spacing: 0;
+    text-transform: none;
+}
+.pt-package-card .pt-package-form { gap: 1rem; margin: 0; }
+.pt-package-controls[hidden], .pt-package-card [data-pt-fallback][hidden] { display: none !important; }
+.pt-package-controls > label {
+    display: block;
+    margin-bottom: .5rem;
+    font-size: .8rem;
+    font-weight: 700;
+}
+.pt-package-controls select {
+    width: 100%;
+    min-height: 2.9rem;
+    padding: .65rem .8rem;
+    border: 1px solid #66685a;
+    border-radius: 0;
+    background: #171916;
+    color: #efede5;
+    font: inherit;
+    font-size: .9rem;
+    cursor: pointer;
+}
+.pt-package-controls select:focus-visible,
+.pt-package-details summary:focus-visible { outline: 2px solid #d7ff00; outline-offset: 3px; }
+.pt-package-summary { display: flex; flex-direction: column; gap: .5rem; padding-top: 1rem; }
+.pt-package-price { display: flex; flex-direction: column; gap: .2rem; }
+.pt-package-price > strong { font-size: clamp(1.35rem, 1.8vw, 1.8rem); line-height: 1.2; overflow-wrap: anywhere; }
+.pt-package-price small, .pt-package-summary p, .pt-package-savings small { font-size: .8rem; line-height: 1.5; color: #c8cabc; }
+.pt-package-summary p { margin: 0; }
+.pt-package-summary .pt-package-unit { color: #efede5; }
+.pt-package-savings { padding: .55rem .65rem; background: #d7ff0012; border-left: 2px solid #d7ff00; }
+.pt-package-savings strong, .pt-package-savings small { display: block; }
+.pt-package-savings strong { font-size: .8rem; color: #d7ff00; }
+.pt-package-savings small { font-size: .7rem; margin-top: .15rem; }
+.pt-package-recommendation { font-size: .7rem; color: #d7ff00; }
+.pt-package-details { border-top: 1px solid #ffffff20; font-size: .85rem; line-height: 1.6; }
+.pt-package-details summary { padding: .75rem 0 .2rem; cursor: pointer; font-weight: 700; }
+.pt-package-details p { margin: .75rem 0; color: #c8cabc; }
+.pt-package-details ul { padding-left: 1.2rem; margin: .75rem 0; }
+.pt-package-benefits { border-left: 2px solid #d7ff00; padding-left: .75rem; }
+.pt-package-benefits > strong { color: #d7ff00; }
+@media (min-width: 768px) {
+    .pt-package-card .pt-package-head { min-height: 9rem; }
+    .pt-package-summary { min-height: 15rem; }
+}
+@media (min-width: 1200px) {
+    .service-catalog-personaltraining .service-catalog-cards { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (max-width: 767px) {
+    .pt-package-card.service-package-card { padding: 1.25rem; }
+}

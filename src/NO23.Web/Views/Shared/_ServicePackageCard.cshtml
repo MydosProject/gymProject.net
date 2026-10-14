@@ -9,6 +9,12 @@
         (!string.Equals(text, "6 aylık paketin 1 ayı hediye", StringComparison.OrdinalIgnoreCase) &&
          !string.Equals(text, "Yıllık paketin 2 ayı hediye", StringComparison.OrdinalIgnoreCase))).ToList();
 }
+@if (Model.CategoryTitle == "Personal Training")
+{
+    <partial name="_PersonalTrainingPackageCard" model="Model" />
+}
+else
+{
 <article id="@Model.Slug" class="service-package-card @(Model.IsFeatured ? "is-featured" : null) @(isKidsPackage ? "is-kids-package" : null) @(isProMembership ? "is-pro-membership" : null)">
     @if (Model.IsFeatured) { <span class="service-package-badge">En Çok Tercih Edilen</span> }
     <div class="service-package-head">
@@ -77,3 +83,4 @@
     }
     else { <p class="service-package-unavailable">Bu paket için aktif seçenek bulunmuyor.</p> }
 </article>
+}
