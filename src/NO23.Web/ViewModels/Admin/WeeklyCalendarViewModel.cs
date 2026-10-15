@@ -7,6 +7,7 @@ namespace NO23.Web.ViewModels.Admin;
 
 public class WeeklyCalendarViewModel
 {
+    public bool IncludeCompleted { get; set; }
     public DateTime Week { get; set; }
     public int? TrainerId { get; set; }
     public int? MemberId { get; set; }
@@ -39,6 +40,7 @@ public record WeeklyCalendarEntryViewModel(
 
 public class WeeklyGroupInput
 {
+    public bool IncludeCompleted { get; set; }
     public int? FilterMemberId { get; set; }
     public int? FilterTrainerId { get; set; }
     [Range(1, int.MaxValue)] public int GroupClassId { get; set; }

@@ -8,6 +8,7 @@ public enum CalendarBulkScope { SelectedLessons = 0, FollowingOccurrences = 1, A
 
 public class CalendarBulkInput
 {
+    public bool IncludeCompleted { get; set; }
     public int[] PersonalIds { get; set; } = [];
     public int[] GroupIds { get; set; } = [];
     [EnumDataType(typeof(CalendarBulkOperation))] public CalendarBulkOperation Operation { get; set; }

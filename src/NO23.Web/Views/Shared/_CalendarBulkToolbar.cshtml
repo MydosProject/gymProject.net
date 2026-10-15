@@ -1,6 +1,6 @@
 @model NO23.Web.ViewModels.Admin.CalendarBulkInput
 <form id="calendar-bulk-form" asp-action="Bulk" method="post" class="admin-form-card calendar-bulk-toolbar mb-4" data-calendar-bulk data-calendar-member-available="@(Model.MemberId is not null ? "true" : "false")">
-    <h2 class="h5">Toplu ders işlemleri</h2>
+    <input name="IncludeCompleted" type="hidden" value="@Model.IncludeCompleted.ToString().ToLowerInvariant()" /><h2 class="h5">Toplu ders işlemleri</h2>
     <input name="Week" type="hidden" value="@Model.Week.ToString("yyyy-MM-dd")" />
     <input name="TrainerId" type="hidden" value="@Model.TrainerId" />
     <input name="MemberId" type="hidden" value="@Model.MemberId" />

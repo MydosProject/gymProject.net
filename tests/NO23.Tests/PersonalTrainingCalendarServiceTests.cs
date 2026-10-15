@@ -7,7 +7,7 @@ using NO23.Web.ViewModels.TrainerPanel;
 
 namespace NO23.Tests;
 
-public class PersonalTrainingCalendarServiceTests
+public partial class PersonalTrainingCalendarServiceTests
 {
     [Fact]
     public async Task CreateWeeklyAsync_CreatesFixedDaysWithinAvailableCredits()
@@ -234,7 +234,7 @@ public class PersonalTrainingCalendarServiceTests
     }
 
     [Fact]
-    public async Task CreateWeeklyAsync_AutomaticProgramExceedingCreditsRejectsTheEntireBatch()
+    public async Task CreateWeeklyAsync_AutomaticProgramStopsAtAvailableCredits()
     {
         await using var db = CreateDbContext();
         var (trainer, member) = await SeedAsync(db);
@@ -253,8 +253,8 @@ public class PersonalTrainingCalendarServiceTests
 
         var result = await new PersonalTrainingCalendarService(db).CreateWeeklyAsync(trainer.Id, input);
 
-        Assert.False(result.Succeeded);
-        Assert.Empty(db.PersonalTrainingSessions);
+        Assert.True(result.Succeeded, result.Message);
+        Assert.Equal(4, await db.PersonalTrainingSessions.CountAsync());
         Assert.Equal(4, member.RemainingClassCredits);
     }
 
@@ -292,8 +292,8 @@ public class PersonalTrainingCalendarServiceTests
 
         var result = await new PersonalTrainingCalendarService(db).CreateWeeklyAsync(trainer.Id, input);
 
-        Assert.False(result.Succeeded);
-        Assert.Empty(db.PersonalTrainingSessions);
+        Assert.True(result.Succeeded, result.Message);
+        Assert.Equal(2, await db.PersonalTrainingSessions.CountAsync());
         Assert.Equal(20, member.RemainingClassCredits);
     }
 
@@ -311,7 +311,7 @@ public class PersonalTrainingCalendarServiceTests
             TrainerId = trainer.Id,
             MemberProfileId = member.Id,
             StartsAtUtc = conflictingStart,
-            DurationMinutes = 50
+            DurationMinutes = 30
         });
         await db.SaveChangesAsync();
         var input = new WeeklyPersonalSessionInput

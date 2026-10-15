@@ -20,7 +20,7 @@ public class CalendarController(
     ApplicationDbContext dbContext,
     PersonalTrainingCalendarService calendarService) : Controller
 {
-    public async Task<IActionResult> Index(DateTime? week, int? memberId = null)
+    public async Task<IActionResult> Index(DateTime? week, int? memberId = null, bool includeCompleted = false)
     {
         var trainerId = await GetTrainerIdAsync();
         if (trainerId is null) return Forbid();
@@ -36,7 +36,7 @@ public class CalendarController(
             .Include(item => item.MemberProfile).ThenInclude(item => item.ApplicationUser)
             .Include(item => item.MemberProfile).ThenInclude(item => item.MembershipPackage)
             .Include(item => item.History)
-            .Where(item => item.TrainerId == trainerId && item.StartsAtUtc >= startUtc && item.StartsAtUtc < endUtc && (!memberId.HasValue || item.MemberProfileId == memberId))
+            .Where(item => (includeCompleted || item.Status != PersonalTrainingSessionStatus.Completed) && item.TrainerId == trainerId && item.StartsAtUtc >= startUtc && item.StartsAtUtc < endUtc && (!memberId.HasValue || item.MemberProfileId == memberId))
             .OrderBy(item => item.StartsAtUtc)
             .AsSplitQuery()
             .ToListAsync();
@@ -81,7 +81,7 @@ public class CalendarController(
             }).ToListAsync();
 
         var groups = await dbContext.ClassSessions.AsNoTracking().Include(item => item.GroupClass)
-            .Include(item => item.Reservations).Where(item => item.GroupClass.IsActive && item.GroupClass.TrainerId == trainerId &&
+            .Include(item => item.Reservations).Where(item => (includeCompleted || item.Status != ClassSessionStatus.Completed) && item.GroupClass.IsActive && item.GroupClass.TrainerId == trainerId &&
                 item.StartsAtUtc >= startUtc && item.StartsAtUtc < endUtc && (!memberId.HasValue ||
                     item.Reservations.Any(reservation => reservation.MemberProfileId == memberId && reservation.Status != ClassReservationStatus.Cancelled)))
             .OrderBy(item => item.StartsAtUtc).AsSplitQuery().ToListAsync();
@@ -107,12 +107,21 @@ public class CalendarController(
         return View(new TrainerCalendarViewModel
         {
             Sessions = sessions,
-            Groups = groups, MemberId = memberId, FilterMembers = filterMembers,
+            Groups = groups, MemberId = memberId, IncludeCompleted = includeCompleted, FilterMembers = filterMembers,
             Members = members,
             WeekStart = weekStart,
             WeekEnd = weekEnd,
             Days = days
         });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> PreviewWeekly(WeeklyPersonalSessionInput input)
+    {
+        var trainerId = await GetTrainerIdAsync();
+        if (trainerId is null) return Forbid();
+        return ModelState.IsValid ? Json(await calendarService.PreviewWeeklyAsync(trainerId.Value, input)) : BadRequest();
     }
 
     [HttpPost]
@@ -124,7 +133,7 @@ public class CalendarController(
         var result = ModelState.IsValid ? await new CalendarBulkOperationService(dbContext).ApplyAsync(input,
             User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "", trainerId.Value) : (false, "Toplu işlem bilgilerini kontrol edin.");
         TempData[result.Item1 ? "StatusMessage" : "ErrorMessage"] = result.Item2;
-        return RedirectToAction(nameof(Index), new { week = input.Week.ToString("yyyy-MM-dd"), memberId = input.MemberId });
+        return RedirectToAction(nameof(Index), new { week = input.Week.ToString("yyyy-MM-dd"), memberId = input.MemberId, includeCompleted = input.IncludeCompleted });
     }
 
     [HttpPost]
@@ -138,7 +147,7 @@ public class CalendarController(
             TempData["ErrorMessage"] = "Ders bilgilerini kontrol edin.";
             return RedirectToAction(nameof(Index), new
             {
-                week = (model.Week ?? DateTime.Today).ToString("yyyy-MM-dd"), memberId = model.FilterMemberId
+                week = (model.Week ?? DateTime.Today).ToString("yyyy-MM-dd"), includeCompleted = model.IncludeCompleted, memberId = model.FilterMemberId
             });
         }
 
@@ -148,7 +157,7 @@ public class CalendarController(
         TempData[result.Succeeded ? "StatusMessage" : "ErrorMessage"] = result.Message;
         return RedirectToAction(nameof(Index), new
         {
-            week = (result.Succeeded ? model.StartsAt : model.Week ?? DateTime.Today).ToString("yyyy-MM-dd"), memberId = model.FilterMemberId
+            week = (result.Succeeded ? model.StartsAt : model.Week ?? DateTime.Today).ToString("yyyy-MM-dd"), includeCompleted = model.IncludeCompleted, memberId = model.FilterMemberId
         });
     }
 
@@ -162,7 +171,7 @@ public class CalendarController(
             ? await calendarService.CreateWeeklyAsync(trainerId.Value, model)
             : (false, "Haftalık birebir ders bilgilerini kontrol edin.");
         TempData[result.Item1 ? "StatusMessage" : "ErrorMessage"] = result.Item2;
-        return RedirectToAction(nameof(Index), new { week = model.Week.ToString("yyyy-MM-dd"), memberId = model.FilterMemberId });
+        return RedirectToAction(nameof(Index), new { week = model.Week.ToString("yyyy-MM-dd"), includeCompleted = model.IncludeCompleted, memberId = model.FilterMemberId });
     }
 
     [HttpPost]
@@ -175,7 +184,7 @@ public class CalendarController(
         if (!ModelState.IsValid)
         {
             TempData["ErrorMessage"] = "Ders bilgilerini kontrol et.";
-            return RedirectToAction(nameof(Index), new { week = model.Week?.ToString("yyyy-MM-dd"), memberId = model.FilterMemberId });
+            return RedirectToAction(nameof(Index), new { week = model.Week?.ToString("yyyy-MM-dd"), includeCompleted = model.IncludeCompleted, memberId = model.FilterMemberId });
         }
 
         DateTime? postponedUtc = model.PostponedStartsAt is null ? null :
@@ -187,7 +196,7 @@ public class CalendarController(
             model.PostponedStartsAt is not null
                 ? model.PostponedStartsAt.Value
                 : model.Week ?? DateTime.Today;
-        return RedirectToAction(nameof(Index), new { week = targetWeek.ToString("yyyy-MM-dd"), memberId = model.FilterMemberId });
+        return RedirectToAction(nameof(Index), new { week = targetWeek.ToString("yyyy-MM-dd"), includeCompleted = model.IncludeCompleted, memberId = model.FilterMemberId });
     }
 
     private async Task<int?> GetTrainerIdAsync()

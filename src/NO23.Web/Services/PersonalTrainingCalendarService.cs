@@ -7,7 +7,7 @@ using NO23.Web.ViewModels.TrainerPanel;
 
 namespace NO23.Web.Services;
 
-public class PersonalTrainingCalendarService(ApplicationDbContext dbContext)
+public partial class PersonalTrainingCalendarService(ApplicationDbContext dbContext)
 {
     public Task<(bool Succeeded, string Message)> CreateWeeklyAsync(
         int trainerId, WeeklyPersonalSessionInput input) =>
@@ -31,94 +31,26 @@ public class PersonalTrainingCalendarService(ApplicationDbContext dbContext)
         bool allowUnassignedMember,
         bool allowPastDates)
     {
-        if (input.Days.Length == 0 ||
-            input.Days.Any(day => !Enum.IsDefined(day)) ||
-            input.DurationMinutes is < 15 or > 240)
-            return (false, "Günleri ve ders süresini kontrol edin.");
-
-        var trainerExists = await dbContext.Trainers.AnyAsync(trainer =>
-            trainer.Id == trainerId && trainer.IsActive);
-        if (!trainerExists)
-            return (false, "Aktif bir antrenör seçmelisiniz.");
-
-        var member = await dbContext.MemberProfiles
-            .Include(profile => profile.MembershipPackage)
-            .Include(profile => profile.ServicePackageVariant)
-            .FirstOrDefaultAsync(profile => profile.Id == input.MemberProfileId &&
-                (allowUnassignedMember || profile.AssignedTrainerId == trainerId));
-        if (member is null)
-            return (false, allowUnassignedMember
-                ? "Üye bulunamadı."
-                : "Yalnızca size atanmış bir üyeye ders planlayabilirsiniz.");
-
-        if (member.MembershipEndsAtUtc is null && input.Weeks is < 1 or > 52)
-            return (false, "Paket bitiş tarihi bilinmeyen üyelerde hafta sayısı 1 ile 52 arasında olmalıdır.");
-
-        var monday = ClubTime.Monday(input.Week);
-        var weeks = member.MembershipEndsAtUtc is { } packageEnd
-            ? Math.Max(0, (int)((ClubTime.Monday(ClubTime.ToLocal(packageEnd)) - monday).TotalDays / 7) + 1)
-            : input.Weeks;
-        var starts = Enumerable.Range(0, weeks)
-            .SelectMany(week => input.Days.Distinct().Select(day =>
-                ClubTime.ToUtc(monday
-                    .AddDays(week * 7 + ((int)day + 6) % 7)
-                    .Add(input.Time.ToTimeSpan()))))
-            .Where(start => member.MembershipEndsAtUtc is null ||
-                ((!member.MembershipStartsAtUtc.HasValue || start >= member.MembershipStartsAtUtc.Value) &&
-                 start < member.MembershipEndsAtUtc.Value &&
-                 start.AddMinutes(input.DurationMinutes) <= member.MembershipEndsAtUtc.Value))
-            .OrderBy(start => start).ToList();
-        if (starts.Count == 0)
-            return (false, "Seçilen gün ve saatlerde paket bitişine kadar planlanabilecek ders bulunmuyor.");
-        var nowUtc = DateTime.UtcNow;
-        if (!allowPastDates && starts.Any(start => start <= nowUtc))
-            return (false, "Tüm birebir dersler gelecekte olmalı.");
-
-        var entitlementError = await ValidateEntitlementsAsync(
-            member,
-            starts,
-            nowUtc,
-            input.DurationMinutes,
-            allowPastDates);
-        if (entitlementError is not null)
-            return (false, entitlementError);
-
-        var windowStart = starts[0].AddDays(-1);
-        var windowEnd = starts[^1].AddDays(1);
-        var personal = await dbContext.PersonalTrainingSessions.AsNoTracking()
-            .Where(session => (session.TrainerId == trainerId || session.MemberProfileId == member.Id) &&
-                session.Status == PersonalTrainingSessionStatus.Scheduled &&
-                session.StartsAtUtc >= windowStart && session.StartsAtUtc < windowEnd)
-            .Select(session => new { session.StartsAtUtc, session.DurationMinutes })
-            .ToListAsync();
-        var groups = await dbContext.ClassSessions.AsNoTracking()
-            .Where(session => session.GroupClass.IsActive && session.GroupClass.TrainerId == trainerId &&
-                session.Status == ClassSessionStatus.Scheduled &&
-                session.StartsAtUtc >= windowStart && session.StartsAtUtc < windowEnd)
-            .Select(session => new { session.StartsAtUtc, session.GroupClass.DurationMinutes })
-            .ToListAsync();
-        foreach (var start in starts)
+        try
         {
-            var end = start.AddMinutes(input.DurationMinutes);
-            if (personal.Any(session => session.StartsAtUtc < end &&
-                    session.StartsAtUtc.AddMinutes(session.DurationMinutes) > start) ||
-                groups.Any(session => session.StartsAtUtc < end &&
-                    session.StartsAtUtc.AddMinutes(session.DurationMinutes) > start))
-                return (false, $"{ClubTime.ToLocal(start):dd.MM.yyyy HH:mm} saatinde eğitmen veya üyenin başka dersi var. Hiçbir ders eklenmedi.");
+            await using var transaction = dbContext.Database.IsRelational()
+                ? await dbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable) : null;
+            var plan = await BuildWeeklyPlanAsync(trainerId, input, allowUnassignedMember, allowPastDates);
+            if (!plan.Succeeded) return (false, plan.Message);
+            var recurrenceIds = input.Days.Distinct().ToDictionary(day => day, _ => Guid.NewGuid());
+            dbContext.PersonalTrainingSessions.AddRange(plan.Starts.Select(start => new PersonalTrainingSession
+            {
+                TrainerId = trainerId, MemberProfileId = input.MemberProfileId, StartsAtUtc = start,
+                RecurrenceId = recurrenceIds[ClubTime.ToLocal(start).DayOfWeek],
+                DurationMinutes = input.DurationMinutes, Note = input.Note?.Trim()
+            }));
+            await dbContext.SaveChangesAsync();
+            if (transaction is not null) await transaction.CommitAsync();
+            return (true, $"{plan.LessonCount} birebir ders haftalık programa eklendi. {plan.Message}");
         }
-
-        var recurrenceIds = input.Days.Distinct().ToDictionary(day => day, _ => Guid.NewGuid());
-        dbContext.PersonalTrainingSessions.AddRange(starts.Select(start => new PersonalTrainingSession
-        {
-            TrainerId = trainerId,
-            MemberProfileId = member.Id,
-            StartsAtUtc = start,
-            RecurrenceId = recurrenceIds[ClubTime.ToLocal(start).DayOfWeek],
-            DurationMinutes = input.DurationMinutes,
-            Note = input.Note?.Trim()
-        }));
-        await dbContext.SaveChangesAsync();
-        return (true, $"{starts.Count} birebir ders haftalık programa eklendi.");
+        catch (Exception exception) when (exception is DbUpdateException ||
+            exception.GetBaseException() is Npgsql.PostgresException { SqlState: "40001" or "40P01" })
+        { return (false, "Program başka bir işlemle değişti. Takvimi yenileyip tekrar deneyin."); }
     }
 
     private async Task<string?> ValidateEntitlementsAsync(
@@ -135,13 +67,15 @@ public class PersonalTrainingCalendarService(ApplicationDbContext dbContext)
                 (member.MembershipEndsAtUtc.HasValue && start.AddMinutes(durationMinutes) > member.MembershipEndsAtUtc.Value)))
             return "Ders tarihleri üyenin aktif üyelik dönemi içinde olmalı.";
 
-        var futureReserved = await dbContext.PersonalTrainingSessions.CountAsync(session =>
+        var unchargedLessons = await dbContext.PersonalTrainingSessions.CountAsync(session =>
             session.MemberProfileId == member.Id &&
             session.Id != excludedSessionId &&
-            session.Status == PersonalTrainingSessionStatus.Scheduled &&
-            session.StartsAtUtc > nowUtc);
+            !session.CreditConsumed &&
+            session.Status != PersonalTrainingSessionStatus.Cancelled &&
+            (!member.MembershipStartsAtUtc.HasValue || session.StartsAtUtc >= member.MembershipStartsAtUtc.Value) &&
+            (!member.MembershipEndsAtUtc.HasValue || session.StartsAtUtc < member.MembershipEndsAtUtc.Value));
         if (!MemberPackageEntitlement.HasUnlimitedClassAccess(member) &&
-            starts.Count + futureReserved > member.RemainingClassCredits)
+            starts.Count + unchargedLessons > member.RemainingClassCredits)
             return "Planlanan ders sayısı üyenin kullanılabilir ders hakkını aşıyor.";
 
         if (member.ServicePackageVariant is { } variant)

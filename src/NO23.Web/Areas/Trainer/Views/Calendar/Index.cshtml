@@ -5,7 +5,7 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/css/calendar-bulk.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/weekly-personal-schedule.css" asp-append-version="true" /><link rel="stylesheet" href="~/css/calendar-bulk.css" asp-append-version="true" />
     <style>
         .trainer-week-toolbar { display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:1rem; }
         .trainer-week-toolbar strong { font-size:1.05rem; }
@@ -43,19 +43,19 @@
         @if (TempData["ErrorMessage"] is string error)
         { <div class="alert alert-danger">@error</div> }
 
-        <form method="get" class="d-flex flex-wrap gap-2 mb-3"><input type="hidden" name="week" value="@Model.WeekStart.ToString("yyyy-MM-dd")" /><label>Üye<select name="memberId" class="form-select"><option value="">Tüm üyeler</option>@foreach(var member in Model.FilterMembers){<option value="@member.Value" selected="@(member.Value == Model.MemberId?.ToString())">@member.Text</option>}</select></label><button class="btn btn-dark" type="submit">Göster</button></form>
-        @await Html.PartialAsync("_CalendarBulkToolbar", new NO23.Web.ViewModels.Admin.CalendarBulkInput { Week = Model.WeekStart, MemberId = Model.MemberId })
+        <form method="get" class="d-flex flex-wrap gap-2 mb-3"><input type="hidden" name="week" value="@Model.WeekStart.ToString("yyyy-MM-dd")" /><label>Üye<select name="memberId" class="form-select"><option value="">Tüm üyeler</option>@foreach(var member in Model.FilterMembers){<option value="@member.Value" selected="@(member.Value == Model.MemberId?.ToString())">@member.Text</option>}</select></label><label class="align-self-end p-2"><input type="checkbox" name="includeCompleted" value="true" checked="@Model.IncludeCompleted" /> Tamamlanan dersleri göster</label><button class="btn btn-dark" type="submit">Göster</button></form>
+        @await Html.PartialAsync("_CalendarBulkToolbar", new NO23.Web.ViewModels.Admin.CalendarBulkInput { Week = Model.WeekStart, MemberId = Model.MemberId, IncludeCompleted = Model.IncludeCompleted })
         <div class="admin-form-card mb-4">
             <div class="trainer-week-toolbar">
                 <a class="btn btn-outline-dark btn-sm" asp-action="Index"
-                   asp-route-memberId="@Model.MemberId" asp-route-week="@Model.WeekStart.AddDays(-7).ToString("yyyy-MM-dd")">← Önceki hafta</a>
+                   asp-route-memberId="@Model.MemberId" asp-route-includeCompleted="@Model.IncludeCompleted" asp-route-week="@Model.WeekStart.AddDays(-7).ToString("yyyy-MM-dd")">← Önceki hafta</a>
                 <div class="text-center">
                     <small class="text-muted d-block">HAFTALIK PROGRAM</small>
                     <strong>@Model.WeekStart.ToString("dd.MM.yyyy") — @Model.WeekEnd.ToString("dd.MM.yyyy")</strong>
-                    <a class="d-block small mt-1" asp-action="Index" asp-route-memberId="@Model.MemberId">Bu haftaya dön</a>
+                    <a class="d-block small mt-1" asp-action="Index" asp-route-memberId="@Model.MemberId" asp-route-includeCompleted="@Model.IncludeCompleted">Bu haftaya dön</a>
                 </div>
                 <a class="btn btn-outline-dark btn-sm" asp-action="Index"
-                   asp-route-memberId="@Model.MemberId" asp-route-week="@Model.WeekStart.AddDays(7).ToString("yyyy-MM-dd")">Sonraki hafta →</a>
+                   asp-route-memberId="@Model.MemberId" asp-route-includeCompleted="@Model.IncludeCompleted" asp-route-week="@Model.WeekStart.AddDays(7).ToString("yyyy-MM-dd")">Sonraki hafta →</a>
             </div>
             <div class="trainer-week-scroll">
                 <div class="trainer-week-grid">
@@ -110,7 +110,7 @@
                     }
                     else
                     {
-                        <form asp-action="Create" method="post" class="d-grid gap-3"><input type="hidden" name="FilterMemberId" value="@Model.MemberId" />
+                        <form asp-action="Create" method="post" class="d-grid gap-3"><input type="hidden" name="IncludeCompleted" value="@Model.IncludeCompleted.ToString().ToLowerInvariant()" /><input type="hidden" name="FilterMemberId" value="@Model.MemberId" />
                             <input type="hidden" name="Week" value="@Model.WeekStart.ToString("yyyy-MM-dd")" />
                             <div>
                                 <label class="form-label" for="MemberProfileId">Üye</label>
@@ -141,7 +141,7 @@
             <div class="col-lg-4">
                 <details class="admin-form-card">
                     <summary class="h5" style="cursor:pointer">Haftalık sabit ders planla</summary>
-                    <form asp-action="CreateWeekly" method="post" class="d-grid gap-2 mt-3" data-weekly-personal-schedule><input type="hidden" name="FilterMemberId" value="@Model.MemberId" />
+                    <form asp-action="CreateWeekly" method="post" class="d-grid gap-2 mt-3" data-weekly-personal-schedule data-preview-url="@Url.Action("PreviewWeekly")"><input type="hidden" name="IncludeCompleted" value="@Model.IncludeCompleted.ToString().ToLowerInvariant()" /><input type="hidden" name="FilterMemberId" value="@Model.MemberId" />
                         <label>Üye<select name="MemberProfileId" class="form-select" required data-schedule-member><option value="">Üye seç</option>
                             @foreach (var member in Model.Members) { <option value="@member.Id" data-package-start-utc="@member.MembershipStartsAtUtc?.ToString("yyyy-MM-ddTHH:mm:ss.fff'Z'")" data-package-end-utc="@member.MembershipEndsAtUtc?.ToString("yyyy-MM-ddTHH:mm:ss.fff'Z'")">@member.Name</option> }
                         </select></label>
@@ -154,7 +154,7 @@
                         <div data-manual-schedule-field hidden><label for="manualScheduleWeeks">Hafta sayısı (bitiş tarihi bilinmiyor)</label><input id="manualScheduleWeeks" name="Weeks" type="number" min="1" max="52" value="4" class="form-control" disabled /></div>
                         <label>Süre (dakika)<input name="DurationMinutes" type="number" min="15" max="240" value="50" class="form-control" required /></label>
                         <label>Not<input name="Note" maxlength="600" class="form-control" /></label>
-                        <small data-schedule-description aria-live="polite">Üyeyi seçin; program süresi paket bitişinden otomatik hesaplanır. Bitiş tarihi bilinmeyen eski üyeler için hafta sayısı girilir.</small>
+                        <div class="schedule-account" data-schedule-account aria-live="polite"></div><small data-schedule-description aria-live="polite">Üyeyi seçin; program süresi paket bitişinden otomatik hesaplanır. Bitiş tarihi bilinmeyen eski üyeler için hafta sayısı girilir.</small>
                         <button class="btn btn-dark" type="submit">Programı oluştur</button>
                     </form>
                 </details>
@@ -229,7 +229,7 @@
                                     </details>
                                     @if (session.Status == PersonalTrainingSessionStatus.Scheduled)
                                     {
-                                        <form asp-action="Update" method="post" class="row g-2 align-items-end"><input type="hidden" name="FilterMemberId" value="@Model.MemberId" />
+                                        <form asp-action="Update" method="post" class="row g-2 align-items-end"><input type="hidden" name="IncludeCompleted" value="@Model.IncludeCompleted.ToString().ToLowerInvariant()" /><input type="hidden" name="FilterMemberId" value="@Model.MemberId" />
                                             <input type="hidden" name="Id" value="@session.Id" />
                                             <input type="hidden" name="Week" value="@Model.WeekStart.ToString("yyyy-MM-dd")" />
                                             <div class="col-sm-3">

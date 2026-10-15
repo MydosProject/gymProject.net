@@ -1,71 +1,95 @@
 (() => {
-    const dayNumbers = { Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5, Saturday: 6 };
-    const dayMilliseconds = 24 * 60 * 60 * 1000;
-    const clubOffsetMilliseconds = 3 * 60 * 60 * 1000;
-    const dateFormatter = new Intl.DateTimeFormat('tr-TR', { dateStyle: 'short', timeZone: 'Europe/Istanbul' });
-
     document.querySelectorAll('[data-weekly-personal-schedule]').forEach(form => {
         const member = form.querySelector('[data-schedule-member]');
-        const week = form.elements.namedItem('Week');
-        const time = form.elements.namedItem('Time');
-        const duration = form.elements.namedItem('DurationMinutes');
-        const manualField = form.querySelector('[data-manual-schedule-field]');
-        const manualWeeks = form.elements.namedItem('Weeks');
-        const automaticField = form.querySelector('[data-automatic-schedule-field]');
-        const automaticLength = form.querySelector('[data-automatic-schedule-length]');
+        const manual = form.querySelector('[data-manual-schedule-field]');
+        const automatic = form.querySelector('[data-automatic-schedule-field]');
+        const weeks = form.querySelector('[name="Weeks"]');
+        const output = form.querySelector('[data-automatic-schedule-length]');
         const description = form.querySelector('[data-schedule-description]');
-        if (!member || !week || !time || !duration || !manualWeeks || !automaticLength) return;
-
-        function sync() {
-            const option = member.selectedOptions[0];
-            const selected = Boolean(option?.value);
-            const packageEnd = option?.dataset.packageEndUtc ? Date.parse(option.dataset.packageEndUtc) : null;
-            const packageStart = option?.dataset.packageStartUtc ? Date.parse(option.dataset.packageStartUtc) : null;
-            const isManual = selected && packageEnd === null;
-            manualField.hidden = !isManual;
-            manualWeeks.disabled = !isManual;
-            manualWeeks.required = isManual;
-            automaticField.hidden = isManual;
-
-            if (!selected) {
-                automaticLength.textContent = 'Üye seçin';
-                description.textContent = 'Program süresi, seçilen üyenin paket bitişinden otomatik hesaplanır.';
+        const account = form.querySelector('[data-schedule-account]');
+        const submit = form.querySelector('button[type="submit"], button:not([type])');
+        const review = form.parentElement.querySelector('[data-schedule-credit-review]');
+        let controller, timer, ready = false;
+        const showAccount = data => {
+            account.replaceChildren();
+            const items = [
+                ['Paketin birebir hakkı', data.packageLessons ?? (data.isUnlimited ? 'Sınırsız' : 'Belirtilmemiş')],
+                ['Tamamlanan / kullanılan', data.completedLessons],
+                ['Önceden planlanan', data.plannedLessons],
+                ['Kalan toplam hak', data.isUnlimited ? 'Sınırsız' : data.remainingCredits],
+                ['Yeni planlanabilir', data.availableLessons ?? 'Sınırsız']
+            ];
+            for (const [label, value] of items) {
+                const item = document.createElement('div');
+                item.className = 'schedule-account-item';
+                const count = document.createElement('strong');
+                const name = document.createElement('span');
+                count.textContent = value;
+                name.textContent = label;
+                item.append(count, name);
+                account.append(item);
+            }
+            if (data.unchargedCompletedLessons && !data.isUnlimited) {
+                const warning = document.createElement('p');
+                warning.className = 'col-12';
+                warning.textContent = `${data.unchargedCompletedLessons} tamamlanmış dersin hak düşümü kayıtlı değil. Yeni program hesabında bu dersler de ayrıldı. Yönetici geçmiş bakiyeyi kontrol etmeli.`;
+                account.append(warning);
+            }
+            if (review && data.canReviewCredits) {
+                review.hidden = false;
+                review.elements.MemberProfileId.value = member.value;
+                review.elements.ExpectedCount.value = data.unchargedCompletedLessons;
+                review.elements.ExpectedBalance.value = data.remainingCredits;
+                review.elements.Week.value = form.elements.Week.value;
+                review.querySelector('[data-credit-review-description]').textContent =
+                    `${data.unchargedCompletedLessons} ders kontrol bekliyor. Haklar düşülmemişse bakiye: ${data.remainingCredits} → ${data.remainingCredits - data.unchargedCompletedLessons}. Önceden manuel düşüldüyse bakiyeyi koruyan seçeneği kullanın (${data.remainingCredits}). İki yöntemde de dersler bir kez işlenmiş sayılır.`;
+            }
+        };
+        async function preview() {
+            if (!member.value || !form.elements.Week.value || !form.elements.Time.value ||
+                (form.elements.TrainerId && !form.elements.TrainerId.value)) {
+                output.textContent = 'Üye ve antrenör seçin';
+                description.textContent = 'Üye ve antrenör seçildikten sonra paket hakları ve program hesaplanır.';
                 return;
             }
-            if (isManual) {
-                description.textContent = 'Bu eski üyenin paket bitiş tarihi kayıtlı değil. Hafta sayısını girin; ders hakkı ve çakışmalar kontrol edilir.';
-                return;
+            const currentController = controller = new AbortController();
+            try {
+                const response = await fetch(form.dataset.previewUrl, {
+                    method: 'POST', body: new FormData(form), signal: currentController.signal,
+                    credentials: 'same-origin', headers: { 'Accept': 'application/json' }
+                });
+                if (!response.ok || !response.headers.get('content-type')?.includes('application/json')) throw new Error();
+                const data = await response.json();
+                if (currentController.signal.aborted) return;
+                showAccount(data);
+                output.textContent = data.lessonCount ? `${data.weekCount} hafta · ${data.lessonCount} yeni ders` : 'Yeni ders planlanmadı';
+                description.textContent = data.message;
+                ready = data.succeeded;
+                submit.disabled = !ready;
+            } catch (error) {
+                if (error.name === 'AbortError') return;
+                output.textContent = 'Hesaplama yapılamadı';
+                description.textContent = 'Bilgileri ve bağlantıyı kontrol edip tekrar deneyin. Sayfayı yenileyebilirsiniz.';
             }
-
-            const days = Array.from(form.querySelectorAll('[name="Days"]:checked')).map(input => dayNumbers[input.value]);
-            description.textContent = `Paket bitişi: ${dateFormatter.format(new Date(packageEnd))}. Seçilen günler bu tarihe kadar otomatik planlanır; ders hakkı ve çakışmalar sunucuda kontrol edilir.`;
-            if (!week.value || !time.value || !days.length || !duration.value) {
-                automaticLength.textContent = 'Sabit günleri ve saati seçin';
-                return;
-            }
-            const [year, month, day] = week.value.split('-').map(Number);
-            const [hour, minute] = time.value.split(':').map(Number);
-            const selectedDay = Date.UTC(year, month - 1, day);
-            const monday = selectedDay - ((new Date(selectedDay).getUTCDay() + 6) % 7) * dayMilliseconds;
-            const clockMilliseconds = (hour * 60 + minute) * 60 * 1000;
-            const durationMilliseconds = Number(duration.value) * 60 * 1000;
-            const scheduledWeeks = new Set();
-            let lessons = 0;
-            const lastClubDay = new Date(packageEnd + clubOffsetMilliseconds);
-            const endDay = Date.UTC(lastClubDay.getUTCFullYear(), lastClubDay.getUTCMonth(), lastClubDay.getUTCDate());
-            for (let currentMonday = monday, index = 0; currentMonday <= endDay; currentMonday += 7 * dayMilliseconds, index++) {
-                for (const fixedDay of days) {
-                    const start = currentMonday + ((fixedDay + 6) % 7) * dayMilliseconds + clockMilliseconds - clubOffsetMilliseconds;
-                    if ((packageStart === null || start >= packageStart) && start < packageEnd && start + durationMilliseconds <= packageEnd) {
-                        lessons++;
-                        scheduledWeeks.add(index);
-                    }
-                }
-            }
-            automaticLength.textContent = lessons ? `${scheduledWeeks.size} hafta · ${lessons} ders` : 'Paket döneminde uygun ders yok';
         }
-        form.addEventListener('change', sync);
+        function sync(event) {
+            if (event?.target.name === 'Note') return;
+            clearTimeout(timer);
+            controller?.abort();
+            ready = false;
+            submit.disabled = true;
+            if (review) { review.hidden = true; review.elements.Confirmed.checked = false; review.elements.AlreadyAdjusted.value = ''; }
+            account.replaceChildren();
+            const hasEnd = !!member.selectedOptions[0]?.dataset.packageEndUtc;
+            manual.hidden = hasEnd || !member.value;
+            automatic.hidden = false;
+            weeks.disabled = hasEnd || !member.value;
+            output.textContent = 'Hesaplanıyor…';
+            timer = setTimeout(preview, 250);
+        }
         form.addEventListener('input', sync);
+        form.addEventListener('change', sync);
+        form.addEventListener('submit', event => { if (!ready) event.preventDefault(); });
         sync();
     });
 })();

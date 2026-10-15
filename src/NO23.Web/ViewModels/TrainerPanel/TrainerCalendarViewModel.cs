@@ -7,6 +7,7 @@ namespace NO23.Web.ViewModels.TrainerPanel;
 
 public class TrainerCalendarViewModel
 {
+    public bool IncludeCompleted { get; set; }
     public int? MemberId { get; init; }
     public IReadOnlyList<SelectListItem> FilterMembers { get; init; } = [];
     public IReadOnlyList<ClassSession> Groups { get; init; } = [];
@@ -63,6 +64,7 @@ public class TrainerAssignedMemberViewModel
 
 public class CreateTrainerSessionViewModel
 {
+    public bool IncludeCompleted { get; set; }
     public int? FilterMemberId { get; set; }
     public int? FilterTrainerId { get; set; }
     [Range(1, int.MaxValue)] public int MemberProfileId { get; set; }
@@ -74,6 +76,7 @@ public class CreateTrainerSessionViewModel
 
 public class WeeklyPersonalSessionInput
 {
+    public bool IncludeCompleted { get; set; }
     public int? FilterMemberId { get; set; }
     public int? FilterTrainerId { get; set; }
     [Range(1, int.MaxValue)] public int MemberProfileId { get; set; }
@@ -87,6 +90,7 @@ public class WeeklyPersonalSessionInput
 
 public class UpdateTrainerSessionViewModel
 {
+    public bool IncludeCompleted { get; set; }
     public int? FilterMemberId { get; set; }
     public int? FilterTrainerId { get; set; }
     public int Id { get; set; }
