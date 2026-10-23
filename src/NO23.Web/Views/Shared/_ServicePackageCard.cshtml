@@ -16,7 +16,7 @@
 else
 {
 <article id="@Model.Slug" class="service-package-card @(Model.IsFeatured ? "is-featured" : null) @(isKidsPackage ? "is-kids-package" : null) @(isProMembership ? "is-pro-membership" : null)">
-    @if (Model.IsFeatured) { <span class="service-package-badge">En Çok Tercih Edilen</span> }
+    @if (Model.IsFeatured || isProMembership) { <span class="service-package-badge"><span aria-hidden="true">★</span> En Çok Tercih Edilen</span> }
     <div class="service-package-head">
         <small>@(Model.CategoryTitle == "Personal Training" ? "PERSONAL TRAINING" : Model.CategoryTitle)</small>
         <h3>@Model.Name</h3>

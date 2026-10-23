@@ -661,7 +661,7 @@
 {
     <section class="memberships-section" id="kitchen-subscriptions">
         <div class="container">
-            <div class="memberships-heading"><div><p class="section-kicker">NO:23 Kitchen</p><h2>Beslenme düzenini seç.</h2></div><p>5 veya 20 günlük paketini seç, günlük öğünlerini belirle.</p></div>
+            <div class="memberships-heading"><div><p class="section-kicker">NO:23 Kitchen</p><h2>Öğünlerin hazır, günün sana kalsın.</h2></div><p>Alışveriş ve yemek hazırlama yükünü hafiflet. 5 veya 20 günlük paketini seç, günlük öğünlerini hedeflerine göre planla.</p></div>
             <div class="service-catalog-cards">
                 @foreach (var package in Model.KitchenPackages)
                 {
@@ -670,7 +670,7 @@
                         <p>@package.Description</p>
                         <ul><li>1, 2 veya 3 ana öğün + 1 ara öğün seçimi</li><li>Kişisel kalori ve makro hedefine göre planlama</li><li>@package.DailyDeliveryFee.ToString("N0", CultureInfo.GetCultureInfo("tr-TR")) ₺ / gün kurye</li></ul>
                         <strong>@package.UnitPrice.ToString("N0", CultureInfo.GetCultureInfo("tr-TR")) – @package.ThreeMainMealsPrice.ToString("N0", CultureInfo.GetCultureInfo("tr-TR")) ₺ / paket</strong>
-                        <a asp-area="" asp-controller="Kitchen" asp-action="Index" asp-fragment="calorie-calculator">Öğünlerini seç →</a>
+                        <a asp-area="" asp-controller="Kitchen" asp-action="Index" asp-fragment="calorie-calculator">Kitchen menünü oluştur →</a>
                     </article>
                 }
             </div>

@@ -52,9 +52,10 @@
 .no23-admin-body .admin-content .weekly-calendar-session :is(.form-select, .form-control):focus { background: #0c100d; color: #f6f5ed; border-color: var(--admin-lime, #c9a15b); box-shadow: 0 0 0 3px #c9a15b30; }
 .no23-admin-body .admin-content .weekly-calendar-session .form-select { --bs-form-select-bg-img: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23c9a15b' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e"); }
 @media (max-width: 767.98px) {
-    .weekly-calendar { grid-template-columns: 1fr; overflow-x: visible; }
-    .weekly-calendar-day { min-height: 0; padding: 1rem; }
-    .calendar-day-head { min-height: 0; align-items: center; }
+    .weekly-calendar { grid-template-columns: repeat(7, calc((100% - .6rem) / 2)); gap: .6rem; overflow-x: auto; scroll-snap-type: x mandatory; }
+    .weekly-calendar-day { min-height: 250px; padding: .6rem; scroll-snap-align: start; }
+    .calendar-day-head { min-height: 0; align-items: start; flex-direction: column; }
     .calendar-day-indicators { flex-direction: row; }
-    .calendar-session-time { font-size: 1.65rem; }
+    .calendar-session-time { font-size: 1.3rem; }
+    .weekly-calendar-session { padding: .55rem; }
 }

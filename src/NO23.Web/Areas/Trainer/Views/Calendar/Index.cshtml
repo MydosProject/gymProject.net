@@ -25,6 +25,13 @@
         .trainer-week-event strong, .trainer-week-event span { display:block; }
         .trainer-week-event span { font-size:.78rem; margin-top:.15rem; }
         .trainer-week-empty { padding:1rem .75rem; color:#9a9f96; font-size:.8rem; }
+        @@media (max-width:767.98px) {
+            .trainer-week-scroll { scroll-snap-type:x mandatory; }
+            .trainer-week-grid { min-width:0; grid-template-columns:repeat(7,50%); }
+            .trainer-week-day { min-width:0; scroll-snap-align:start; overflow-wrap:anywhere; }
+            .trainer-week-day-head { flex-wrap:wrap; gap:.4rem; padding:.6rem; }
+            .trainer-week-toolbar { flex-wrap:wrap; }
+        }
     </style>
 }
 
