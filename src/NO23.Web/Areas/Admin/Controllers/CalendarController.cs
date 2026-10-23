@@ -32,12 +32,12 @@ public class CalendarController(ApplicationDbContext db, PersonalTrainingCalenda
                 .Select(x => new MemberPackagePeriodViewModel(x.Id, x.MembershipStartsAtUtc, x.MembershipEndsAtUtc)).ToListAsync(),
             Groups = await db.ClassSessions.AsNoTracking().Include(x => x.GroupClass).ThenInclude(x => x.Trainer)
                 .Include(x => x.Reservations).ThenInclude(x => x.MemberProfile).ThenInclude(x => x.ApplicationUser)
-                .Where(x => (includeCompleted || x.Status != ClassSessionStatus.Completed) && x.GroupClass.IsActive && x.StartsAtUtc >= start && x.StartsAtUtc < end && (!trainerId.HasValue || x.GroupClass.TrainerId == trainerId) &&
+                .Where(x => x.Status != ClassSessionStatus.Cancelled && (includeCompleted || x.Status != ClassSessionStatus.Completed) && x.GroupClass.IsActive && x.StartsAtUtc >= start && x.StartsAtUtc < end && (!trainerId.HasValue || x.GroupClass.TrainerId == trainerId) &&
                     (!memberId.HasValue || x.Reservations.Any(reservation => reservation.MemberProfileId == memberId && reservation.Status != ClassReservationStatus.Cancelled)))
                 .OrderBy(x => x.StartsAtUtc).AsSplitQuery().ToListAsync(),
             Personal = await db.PersonalTrainingSessions.AsNoTracking().Include(x => x.Trainer)
                 .Include(x => x.MemberProfile).ThenInclude(x => x.ApplicationUser)
-                .Where(x => (includeCompleted || x.Status != PersonalTrainingSessionStatus.Completed) && x.StartsAtUtc >= start && x.StartsAtUtc < end && (!trainerId.HasValue || x.TrainerId == trainerId) && (!memberId.HasValue || x.MemberProfileId == memberId))
+                .Where(x => x.Status != PersonalTrainingSessionStatus.Cancelled && (includeCompleted || x.Status != PersonalTrainingSessionStatus.Completed) && x.StartsAtUtc >= start && x.StartsAtUtc < end && (!trainerId.HasValue || x.TrainerId == trainerId) && (!memberId.HasValue || x.MemberProfileId == memberId))
                 .OrderBy(x => x.StartsAtUtc).ToListAsync()
         });
     }

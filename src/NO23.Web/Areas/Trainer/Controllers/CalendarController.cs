@@ -36,7 +36,7 @@ public class CalendarController(
             .Include(item => item.MemberProfile).ThenInclude(item => item.ApplicationUser)
             .Include(item => item.MemberProfile).ThenInclude(item => item.MembershipPackage)
             .Include(item => item.History)
-            .Where(item => (includeCompleted || item.Status != PersonalTrainingSessionStatus.Completed) && item.TrainerId == trainerId && item.StartsAtUtc >= startUtc && item.StartsAtUtc < endUtc && (!memberId.HasValue || item.MemberProfileId == memberId))
+            .Where(item => item.Status != PersonalTrainingSessionStatus.Cancelled && (includeCompleted || item.Status != PersonalTrainingSessionStatus.Completed) && item.TrainerId == trainerId && item.StartsAtUtc >= startUtc && item.StartsAtUtc < endUtc && (!memberId.HasValue || item.MemberProfileId == memberId))
             .OrderBy(item => item.StartsAtUtc)
             .AsSplitQuery()
             .ToListAsync();
@@ -81,7 +81,7 @@ public class CalendarController(
             }).ToListAsync();
 
         var groups = await dbContext.ClassSessions.AsNoTracking().Include(item => item.GroupClass)
-            .Include(item => item.Reservations).Where(item => (includeCompleted || item.Status != ClassSessionStatus.Completed) && item.GroupClass.IsActive && item.GroupClass.TrainerId == trainerId &&
+            .Include(item => item.Reservations).Where(item => item.Status != ClassSessionStatus.Cancelled && (includeCompleted || item.Status != ClassSessionStatus.Completed) && item.GroupClass.IsActive && item.GroupClass.TrainerId == trainerId &&
                 item.StartsAtUtc >= startUtc && item.StartsAtUtc < endUtc && (!memberId.HasValue ||
                     item.Reservations.Any(reservation => reservation.MemberProfileId == memberId && reservation.Status != ClassReservationStatus.Cancelled)))
             .OrderBy(item => item.StartsAtUtc).AsSplitQuery().ToListAsync();

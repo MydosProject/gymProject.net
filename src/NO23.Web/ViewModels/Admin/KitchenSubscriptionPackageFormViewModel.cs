@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
 using NO23.Web.Domain.Enums;
+using NO23.Web.Infrastructure.Validation;
 
 namespace NO23.Web.ViewModels.Admin;
 
@@ -24,19 +26,23 @@ public class KitchenSubscriptionPackageFormViewModel
     [Display(Name = "Gün sayısı")]
     public int Days { get; set; }
 
-    [Range(typeof(decimal), "0.01", "1000000")]
+    [Range(typeof(decimal), "0.01", "1000000", ParseLimitsInInvariantCulture = true)]
+    [ModelBinder(BinderType = typeof(MoneyAmountModelBinder))]
     [Display(Name = "1 ana + 1 ara öğün")]
     public decimal UnitPrice { get; set; }
 
-    [Range(typeof(decimal), "0.01", "1000000")]
+    [Range(typeof(decimal), "0.01", "1000000", ParseLimitsInInvariantCulture = true)]
+    [ModelBinder(BinderType = typeof(MoneyAmountModelBinder))]
     [Display(Name = "2 ana + 1 ara öğün")]
     public decimal TwoMainMealsPrice { get; set; }
 
-    [Range(typeof(decimal), "0.01", "1000000")]
+    [Range(typeof(decimal), "0.01", "1000000", ParseLimitsInInvariantCulture = true)]
+    [ModelBinder(BinderType = typeof(MoneyAmountModelBinder))]
     [Display(Name = "3 ana + 1 ara öğün")]
     public decimal ThreeMainMealsPrice { get; set; }
 
-    [Range(typeof(decimal), "0", "1000000")]
+    [Range(typeof(decimal), "0", "1000000", ParseLimitsInInvariantCulture = true)]
+    [ModelBinder(BinderType = typeof(MoneyAmountModelBinder))]
     [Display(Name = "Günlük kurye ücreti")]
     public decimal DailyDeliveryFee { get; set; } = 95;
 
