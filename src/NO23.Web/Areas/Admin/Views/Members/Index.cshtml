@@ -67,6 +67,7 @@
                         <th>Hedef</th>
                         <th>Kalan Ders</th>
                         <th>Personel Trainer</th>
+                        <th>Tahsilat</th>
                         <th>Kayıt</th>
                         <th>İşlem</th>
                     </tr>
@@ -75,7 +76,7 @@
                     @if (Model.Count == 0)
                     {
                         <tr>
-                            <td colspan="8">
+                            <td colspan="9">
                                 <div class="admin-empty-row">Henüz kayıtlı üye bulunmuyor.</div>
                             </td>
                         </tr>
@@ -122,6 +123,13 @@
                                         </select>
                                         <button class="btn btn-outline-dark btn-sm" type="submit">Kaydet</button>
                                     </form>
+                                </td>
+                                <td data-label="Tahsilat">
+                                    <strong>@member.Payments.Collected.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("tr-TR")) ₺ alındı</strong>
+                                    <small class="admin-cell-note d-block">Kalan: @member.Payments.Outstanding.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("tr-TR")) ₺</small>
+                                    @if (member.Payments.LastReceiptDate is { } paidOn)
+                                    { <small class="admin-cell-note d-block">Son: @paidOn.ToString("dd.MM.yyyy") · @member.Payments.LastReceiptDayAmount.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("tr-TR")) ₺</small> }
+                                    <a asp-action="Payments" asp-route-id="@member.MemberProfileId">Ödeme geçmişi</a>
                                 </td>
                                 <td data-label="Kayıt">
                                     <strong>@member.CreatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy")</strong>

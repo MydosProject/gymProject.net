@@ -13,15 +13,16 @@ public class ManualOrderPaymentServiceTests
     [Theory]
     [InlineData(PaymentMethod.Cash)]
     [InlineData(PaymentMethod.BankTransfer)]
-    public void PrepareMembershipOrder_RejectsMethodsOtherThanCreditCard(PaymentMethod method)
+    public void AdminMembershipOrder_AcceptsCashAndBankTransfer(PaymentMethod method)
     {
         var input = PaymentInput();
         input.Method = method;
 
         var result = ManualOrderPaymentService.PreparePackageOrder(Variant(ServicePackageCategory.Membership), input);
 
-        Assert.Null(result.Order);
-        Assert.Contains(result.Errors, error => error.MemberNames.Contains("Payment.Method"));
+        Assert.Empty(result.Errors);
+        Assert.Equal(method, result.Order!.PaymentMethod);
+        Assert.True(result.Order.IsManualPayment);
     }
 
     [Theory]
@@ -98,7 +99,7 @@ public class ManualOrderPaymentServiceTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void PreparePackageOrder_AllowsCustomAmountOnlyForPriceOnRequest(bool priceOnRequest)
+    public void AdminPackageOrder_AllowsAnAgreedAmountForEveryPackage(bool priceOnRequest)
     {
         var variant = Variant(ServicePackageCategory.PersonalTraining);
         variant.PriceOnRequest = priceOnRequest;
@@ -107,16 +108,45 @@ public class ManualOrderPaymentServiceTests
 
         var result = ManualOrderPaymentService.PreparePackageOrder(variant, input);
 
-        if (priceOnRequest)
-        {
-            Assert.Empty(result.Errors);
-            Assert.Equal(125m, result.Order!.Total);
-        }
-        else
-        {
-            Assert.Null(result.Order);
-            Assert.Contains(result.Errors, error => error.MemberNames.Contains("Payment.Amount"));
-        }
+        Assert.Empty(result.Errors);
+        Assert.Equal(125m, result.Order!.Total);
+        Assert.Equal(result.Order.Subtotal - result.Order.DiscountAmount, result.Order.Total);
+        Assert.Contains("Katalog bedeli:", result.Order.Notes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AdminDiscountOrDirectAmount_PreservesPriceAndInstallmentTotals(bool directAmount)
+    {
+        var variant = Variant(ServicePackageCategory.Membership);
+        var input = PaymentInput();
+        input.Method = PaymentMethod.Cash;
+        input.DiscountPercent = directAmount ? 0 : 20;
+        input.Amount = directAmount ? 80 : null;
+        input.PriceAdjustmentNote = "Üyeye özel anlaşma";
+        input.InstallmentCount = 3;
+        var result = ManualOrderPaymentService.PreparePackageOrder(variant, input, recordedByUserId: "admin-qa");
+        Assert.Empty(result.Errors);
+        var order = result.Order!;
+        Assert.Equal(100m, order.Subtotal);
+        Assert.Equal(20m, order.DiscountAmount);
+        Assert.Equal(80m, order.Total);
+        Assert.Equal(order.Total, order.PaymentInstallments.Sum(i => i.Amount));
+        Assert.Equal(order.Subtotal, order.Items.Sum(i => i.LineTotal));
+        Assert.Equal("admin-qa", order.PaymentRecordedByUserId);
+        Assert.Contains(input.PriceAdjustmentNote, order.Notes);
+    }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(101)]
+    public void AdminDiscount_RejectsInvalidPercentEvenWhenAnAmountIsPosted(int percent)
+    {
+        var input = PaymentInput(); input.DiscountPercent = percent; input.Amount = 50;
+        var result = ManualOrderPaymentService.PreparePackageOrder(Variant(ServicePackageCategory.Membership), input);
+        Assert.Null(result.Order);
+        Assert.Contains(result.Errors, e => e.MemberNames.Contains("Payment.DiscountPercent"));
     }
 
     [Fact]

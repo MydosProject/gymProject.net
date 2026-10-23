@@ -106,18 +106,28 @@
                         <label asp-for="Payment.Method" class="form-label"></label>
                         <select asp-for="Payment.Method" asp-items="Html.GetEnumSelectList<NO23.Web.Domain.Enums.PaymentMethod>()" class="form-select" data-payment-method></select>
                         <span asp-validation-for="Payment.Method" class="text-danger"></span>
-                        <small class="form-text text-muted" data-payment-method-help>Üyelik paketlerinde kredi kartı kullanılır.</small>
+                        <small class="form-text text-muted" data-payment-method-help>Yönetici tüm paketlerde kredi kartı, nakit veya havale seçebilir.</small>
                     </div>
                     <div class="col-md-4">
                         <label asp-for="Payment.Amount" class="form-label"></label>
-                        <input asp-for="Payment.Amount" type="number" min="0.01" step="0.01" class="form-control" readonly data-payment-amount />
+                        <input asp-for="Payment.Amount" type="number" min="0.01" step="0.01" class="form-control" data-payment-amount />
                         <span asp-validation-for="Payment.Amount" class="text-danger"></span>
-                        <small class="form-text text-muted" data-payment-amount-help>Paket toplamından otomatik hesaplanır.</small>
+                        <small class="form-text text-muted" data-payment-amount-help>Katalog fiyatı önerilir; anlaşılan satış tutarını doğrudan değiştirebilirsiniz.</small>
                     </div>
                     <div class="col-md-4">
                         <label asp-for="Payment.Reference" class="form-label"></label>
                         <input asp-for="Payment.Reference" class="form-control" maxlength="160" placeholder="Varsa ödeme referansı" />
                         <span asp-validation-for="Payment.Reference" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="Payment.DiscountPercent" class="form-label"></label>
+                        <input asp-for="Payment.DiscountPercent" type="number" min="0" max="100" step="0.01" class="form-control" data-payment-discount />
+                        <span asp-validation-for="Payment.DiscountPercent" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-8">
+                        <label asp-for="Payment.PriceAdjustmentNote" class="form-label"></label>
+                        <input asp-for="Payment.PriceAdjustmentNote" class="form-control" maxlength="600" />
+                        <span asp-validation-for="Payment.PriceAdjustmentNote" class="text-danger"></span>
                     </div>
                     <div class="col-md-4">
                         <label asp-for="Payment.InstallmentCount" class="form-label"></label>

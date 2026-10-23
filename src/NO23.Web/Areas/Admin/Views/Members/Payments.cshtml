@@ -1,0 +1,39 @@
+@model NO23.Web.ViewModels.Admin.MemberPaymentHistoryViewModel
+@using System.Globalization
+@using NO23.Web.Extensions
+@using NO23.Web.Services
+@{
+    ViewData["Title"] = "Üye ödeme geçmişi";
+    var summary = Model.Summary;
+    string Money(decimal value) => value.ToString("N2", CultureInfo.GetCultureInfo("tr-TR")) + " ₺";
+}
+<section class="admin-page"><div class="container">
+    <header class="admin-page-head"><div><h1>Üye ödeme geçmişi</h1><p>@Model.MemberName · Üye #@Model.MemberId</p></div><a asp-action="Index" class="btn btn-outline-dark">Üyelere dön</a></header>
+    <div class="admin-metrics">
+        <article><span>Toplam tahsilat</span><strong>@Money(summary.Collected)</strong><small>İade edilen ödemeler hariç</small></article>
+        <article><span>Tahsilat bekleyen</span><strong>@Money(summary.Outstanding)</strong><small>Geçerli ödeme kayıtlarının kalan tutarı</small></article>
+        <article><span>Son tahsilat günü</span><strong>@(summary.LastReceiptDate?.ToString("dd.MM.yyyy") ?? "Tarih kaydı yok")</strong><small>O günün toplamı: @Money(summary.LastReceiptDayAmount)</small></article>
+    </div>
+    @if (Model.Orders.Count == 0) { <p class="admin-form-card">Bu üyeye bağlı ödeme kaydı bulunmuyor.</p> }
+    @foreach (var order in Model.Orders)
+    {
+        <article class="admin-form-card mb-3">
+            <h2 class="h5">@order.Description</h2>
+            <p>@order.OrderNumber · @ClubTime.ToLocal(order.CreatedAtUtc).ToString("dd.MM.yyyy") · @order.Method.GetDisplayName() · @order.PaymentStatus.GetDisplayName() · @order.Status.GetDisplayName()</p>
+            <p>İndirim öncesi: <strong>@Money(order.Subtotal)</strong> · İndirim: <strong>@Money(order.DiscountAmount)</strong> · Satış tutarı: <strong>@Money(order.Total)</strong></p>
+            <p>Tahsil edilen: <strong>@Money(order.Collected)</strong> · Kalan: <strong>@Money(order.Outstanding)</strong></p>
+            @if (order.Installments.Count > 0)
+            {
+                <div class="table-responsive"><table class="table"><thead><tr><th>Taksit</th><th>Vade</th><th>Tutar</th><th>Tahsilat tarihi</th><th>Referans</th></tr></thead><tbody>
+                @foreach (var row in order.Installments)
+                { <tr><td>@row.Number</td><td>@row.DueDate.ToString("dd.MM.yyyy")</td><td>@Money(row.Amount)</td><td>@(row.PaidOn?.ToString("dd.MM.yyyy") ?? "Bekleniyor")</td><td>@(row.Reference ?? "—")</td></tr> }
+                </tbody></table></div>
+            }
+            else if (order.OnlinePaidAtUtc.HasValue)
+            { <p>Online tahsilat tarihi: @ClubTime.ToLocal(order.OnlinePaidAtUtc.Value).ToString("dd.MM.yyyy HH:mm")</p> }
+            else if (order.Collected > 0)
+            { <p>Tahsilat tarihi bu eski kayıtta bulunmuyor.</p> }
+            <a class="btn btn-outline-dark btn-sm" asp-controller="Orders" asp-action="Payment" asp-route-id="@order.Id">Ödeme ve taksit detayları</a>
+        </article>
+    }
+</div></section>

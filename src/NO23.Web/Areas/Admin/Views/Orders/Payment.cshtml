@@ -54,6 +54,9 @@
             <article><span>Kalan tutar</span><strong>@Money(remaining)</strong><small>@Model.Status.GetDisplayName()</small></article>
         </div>
         <div class="admin-form-card mb-4">
+            <p class="mb-1"><strong>İndirim öncesi tutar:</strong> @Money(Model.Subtotal) · <strong>İndirim:</strong> @Money(Model.DiscountAmount)</p>
+            @if (Model.IsManualPayment && !string.IsNullOrWhiteSpace(Model.Notes))
+            { <p>@Model.Notes</p> }
             <p class="mb-1"><strong>Ödeme yöntemi:</strong> @Model.PaymentMethod.GetDisplayName()</p>
             <p class="mb-0"><strong>POS / dekont referansı:</strong> @(string.IsNullOrWhiteSpace(Model.PaymentReference) ? "—" : Model.PaymentReference)</p>
         </div>

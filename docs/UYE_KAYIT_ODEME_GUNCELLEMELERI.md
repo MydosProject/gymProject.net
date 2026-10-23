@@ -7,12 +7,12 @@ Talep tarihi: 8 Ekim 2026
 | 1. Hafta sayısı otomatik hesaplansın | Birebir ders planı, üyenin paket başlangıç/bitiş tarihleri ve seçilen ders günlerinden hesaplanır. Paket dışına taşan dersler kaydedilmez. Bitişi bilinmeyen eski üyelerde manuel hafta seçimi kullanılabilir. | Tamamlandı ve doğrulandı |
 | 2. Doğum tarihi | Yeni üye kayıtlarında doğum tarihi zorunlu; admin mevcut üyelerde bilgiyi düzenleyebilir. Eski kayıtlar boş bırakılabilir. | Tamamlandı ve doğrulandı |
 | 3. Admin manuel kayıtta ödeme | Üye ve paket ödeme kaydı birlikte oluşturulur. Tutar, yöntem, POS/dekont referansı ve tahsilat bilgileri kaydedilir. | Tamamlandı ve doğrulandı |
-| 4. Ödeme yöntemleri | Üyelik kategorisinde kredi kartı zorunlu. Diğer paketlerde, Shop ve Kitchen işlemlerinde kart, nakit veya havale seçilebilir. Nakit/havale admin teyidine kadar ödeme bekler. | Tamamlandı ve doğrulandı |
+| 4. Ödeme yöntemleri | 23 Ekim kararı: yönetici manuel kayıtta spor üyelikleri dahil tüm paketlerde kart, nakit veya havale seçebilir. Halka açık spor üyeliği online ödeme kuralı korunur. Nakit/havale tahsilat kaydına kadar ödeme bekler. | Tamamlandı ve doğrulandı |
 | 5. Taksit ekranı | Taksit sayısı, tutar, vade ve tahsilat tarihi girilir; kalan tahsilatlar siparişin ödeme ekranından izlenir. | Tamamlandı ve doğrulandı |
 | 6. Ders gün / saatlerini toplu güncelleme | Admin ve antrenör takviminde seçilen dersler, bu ve sonraki tekrarlar veya tüm gelecek tekrarlar için gün / saat değiştirilir. Üye filtresiyle bir tarih aralığındaki tüm planlanmış birebir dersler de düzenlenebilir. | Tamamlandı ve doğrulandı |
 | 7. Toplu ders silme | Seçilen planlanmış birebir ve grup seansları, bu ve sonraki tekrarlar veya tüm gelecek tekrarlar birlikte silinebilir. Ayrılmış grup ders hakları iade edilir. | Tamamlandı ve doğrulandı |
 | 8. Takvimde üye filtresi | Admin ve antrenör takviminde yalnızca seçili üyenin birebir dersleri ve katıldığı grup seansları gösterilir. Hafta geçişleri ve takvim işlemleri filtreyi korur. | Tamamlandı ve doğrulandı |
-| 9. Grup silme / pasife alma | Sil, grubu seans ve katılım kayıtlarıyla kaldırır. Pasife al, geçmişi koruyup gelecek seansları iptal eder. Pasif gruplar takvimde ve varsayılan ders programında görünmez. | Tamamlandı ve doğrulandı |
+| 9. Grup silme / pasife alma | Sil, grubu seans ve katılım kayıtlarıyla kaldırır. Pasife al, geçmişi koruyup gelecek seansları iptal eder. Pasif gruplar takvimde ve varsayılan ders programında görünmez. Grup yeniden aktifleştirilse de eski iptal seansları takvime geri gelmez. | Tamamlandı ve doğrulandı |
 | 10. Büyük harfli parola kontrolü | Tek büyük harf yeterlidir; Ö, Ü, İ, Ç, Ş ve diğer Türkçe harfler de büyük/küçük harf olarak tanınır. | Tamamlandı ve doğrulandı |
 | 11. Geçici parola yenileme | Admin, Üyeler listesinden veya üye düzenleme ekranından tekrar tekrar yeni geçici parola belirleyebilir. | Tamamlandı ve doğrulandı |
 | 12. Kalça ölçüsü | Admin ve antrenör ölçüm formu, karşılaştırma ve geçmişinde Kalça, Basen'den önce ayrı alan olarak yer alır. | Tamamlandı ve doğrulandı |
@@ -21,7 +21,7 @@ Talep tarihi: 8 Ekim 2026
 ## İş kuralları
 
 - Üyelik paketleri HYBRID, PRO ve BLACK'tir; PT, grup ve Kids ayrı paket kategorileridir.
-- Sabit fiyatlı paketlerde ödeme tutarı dönem toplamından hesaplanır. Kids kardeş indirimi sunucuda uygulanır. Fiyatı teklif ile belirlenen paketlerde tutarı admin girer.
+- Yönetici manuel kaydında katalog dönem toplamı önerilir; admin ilave indirim yüzdesi veya doğrudan anlaşılan satış tutarını girebilir. Özel tutar önceliklidir. Kids kardeş indirimi sunucuda hesaplanır. Liste/satış tutarı, indirim, açıklama ve taksitler birlikte kaydedilir.
 - Taksit tutarlarının toplamı ödeme tutarıyla eşleşir. Yuvarlama farkı son taksite eklenir. Tahsil edilmiş taksit yeniden tahsil edilmiş sayılmaz.
 - Admin, kayıt sırasında 1–36 taksit oluşturabilir ve tutar/vadeleri düzenleyebilir. Sonraki tahsilatlar **Siparişler → Ödeme / taksitler** ekranından kaydedilir.
 - PostgreSQL'de aynı siparişin eşzamanlı tahsilatları sipariş satırı kilitlenerek sıralanır. Dekont ve tahsilatı giren admin bilgisi korunur.

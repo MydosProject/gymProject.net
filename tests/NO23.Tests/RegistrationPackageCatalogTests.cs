@@ -346,7 +346,7 @@ public class RegistrationPackageCatalogTests
     [Theory]
     [InlineData(PaymentMethod.Cash)]
     [InlineData(PaymentMethod.BankTransfer)]
-    public async Task AdminCreatePost_RejectsNonCardMembershipPaymentBeforeCreatingMemberOrOrder(PaymentMethod method)
+    public async Task AdminCreatePost_RecordsMembershipWithCashOrTransfer(PaymentMethod method)
     {
         await using var provider = CreateServices();
         var catalog = await SeedCatalogAsync(provider);
@@ -363,13 +363,17 @@ public class RegistrationPackageCatalogTests
             Payment = new ManualPaymentInputViewModel { Method = method, Amount = 8000m }
         });
 
-        Assert.IsType<ViewResult>(result);
-        Assert.NotEmpty(controller.ModelState["Payment.Method"]!.Errors);
+        Assert.IsType<RedirectToActionResult>(result);
+        Assert.True(controller.ModelState.IsValid);
         var dbContext = provider.GetRequiredService<ApplicationDbContext>();
-        Assert.Empty(await dbContext.Users.ToListAsync());
-        Assert.Empty(await dbContext.MemberProfiles.ToListAsync());
-        Assert.Empty(await dbContext.Orders.ToListAsync());
-        Assert.Empty(await dbContext.Set<OrderPaymentInstallment>().ToListAsync());
+        Assert.Single(await dbContext.Users.ToListAsync());
+        var member = Assert.Single(await dbContext.MemberProfiles.ToListAsync());
+        var order = Assert.Single(await dbContext.Orders.ToListAsync());
+        Assert.Equal(member.Id, order.MemberProfileId);
+        Assert.Equal(method, order.PaymentMethod);
+        Assert.Equal(8000m, order.Total);
+        Assert.True(order.IsManualPayment);
+        Assert.Equal(8000m, Assert.Single(await dbContext.Set<OrderPaymentInstallment>().ToListAsync()).Amount);
     }
 
     private static RegisterModel.InputModel ValidInput(string packageCode, int? variantId) => new()

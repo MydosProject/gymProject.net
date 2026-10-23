@@ -14,6 +14,12 @@ public class ManualPaymentInputViewModel
     [ModelBinder(BinderType = typeof(MoneyAmountModelBinder)), Display(Name = "Toplam ödeme tutarı")]
     public decimal? Amount { get; set; }
 
+    [ModelBinder(BinderType = typeof(MoneyAmountModelBinder)), Display(Name = "İlave indirim (%)")]
+    public decimal DiscountPercent { get; set; }
+
+    [StringLength(600), Display(Name = "İndirim / özel fiyat açıklaması")]
+    public string? PriceAdjustmentNote { get; set; }
+
     [Range(1, 36), Display(Name = "Taksit sayısı")]
     public int InstallmentCount { get; set; } = 1;
 

@@ -36,14 +36,20 @@ public sealed class ManualOrderPaymentService(ApplicationDbContext dbContext, IL
     {
         var errors = new List<ValidationResult>();
         var today = DateOnly.FromDateTime(ClubTime.Now);
-        var expectedAmount = Math.Round(PackageTotal(variant) * (100 - discountPercent) / 100m, 2);
+        var catalogAmount = PackageTotal(variant);
+        if (discountPercent is < 0 or > 100 || input.DiscountPercent is < 0 or > 100 ||
+            decimal.Round(input.DiscountPercent, 2) != input.DiscountPercent)
+            errors.Add(new("İndirim %0 ile %100 arasında, en fazla iki ondalık olmalıdır.", ["Payment.DiscountPercent"]));
+        if (input.PriceAdjustmentNote?.Length > 600)
+            errors.Add(new("Özel fiyat açıklaması en fazla 600 karakter olabilir.", ["Payment.PriceAdjustmentNote"]));
+        var expectedAmount = Math.Round(catalogAmount * (100 - discountPercent) / 100m * (100 - input.DiscountPercent) / 100m, 2);
         var amount = input.Amount ?? expectedAmount;
-        if (!Enum.IsDefined(input.Method) || (variant.ServicePackage.Category == ServicePackageCategory.Membership && input.Method != PaymentMethod.CreditCard))
-            errors.Add(new("Üyelik paketlerinde kredi kartı zorunludur; diğer paketlerde geçerli bir ödeme yöntemi seçin.", ["Payment.Method"]));
+        // This factory is used by the authorized admin member-registration action.
+        // Public checkout retains its own payment-method and catalog-price rules.
+        if (!Enum.IsDefined(input.Method))
+            errors.Add(new("Geçerli bir ödeme yöntemi seçin.", ["Payment.Method"]));
         if (amount is <= 0 or > 99999999.99m || decimal.Round(amount, 2) != amount)
             errors.Add(new("Ödeme tutarı sıfırdan büyük olmalı ve en fazla iki ondalık içermelidir.", ["Payment.Amount"]));
-        else if (!variant.PriceOnRequest && amount != expectedAmount)
-            errors.Add(new("Ödeme tutarı seçilen paketin dönem toplamıyla eşleşmelidir.", ["Payment.Amount"]));
         if (input.InstallmentCount is < 1 or > 36)
             errors.Add(new("Taksit sayısı 1 ile 36 arasında olmalıdır.", ["Payment.InstallmentCount"]));
         if (input.FirstDueDate < today.AddYears(-10) || input.FirstDueDate > today.AddYears(5))
@@ -72,6 +78,7 @@ public sealed class ManualOrderPaymentService(ApplicationDbContext dbContext, IL
             errors.Add(new("Taksit tutarlarının toplamı ödeme tutarıyla eşleşmelidir.", ["Payment.Installments"]));
         if (errors.Count > 0) return (null, errors);
 
+        var subtotal = variant.PriceOnRequest ? amount : Math.Max(catalogAmount, amount);
         return (new Order
         {
             OrderNumber = $"NO23-PK-{Guid.NewGuid():N}"[..40],
@@ -86,10 +93,13 @@ public sealed class ManualOrderPaymentService(ApplicationDbContext dbContext, IL
             Status = OrderStatus.Confirmed,
             DeliveryMethod = OrderDeliveryMethod.ClubPickup,
             DeliveryAddressLine = "Kulüp paket kaydı", DeliveryDistrict = "-", DeliveryCity = "-",
-            Subtotal = amount, Total = amount,
+            Subtotal = subtotal, DiscountAmount = subtotal - amount, Total = amount,
+            Notes = $"Katalog bedeli: {catalogAmount.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("tr-TR"))} ₺. " +
+                $"Anlaşılan satış tutarı: {amount.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("tr-TR"))} ₺. " +
+                input.PriceAdjustmentNote?.Trim(),
             Items = [new OrderItem { ItemType = CartItemType.MembershipPackage,
                 ProductName = $"{variant.ServicePackage.Name} — {variant.Name}", Quantity = 1,
-                UnitPrice = amount, LineTotal = amount }],
+                UnitPrice = subtotal, LineTotal = subtotal }],
             PaymentInstallments = installments.Select((row, index) => new OrderPaymentInstallment
             {
                 Number = index + 1, Amount = row.Amount!.Value, DueDate = row.DueDate, PaidOn = row.PaidOn,

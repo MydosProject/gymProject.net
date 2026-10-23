@@ -205,12 +205,25 @@ public class MembersController(
             })
             .ToListAsync();
 
+        var payments = (await new MemberPaymentHistoryService(dbContext).LoadAsync(members.Select(m => m.MemberProfileId).ToArray()))
+            .ToLookup(o => o.MemberId);
+        foreach (var member in members) member.Payments = MemberPaymentSummary.Calculate(payments[member.MemberProfileId]);
         ViewBag.Trainers = new SelectList(
             await dbContext.Trainers.AsNoTracking().Where(item => item.IsActive)
                 .OrderBy(item => item.FirstName).ThenBy(item => item.LastName)
                 .Select(item => new { item.Id, Name = item.FirstName + " " + item.LastName })
                 .ToListAsync(), "Id", "Name");
         return View(members);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Payments(int id)
+    {
+        var member = await dbContext.MemberProfiles.AsNoTracking().Where(m => m.Id == id)
+            .Select(m => new { Name = m.ApplicationUser.FirstName + " " + m.ApplicationUser.LastName }).FirstOrDefaultAsync();
+        if (member is null) return NotFound();
+        return View(new MemberPaymentHistoryViewModel { MemberId = id, MemberName = member.Name,
+            Orders = await new MemberPaymentHistoryService(dbContext).LoadAsync([id]) });
     }
 
     [HttpGet]

@@ -22,6 +22,7 @@
         const family = form?.querySelector('[name="FamilyCode"]');
         const method = plan.querySelector('[data-payment-method]');
         const amount = plan.querySelector('[data-payment-amount]');
+        const discount = plan.querySelector('[data-payment-discount]');
         const count = plan.querySelector('[data-payment-count]');
         const firstDue = plan.querySelector('[data-payment-first-due]');
         const rows = plan.querySelector('[data-payment-installments]');
@@ -154,21 +155,20 @@
         function syncPackage(regenerate, initial = false) {
             const selected = variant.selectedOptions[0];
             const packageCategory = selected?.dataset.category || category?.value;
-            const membership = packageCategory === 'Membership';
-            Array.from(method.options).forEach(option => option.disabled = membership && option.value !== '1');
-            if (membership) method.value = '1';
-            plan.querySelector('[data-payment-method-help]').textContent = membership
-                ? 'Üyelik paketlerinde kredi kartı kullanılır.' : 'Kredi kartı, nakit veya havale / EFT seçilebilir.';
-
+            Array.from(method.options).forEach(option => option.disabled = false);
+            plan.querySelector('[data-payment-method-help]').textContent = 'Yönetici tüm paketlerde kredi kartı, nakit veya havale / EFT seçebilir.';
+            amount.readOnly = false;
             const customPrice = selected?.dataset.priceOnRequest === 'true';
-            amount.readOnly = !customPrice;
             const base = selected?.value ? cents(selected.dataset.paymentAmount || '') : null;
             const siblingDiscount = packageCategory === 'KidsClub' && Boolean(family?.value.trim());
-            if (customPrice && regenerate && !initial) amount.value = '';
-            if (!customPrice) amount.value = base === null ? '' : (Math.round(base * (siblingDiscount ? .75 : 1)) / 100).toFixed(2);
-            plan.querySelector('[data-payment-amount-help]').textContent = customPrice
-                ? 'Bu paket için anlaşılmış toplam tutarı girin.'
-                : siblingDiscount ? 'Aile kodu onaylandığında %25 kardeş indirimi uygulanır.' : 'Paket toplamından otomatik hesaplanır.';
+            const extraDiscount = Number(discount?.value || 0);
+            if (!initial || !amount.value) {
+                amount.value = customPrice || base === null ? '' :
+                    (Math.round(base * (siblingDiscount ? .75 : 1) * (100 - extraDiscount) / 100) / 100).toFixed(2);
+            }
+            plan.querySelector('[data-payment-amount-help]').textContent = base === null || customPrice
+                ? 'Anlaşılan toplam satış tutarını girin.'
+                : `Katalog bedeli: ${money.format(base / 100)}. Anlaşılan toplamı doğrudan yazabilir veya indirim yüzdesi girebilirsiniz.${siblingDiscount ? ' %25 kardeş indirimi hesaba katıldı.' : ''}`;
             if (regenerate) generateRows();
             else summarize();
         }
@@ -181,8 +181,10 @@
             syncPackage(false);
             if (amount.value !== previous) generateRows();
         });
+        discount?.addEventListener('input', () => syncPackage(true));
         count.addEventListener('change', generateRows);
         firstDue.addEventListener('change', generateRows);
+        amount.addEventListener('input', () => { if (discount) discount.value = '0'; });
         amount.addEventListener('change', generateRows);
         rows.addEventListener('input', () => summarize());
         plan.querySelector('[data-payment-regenerate]').addEventListener('click', generateRows);
