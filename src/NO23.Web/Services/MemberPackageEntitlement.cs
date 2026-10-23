@@ -1,11 +1,13 @@
 using NO23.Web.Domain.Entities;
+using NO23.Web.Domain.Enums;
 
 namespace NO23.Web.Services;
 
 public static class MemberPackageEntitlement
 {
     public static bool IsActive(MemberProfile profile, DateTime atUtc) =>
-        !profile.MembershipEndsAtUtc.HasValue || profile.MembershipEndsAtUtc.Value > atUtc;
+        profile.MembershipPackage.Code != MembershipPackageCode.KitchenOnly &&
+        (!profile.MembershipEndsAtUtc.HasValue || profile.MembershipEndsAtUtc.Value > atUtc);
 
     public static DateTime CalculateEndDate(ServicePackageVariant variant, DateTime startsAtUtc) =>
         variant.DurationDays is > 0
@@ -29,5 +31,6 @@ public static class MemberPackageEntitlement
     }
 
     public static bool HasUnlimitedClassAccess(MemberProfile profile) =>
+        profile.MembershipPackage.Code != MembershipPackageCode.KitchenOnly &&
         profile.ServicePackageVariantId is null && profile.MembershipPackage.WeeklyClassLimit is null;
 }

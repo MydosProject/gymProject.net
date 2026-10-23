@@ -35,7 +35,7 @@
 <section class="admin-page">
     <header class="admin-page-head"><div><h1>Ölçüm ve gelişim</h1><p>Her ay yeni ölçüm ekle; önceki ölçüm ve başlangıç değerleriyle değişimi takip et.</p></div></header>
     @foreach(var key in new[]{"SuccessMessage","ErrorMessage"}){if(TempData[key] is string message){<div class="alert @(key=="ErrorMessage"?"alert-danger":"alert-success")">@message</div>}}
-    <form method="get" class="d-flex gap-2 mb-4"><label>Üye<select asp-for="MemberId" asp-items="Model.Members" class="form-select" required><option value="">Üye seç</option></select></label><button class="btn btn-dark">Gelişimi göster</button></form>
+    <partial name="/Views/Shared/_MemberFinder.cshtml" model="@(new NO23.Web.ViewModels.MemberFinderViewModel(Url.Action("SearchMembers")!, Model.MemberId, Model.Members.FirstOrDefault()?.Text ?? "", Url.Action("Index", "Members")!))" />
     @if(Model.MemberId.HasValue)
     {
         <h2>@Model.MemberName</h2>
@@ -79,3 +79,10 @@
         }
     }
 </section>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/member-finder.css" asp-append-version="true" />
+}
+@section Scripts {
+    <script src="~/js/member-finder.js" asp-append-version="true"></script>
+}

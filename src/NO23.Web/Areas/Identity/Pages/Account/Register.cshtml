@@ -35,7 +35,7 @@
                 </a>
 
                 <div class="register-intro-content">
-                    <p class="register-kicker">NO23 Membership</p>
+                    <p class="register-kicker">NO23 · Sports Club & Kitchen</p>
 
                     <h1>
                         Hedefine giden yol
@@ -43,8 +43,8 @@
                     </h1>
 
                     <p class="register-intro-description">
-                        Sana uygun üyeliği seç, hedefini belirle ve NO23
-                        deneyimine katıl.
+                        Spor üyeliğini veya yalnızca Kitchen hizmetini seç,
+                        NO23 deneyimine katıl.
                     </p>
 
                     <ul class="register-benefits">
@@ -80,7 +80,7 @@
             <div class="register-form-panel">
                 <div class="register-form-heading">
                     <div>
-                        <p class="register-form-kicker">Üyelik Başvurusu</p>
+                        <p class="register-form-kicker">Hesap oluştur</p>
                         <h2>Bilgilerini tamamla.</h2>
                     </div>
 
@@ -164,13 +164,14 @@
                             </div>
                         </div>
 
-                        <div class="col-12" data-package-selector>
+                        <div class="col-12" data-package-selector data-kitchen-registration>
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <div class="no23-form-field no23-package-field">
                                         <label asp-for="Input.PackageCode"></label>
                                         <select asp-for="Input.PackageCode" class="form-select no23-form-select" data-package-choice>
-                                            <option value="">Üyelik paketi seçin</option>
+                                            <option value="">Paket / hizmet seçin</option>
+                                            <option value="kitchen">NO:23 Kitchen — yalnızca yemek</option>
                                             @foreach (var package in Model.PackageOptions)
                                             {
                                                 <option value="@package.Code">@package.Name</option>
@@ -179,10 +180,10 @@
                                         <span asp-validation-for="Input.PackageCode"></span>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-6" data-package-variant-field hidden="@Model.IsKitchenRegistration">
                                     <div class="no23-form-field no23-package-option-field">
                                         <label asp-for="Input.ServicePackageVariantId"></label>
-                                        <select asp-for="Input.ServicePackageVariantId" class="form-select no23-form-select" data-package-variant>
+                                        <select asp-for="Input.ServicePackageVariantId" class="form-select no23-form-select" data-package-variant disabled="@Model.IsKitchenRegistration" required="@(!Model.IsKitchenRegistration)">
                                             <option value="">Üyelik süresi seçin</option>
                                             @foreach (var package in Model.PackageOptions)
                                             {
@@ -200,6 +201,10 @@
                                     </div>
                                 </div>
                             </div>
+                            <p class="package-choice-summary" data-kitchen-notice hidden="@(!Model.IsKitchenRegistration)">
+                                Kitchen hesabı için spor paketi seçmen gerekmez. Yemek planını ve teslimatını Kitchen'da tamamlayabilirsin.
+                                Spor üyeliği ve ders hakkı içermez.
+                            </p>
                             @if (Model.PackageOptions.Count == 0)
                             {
                                 <p class="register-validation-summary" role="status">Şu anda başvuruya açık üyelik paketi bulunmuyor.</p>
@@ -261,15 +266,14 @@
 
                     <button id="registerSubmit"
                             type="submit"
-                            class="no23-register-submit"
-                            disabled="@(Model.PackageOptions.Count == 0)">
-                        <span>Üyeliği Başlat</span>
+                            class="no23-register-submit">
+                        <span data-registration-submit-label>@(Model.IsKitchenRegistration ? "Kitchen hesabımı oluştur" : "Hesabımı oluştur")</span>
                         <span aria-hidden="true">→</span>
                     </button>
 
                     <p class="register-login-link">
                         Zaten hesabın var mı?
-                        <a asp-area="Identity" asp-page="/Account/Login">
+                        <a asp-area="Identity" asp-page="/Account/Login" asp-route-returnUrl="@Model.ReturnUrl">
                             Üye Girişi
                         </a>
                     </p>

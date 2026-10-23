@@ -3,6 +3,7 @@
 
 @{
     ViewData["Title"] = "Kitchen Paket Ödemesi";
+    var deliveryFee = Model.DeliveryMethod == OrderDeliveryMethod.ClubPickup ? 0 : Model.AddressDeliveryFee;
 }
 
 <section class="member-kitchen-checkout-page">
@@ -46,8 +47,8 @@
 
             <div class="member-kitchen-checkout-price-breakdown">
                 <span><strong>Paket</strong><strong>@Model.PackagePrice.ToString("C0")</strong></span>
-                <span><strong>Adrese teslim</strong><strong data-kitchen-delivery-total>@Model.AddressDeliveryFee.ToString("C0")</strong></span>
-                <span><strong>Toplam</strong><strong data-kitchen-order-total>@Model.AddressDeliveryTotal.ToString("C0")</strong></span>
+                <span><strong data-kitchen-delivery-label>@(Model.DeliveryMethod == OrderDeliveryMethod.ClubPickup ? "Salondan teslim" : "Adrese teslim")</strong><strong data-kitchen-delivery-total>@deliveryFee.ToString("C0")</strong></span>
+                <span><strong>Toplam</strong><strong data-kitchen-order-total>@((Model.PackagePrice + deliveryFee).ToString("C0"))</strong></span>
             </div>
 
             <div class="member-kitchen-checkout-note">
@@ -213,16 +214,18 @@
         document.addEventListener("DOMContentLoaded", function () {
             const deliveryTotal = document.querySelector("[data-kitchen-delivery-total]");
             const orderTotal = document.querySelector("[data-kitchen-order-total]");
+            const deliveryLabel = document.querySelector("[data-kitchen-delivery-label]");
             const packagePrice = @Model.PackagePrice.ToString(System.Globalization.CultureInfo.InvariantCulture);
             const addressFee = @Model.AddressDeliveryFee.ToString(System.Globalization.CultureInfo.InvariantCulture);
             const format = value => Number(value).toLocaleString("tr-TR", { style: "currency", currency: "TRY", maximumFractionDigits: 0 });
-            document.querySelectorAll("[name='DeliveryMethod']").forEach(function (radio) {
-                radio.addEventListener("change", function () {
-                    const isAddress = radio.value === "@OrderDeliveryMethod.AddressDelivery" && radio.checked;
-                    deliveryTotal.textContent = format(isAddress ? addressFee : 0);
-                    orderTotal.textContent = format(isAddress ? packagePrice + Number(addressFee) : packagePrice);
-                });
-            });
+            function updateDeliverySummary() {
+                const isAddress = document.querySelector("[name='DeliveryMethod']:checked")?.value !== "@OrderDeliveryMethod.ClubPickup";
+                deliveryLabel.textContent = isAddress ? "Adrese teslim" : "Salondan teslim";
+                deliveryTotal.textContent = format(isAddress ? addressFee : 0);
+                orderTotal.textContent = format(isAddress ? packagePrice + Number(addressFee) : packagePrice);
+            }
+            document.querySelectorAll("[name='DeliveryMethod']").forEach(radio => radio.addEventListener("change", updateDeliverySummary));
+            updateDeliverySummary();
         });
     </script>
 }

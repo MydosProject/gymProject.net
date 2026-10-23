@@ -31,6 +31,7 @@ public class MembershipPackagesController(ApplicationDbContext dbContext) : Cont
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(MembershipPackageFormViewModel model)
     {
+        if (model.Code == MembershipPackageCode.KitchenOnly) return BadRequest();
         if (await PackageCodeExistsAsync(model))
         {
             ModelState.AddModelError(nameof(model.Code), "Bu paket kodu zaten kullanılıyor.");
@@ -53,7 +54,7 @@ public class MembershipPackagesController(ApplicationDbContext dbContext) : Cont
             .AsNoTracking()
             .FirstOrDefaultAsync(package => package.Id == id);
 
-        if (package is null)
+        if (package is null || package.Code == MembershipPackageCode.KitchenOnly)
         {
             return NotFound();
         }
@@ -65,6 +66,7 @@ public class MembershipPackagesController(ApplicationDbContext dbContext) : Cont
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(int id, MembershipPackageFormViewModel model)
     {
+        if (model.Code == MembershipPackageCode.KitchenOnly) return BadRequest();
         if (id != model.Id)
         {
             return BadRequest();
@@ -82,7 +84,7 @@ public class MembershipPackagesController(ApplicationDbContext dbContext) : Cont
 
         var package = await dbContext.MembershipPackages.FindAsync(id);
 
-        if (package is null)
+        if (package is null || package.Code == MembershipPackageCode.KitchenOnly)
         {
             return NotFound();
         }

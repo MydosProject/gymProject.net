@@ -24,6 +24,64 @@ namespace NO23.Tests;
 
 public class RegistrationPackageCatalogTests
 {
+    [Theory]
+    [InlineData("kitchen", "/Member/Kitchen/ResumePendingSubscription")]
+    [InlineData(null, "/Member/Kitchen/ResumePendingSubscription")]
+    [InlineData(null, "/Kitchen/ContinueSubscription?packageId=3&meal=Lunch")]
+    public async Task RegisterGet_KitchenReturnSelectsOnlyKitchenWithoutSportDuration(string? package, string resume)
+    {
+        await using var provider = CreateServices();
+        var catalog = await SeedCatalogAsync(provider);
+        var page = CreatePage(provider);
+        await page.OnGetAsync(package: package, returnUrl: resume, variant: catalog.Hybrid.Id);
+        Assert.True(page.IsKitchenRegistration);
+        Assert.Null(page.Input.ServicePackageVariantId);
+        Assert.Equal(resume, page.ReturnUrl);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RegisterPost_KitchenNeedsNoSportsPackageAndIgnoresInjectedVariant(bool injectVariant)
+    {
+        await using var provider = CreateServices();
+        var catalog = await SeedCatalogAsync(provider);
+        var page = CreatePage(provider);
+        page.Input = ValidInput("kitchen", injectVariant ? catalog.Black.Id : null);
+        const string resume = "/Member/Kitchen/ResumePendingSubscription";
+        var result = Assert.IsType<LocalRedirectResult>(await page.OnPostAsync(resume));
+        Assert.Equal(resume, result.Url);
+        var db = provider.GetRequiredService<ApplicationDbContext>();
+        var member = await db.MemberProfiles.Include(x => x.MembershipPackage).SingleAsync();
+        Assert.Equal(MembershipPackageCode.KitchenOnly, member.MembershipPackage.Code);
+        Assert.Null(member.ServicePackageVariantId);
+        Assert.Null(member.MembershipStartsAtUtc);
+        Assert.Null(member.MembershipEndsAtUtc);
+        Assert.Equal(0, member.RemainingClassCredits);
+        Assert.False(MemberPackageEntitlement.IsActive(member, DateTime.UtcNow));
+        Assert.False(MemberPackageEntitlement.HasUnlimitedClassAccess(member));
+        Assert.Empty(await db.Orders.ToListAsync());
+        Assert.NotNull(provider.GetRequiredService<CapturingAuthenticationService>().SignedInUser);
+        var reservation = await new ClassReservationService(db).ReserveAsync(member.ApplicationUserId, 999);
+        Assert.False(reservation.Succeeded);
+    }
+
+    [Fact]
+    public async Task RegisterPost_KitchenWorksWhenNoSportsPackageIsPublished()
+    {
+        await using var provider = CreateServices();
+        await SeedCatalogAsync(provider);
+        var db = provider.GetRequiredService<ApplicationDbContext>();
+        foreach (var package in await db.ServicePackages.ToListAsync()) package.IsActive = false;
+        await db.SaveChangesAsync();
+        var page = CreatePage(provider);
+        page.Input = ValidInput("kitchen", null);
+        var result = Assert.IsType<LocalRedirectResult>(await page.OnPostAsync());
+        Assert.Equal("/Member/Kitchen", result.Url);
+        Assert.Empty(page.PackageOptions);
+        Assert.Equal(MembershipPackageCode.KitchenOnly, (await db.MemberProfiles.Include(x => x.MembershipPackage).SingleAsync()).MembershipPackage.Code);
+    }
+
     [Fact]
     public async Task RegisterGet_UsesCurrentMembershipCatalog_AndExcludesDemoOrUnavailableOptions()
     {

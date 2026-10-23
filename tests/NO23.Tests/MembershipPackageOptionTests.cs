@@ -10,7 +10,8 @@ public class MembershipPackageOptionTests
     [Fact]
     public void Defaults_ProvideServiceOptionsForEveryMembershipPackage()
     {
-        foreach (var code in Enum.GetValues<MembershipPackageCode>())
+        Assert.DoesNotContain(MembershipPackageOptionSeed.Defaults, x => x.PackageCode == MembershipPackageCode.KitchenOnly);
+        foreach (var code in Enum.GetValues<MembershipPackageCode>().Where(code => code != MembershipPackageCode.KitchenOnly))
         {
             var options = MembershipPackageOptionSeed.Defaults.Where(x => x.PackageCode == code).ToList();
             Assert.Contains(options, x => x.PersonalTrainingSessionCount > 0);

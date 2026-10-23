@@ -53,6 +53,16 @@ public static class MembershipPackageSeed
             IncludesPrivateEvents = true,
             IncludesCommunityMembership = true,
             DisplayOrder = 4
+        },
+        new()
+        {
+            Code = MembershipPackageCode.KitchenOnly,
+            Name = "NO:23 Kitchen",
+            Audience = "Yalnızca yemek hizmeti",
+            Description = "Kitchen hesabı. Spor üyeliği ve ders hakkı içermez.",
+            WeeklyClassLimit = 0,
+            IsActive = false,
+            DisplayOrder = 100
         }
     ];
 }

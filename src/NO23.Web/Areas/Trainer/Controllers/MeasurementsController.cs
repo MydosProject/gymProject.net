@@ -18,6 +18,14 @@ public class MeasurementsController(
     ApplicationDbContext db,
     MemberProgressTrackingService progress) : Controller
 {
+    [HttpGet, ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    public async Task<IActionResult> SearchMembers(string? query, CancellationToken cancellationToken)
+    {
+        var trainerId = await GetTrainerIdAsync();
+        if (trainerId is null) return Forbid();
+        return Json(await new MemberLookupService(db).SearchAsync(query, trainerId.Value, cancellationToken));
+    }
+
     [HttpGet]
     public async Task<IActionResult> Index(int? memberId, DateOnly? date)
     {
@@ -92,11 +100,11 @@ public class MeasurementsController(
         {
             Members = await db.MemberProfiles
                 .AsNoTracking()
-                .Where(item => item.AssignedTrainerId == trainerId)
+                .Where(item => item.AssignedTrainerId == trainerId && item.Id == memberId)
                 .OrderBy(item => item.ApplicationUser.FirstName)
                 .ThenBy(item => item.ApplicationUser.LastName)
                 .Select(item => new SelectListItem(
-                    item.ApplicationUser.FirstName + " " + item.ApplicationUser.LastName,
+                    item.ApplicationUser.FirstName + " " + item.ApplicationUser.LastName + " · #" + item.Id + " · " + (item.ApplicationUser.PhoneNumber ?? "Telefon kayıtlı değil"),
                     item.Id.ToString()))
                 .ToListAsync()
         };

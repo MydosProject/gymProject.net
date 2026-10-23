@@ -1,0 +1,14 @@
+@using NO23.Web.Services
+@model NO23.Web.Domain.Entities.MemberProfile
+@{
+    ViewData["Title"] = "Üye detayı";
+}
+<section class="admin-page">
+    <header class="admin-page-head trainer-page-head"><div><p>Üye #@Model.Id</p><h1>@Model.ApplicationUser.FirstName @Model.ApplicationUser.LastName</h1><p>@Model.ApplicationUser.PhoneNumber · @Model.ApplicationUser.Email</p></div><a asp-action="Index" class="btn btn-outline-light">Üyelerime dön</a></header>
+    <div class="row g-3 mb-4">
+        <div class="col-md-6"><article class="border rounded p-4 h-100"><h2>Paket</h2><strong>@(Model.ServicePackageVariant?.ServicePackage.Name ?? Model.MembershipPackage.Name)</strong><p>@Model.ServicePackageVariant?.Name</p><p>Başlangıç: @(Model.MembershipStartsAtUtc.HasValue ? ClubTime.ToLocal(Model.MembershipStartsAtUtc.Value).ToString("dd.MM.yyyy") : "—")<br />Bitiş: @(Model.MembershipEndsAtUtc.HasValue ? ClubTime.ToLocal(Model.MembershipEndsAtUtc.Value).ToString("dd.MM.yyyy") : "—")</p></article></div>
+        <div class="col-md-6"><article class="border rounded p-4 h-100"><h2>Kalan ders hakkı</h2><p class="display-5">@(MemberPackageEntitlement.HasUnlimitedClassAccess(Model) ? "Sınırsız" : Model.RemainingClassCredits.ToString())</p><p>Üyenin sistemde kayıtlı hak bakiyesi. Planlanmış birebir dersler bu bakiyeden tamamlandıklarında düşer.</p></article></div>
+    </div>
+    <dl><dt>Doğum tarihi</dt><dd>@(Model.BirthDate?.ToString("dd.MM.yyyy") ?? "Kayıtlı değil")</dd><dt>Hedef</dt><dd>@(Model.FitnessGoal ?? "Belirtilmemiş")</dd></dl>
+    <div class="d-flex flex-wrap gap-3"><a asp-controller="Calendar" asp-action="Index" asp-route-memberId="@Model.Id" class="btn btn-dark">Ders takvimi</a><a asp-controller="Measurements" asp-action="Index" asp-route-memberId="@Model.Id" class="btn btn-outline-light">Ölçüm ve gelişim</a></div>
+</section>

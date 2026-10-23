@@ -14,6 +14,10 @@ namespace NO23.Web.Areas.Admin.Controllers;
 [Area("Admin"), Authorize(Roles = ApplicationRoles.Admin)]
 public class MemberProgressController(ApplicationDbContext db, MemberProgressTrackingService progress) : Controller
 {
+    [HttpGet, ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    public async Task<IActionResult> SearchMembers(string? query, CancellationToken cancellationToken) =>
+        Json(await new MemberLookupService(db).SearchAsync(query, cancellationToken: cancellationToken));
+
     public async Task<IActionResult> Index(int? memberId, DateOnly? date, int? before, int? after)
     {
         var page = await LoadAsync(memberId, date);
@@ -92,8 +96,8 @@ public class MemberProgressController(ApplicationDbContext db, MemberProgressTra
     {
         var page = new MemberProgressPage
         {
-            Members = await db.MemberProfiles.AsNoTracking().OrderBy(x => x.ApplicationUser.FirstName)
-                .Select(x => new SelectListItem(x.ApplicationUser.FirstName + " " + x.ApplicationUser.LastName + " — " + x.ApplicationUser.Email, x.Id.ToString())).ToListAsync()
+            Members = await db.MemberProfiles.AsNoTracking().Where(x => x.Id == memberId)
+                .Select(x => new SelectListItem(x.ApplicationUser.FirstName + " " + x.ApplicationUser.LastName + " · #" + x.Id + " · " + (x.ApplicationUser.PhoneNumber ?? "Telefon kayıtlı değil"), x.Id.ToString())).ToListAsync()
         };
         if (!memberId.HasValue) return page;
         var member = await db.MemberProfiles.Include(x => x.ApplicationUser).AsNoTracking().FirstOrDefaultAsync(x => x.Id == memberId);

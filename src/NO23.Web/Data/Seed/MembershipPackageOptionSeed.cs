@@ -6,6 +6,7 @@ public static class MembershipPackageOptionSeed
 {
     public static IReadOnlyList<DefaultOption> Defaults { get; } =
         Enum.GetValues<MembershipPackageCode>()
+            .Where(code => code != MembershipPackageCode.KitchenOnly)
             .SelectMany(code => BuildForPackage(code))
             .ToList();
 

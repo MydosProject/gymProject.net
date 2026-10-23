@@ -36,7 +36,7 @@
 }
 
 <section class="admin-page trainer-measurements-page">
-    <header class="admin-page-head">
+    <header class="admin-page-head trainer-page-head">
         <div>
             <h1>Üye ölçümleri</h1>
             <p>Atanmış üyelerinin aylık ölçümlerini kaydet ve değişimi takip et.</p>
@@ -52,19 +52,7 @@
         <div class="alert alert-danger">@errorMessage</div>
     }
 
-    <form method="get" class="d-flex flex-wrap align-items-end gap-3 mb-4">
-        <label>
-            <span class="form-label">Üye</span>
-            <select name="memberId" class="form-select" required>
-                <option value="">Üye seç</option>
-                @foreach (var member in Model.Members)
-                {
-                    <option value="@member.Value" selected="@(member.Value == Model.MemberId?.ToString())">@member.Text</option>
-                }
-            </select>
-        </label>
-        <button class="btn btn-dark" type="submit">Ölçümleri göster</button>
-    </form>
+    <partial name="/Views/Shared/_MemberFinder.cshtml" model="@(new NO23.Web.ViewModels.MemberFinderViewModel(Url.Action("SearchMembers")!, Model.MemberId, Model.Members.FirstOrDefault()?.Text ?? "", Url.Action("Index", "Members")!))" />
 
     @if (Model.MemberId.HasValue)
     {
@@ -149,3 +137,10 @@
         </div>
     }
 </section>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/member-finder.css" asp-append-version="true" />
+}
+@section Scripts {
+    <script src="~/js/member-finder.js" asp-append-version="true"></script>
+}

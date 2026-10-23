@@ -16,13 +16,27 @@ Maddeler ayrı kabul kriterleriyle ilerletilir. Bir maddenin burada sıraya alı
 
 Ödeme kuralı: bu teslimatta yöneticinin manuel kayıt akışı değiştirilmiştir. Halka açık online ödeme akışı kendi katalog ve ödeme kontrollerini kullanmaya devam eder. Gerçek POS/banka tahsilatı gerçekleştirilmez; yönetici tahsilat kayıtlarını işler.
 
-## Sonraki sıra: Kitchen kaydı ve üye erişimi
+## İkinci teslimat: Kitchen kaydı ve üye erişimi
 
 | Madde | Durum | Kabul kriteri |
 |---|---|---|
-| Yalnızca Kitchen için kayıt | Sırada | Paket seçiminde ayrı Kitchen seçeneği; Kitchen'den gelince ön seçim ve Kitchen akışına dönüş. Spor paketi zorunlu tutulmaz. Hesap oluşturmak spor salonu veya sınırsız ders hakkı kazandırmaz. Kitchen satın alma ve ödeme akışı korunur. |
-| Ölçüm ve gelişimde üye arama | Sırada | Yazdıkça sınırlı sonuç listesi; ad/soyad yanında telefon ve üye numarası gibi ayırt edici bilgiler. Seçim isimle değil üye ID'siyle yapılır. Antrenör yalnızca atanmış üyelerini arayabilir. |
-| Antrenörün üye listesi | Sırada | Ayrı “Üyelerim” ekranı; paket, kalan seans, iletişim, takvim ve ölçüm bağlantıları. Başka antrenörün üyesine doğrudan URL ile de erişilemez. |
+| Yalnızca Kitchen için kayıt | Tamamlandı | Genel kayıt ekranında “NO:23 Kitchen — yalnızca yemek” seçeneği. Kitchen bağlantısı ön seçim ve dönüş adresi taşır; spor süresi istenmez. KitchenOnly hesap türü sıfır ders ve boş spor üyelik tarihleriyle oluşturulur; gönderilen spor varyantı dikkate alınmaz. Ders rezervasyonu ve sınırsız erişim verilmez. Spor paketi yayımlanmamışsa da Kitchen kaydı çalışır. Üye ana paneli Kitchen'a yönlenir. |
+| Ölçüm ve gelişimde üye arama | Tamamlandı | Yönetici ve eğitmende ortak arama alanı. En az 2 karakter, en fazla 20 sonuç; Türkçe ad/soyad, telefon ve #üye numarasıyla arama. İsim, telefon, numara ve paket gösterilir. Seçim ID ile; klavye desteği ve istek iptali vardır. Antrenör yalnızca atanmış üyelerini arar; seçili üye haricinde tüm üyeler sayfaya yüklenmez. |
+| Antrenörün üye listesi | Tamamlandı | Menüde “Üyelerim”; atanmış üyelerde arama ve sayfalama. Listede ve detayda paket, mevcut kalan hak, iletişim, tarihler, takvim ve ölçüm bağlantıları. Başka antrenörün üyesi ve atanmamış üye için detay/ölçüm/kayıt işlemi bulunamadı sonucu verir. Aktif antrenör bağlantısı olmayan hesaplar engellenir. |
+
+Kitchen devam akışının ek düzeltmesi: salondan teslim seçiliyken ödeme özetinin ilk açılışta kurye ücretini göstermesi giderildi. İlk özet ve teslimat seçimi değişince gösterilen etiket/tutar aynı yöntemi kullanır. Tahsilat kuralları değiştirilmedi.
+
+KitchenOnly satışa açık bir spor seviyesi değildir. Uygulamanın başlangıç veri hazırlığında eklenir, spor seviyesi düzenleme ve katalog bağlama ekranlarından dışlanır. Yeni kolon veya şema migration'ı yoktur. Sürüm geri alınırken eski kodun bu yeni hesap türünü tanımadığı dikkate alınmalıdır.
+
+### İkinci teslimat doğrulaması
+
+- Toplam 580 test başarılı (önceki 561 teste 19 yeni senaryo eklendi).
+- Yeni kayıt, hizmet seçimi, aynı isimli üyelerin ayrımı, arama sınırları ve antrenör yetki kontrolleri test edildi. Spor paketlerinde mevcut kayıt testleri de korunur.
+- Ayrı PostgreSQL 18 veritabanında iki Kitchen hesabı açıldı: spor varyantı ve spor tarihleri boş, kalan ders hakkı sıfır. Genel spor kataloğu etkilenmedi.
+- Tarayıcıda kalori hesabı → 5 günlük Kitchen planı → kayıt → Kitchen paket ekranına devam akışı doğrulandı; 2270 kcal hedefi ve seçilen öğünler korundu. Gerçek tahsilat yapılmadı.
+- Türkçe “ışıl” aramasında yönetici aynı isimli iki üyeyi farklı numara/telefonlarla gördü; antrenör yalnızca kendi üyesini gördü. Klavyeyle seçimden ölçüm ekranına geçildi. Üyelerim detayında kayıtlı 17 seans gösterildi.
+- Görsel kontrol sırasında arama alanının odak rengi ve antrenör başlıklarının kontrastı düzeltildi.
+- Teslimat özeti ilk açılışta salondan teslim için 3.000 ₺; adrese teslim seçilince 3.475 ₺; tekrar salondan teslimde 3.000 ₺ gösterdi.
 
 ## Sonraki sıra: Talepler ve takvim
 
@@ -40,7 +54,7 @@ Maddeler ayrı kabul kriterleriyle ilerletilir. Bir maddenin burada sıraya alı
 | Üye ekranında kalan seans | Aynı kural ile ele alınacak | Gün sayısı yerine hak sayısı gösterilir. Üye, yönetici ve eğitmen ekranları aynı bakiyeyi kullanır. PT/grup haklarının farklı zamanlarda işlenmesi ve eski kayıtlar ayrıca denetlenir. |
 | Haftalık Kitchen tablosu | Sırada | Üye panelinde seçilen haftanın günleri, ana/ara öğün ürünleri, teslim/alım bilgisi ve atlanan günler görünür. Önceki/sonraki hafta gezilir. Ödeme/plan hazırlanması bekleniyorsa açık durum gösterilir. |
 
-## Doğrulama
+## İlk teslimat doğrulaması
 
 - 561 test başarılı. Kitchen doğrulama adaptörü Türkçe, İngilizce ve Almanca kültürlerde fiyat sınırlarıyla test edilir.
 - Grubu pasife alıp tekrar aktifleştirme; iptal seanslarının iki takvim görünümünde de gizli kalması ve hak iadesinin korunması test edildi.

@@ -38,6 +38,9 @@ public class HomeController(
             return View(new MemberDashboardViewModel());
         }
 
+        if (profile.MembershipPackage.Code == MembershipPackageCode.KitchenOnly)
+            return RedirectToAction("Index", "Kitchen");
+
         var upcomingReservations = await dbContext.ClassReservations
             .AsNoTracking()
             .Include(reservation => reservation.ClassSession)

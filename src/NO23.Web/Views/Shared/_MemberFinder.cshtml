@@ -1,0 +1,18 @@
+@model NO23.Web.ViewModels.MemberFinderViewModel
+<form method="get" class="member-finder mb-4" data-member-finder data-search-url="@Model.SearchUrl">
+    <div class="member-finder-field">
+        <label for="member-search">Üye ara</label>
+        <input id="member-search" type="search" class="form-control" autocomplete="off"
+               value="@Model.SelectedLabel" placeholder="Ad soyad, telefon veya #üye no"
+               role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="member-search-results"
+               aria-describedby="member-search-status" data-member-search />
+        <input type="hidden" name="memberId" value="@Model.MemberId" data-member-id />
+        <ul id="member-search-results" class="member-finder-results" role="listbox" aria-label="Üye sonuçları" hidden data-member-results></ul>
+        <small id="member-search-status" role="status" aria-live="polite" data-member-status>
+            @(Model.MemberId.HasValue ? "Seçili üye · değiştirmek için yeniden ara." : "En az 2 karakter yaz, ardından listeden üyeyi seç.")
+        </small>
+    </div>
+    <button type="submit" class="btn btn-dark" disabled="@(!Model.MemberId.HasValue)" data-member-submit>Gelişimi göster</button>
+    <a href="@Model.MembersUrl">Üye listesi</a>
+    <noscript>Üye listesindeki ölçüm bağlantısını kullanabilirsiniz.</noscript>
+</form>

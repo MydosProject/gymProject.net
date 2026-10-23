@@ -120,7 +120,8 @@ public class ServicePackagesController(ApplicationDbContext dbContext) : Control
 
     private async Task PopulateAsync(ServicePackageFormViewModel model)
     {
-        model.MembershipPackages = await dbContext.MembershipPackages.AsNoTracking().OrderBy(x => x.DisplayOrder)
+        model.MembershipPackages = await dbContext.MembershipPackages.AsNoTracking()
+            .Where(x => x.Code != MembershipPackageCode.KitchenOnly).OrderBy(x => x.DisplayOrder)
             .Select(x => new MembershipPackageSelectOptionViewModel { Id = x.Id, Name = x.Name }).ToListAsync();
         if (model.Id > 0)
         {
@@ -134,6 +135,9 @@ public class ServicePackagesController(ApplicationDbContext dbContext) : Control
 
     private async Task ValidatePackageAsync(ServicePackageFormViewModel model, int? id)
     {
+        if (model.MembershipPackageId.HasValue && await dbContext.MembershipPackages.AnyAsync(x =>
+                x.Id == model.MembershipPackageId && x.Code == MembershipPackageCode.KitchenOnly))
+            ModelState.AddModelError(nameof(model.MembershipPackageId), "Kitchen hesabı spor üyeliği seviyesi olarak kullanılamaz.");
         if (!string.IsNullOrWhiteSpace(model.Slug) && await dbContext.ServicePackages.AnyAsync(x => x.Slug == model.Slug.Trim().ToLower() && (!id.HasValue || x.Id != id)))
             ModelState.AddModelError(nameof(model.Slug), "Bu URL kodu kullanılıyor.");
         if (model.Category == ServicePackageCategory.Membership && !model.MembershipPackageId.HasValue)
