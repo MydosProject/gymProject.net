@@ -14,6 +14,7 @@ public sealed class WeeklyPersonalTrainingPlan
     public int CompletedLessons { get; set; }
     public int PlannedLessons { get; set; }
     public int RemainingCredits { get; set; }
+    public int StoredBalance { get; set; }
     public int? AvailableLessons { get; set; }
     public int UnchargedCompletedLessons { get; set; }
     public bool CanReviewCredits { get; set; }
@@ -56,8 +57,10 @@ public partial class PersonalTrainingCalendarService
             (variant.LessonsRenewMonthly ? Math.Max(1, variant.DurationMonths ?? 1) : 1);
         plan.CompletedLessons = existing.Count(s => s.Status is PersonalTrainingSessionStatus.Completed or PersonalTrainingSessionStatus.NoShow);
         plan.PlannedLessons = existing.Count(s => s.Status == PersonalTrainingSessionStatus.Scheduled);
-        plan.UnchargedCompletedLessons = existing.Count(s => !s.CreditConsumed && s.Status == PersonalTrainingSessionStatus.Completed);
-        plan.RemainingCredits = member.RemainingClassCredits;
+        plan.UnchargedCompletedLessons = existing.Count(s => !s.CreditConsumed && s.Status is PersonalTrainingSessionStatus.Completed or PersonalTrainingSessionStatus.NoShow);
+        var creditSummary = await new LessonCreditSummaryService(dbContext).GetAsync(member.Id);
+        plan.RemainingCredits = creditSummary?.Remaining ?? member.RemainingClassCredits;
+        plan.StoredBalance = member.RemainingClassCredits;
         plan.CanReviewCredits = !plan.IsUnlimited && member.MembershipStartsAtUtc.HasValue && plan.UnchargedCompletedLessons > 0;
         plan.PackageEnd = member.MembershipEndsAtUtc;
         // Scheduled lessons reserve a place in the balance, including past lessons

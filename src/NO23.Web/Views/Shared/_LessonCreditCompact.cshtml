@@ -1,0 +1,7 @@
+@model NO23.Web.ViewModels.Member.LessonCreditSummary
+<div class="lesson-credit-compact">
+    <strong>@(!Model.HasSportsPackage ? "Spor üyeliği yok" : Model.IsUnlimited ? "Sınırsız" : Model.Remaining.ToString())</strong>
+    @if (Model.HasSportsPackage)
+    { <small>@Model.Planned planlı · @(Model.IsUnlimited ? "Sınırsız" : Model.Available.ToString()) yeni planlanabilir</small> }
+    @if (Model.NeedsReview) { <small class="lesson-credit-alert">Hak kontrolü gerekli</small> }
+</div>

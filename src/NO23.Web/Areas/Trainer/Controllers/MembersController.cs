@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using NO23.Web.Data;
 using NO23.Web.Data.Seed;
 using NO23.Web.Domain.Entities;
+using NO23.Web.Services;
 using NO23.Web.ViewModels.TrainerPanel;
 
 namespace NO23.Web.Areas.Trainer.Controllers;
@@ -30,12 +31,14 @@ public class MembersController(ApplicationDbContext db) : Controller
         }
         var count = await members.CountAsync();
         page = Math.Clamp(page, 1, Math.Max(1, (int)Math.Ceiling(count / (double)TrainerMembersViewModel.PageSize)));
+        var pageMembers = await members.OrderBy(member => member.ApplicationUser.FirstName)
+            .ThenBy(member => member.ApplicationUser.LastName).ThenBy(member => member.Id)
+            .Skip((page - 1) * TrainerMembersViewModel.PageSize).Take(TrainerMembersViewModel.PageSize).ToListAsync();
         return View(new TrainerMembersViewModel
         {
+            Credits = await new LessonCreditSummaryService(db).LoadAsync(pageMembers.Select(x => x.Id)),
             Query = query, Page = page, TotalCount = count,
-            Members = await members.OrderBy(member => member.ApplicationUser.FirstName)
-                .ThenBy(member => member.ApplicationUser.LastName).ThenBy(member => member.Id)
-                .Skip((page - 1) * TrainerMembersViewModel.PageSize).Take(TrainerMembersViewModel.PageSize).ToListAsync()
+            Members = pageMembers
         });
     }
 
@@ -44,6 +47,7 @@ public class MembersController(ApplicationDbContext db) : Controller
         var trainerId = await TrainerIdAsync();
         if (trainerId is null) return Forbid();
         var member = await AssignedMembers(trainerId.Value).FirstOrDefaultAsync(member => member.Id == id);
+        if (member is not null) ViewData["CreditSummary"] = await new LessonCreditSummaryService(db).GetAsync(id);
         return member is null ? NotFound() : View(member);
     }
 

@@ -2,6 +2,7 @@ namespace NO23.Web.ViewModels.Admin;
 
 public class MemberListItemViewModel
 {
+    public NO23.Web.ViewModels.Member.LessonCreditSummary? Credits { get; set; }
     public MemberPaymentSummary Payments { get; set; } = new();
     public string Id { get; init; } = string.Empty;
 

@@ -1826,6 +1826,7 @@ namespace NO23.Web.Data.Migrations
                         .HasColumnType("integer");
 
                     b.Property<int>("RemainingClassCredits")
+                        .IsConcurrencyToken()
                         .HasColumnType("integer");
 
                     b.Property<int?>("ServicePackageVariantId")

@@ -12,15 +12,20 @@ using NO23.Web.ViewModels.Admin;
 namespace NO23.Web.Areas.Admin.Controllers;
 
 [Area("Admin"), Authorize(Roles = ApplicationRoles.Admin)]
+[NO23.Web.Infrastructure.CalendarViewContext]
 public class CalendarController(ApplicationDbContext db, PersonalTrainingCalendarService personal, ClassReservationService reservations) : Controller
 {
-    public async Task<IActionResult> Index(DateTime? week, int? trainerId, int? memberId = null, bool includeCompleted = false)
+    public async Task<IActionResult> Index(DateTime? week, int? trainerId, int? memberId = null, bool includeCompleted = false, string view = "week", DateTime? date = null)
     {
-        var monday = ClubTime.Monday(week ?? ClubTime.Now);
+        var selectedDate = (date ?? week ?? ClubTime.Now).Date;
+        if (!ModelState.IsValid || view is not ("week" or "day") || selectedDate.Year is < 1900 or > 2100) return BadRequest();
+        var monday = ClubTime.Monday(selectedDate);
         var start = ClubTime.ToUtc(monday);
         var end = start.AddDays(7);
-        return View(new WeeklyCalendarViewModel
+        var model = new WeeklyCalendarViewModel
         {
+            SelectedDate = selectedDate, ViewMode = view,
+            Credits = memberId.HasValue ? await new LessonCreditSummaryService(db).GetAsync(memberId.Value) : null,
             Week = monday, TrainerId = trainerId, MemberId = memberId, IncludeCompleted = includeCompleted,
             Trainers = await db.Trainers.AsNoTracking().Where(x => x.IsActive).OrderBy(x => x.FirstName)
                 .Select(x => new SelectListItem(x.FirstName + " " + x.LastName, x.Id.ToString())).ToListAsync(),
@@ -41,10 +46,13 @@ public class CalendarController(ApplicationDbContext db, PersonalTrainingCalenda
                     (!memberId.HasValue || x.Reservations.Any(reservation => reservation.MemberProfileId == memberId && reservation.Status != ClassReservationStatus.Cancelled)))
                 .OrderBy(x => x.StartsAtUtc).AsSplitQuery().ToListAsync(),
             Personal = await db.PersonalTrainingSessions.AsNoTracking().Include(x => x.Trainer)
+                .Include(x => x.History)
                 .Include(x => x.MemberProfile).ThenInclude(x => x.ApplicationUser)
                 .Where(x => x.Status != PersonalTrainingSessionStatus.Cancelled && (includeCompleted || x.Status != PersonalTrainingSessionStatus.Completed) && x.StartsAtUtc >= start && x.StartsAtUtc < end && (!trainerId.HasValue || x.TrainerId == trainerId) && (!memberId.HasValue || x.MemberProfileId == memberId))
                 .OrderBy(x => x.StartsAtUtc).ToListAsync()
-        });
+        };
+        ViewData["CalendarNavigation"] = model.Navigation;
+        return View(model);
     }
 
     [HttpPost, ValidateAntiForgeryToken]

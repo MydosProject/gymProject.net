@@ -136,6 +136,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllersWithViews(options =>
 {
+    options.Filters.Add<NO23.Web.Infrastructure.ConcurrentUpdateFilter>();
     options.ModelMetadataDetailsProviders.Add(new TurkishValidationMetadataProvider());
 
     var messages = options.ModelBindingMessageProvider;

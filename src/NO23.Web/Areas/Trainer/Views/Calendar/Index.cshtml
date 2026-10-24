@@ -51,28 +51,18 @@
         @if (TempData["ErrorMessage"] is string error)
         { <div class="alert alert-danger">@error</div> }
 
-        <form method="get" class="d-flex flex-wrap gap-2 mb-3"><input type="hidden" name="week" value="@Model.WeekStart.ToString("yyyy-MM-dd")" /><label>Üye<select name="memberId" class="form-select"><option value="">Tüm üyeler</option>@foreach(var member in Model.FilterMembers){<option value="@member.Value" selected="@(member.Value == Model.MemberId?.ToString())">@member.Text</option>}</select></label><label class="align-self-end p-2"><input type="checkbox" name="includeCompleted" value="true" checked="@Model.IncludeCompleted" /> Tamamlanan dersleri göster</label><button class="btn btn-dark" type="submit">Göster</button></form>
+        <partial name="/Views/Shared/_CalendarNavigation.cshtml" model="Model.Navigation" />
+        @if (Model.Credits is not null) { <partial name="/Views/Shared/_LessonCreditSummary.cshtml" model="Model.Credits" /> }
         @await Html.PartialAsync("_CalendarBulkToolbar", new NO23.Web.ViewModels.Admin.CalendarBulkInput { Week = Model.WeekStart, MemberId = Model.MemberId, IncludeCompleted = Model.IncludeCompleted })
         <div class="admin-form-card mb-4">
-            <div class="trainer-week-toolbar">
-                <a class="btn btn-outline-dark btn-sm" asp-action="Index"
-                   asp-route-memberId="@Model.MemberId" asp-route-includeCompleted="@Model.IncludeCompleted" asp-route-week="@Model.WeekStart.AddDays(-7).ToString("yyyy-MM-dd")">← Önceki hafta</a>
-                <div class="text-center">
-                    <small class="text-muted d-block">HAFTALIK PROGRAM</small>
-                    <strong>@Model.WeekStart.ToString("dd.MM.yyyy") — @Model.WeekEnd.ToString("dd.MM.yyyy")</strong>
-                    <a class="d-block small mt-1" asp-action="Index" asp-route-memberId="@Model.MemberId" asp-route-includeCompleted="@Model.IncludeCompleted">Bu haftaya dön</a>
-                </div>
-                <a class="btn btn-outline-dark btn-sm" asp-action="Index"
-                   asp-route-memberId="@Model.MemberId" asp-route-includeCompleted="@Model.IncludeCompleted" asp-route-week="@Model.WeekStart.AddDays(7).ToString("yyyy-MM-dd")">Sonraki hafta →</a>
-            </div>
             <div class="trainer-week-scroll">
-                <div class="trainer-week-grid">
-                    @foreach (var day in Model.Days)
+                <div class="trainer-week-grid @(Model.ViewMode == "day" ? "is-day-view" : null)">
+                    @foreach (var day in Model.VisibleDays)
                     {
                         <section class="trainer-week-day @(day.IsToday ? "is-today" : "")">
                             <header class="trainer-week-day-head">
                                 <div>
-                                    <span>@day.DayName</span>
+                                    <a class="calendar-day-link" asp-action="Index" asp-route-view="day" asp-route-date="@day.Date.ToString("yyyy-MM-dd")" asp-route-memberId="@Model.MemberId" asp-route-includeCompleted="@Model.IncludeCompleted">@day.DayName</a>
                                     <small>@day.Date.ToString("dd MMM")</small>
                                 </div>
                                 <span class="trainer-week-count @(day.Entries.Count > 0 ? "is-busy" : "")">
@@ -88,7 +78,8 @@
                                 <div class="trainer-week-items">
                                     @foreach (var entry in day.Entries)
                                     {
-                                    if (entry.Appointment is { } appointment) {
+                                    <div class="calendar-entry"><time class="calendar-entry-clock">@NO23.Web.Services.ClubTime.ToLocal(entry.StartsAtUtc).ToString("HH:mm")</time>
+                                    @if (entry.Appointment is { } appointment) {
                                         <partial name="/Views/Shared/_ConsultationCalendarCard.cshtml" model="appointment" />
                                     }
                                     else if (entry.Group is { } group) {
@@ -97,12 +88,14 @@
                                         </article>
                                     }
                                     else if (entry.Personal is { } item) {
-                                        <a class="trainer-week-event" href="#session-@item.Id">
+                                        <article class="trainer-week-event">
                                             <strong>@NO23.Web.Services.ClubTime.ToLocal(item.StartsAtUtc).ToString("HH:mm") · @item.DurationMinutes dk</strong>
                                             <span>@(string.IsNullOrWhiteSpace(item.MemberName) ? "İsimsiz üye" : item.MemberName)</span>
                                             <span>@item.StatusName</span>
-                                        </a>
+                                            <details class="calendar-read-details"><summary>Ders detayları ve geçmiş</summary><p>@(item.Note ?? "Not yok")</p><p>@NO23.Web.Services.ClubTime.ToLocal(item.StartsAtUtc).ToString("dd.MM.yyyy HH:mm") – @NO23.Web.Services.ClubTime.ToLocal(item.StartsAtUtc.AddMinutes(item.DurationMinutes)).ToString("HH:mm")</p><p>Kalan seans: @(item.IsUnlimited ? "Sınırsız" : item.RemainingCredits.ToString())</p><ul>@foreach (var history in item.History) { <li>@NO23.Web.Services.ClubTime.ToLocal(history.ChangedAtUtc).ToString("dd.MM.yyyy HH:mm") · @history.StatusName · @history.Note</li> }</ul><a href="#session-@item.Id">Seans işlemlerine git →</a></details>
+                                        </article>
                                     }
+                                    </div>
                                     }
                                 </div>
                             }
@@ -175,12 +168,12 @@
             <div class="col-lg-8">
                 <div class="admin-form-card">
                     <h2>Ders programı</h2>
-                    @if (Model.Sessions.Count == 0)
+                    @if (Model.VisibleSessions.Count == 0)
                     { <p class="text-muted mb-0">Seçili tarih aralığında ders bulunmuyor.</p> }
                     else
                     {
                         <div class="d-grid gap-3">
-                            @foreach (var session in Model.Sessions)
+                            @foreach (var session in Model.VisibleSessions)
                             {
                                 var latestPostponement = session.History
                                     .FirstOrDefault(item => item.Status == PersonalTrainingSessionStatus.Postponed);

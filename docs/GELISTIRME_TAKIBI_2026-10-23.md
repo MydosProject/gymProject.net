@@ -46,14 +46,14 @@ KitchenOnly satışa açık bir spor seviyesi değildir. Uygulamanın başlangı
 |---|---|---|
 | Genel bakışta yeni talepler | Tamamlandı | Misafir randevu, paket başvurusu ve üye PT talepleri üstte ayrı sayaçlarla görünür. Son 6 bekleyen kayıt zaman sırasıyla listelenir; sayaçlar tüm bekleyenleri sayar. Tür bazında tüm taleplere ve misafir talebinden planlamaya bağlantı vardır. |
 | Üye olmayan kişinin ön görüşmesi | Tamamlandı | Yönetici tarih/saat/antrenör/süre ile planlar. Tercih edilen saat tek başına rezervasyon değildir. Yönetici ve atanmış eğitmen takviminde mavi “Ön görüşme” kartı görünür; ders hakkı tüketmez. Çakışma iki yönde ve eşzamanlı kayıtlar için kontrol edilir. Gün/saat/antrenör değişimi, iptal ve işlem geçmişi vardır; iptal kartı takvimden kaldırır. Eğitmen başka eğitmenin görüşmesini göremez. |
-| Google Takvim benzeri esneklik | Sırada | Gün/hafta gezinmesi, geçmiş tarihe gitme, okunaklı detaylar ve işlem kapsamları. Geçmiş dersler görüntülenebilir; geçmiş haklar tarih gezinmesiyle değişmez. |
+| Google Takvim benzeri esneklik | Tamamlandı | Yönetici/eğitmende gün/hafta görünümü, Bugün, ileri/geri gezinme, tarih seçimi, tamamlanmış ders geçmişi ve kart detayları. Gün başlığı o güne odaklanır; işlem sonrası tarih/görünüm/filtre korunur. Mevcut tek ders/tekrar/toplu işlem kapsamları kullanılabilir. |
 
-## Sonraki sıra: Kalan seans ve haftalık Kitchen planı
+## Dördüncü teslimat: Kalan seans ve haftalık Kitchen planı
 
 | Madde | Durum | Kabul kriteri |
 |---|---|---|
-| Ders düşümü ve kalan seans kontrolü | Kural yanıtı bekleniyor | Paket bitişinden sonra da kullanılmamış hakların kullanılıp kullanılmayacağı soruldu. Mevcut kural bu yanıt gelmeden değiştirilmedi. Satın alınan, tamamlanan, önceden planlanan ve yeni planlanabilir haklar ayrılmalı; mükerrer düşüm ve iptalde hak kaybı olmamalı. |
-| Üye ekranında kalan seans | Aynı kural ile ele alınacak | Gün sayısı yerine hak sayısı gösterilir. Üye, yönetici ve eğitmen ekranları aynı bakiyeyi kullanır. PT/grup haklarının farklı zamanlarda işlenmesi ve eski kayıtlar ayrıca denetlenir. |
+| Ders düşümü ve kalan seans kontrolü | Tamamlandı | Birebir tamamlandı/katılmadı bir hak tüketir; grup rezervasyonu hak ayırır, tamamlanınca ikinci kez düşmez; iptal iade eder. Son hakkın eşzamanlı grup/birebir kaydıyla iki kez kullanılması engellendi. Eski işlenmemiş dersler ve iptal rezervasyonları Üyeler → Ders hakları ekranından önceki manuel işlem korunarak veya tek kez bakiye düzeltilerek denetlenir. |
+| Üye ekranında kalan seans | Tamamlandı | Üye genel bakışı, yönetici üye listesi/takvimi ve eğitmen üye listesi/detayı/takvimi ortak özeti kullanır: paket toplamı, tamamlanan, kalan, planlanmış ve yeni planlanabilir seans. Hafta değişince bakiye değişmez. Süre dolması bakiyeyi sıfırlamaz; yeni ders için aktif paket şartı korunur. |
 | Haftalık Kitchen tablosu | Tamamlandı | Beslenme → Haftalık Kitchen Planı, sayfanın üstünde Pazartesi–Pazar ürün/öğün/adet ve teslimat tercihi tablosunu açar. Önceki/sonraki hafta, tarih seçimi ve eski paket seçimi vardır. Bugün, pas geçilen öğün/gün ve paket dışı günler ayrılır. Ödeme veya plan hazırlanması bekleniyorsa ürün teslimatı vaat edilmez. Mobilde gün kartlarına dönüşür. Başka üyeye ait abonelik açılamaz. |
 | Üyeler ekranında kesilen antrenör adları | Tamamlandı | Atanmış antrenör adı tam ve satıra bölünebilir biçimde gösterilir; seçim alanı genişletildi, Kaydet alt satıra alındı. İşlem düğmeleri düzenlendi; dar ekranlarda kart görünümü ve koyu arka plan korunur. |
 
@@ -67,3 +67,5 @@ KitchenOnly satışa açık bir spor seviyesi değildir. Uygulamanın başlangı
 - Masaüstü PRO görünümü ve mobil iki günlük takvim tarayıcıda kontrol edildi.
 
 Bu teslimatta şema değişikliği yoktur. Yalnızca sahte üye ve ayrı test veritabanı kullanılmıştır. Git'e gönderim, canlı yayınlama doğrulaması değildir.
+
+Son teslimatta tüm listedeki geliştirmeler uygulanmıştır. Ekranlar ve kısa kabul senaryoları: [Kabul testleri](KABUL_TESTLERI_2026-10-24.md). Önceki doğrulama sayıları ilgili teslimata aittir; güncel toplam ve PostgreSQL/tarayıcı sonuçları güncel teslimat belgesindedir.

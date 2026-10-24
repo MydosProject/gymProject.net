@@ -16,16 +16,18 @@ namespace NO23.Web.Areas.Trainer.Controllers;
 
 [Area("Trainer")]
 [Authorize(Roles = ApplicationRoles.Trainer)]
+[NO23.Web.Infrastructure.CalendarViewContext]
 public class CalendarController(
     ApplicationDbContext dbContext,
     PersonalTrainingCalendarService calendarService) : Controller
 {
-    public async Task<IActionResult> Index(DateTime? week, int? memberId = null, bool includeCompleted = false)
+    public async Task<IActionResult> Index(DateTime? week, int? memberId = null, bool includeCompleted = false, string view = "week", DateTime? date = null)
     {
         var trainerId = await GetTrainerIdAsync();
         if (trainerId is null) return Forbid();
 
-        var selectedDate = (week ?? ClubTime.Now).Date;
+        var selectedDate = (date ?? week ?? ClubTime.Now).Date;
+        if (!ModelState.IsValid || view is not ("week" or "day") || selectedDate.Year is < 1900 or > 2100) return BadRequest();
         var daysSinceMonday = ((int)selectedDate.DayOfWeek + 6) % 7;
         var weekStart = selectedDate.AddDays(-daysSinceMonday);
         var weekEnd = weekStart.AddDays(6);
@@ -41,6 +43,8 @@ public class CalendarController(
             .AsSplitQuery()
             .ToListAsync();
 
+        var assignedIds = await dbContext.MemberProfiles.Where(x => x.AssignedTrainerId == trainerId).Select(x => x.Id).ToListAsync();
+        var creditSummaries = await new LessonCreditSummaryService(dbContext).LoadAsync(assignedIds.Concat(sessionEntities.Select(x => x.MemberProfileId)));
         var sessions = sessionEntities.Select(item => new TrainerCalendarSessionViewModel
             {
                 Id = item.Id,
@@ -50,7 +54,7 @@ public class CalendarController(
                 DurationMinutes = item.DurationMinutes,
                 Status = item.Status,
                 StatusName = item.Status.GetDisplayName(),
-                RemainingCredits = item.MemberProfile.RemainingClassCredits,
+                RemainingCredits = creditSummaries.GetValueOrDefault(item.MemberProfileId)?.Remaining ?? item.MemberProfile.RemainingClassCredits,
                 IsUnlimited = item.MemberProfile.ServicePackageVariantId == null &&
                     item.MemberProfile.MembershipPackage.WeeklyClassLimit == null,
                 Note = item.Note,
@@ -79,6 +83,7 @@ public class CalendarController(
                 MembershipStartsAtUtc = item.MembershipStartsAtUtc,
                 MembershipEndsAtUtc = item.MembershipEndsAtUtc
             }).ToListAsync();
+        foreach (var member in members) member.RemainingCredits = creditSummaries.GetValueOrDefault(member.Id)?.Remaining ?? member.RemainingCredits;
 
         var groups = await dbContext.ClassSessions.AsNoTracking().Include(item => item.GroupClass)
             .Include(item => item.Reservations).Where(item => item.Status != ClassSessionStatus.Cancelled && (includeCompleted || item.Status != ClassSessionStatus.Completed) && item.GroupClass.IsActive && item.GroupClass.TrainerId == trainerId &&
@@ -97,27 +102,32 @@ public class CalendarController(
         var turkishCulture = CultureInfo.GetCultureInfo("tr-TR");
         var days = Enumerable.Range(0, 7).Select(offset =>
         {
-            var date = weekStart.AddDays(offset);
+            var dayDate = weekStart.AddDays(offset);
             return new TrainerCalendarDayViewModel
             {
-                Date = date,
-                DayName = turkishCulture.DateTimeFormat.GetDayName(date.DayOfWeek),
-                IsToday = date == ClubTime.Now.Date,
-                Appointments = appointments.Where(item => ClubTime.ToLocal(item.ScheduledAtUtc!.Value).Date == date).ToList(),
-                Groups = groups.Where(item => ClubTime.ToLocal(item.StartsAtUtc).Date == date).ToList(),
-                Sessions = sessions.Where(item => ClubTime.ToLocal(item.StartsAtUtc).Date == date).ToList()
+                Date = dayDate,
+                DayName = turkishCulture.DateTimeFormat.GetDayName(dayDate.DayOfWeek),
+                IsToday = dayDate == ClubTime.Now.Date,
+                Appointments = appointments.Where(item => ClubTime.ToLocal(item.ScheduledAtUtc!.Value).Date == dayDate).ToList(),
+                Groups = groups.Where(item => ClubTime.ToLocal(item.StartsAtUtc).Date == dayDate).ToList(),
+                Sessions = sessions.Where(item => ClubTime.ToLocal(item.StartsAtUtc).Date == dayDate).ToList()
             };
         }).ToList();
 
-        return View(new TrainerCalendarViewModel
+        var model = new TrainerCalendarViewModel
         {
+            SelectedDate = selectedDate, ViewMode = view,
+            Credits = memberId.HasValue && filterMembers.Any(x => x.Value == memberId.Value.ToString())
+                ? await new LessonCreditSummaryService(dbContext).GetAsync(memberId.Value) : null,
             Sessions = sessions, Appointments = appointments,
             Groups = groups, MemberId = memberId, IncludeCompleted = includeCompleted, FilterMembers = filterMembers,
             Members = members,
             WeekStart = weekStart,
             WeekEnd = weekEnd,
             Days = days
-        });
+        };
+        ViewData["CalendarNavigation"] = model.Navigation;
+        return View(model);
     }
 
     [HttpPost]

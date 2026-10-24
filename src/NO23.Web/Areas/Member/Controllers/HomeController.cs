@@ -107,14 +107,15 @@ public class HomeController(
             .Select(package => package.Name)
             .FirstOrDefaultAsync() ?? profile.MembershipPackage.Name;
 
+        var credits = await new LessonCreditSummaryService(dbContext).GetAsync(profile.Id);
         return View(new MemberDashboardViewModel
         {
+            Credits = credits,
             MemberName = string.IsNullOrWhiteSpace(memberName) ? profile.ApplicationUser.Email ?? "NO23 Member" : memberName,
             PackageName = currentPackageName,
             MembershipEndsAtUtc = profile.MembershipEndsAtUtc,
-            RemainingClassCredits = profile.RemainingClassCredits,
-            HasUnlimitedClasses = MemberPackageEntitlement.IsActive(profile, DateTime.UtcNow) &&
-                MemberPackageEntitlement.HasUnlimitedClassAccess(profile),
+            RemainingClassCredits = credits?.Remaining ?? profile.RemainingClassCredits,
+            HasUnlimitedClasses = credits?.IsUnlimited ?? MemberPackageEntitlement.HasUnlimitedClassAccess(profile),
             HasActiveKitchenSubscription = hasActiveKitchenSubscription,
             ReferralCode = profile.ReferralCode,
             ReferralDiscountPercent = profile.ReferredByMemberProfileId.HasValue ||

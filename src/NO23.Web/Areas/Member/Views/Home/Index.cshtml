@@ -133,6 +133,7 @@
 
         </div>
 
+        @if (Model.Credits is not null) { <partial name="/Views/Shared/_LessonCreditSummary.cshtml" model="Model.Credits" /> }
         <section class="member-dashboard-section member-referral-card" id="referral">
             <div class="member-section-heading">
                 <div>

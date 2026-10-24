@@ -207,6 +207,8 @@ public class MembersController(
             })
             .ToListAsync();
 
+        var creditSummaries = await new LessonCreditSummaryService(dbContext).LoadAsync(members.Select(m => m.MemberProfileId));
+        foreach (var member in members) member.Credits = creditSummaries.GetValueOrDefault(member.MemberProfileId);
         var payments = (await new MemberPaymentHistoryService(dbContext).LoadAsync(members.Select(m => m.MemberProfileId).ToArray()))
             .ToLookup(o => o.MemberId);
         foreach (var member in members) member.Payments = MemberPaymentSummary.Calculate(payments[member.MemberProfileId]);
@@ -226,6 +228,29 @@ public class MembersController(
         if (member is null) return NotFound();
         return View(new MemberPaymentHistoryViewModel { MemberId = id, MemberName = member.Name,
             Orders = await new MemberPaymentHistoryService(dbContext).LoadAsync([id]) });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Credits(int id)
+    {
+        var member = await dbContext.MemberProfiles.AsNoTracking().Where(x => x.Id == id)
+            .Select(x => x.ApplicationUser.FirstName + " " + x.ApplicationUser.LastName).FirstOrDefaultAsync();
+        if (member is null) return NotFound();
+        var service = new LessonCreditSummaryService(dbContext);
+        return View(new MemberCreditsViewModel { MemberName = member, Summary = (await service.GetAsync(id))!, History = await service.HistoryAsync(id) });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> ReviewCredits(int id, int expectedCount, int expectedBalance, bool confirmed, bool? alreadyAdjusted, bool cancelledGroups = false)
+    {
+        if (!ModelState.IsValid || alreadyAdjusted is null) return BadRequest();
+        var actor = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "";
+        var service = new PersonalTrainingCalendarService(dbContext);
+        var result = cancelledGroups
+            ? await service.ReviewCancelledGroupCreditsAsync(id, expectedCount, expectedBalance, confirmed, actor, alreadyAdjusted.Value)
+            : await service.ApplyReviewedCreditsAsync(id, expectedCount, expectedBalance, confirmed, actor, alreadyAdjusted.Value);
+        TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] = result.Message;
+        return RedirectToAction(nameof(Credits), new { id });
     }
 
     [HttpGet]

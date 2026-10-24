@@ -1,3 +1,4 @@
+using System.Data;
 using Microsoft.EntityFrameworkCore;
 using NO23.Web.Data;
 using NO23.Web.Domain.Entities;
@@ -25,7 +26,9 @@ public class ClassReservationService(ApplicationDbContext dbContext)
 
     private static readonly TimeSpan CancellationWindow = TimeSpan.FromHours(2);
 
-    public async Task<ReservationResult> ReserveAsync(string userId, int classSessionId)
+    public Task<ReservationResult> ReserveAsync(string userId, int classSessionId) => RunAsync(() => ReserveCoreAsync(userId, classSessionId));
+
+    private async Task<ReservationResult> ReserveCoreAsync(string userId, int classSessionId)
     {
         var profile = await dbContext.MemberProfiles
             .Include(member => member.MembershipPackage)
@@ -35,6 +38,9 @@ public class ClassReservationService(ApplicationDbContext dbContext)
         {
             return ReservationResult.Fail("Üye profili bulunamadı.");
         }
+        await MemberCreditGuard.LockAsync(dbContext, profile.Id);
+        if (dbContext.Database.IsRelational())
+            await dbContext.Database.ExecuteSqlInterpolatedAsync($"UPDATE \"ClassSessions\" SET \"UpdatedAtUtc\" = \"UpdatedAtUtc\" WHERE \"Id\" = {classSessionId}");
 
         if (!MemberPackageEntitlement.IsActive(profile, DateTime.UtcNow))
             return ReservationResult.Fail("Üyeliğin sona ermiş. Yeni paket satın alarak ders rezervasyonu yapabilirsin.");
@@ -82,9 +88,10 @@ public class ClassReservationService(ApplicationDbContext dbContext)
 
         var isUnlimitedPackage = MemberPackageEntitlement.HasUnlimitedClassAccess(profile);
 
-        if (!isUnlimitedPackage && profile.RemainingClassCredits <= 0)
+        var credits = await new LessonCreditSummaryService(dbContext).GetAsync(profile.Id);
+        if (!isUnlimitedPackage && (credits?.Available ?? 0) <= 0)
         {
-            return ReservationResult.Fail("Kalan ders hakkın bulunmuyor.");
+            return ReservationResult.Fail("Yeni ders için kullanılabilir hakkın bulunmuyor. Planlanmış birebir derslerin de aynı hak bakiyesinden ayrılır.");
         }
 
         if (existingReservation is null)
@@ -114,7 +121,9 @@ public class ClassReservationService(ApplicationDbContext dbContext)
         return ReservationResult.Ok();
     }
 
-    public async Task<ReservationResult> CancelAsync(string userId, int reservationId)
+    public Task<ReservationResult> CancelAsync(string userId, int reservationId) => RunAsync(() => CancelCoreAsync(userId, reservationId));
+
+    private async Task<ReservationResult> CancelCoreAsync(string userId, int reservationId)
     {
         var reservation = await dbContext.ClassReservations
             .Include(item => item.MemberProfile)
@@ -128,6 +137,7 @@ public class ClassReservationService(ApplicationDbContext dbContext)
         {
             return ReservationResult.Fail("Rezervasyon bulunamadı.");
         }
+        await MemberCreditGuard.LockAsync(dbContext, reservation.MemberProfileId);
 
         if (reservation.Status != ClassReservationStatus.Reserved)
         {
@@ -154,7 +164,10 @@ public class ClassReservationService(ApplicationDbContext dbContext)
         return ReservationResult.Ok();
     }
 
-    public async Task<ReservationResult> CancelByAdminAsync(
+    public Task<ReservationResult> CancelByAdminAsync(int classSessionId, int reservationId) =>
+        RunAsync(() => CancelByAdminCoreAsync(classSessionId, reservationId));
+
+    private async Task<ReservationResult> CancelByAdminCoreAsync(
         int classSessionId,
         int reservationId)
     {
@@ -169,6 +182,7 @@ public class ClassReservationService(ApplicationDbContext dbContext)
         {
             return ReservationResult.Fail("Rezervasyon bulunamadı.");
         }
+        await MemberCreditGuard.LockAsync(dbContext, reservation.MemberProfileId);
 
         if (reservation.Status != ClassReservationStatus.Reserved)
         {
@@ -190,6 +204,21 @@ public class ClassReservationService(ApplicationDbContext dbContext)
 
         await dbContext.SaveChangesAsync();
         return ReservationResult.Ok();
+    }
+
+    private async Task<ReservationResult> RunAsync(Func<Task<ReservationResult>> operation)
+    {
+        try
+        {
+            await using var transaction = dbContext.Database.IsRelational()
+                ? await dbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable) : null;
+            var result = await operation();
+            if (result.Succeeded && transaction is not null) await transaction.CommitAsync();
+            return result;
+        }
+        catch (Exception exception) when (exception is DbUpdateException ||
+            exception.GetBaseException() is Npgsql.PostgresException { SqlState: "40001" or "40P01" })
+        { return ReservationResult.Fail("Ders veya hak bakiyesi başka bir işlemle değişti. Sayfayı yenileyip tekrar deneyin."); }
     }
 }
 

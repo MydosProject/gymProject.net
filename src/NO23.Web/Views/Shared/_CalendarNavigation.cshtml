@@ -1,0 +1,21 @@
+@model NO23.Web.ViewModels.CalendarNavigationViewModel
+<section class="calendar-navigation" aria-label="Takvim görünümü ve filtreler">
+    <nav class="calendar-navigation-bar" aria-label="Takvimde gezin">
+        <a asp-action="Index" asp-route-date="@NO23.Web.Services.ClubTime.Now.ToString("yyyy-MM-dd")" asp-route-view="@Model.Mode" asp-route-trainerId="@Model.TrainerId" asp-route-memberId="@Model.MemberId" asp-route-includeCompleted="@Model.IncludeCompleted">Bugün</a>
+        <a asp-action="Index" asp-route-date="@Model.Previous.ToString("yyyy-MM-dd")" asp-route-view="@Model.Mode" asp-route-trainerId="@Model.TrainerId" asp-route-memberId="@Model.MemberId" asp-route-includeCompleted="@Model.IncludeCompleted">← Önceki @(Model.Mode == "day" ? "gün" : "hafta")</a>
+        <strong>@Model.Title</strong>
+        <a asp-action="Index" asp-route-date="@Model.Next.ToString("yyyy-MM-dd")" asp-route-view="@Model.Mode" asp-route-trainerId="@Model.TrainerId" asp-route-memberId="@Model.MemberId" asp-route-includeCompleted="@Model.IncludeCompleted">Sonraki @(Model.Mode == "day" ? "gün" : "hafta") →</a>
+        <div class="calendar-view-switch" role="group" aria-label="Takvim görünümü">
+            @foreach (var mode in new[] { "day", "week" })
+            { <a class="@(Model.Mode == mode ? "is-active" : null)" aria-current="@(Model.Mode == mode ? "page" : null)" asp-action="Index" asp-route-view="@mode" asp-route-date="@Model.Date.ToString("yyyy-MM-dd")" asp-route-trainerId="@Model.TrainerId" asp-route-memberId="@Model.MemberId" asp-route-includeCompleted="@Model.IncludeCompleted">@(mode == "day" ? "Gün" : "Hafta")</a> }
+        </div>
+    </nav>
+    <form method="get" asp-action="Index" class="calendar-navigation-filters">
+        <input type="hidden" name="view" value="@Model.Mode" />
+        <label for="calendar-date">Tarih<input id="calendar-date" type="date" name="date" value="@Model.Date.ToString("yyyy-MM-dd")" min="1900-01-01" max="2100-12-31" class="form-control" /></label>
+        @if (Model.ShowTrainer) { <label for="calendar-trainer">Antrenör<select id="calendar-trainer" name="trainerId" class="form-select"><option value="">Tüm antrenörler</option>@foreach (var trainer in Model.Trainers) { <option value="@trainer.Value" selected="@(trainer.Value == Model.TrainerId?.ToString())">@trainer.Text</option> }</select></label> }
+        <label for="calendar-member">Üye<select id="calendar-member" name="memberId" class="form-select"><option value="">Tüm üyeler</option>@foreach (var member in Model.Members) { <option value="@member.Value" selected="@(member.Value == Model.MemberId?.ToString())">@member.Text</option> }</select></label>
+        <label class="calendar-completed-filter"><input type="checkbox" name="includeCompleted" value="true" checked="@Model.IncludeCompleted" /> Tamamlanan dersleri göster</label><button class="btn btn-dark" type="submit">Göster</button>
+    </form>
+    <p class="calendar-navigation-hint">Gün başlığına tıklayarak o güne odaklan. Geçmiş tamamlanmış dersler için kutuyu işaretle; tarih değiştirmek ders haklarını değiştirmez.</p>
+</section>

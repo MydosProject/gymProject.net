@@ -1,0 +1,31 @@
+@using NO23.Web.Services
+@model NO23.Web.ViewModels.Admin.MemberCreditsViewModel
+@{ ViewData["Title"] = "Üye ders hakları"; var summary = Model.Summary; }
+<section class="admin-page"><div class="container">
+    <header class="admin-page-head"><div><h1>Üye ders hakları</h1><p>@Model.MemberName · Üye #@summary.MemberId</p></div><a asp-action="Index" class="btn btn-outline-dark">Üyelere dön</a></header>
+    @foreach (var key in new[] { "SuccessMessage", "ErrorMessage" })
+    { if (TempData[key] is string message) { <p class="alert @(key == "SuccessMessage" ? "alert-success" : "alert-danger")" role="status">@message</p> } }
+    <partial name="/Views/Shared/_LessonCreditSummary.cshtml" model="summary" />
+    <p>Kayıtlı bakiye: <strong>@summary.StoredBalance</strong>. Grup rezervasyonu sırasında hak ayrılır; birebir ders tamamlandığında veya katılmadı olarak sonuçlandırıldığında hak düşer. İptal hak kaybettirmez.</p>
+    @if (summary.HasKnownPeriod && !summary.IsUnlimited && (summary.UnreviewedCompleted > 0 || summary.InvalidGroupReservations > 0))
+    {
+        @foreach (var cancelledGroups in new[] { false, true })
+        {
+            var count = cancelledGroups ? summary.InvalidGroupReservations : summary.UnreviewedCompleted;
+            if (count == 0) continue;
+            <form asp-action="ReviewCredits" method="post" class="admin-form-card mb-3">
+                <h2 class="h5">@(cancelledGroups ? "İptal grup rezervasyonlarında hak kontrolü" : "Eski tamamlanmış / katılmadı birebir derslerde hak kontrolü")</h2>
+                <p>@count kayıt var. Önce ders geçmişini ve önceki manuel düzenlemeleri kontrol et.</p>
+                <input type="hidden" name="id" value="@summary.MemberId" /><input type="hidden" name="expectedCount" value="@count" /><input type="hidden" name="expectedBalance" value="@summary.StoredBalance" /><input type="hidden" name="cancelledGroups" value="@cancelledGroups.ToString().ToLowerInvariant()" />
+                <label class="form-label">Kontrol sonucu<select name="alreadyAdjusted" required class="form-select"><option value="">Yöntem seç</option><option value="false">@(cancelledGroups ? "Hak iade edilmemiş; bir kez iade et" : "Hak düşülmemiş; bir kez düş")</option><option value="true">Önceden manuel işlenmiş; bakiyeyi koru</option></select></label>
+                <label class="d-block my-3"><input type="checkbox" name="confirmed" value="true" required /> Ders geçmişini ve bakiyeyi kontrol ettim.</label><button type="submit" class="btn btn-dark">Kontrol edilen hakları işle</button>
+            </form>
+        }
+    }
+    <a asp-action="Edit" asp-route-id="@summary.MemberId">Paket ve manuel bakiye bilgilerini düzenle →</a>
+    <h2 class="h5 mt-4">Paket dönemindeki son 200 ders / rezervasyon</h2>
+    <div class="table-responsive"><table class="table"><thead><tr><th>Tarih / saat</th><th>Tür</th><th>Ders</th><th>Durum</th><th>Hak işlemi</th></tr></thead><tbody>
+    @foreach (var row in Model.History) { <tr><td>@ClubTime.ToLocal(row.StartsAtUtc).ToString("dd.MM.yyyy HH:mm")</td><td>@row.Kind</td><td>@row.Description</td><td>@row.Status</td><td>@row.CreditState</td></tr> }
+    @if (Model.History.Count == 0) { <tr><td colspan="5">Bu paket dönemi için ders kaydı yok.</td></tr> }
+    </tbody></table></div>
+</div></section>

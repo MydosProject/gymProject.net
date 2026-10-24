@@ -22,7 +22,7 @@
                     <td><a asp-action="Details" asp-route-id="@member.Id">@member.ApplicationUser.FirstName @member.ApplicationUser.LastName</a><br /><small>#@member.Id</small></td>
                     <td>@(member.ApplicationUser.PhoneNumber ?? "Telefon kayıtlı değil")<br /><small>@member.ApplicationUser.Email</small></td>
                     <td>@(member.ServicePackageVariant?.ServicePackage.Name ?? member.MembershipPackage.Name)<br /><small>@member.ServicePackageVariant?.Name</small></td>
-                    <td><strong>@(MemberPackageEntitlement.HasUnlimitedClassAccess(member) ? "Sınırsız" : member.RemainingClassCredits.ToString())</strong></td>
+                    <td>@if (Model.Credits.TryGetValue(member.Id, out var credits)) { <partial name="/Views/Shared/_LessonCreditCompact.cshtml" model="credits" /> } else { <strong>@member.RemainingClassCredits</strong> }</td>
                     <td>@(member.MembershipEndsAtUtc.HasValue ? ClubTime.ToLocal(member.MembershipEndsAtUtc.Value).ToString("dd.MM.yyyy") : "—")</td>
                     <td><div class="d-flex flex-wrap gap-2"><a asp-action="Details" asp-route-id="@member.Id">Detay</a><a asp-controller="Calendar" asp-route-memberId="@member.Id">Takvim</a><a asp-controller="Measurements" asp-route-memberId="@member.Id">Ölçümler</a></div></td>
                 </tr>

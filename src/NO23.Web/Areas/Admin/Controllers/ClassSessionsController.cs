@@ -14,6 +14,7 @@ namespace NO23.Web.Areas.Admin.Controllers;
 
 [Area("Admin")]
 [Authorize(Roles = ApplicationRoles.Admin)]
+[NO23.Web.Infrastructure.CalendarViewContext]
 public class ClassSessionsController(
     ApplicationDbContext dbContext,
     ClassReservationService classReservationService,

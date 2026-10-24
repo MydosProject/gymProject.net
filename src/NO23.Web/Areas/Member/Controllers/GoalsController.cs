@@ -191,7 +191,7 @@ public class GoalsController(ApplicationDbContext dbContext) : Controller
 
         if (!ModelState.IsValid)
         {
-            PopulateMembershipFields(model, profile);
+            await PopulateMembershipFieldsAsync(model, profile);
             return View(model);
         }
 
@@ -247,7 +247,7 @@ public class GoalsController(ApplicationDbContext dbContext) : Controller
             FitnessGoal = profile.FitnessGoal
         };
 
-        PopulateMembershipFields(model, profile);
+        await PopulateMembershipFieldsAsync(model, profile);
 
         return model;
     }
@@ -362,7 +362,7 @@ public class GoalsController(ApplicationDbContext dbContext) : Controller
             .ToList();
     }
 
-    private static void PopulateMembershipFields(
+    private async Task PopulateMembershipFieldsAsync(
         MemberGoalsIndexViewModel model,
         MemberProfile profile)
     {
@@ -374,7 +374,7 @@ public class GoalsController(ApplicationDbContext dbContext) : Controller
         model.MembershipPackageAudience = package.Audience;
         model.MembershipPackageDescription = package.Description;
         model.RemainingClassCredits =
-            profile.RemainingClassCredits;
+            (await new LessonCreditSummaryService(dbContext).GetAsync(profile.Id))?.Remaining ?? profile.RemainingClassCredits;
 
         model.HasUnlimitedClasses =
             MemberPackageEntitlement.HasUnlimitedClassAccess(profile);

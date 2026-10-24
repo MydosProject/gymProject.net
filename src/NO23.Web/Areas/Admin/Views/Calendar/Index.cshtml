@@ -4,23 +4,17 @@
 @using NO23.Web.Domain.Enums
 @using NO23.Web.Extensions
 @{
-    ViewData["Title"] = "Haftalık Takvim";
+    ViewData["Title"] = Model.ViewMode == "day" ? "Günlük Takvim" : "Haftalık Takvim";
     var culture = System.Globalization.CultureInfo.GetCultureInfo("tr-TR");
     var memberPeriods = Model.MemberPackagePeriods.ToDictionary(item => item.Id);
     var today = ClubTime.Now.Date;
 }
 <section class="admin-page">
-    <header class="admin-page-head"><div><h1>Haftalık takvim</h1><p>Grup derslerini ve birebir seansları aynı haftada planla. Tüm saatler Türkiye saatidir.</p></div></header>
+    <header class="admin-page-head"><div><h1>@(Model.ViewMode == "day" ? "Günlük takvim" : "Haftalık takvim")</h1><p>Grup derslerini, birebir seansları ve ön görüşmeleri birlikte planla. Tüm saatler Türkiye saatidir.</p></div></header>
     @foreach (var key in new[] { "SuccessMessage", "ErrorMessage" })
     { if (TempData[key] is string message) { <div class="alert @(key == "ErrorMessage" ? "alert-danger" : "alert-success")" role="status">@message</div> } }
-    <form method="get" class="d-flex flex-wrap gap-2 mb-3">
-        <label>Hafta <input type="date" name="week" value="@Model.Week.ToString("yyyy-MM-dd")" class="form-control" /></label>
-        <label>Antrenör <select name="trainerId" class="form-select"><option value="">Tüm antrenörler</option>@foreach(var trainer in Model.Trainers){<option value="@trainer.Value" selected="@(trainer.Value == Model.TrainerId?.ToString())">@trainer.Text</option>}</select></label>
-        <label>Üye <select name="memberId" class="form-select"><option value="">Tüm üyeler</option>@foreach(var member in Model.Members){<option value="@member.Value" selected="@(member.Value == Model.MemberId?.ToString())">@member.Text</option>}</select></label>
-        <label class="align-self-end p-2"><input type="checkbox" name="includeCompleted" value="true" checked="@Model.IncludeCompleted" /> Tamamlanan dersleri göster</label><button class="btn btn-dark">Göster</button>
-        <a class="btn btn-outline-dark" asp-route-week="@Model.Week.AddDays(-7).ToString("yyyy-MM-dd")" asp-route-trainerId="@Model.TrainerId" asp-route-memberId="@Model.MemberId" asp-route-includeCompleted="@Model.IncludeCompleted">← Önceki hafta</a>
-        <a class="btn btn-outline-dark" asp-route-week="@Model.Week.AddDays(7).ToString("yyyy-MM-dd")" asp-route-trainerId="@Model.TrainerId" asp-route-memberId="@Model.MemberId" asp-route-includeCompleted="@Model.IncludeCompleted">Sonraki hafta →</a>
-    </form>
+    <partial name="/Views/Shared/_CalendarNavigation.cshtml" model="Model.Navigation" />
+    @if (Model.Credits is not null) { <partial name="/Views/Shared/_LessonCreditSummary.cshtml" model="Model.Credits" /><p><a asp-controller="Members" asp-action="Credits" asp-route-id="@Model.MemberId">Ders hakkı kontrolü ve geçmişi →</a></p> }
     <div class="row g-3 mb-4">
         <div class="col-lg-6"><details class="border rounded p-3 bg-white text-dark"><summary>+ Haftalık grup dersi ekle</summary>
             <form asp-action="CreateGroup" method="post" class="mt-3"><input type="hidden" name="IncludeCompleted" value="@Model.IncludeCompleted.ToString().ToLowerInvariant()" /><input type="hidden" name="FilterMemberId" value="@Model.MemberId" /><input type="hidden" name="FilterTrainerId" value="@Model.TrainerId" />
@@ -94,14 +88,13 @@
         <span class="calendar-kind is-personal">Birebir</span><span class="calendar-kind">Grup</span><span class="calendar-kind is-consultation">Ön görüşme</span>
         <p>Toplu işlem için ders kartındaki seçim kutusunu işaretleyin.</p>
     </div>
-    <div class="weekly-calendar">
-    @for(var i=0;i<7;i++)
+    <div class="weekly-calendar @(Model.ViewMode == "day" ? "is-day-view" : null)">
+    @foreach(var date in Model.DisplayDays)
     {
-        var date=Model.Week.AddDays(i);
         var entries=Model.EntriesFor(date);
         <section class="weekly-calendar-day @(date.Date == today ? "is-today" : null)" aria-label="@date.ToString("dddd dd MMMM", culture)">
         <header class="calendar-day-head">
-            <h2>@date.ToString("dddd",culture)<time datetime="@date.ToString("yyyy-MM-dd")">@date.ToString("dd MMM", culture)</time></h2>
+            <h2><a class="calendar-day-link" asp-action="Index" asp-route-view="day" asp-route-date="@date.ToString("yyyy-MM-dd")" asp-route-trainerId="@Model.TrainerId" asp-route-memberId="@Model.MemberId" asp-route-includeCompleted="@Model.IncludeCompleted">@date.ToString("dddd",culture)</a><time datetime="@date.ToString("yyyy-MM-dd")">@date.ToString("dd MMM", culture)</time></h2>
             <div class="calendar-day-indicators">
                 @if(date.Date == today){<span class="calendar-today">Bugün</span>}
                 <span class="calendar-day-count">@entries.Count kayıt</span>
@@ -110,7 +103,8 @@
         @if(entries.Count==0){<div class="calendar-day-empty"><strong>Ders yok</strong><p>Bu gün için ders planlanmamış.</p></div>}
         @foreach(var entry in entries)
         {
-        if (entry.Appointment is { } appointment)
+        <div class="calendar-entry"><time class="calendar-entry-clock">@ClubTime.ToLocal(entry.StartsAtUtc).ToString("HH:mm")</time>
+        @if (entry.Appointment is { } appointment)
         {
             <partial name="/Views/Shared/_ConsultationCalendarCard.cshtml" model="appointment" />
         }
@@ -143,6 +137,11 @@
                 <h3>@personalSession.MemberProfile.ApplicationUser.FirstName @personalSession.MemberProfile.ApplicationUser.LastName</h3>
                 <p class="calendar-session-trainer"><span>Eğitmen</span><strong>@personalSession.Trainer.FirstName @personalSession.Trainer.LastName</strong></p>
                 <div class="calendar-session-state"><span class="calendar-status is-@personalSession.Status.ToString().ToLowerInvariant()">@personalSession.Status.GetDisplayName()</span></div>
+                <details class="calendar-read-details"><summary>Ders detayları ve geçmiş</summary>
+                    <dl><dt>Başlangıç</dt><dd>@ClubTime.ToLocal(personalSession.StartsAtUtc).ToString("dd.MM.yyyy HH:mm")</dd><dt>Bitiş</dt><dd>@ClubTime.ToLocal(personalSession.StartsAtUtc.AddMinutes(personalSession.DurationMinutes)).ToString("HH:mm")</dd><dt>Hak işlemi</dt><dd>@(personalSession.CreditConsumed ? "İşlenmiş" : "Henüz işlenmemiş / ayrılmış")</dd><dt>Not</dt><dd>@(personalSession.Note ?? "—")</dd></dl>
+                    <a asp-controller="Members" asp-action="Credits" asp-route-id="@personalSession.MemberProfileId">Üyenin ders haklarını incele →</a>
+                    <ul>@foreach(var history in personalSession.History.OrderByDescending(x => x.ChangedAtUtc)) { <li>@ClubTime.ToLocal(history.ChangedAtUtc).ToString("dd.MM.yyyy HH:mm") · @history.NewStatus.GetDisplayName() · @ClubTime.ToLocal(history.PreviousStartsAtUtc).ToString("dd.MM HH:mm") → @ClubTime.ToLocal(history.NewStartsAtUtc).ToString("dd.MM HH:mm")<br />@history.Note</li> }</ul>
+                </details>
                 @if(personalSession.Status==PersonalTrainingSessionStatus.Scheduled){<label class="calendar-session-select"><input id="select-personal-@personalSession.Id" type="checkbox" name="PersonalIds" value="@personalSession.Id" form="calendar-bulk-form" /><span>Toplu seçime ekle</span></label>}
                 @if(personalSession.Status==PersonalTrainingSessionStatus.Scheduled){<details><summary>Dersi düzenle</summary>
                 <form asp-action="UpdatePersonal" method="post"><input type="hidden" name="IncludeCompleted" value="@Model.IncludeCompleted.ToString().ToLowerInvariant()" /><input type="hidden" name="FilterMemberId" value="@Model.MemberId" /><input type="hidden" name="FilterTrainerId" value="@Model.TrainerId" />
@@ -155,6 +154,7 @@
                 </form></details>}
             </article>
         }
+        </div>
         }
         </section>
     }

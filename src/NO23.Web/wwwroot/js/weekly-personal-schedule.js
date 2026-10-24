@@ -11,13 +11,14 @@
         const review = form.parentElement.querySelector('[data-schedule-credit-review]');
         let controller, timer, ready = false;
         const showAccount = data => {
+            const storedBalance = data.storedBalance ?? data.remainingCredits;
             account.replaceChildren();
             const items = [
                 ['Paketin birebir hakkı', data.packageLessons ?? (data.isUnlimited ? 'Sınırsız' : 'Belirtilmemiş')],
-                ['Tamamlanan / kullanılan', data.completedLessons],
-                ['Önceden planlanan', data.plannedLessons],
+                ['Tamamlanan / kullanılan birebir', data.completedLessons],
+                ['Önceden planlanan birebir', data.plannedLessons],
                 ['Kalan toplam hak', data.isUnlimited ? 'Sınırsız' : data.remainingCredits],
-                ['Yeni planlanabilir', data.availableLessons ?? 'Sınırsız']
+                ['Yeni planlanabilir birebir', data.availableLessons ?? 'Sınırsız']
             ];
             for (const [label, value] of items) {
                 const item = document.createElement('div');
@@ -39,10 +40,10 @@
                 review.hidden = false;
                 review.elements.MemberProfileId.value = member.value;
                 review.elements.ExpectedCount.value = data.unchargedCompletedLessons;
-                review.elements.ExpectedBalance.value = data.remainingCredits;
+                review.elements.ExpectedBalance.value = storedBalance;
                 review.elements.Week.value = form.elements.Week.value;
                 review.querySelector('[data-credit-review-description]').textContent =
-                    `${data.unchargedCompletedLessons} ders kontrol bekliyor. Haklar düşülmemişse bakiye: ${data.remainingCredits} → ${data.remainingCredits - data.unchargedCompletedLessons}. Önceden manuel düşüldüyse bakiyeyi koruyan seçeneği kullanın (${data.remainingCredits}). İki yöntemde de dersler bir kez işlenmiş sayılır.`;
+                    `${data.unchargedCompletedLessons} sonuçlanmış ders kontrol bekliyor. Haklar düşülmemişse kayıtlı bakiye: ${storedBalance} → ${storedBalance - data.unchargedCompletedLessons}. Önceden manuel düşüldüyse bakiyeyi koruyan seçeneği kullanın (${storedBalance}). İki yöntemde de dersler bir kez işlenmiş sayılır.`;
             }
         };
         async function preview() {

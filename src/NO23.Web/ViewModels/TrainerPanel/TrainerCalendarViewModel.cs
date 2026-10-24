@@ -7,6 +7,12 @@ namespace NO23.Web.ViewModels.TrainerPanel;
 
 public class TrainerCalendarViewModel
 {
+    public DateTime SelectedDate { get; init; }
+    public string ViewMode { get; init; } = "week";
+    public NO23.Web.ViewModels.Member.LessonCreditSummary? Credits { get; init; }
+    public IEnumerable<TrainerCalendarDayViewModel> VisibleDays => ViewMode == "day" ? Days.Where(x => x.Date == SelectedDate) : Days;
+    public IReadOnlyList<TrainerCalendarSessionViewModel> VisibleSessions => ViewMode == "day" ? Sessions.Where(x => NO23.Web.Services.ClubTime.ToLocal(x.StartsAtUtc).Date == SelectedDate).ToList() : Sessions;
+    public NO23.Web.ViewModels.CalendarNavigationViewModel Navigation => new() { Date = SelectedDate, Mode = ViewMode, MemberId = MemberId, IncludeCompleted = IncludeCompleted, Members = FilterMembers };
     public bool IncludeCompleted { get; set; }
     public int? MemberId { get; init; }
     public IReadOnlyList<SelectListItem> FilterMembers { get; init; } = [];
@@ -66,7 +72,7 @@ public class TrainerAssignedMemberViewModel
 {
     public int Id { get; init; }
     public string Name { get; init; } = string.Empty;
-    public int RemainingCredits { get; init; }
+    public int RemainingCredits { get; set; }
     public bool IsUnlimited { get; init; }
     public DateTime? MembershipStartsAtUtc { get; init; }
     public DateTime? MembershipEndsAtUtc { get; init; }

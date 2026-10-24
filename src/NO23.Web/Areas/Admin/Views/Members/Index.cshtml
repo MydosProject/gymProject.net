@@ -114,8 +114,12 @@
                                 </td>
                                 <td data-label="Hedef">@(string.IsNullOrWhiteSpace(member.FitnessGoal) ? "-" : member.FitnessGoal)</td>
                                 <td data-label="Kalan ders">
+                                    @if (member.Credits is not null) { <partial name="/Views/Shared/_LessonCreditCompact.cshtml" model="member.Credits" /> }
+                                    else {
                                     <strong>@(member.IsKitchenOnly ? "—" : member.IsUnlimitedPackage ? "Sınırsız" : member.RemainingClassCredits)</strong>
                                     <small class="admin-cell-note">@(member.IsKitchenOnly ? "Spor üyeliği yok" : "Ders hakkı")</small>
+                                    }
+                                    <a asp-action="Credits" asp-route-id="@member.MemberProfileId">Ders hakları</a>
                                 </td>
                                 <td data-label="Antrenör" class="member-trainer-cell">
                                     <div class="member-trainer-content">

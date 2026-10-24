@@ -2,6 +2,7 @@ namespace NO23.Web.ViewModels.Member;
 
 public class MemberDashboardViewModel
 {
+    public LessonCreditSummary? Credits { get; init; }
     public string MemberName { get; init; } = string.Empty;
 
     public string PackageName { get; init; } = string.Empty;

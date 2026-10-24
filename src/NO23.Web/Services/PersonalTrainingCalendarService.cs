@@ -36,6 +36,7 @@ public partial class PersonalTrainingCalendarService(ApplicationDbContext dbCont
             await using var transaction = dbContext.Database.IsRelational()
                 ? await dbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable) : null;
             await TrainerScheduleGuard.LockAsync(dbContext, trainerId);
+            await MemberCreditGuard.LockAsync(dbContext, input.MemberProfileId);
             var plan = await BuildWeeklyPlanAsync(trainerId, input, allowUnassignedMember, allowPastDates);
             if (!plan.Succeeded) return (false, plan.Message);
             var recurrenceIds = input.Days.Distinct().ToDictionary(day => day, _ => Guid.NewGuid());
@@ -162,6 +163,7 @@ public partial class PersonalTrainingCalendarService(ApplicationDbContext dbCont
         await using var transaction = dbContext.Database.IsRelational()
             ? await dbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable) : null;
         await TrainerScheduleGuard.LockAsync(dbContext, trainerId);
+        await MemberCreditGuard.LockAsync(dbContext, memberProfileId);
         if (!allowPastDates && startsAtUtc <= DateTime.UtcNow)
             return (false, "Ders için gelecekte bir tarih ve saat seçmelisiniz.");
         if (!await dbContext.Trainers.AnyAsync(x => x.Id == trainerId && x.IsActive))

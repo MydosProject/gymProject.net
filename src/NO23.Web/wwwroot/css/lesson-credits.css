@@ -1,0 +1,12 @@
+.lesson-credits { margin: 16px 0; padding: 20px; border: 1px solid #66583a; border-radius: 14px; background: #151912; color: #edece3; }
+.lesson-credit-grid { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 14px; }
+.lesson-credit-grid > div { display: grid; gap: 8px; padding-right: 12px; border-right: 1px solid #494a3c; }
+.lesson-credit-grid > div:last-child { border-right: 0; }
+.lesson-credit-grid span { font-size: .7rem; color: #bfc4b4; }
+.lesson-credit-grid strong { font-size: 1.55rem; color: #e6c37c; line-height: 1.2; }
+.lesson-credit-note { color: #bfc4b4; font-size: .75rem; line-height: 1.6; margin: 14px 0 0; }
+.lesson-credit-alert { display: block; margin: 12px 0 0; color: #ffda96; font-size: .75rem; line-height: 1.6; }
+.lesson-credit-compact { display: grid; gap: 6px; min-width: 130px; }
+.lesson-credit-compact small { font-size: .68rem; line-height: 1.6; color: #bfc4b4; }
+.lesson-credit-compact .lesson-credit-alert { color: #ffda96; margin: 0; }
+@media(max-width:767px) { .lesson-credit-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } .lesson-credit-grid > div { border: 0; } .lesson-credits { padding: 16px; } }

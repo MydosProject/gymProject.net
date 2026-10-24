@@ -7,6 +7,11 @@ namespace NO23.Web.ViewModels.Admin;
 
 public class WeeklyCalendarViewModel
 {
+    public DateTime SelectedDate { get; set; }
+    public string ViewMode { get; set; } = "week";
+    public NO23.Web.ViewModels.Member.LessonCreditSummary? Credits { get; set; }
+    public IEnumerable<DateTime> DisplayDays => ViewMode == "day" ? [SelectedDate] : Enumerable.Range(0, 7).Select(i => Week.AddDays(i));
+    public NO23.Web.ViewModels.CalendarNavigationViewModel Navigation => new() { Date = SelectedDate, Mode = ViewMode, TrainerId = TrainerId, MemberId = MemberId, IncludeCompleted = IncludeCompleted, ShowTrainer = true, Trainers = Trainers, Members = Members };
     public bool IncludeCompleted { get; set; }
     public DateTime Week { get; set; }
     public int? TrainerId { get; set; }
