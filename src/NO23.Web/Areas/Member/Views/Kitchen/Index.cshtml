@@ -56,11 +56,17 @@
     }
 }
 
+@section Styles {
+    <link rel="stylesheet" href="~/css/kitchen-week.css" asp-append-version="true" />
+}
+
 <section class="kitchen-page">
     <div class="kitchen-page-grid" aria-hidden="true"></div>
     <div class="kitchen-page-glow" aria-hidden="true"></div>
 
     <div class="container position-relative">
+        @if (Model.WeeklyPlan.Subscription is null)
+        {
         <header class="kitchen-hero">
             <div class="kitchen-hero-content">
                 <p class="kitchen-kicker">NO23 Kitchen · Personal Nutrition</p>
@@ -126,6 +132,7 @@
                 </ul>
             </aside>
         </header>
+        }
 
         @if (TempData["SuccessMessage"] is string successMessage)
         {
@@ -153,7 +160,11 @@
             </div>
         }
 
-        @if (Model.ActiveSubscription is not null)
+        <partial name="_WeeklyPlan" model="Model.WeeklyPlan" />
+        @if (Model.ActiveSubscription is not null && Model.WeeklyPlan.Subscription?.Id == Model.ActiveSubscription.Id)
+        { <p><a class="kitchen-week-link" href="#nutrition-plan">Öğün ve teslimat tercihlerini düzenle ↓</a></p> }
+
+        @if (Model.ActiveSubscription is not null && Model.WeeklyPlan.Subscription?.Id == Model.ActiveSubscription.Id)
         {
             var subscription = Model.ActiveSubscription;
             var totalDays = Math.Max(1, subscription.EndsOn.DayNumber - subscription.StartsOn.DayNumber + 1);

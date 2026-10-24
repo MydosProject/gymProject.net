@@ -1,0 +1,84 @@
+@using NO23.Web.Services
+@using System.Globalization
+@model KitchenWeeklyPlanViewModel
+@{
+    var culture = CultureInfo.GetCultureInfo("tr-TR");
+    var subscription = Model.Subscription;
+}
+<section class="kitchen-week" id="weekly-kitchen-plan" aria-labelledby="kitchen-week-title">
+    <header class="kitchen-week-heading">
+        <div><p class="kitchen-week-kicker">NO:23 Kitchen / Haftalık plan</p><h1 id="kitchen-week-title">Haftalık Kitchen planın.</h1>
+            <p>Gün gün öğünlerini, ürünlerini ve teslimat tercihini birlikte gör.</p></div>
+    </header>
+    @if (subscription is null)
+    {
+        <div class="kitchen-week-empty"><strong>Henüz bir Kitchen paketin yok.</strong><p>Öğün planını seçtiğinde haftalık ürünlerin ve teslimat tercihlerin burada görünecek.</p><a href="#plans" class="kitchen-week-link">Kitchen paketlerini incele →</a></div>
+    }
+    else
+    {
+        <form method="get" asp-action="Index" asp-fragment="weekly-kitchen-plan" class="kitchen-week-filter">
+            <label>Paket<select name="subscriptionId" aria-label="Kitchen paketi">
+                @foreach (var option in Model.Subscriptions)
+                { <option value="@option.Id" selected="@(option.Id == subscription.Id)">@option.Name · @option.StartsOn.ToString("dd.MM.yyyy") – @option.EndsOn.ToString("dd.MM.yyyy")</option> }
+            </select></label>
+            <label>Hafta<input type="date" name="week" aria-label="Plan haftası" value="@Model.Week.ToString("yyyy-MM-dd")" min="1900-01-01" max="2100-12-31" /></label>
+            <button type="submit">Göster</button>
+        </form>
+        <nav class="kitchen-week-nav" aria-label="Kitchen haftaları">
+            @if (Model.Week.AddDays(-7).Year >= 1900)
+            { <a asp-action="Index" asp-route-week="@Model.Week.AddDays(-7).ToString("yyyy-MM-dd")" asp-route-subscriptionId="@subscription.Id" asp-fragment="weekly-kitchen-plan" aria-label="Önceki hafta">← Önceki hafta</a> }
+            <div><strong>@Model.Week.ToString("dd MMM", culture) – @Model.WeekEnd.ToString("dd MMM yyyy", culture)</strong><span>@Model.PlannedDays gün planlı · @Model.Portions porsiyon</span></div>
+            @if (Model.Week.AddDays(7).Year <= 2100)
+            { <a asp-action="Index" asp-route-week="@Model.Week.AddDays(7).ToString("yyyy-MM-dd")" asp-route-subscriptionId="@subscription.Id" asp-fragment="weekly-kitchen-plan" aria-label="Sonraki hafta">Sonraki hafta →</a> }
+        </nav>
+        <div class="kitchen-week-shortcuts"><a asp-action="Index" asp-route-subscriptionId="@subscription.Id" asp-fragment="weekly-kitchen-plan">Bu haftaya dön</a><span>@subscription.Name</span>
+            @if (subscription.StartsOn > Model.Today)
+            { <a asp-action="Index" asp-route-week="@subscription.StartsOn.ToString("yyyy-MM-dd")" asp-route-subscriptionId="@subscription.Id" asp-fragment="weekly-kitchen-plan">Paket başlangıcına git →</a> }
+        </div>
+        @if (subscription.Status is KitchenSubscriptionStatus.PendingPayment or KitchenSubscriptionStatus.PaymentFailed)
+        { <p class="kitchen-week-notice" role="status">@(subscription.Status == KitchenSubscriptionStatus.PaymentFailed ? "Ödeme tamamlanmadı." : "Ödeme onayı bekleniyor.") Ürün planın aboneliğin etkinleşince burada gösterilecek. <a asp-controller="Orders" asp-action="Index">Siparişlerimi görüntüle →</a></p> }
+        else if (subscription.Status is KitchenSubscriptionStatus.Paused or KitchenSubscriptionStatus.Cancelled)
+        { <p class="kitchen-week-notice" role="status">Aboneliğin @(subscription.Status == KitchenSubscriptionStatus.Paused ? "duraklatılmış" : "iptal edilmiş") durumda; bu paket için teslimat planlanmıyor.</p> }
+        else if (subscription.Status == KitchenSubscriptionStatus.Completed)
+        { <p class="kitchen-week-notice" role="status">Bu abonelik tamamlandı. Önceki haftalarda kayıtlı ürün planını görüntüleyebilirsin.</p> }
+        <div class="kitchen-week-table-wrap" tabindex="0" role="region" aria-label="Haftalık Kitchen ürün tablosu">
+            <table class="kitchen-week-table">
+                <caption class="visually-hidden">@Model.Week.ToString("dd.MM.yyyy") haftasının ürün ve teslimat planı</caption>
+                <thead><tr><th scope="col">Gün</th>@foreach (var slot in Model.MealSlots) { <th scope="col">@KitchenMealSelection.Name(slot)</th> }<th scope="col">Teslimat / Durum</th></tr></thead>
+                <tbody>
+                @foreach (var day in Model.Days)
+                {
+                    <tr class="@(day.Date == Model.Today ? "is-today" : null) @(day.State == KitchenWeekDayState.OutsidePackage ? "is-outside" : null)">
+                        <th scope="row" class="kitchen-week-date"><time datetime="@day.Date.ToString("yyyy-MM-dd")"><strong>@day.Date.ToString("dddd", culture)</strong><span>@day.Date.ToString("dd MMM", culture)</span></time>
+                            @if (day.Date == Model.Today) { <small class="kitchen-week-today">Bugün</small> }
+                            else if (day.Date < Model.Today) { <small>Geçmiş gün</small> }
+                        </th>
+                        @foreach (var slot in Model.MealSlots)
+                        {
+                            var meals = day.Meals.Where(x => x.Slot == slot).ToList();
+                            <td data-label="@KitchenMealSelection.Name(slot)">
+                                @if (meals.Count == 0) { <span class="kitchen-week-dash" aria-label="Ürün planlanmadı">—</span> }
+                                else
+                                {
+                                    <ul class="kitchen-week-meals">@foreach (var meal in meals)
+                                    { <li class="@(meal.IsSkipped ? "is-skipped" : null)"><strong>@meal.ProductName</strong><small>@meal.Quantity adet @if (meal.IsSkipped) { <span>· Pas geçildi</span> }</small></li> }</ul>
+                                }
+                            </td>
+                        }
+                        <td data-label="Teslimat / Durum"><div class="kitchen-week-delivery">
+                            <span class="kitchen-week-status @(day.State == KitchenWeekDayState.Planned ? "is-planned" : null)">@day.StatusLabel</span>
+                            @if (day.State == KitchenWeekDayState.Planned)
+                            {
+                                <strong>@(day.DeliveryMethod == KitchenDeliveryMethod.GymPickup ? "Salondan teslim alım" : day.DeliveryMethod == KitchenDeliveryMethod.HomeDelivery ? "Adrese teslim" : "Teslimat tercihi bekleniyor")</strong>
+                                @if (!string.IsNullOrWhiteSpace(day.DeliveryArea)) { <small>@day.DeliveryArea</small> }
+                                <small>@day.Calories kcal · pas geçilen öğünler hariç</small>
+                            }
+                        </div></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+        <p class="kitchen-week-footnote">Ürünler kayıtlı öğün planından gösterilir. Geçmiş tarih, teslimatın gerçekleştiği anlamına gelmez.</p>
+    }
+</section>

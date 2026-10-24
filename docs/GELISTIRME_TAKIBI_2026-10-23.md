@@ -54,7 +54,8 @@ KitchenOnly satışa açık bir spor seviyesi değildir. Uygulamanın başlangı
 |---|---|---|
 | Ders düşümü ve kalan seans kontrolü | Kural yanıtı bekleniyor | Paket bitişinden sonra da kullanılmamış hakların kullanılıp kullanılmayacağı soruldu. Mevcut kural bu yanıt gelmeden değiştirilmedi. Satın alınan, tamamlanan, önceden planlanan ve yeni planlanabilir haklar ayrılmalı; mükerrer düşüm ve iptalde hak kaybı olmamalı. |
 | Üye ekranında kalan seans | Aynı kural ile ele alınacak | Gün sayısı yerine hak sayısı gösterilir. Üye, yönetici ve eğitmen ekranları aynı bakiyeyi kullanır. PT/grup haklarının farklı zamanlarda işlenmesi ve eski kayıtlar ayrıca denetlenir. |
-| Haftalık Kitchen tablosu | Sırada | Üye panelinde seçilen haftanın günleri, ana/ara öğün ürünleri, teslim/alım bilgisi ve atlanan günler görünür. Önceki/sonraki hafta gezilir. Ödeme/plan hazırlanması bekleniyorsa açık durum gösterilir. |
+| Haftalık Kitchen tablosu | Tamamlandı | Beslenme → Haftalık Kitchen Planı, sayfanın üstünde Pazartesi–Pazar ürün/öğün/adet ve teslimat tercihi tablosunu açar. Önceki/sonraki hafta, tarih seçimi ve eski paket seçimi vardır. Bugün, pas geçilen öğün/gün ve paket dışı günler ayrılır. Ödeme veya plan hazırlanması bekleniyorsa ürün teslimatı vaat edilmez. Mobilde gün kartlarına dönüşür. Başka üyeye ait abonelik açılamaz. |
+| Üyeler ekranında kesilen antrenör adları | Tamamlandı | Atanmış antrenör adı tam ve satıra bölünebilir biçimde gösterilir; seçim alanı genişletildi, Kaydet alt satıra alındı. İşlem düğmeleri düzenlendi; dar ekranlarda kart görünümü ve koyu arka plan korunur. |
 
 ## İlk teslimat doğrulaması
 

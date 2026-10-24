@@ -1,0 +1,66 @@
+.kitchen-week { margin: 0 0 32px; color: #eef1e8; scroll-margin-top: 100px; }
+.kitchen-week-heading { display: flex; align-items: end; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 24px; }
+.kitchen-week-kicker { color: #c8fa36; letter-spacing: .12em; font-size: .68rem; font-weight: 800; text-transform: uppercase; }
+.kitchen-week-heading h1 { margin: 0 0 10px; font-size: clamp(1.9rem, 4vw, 3rem); letter-spacing: -.04em; }
+.kitchen-week-heading p:last-child { margin: 0; color: #b6bfae; font-size: .9rem; }
+.kitchen-week-link, .kitchen-week-shortcuts a, .kitchen-week-notice a { color: #c8fa36; font-size: .8rem; font-weight: 700; text-underline-offset: 4px; }
+.kitchen-week-filter { display: flex; flex-wrap: wrap; gap: 12px; padding: 18px; background: #161b12; border: 1px solid #39422c; border-radius: 16px; align-items: end; }
+.kitchen-week-filter label { display: grid; gap: 7px; font-size: .72rem; color: #c3cbb9; flex: 1 1 200px; min-width: 0; }
+.kitchen-week-filter label:first-child { flex-grow: 2; }
+.kitchen-week-filter :is(input, select) { width: 100%; min-width: 0; background: #0c100a; color: #f3f5ed; border: 1px solid #505c40; padding: 11px 12px; border-radius: 8px; font-size: .85rem; color-scheme: dark; }
+.kitchen-week-filter button { border: 0; border-radius: 8px; padding: 12px 24px; min-height: 44px; background: #c8fa36; color: #152002; font-weight: 800; }
+.kitchen-week :is(a, button, input, select, [tabindex]):focus-visible { outline: 2px solid #d5ff6f; outline-offset: 4px; }
+.kitchen-week-nav { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin: 22px 0 12px; }
+.kitchen-week-nav a { border: 1px solid #4a553c; border-radius: 9px; padding: 11px 14px; color: #e7eddc; text-decoration: none; font-size: .8rem; }
+.kitchen-week-nav div { display: grid; gap: 5px; text-align: center; }
+.kitchen-week-nav strong { font-size: 1.02rem; }
+.kitchen-week-nav span, .kitchen-week-shortcuts { color: #b1bba4; font-size: .75rem; }
+.kitchen-week-shortcuts { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; margin-bottom: 18px; }
+.kitchen-week-notice, .kitchen-week-empty { padding: 20px; background: #202419; border: 1px solid #647044; border-radius: 12px; color: #e1e7d4; font-size: .85rem; }
+.kitchen-week-empty p { margin: 8px 0 16px; color: #bac5ad; }
+.kitchen-week-table-wrap { max-width: 100%; overflow-x: auto; overflow-y: hidden; border: 1px solid #3b4630; border-radius: 14px; }
+.kitchen-week-table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 720px; }
+.kitchen-week-table th, .kitchen-week-table td { padding: 16px 14px; border-bottom: 1px solid #303a27; vertical-align: top; text-align: left; overflow-wrap: anywhere; }
+.kitchen-week-table thead th { background: #242d1b; color: #d5e5be; font-size: .7rem; font-weight: 800; }
+.kitchen-week-table thead th:first-child { width: 130px; }
+.kitchen-week-table thead th:last-child { width: 190px; }
+.kitchen-week-table tbody tr { background: #11170e; }
+.kitchen-week-table tbody tr:nth-child(even) { background: #171e12; }
+.kitchen-week-table tbody tr.is-today { background: #253517; box-shadow: inset 4px 0 #c8fa36; }
+.kitchen-week-table tbody tr:last-child > * { border-bottom: 0; }
+.kitchen-week-date time { display: grid; gap: 5px; }
+.kitchen-week-date strong { color: #f2f5e9; font-size: .85rem; }
+.kitchen-week-date span, .kitchen-week-date small { font-size: .72rem; color: #b1bda4; font-weight: 400; }
+.kitchen-week-date small { display: block; margin-top: 7px; }
+.kitchen-week-date .kitchen-week-today { color: #d9ff91; font-weight: 800; }
+.kitchen-week-meals { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+.kitchen-week-meals li, .kitchen-week-delivery { display: grid; gap: 6px; }
+.kitchen-week-meals strong { font-size: .86rem; font-weight: 650; line-height: 1.5; color: #f0f3e9; }
+.kitchen-week-meals small, .kitchen-week-delivery small { font-size: .71rem; color: #b7c5a7; }
+.kitchen-week-meals .is-skipped strong { text-decoration: line-through; color: #a8afa0; }
+.kitchen-week-meals .is-skipped small { color: #e6c27c; }
+.kitchen-week-delivery strong { font-size: .78rem; color: #e5eed7; line-height: 1.5; }
+.kitchen-week-status { font-size: .65rem; font-weight: 750; color: #c1cbb5; }
+.kitchen-week-status.is-planned { color: #d7ff8f; }
+.kitchen-week-dash { color: #7e8d70; }
+.kitchen-week-footnote { margin: 12px 0 0; font-size: .72rem; color: #a6b299; }
+@media (max-width: 760px) {
+    .kitchen-week-heading { gap: 12px; }
+    .kitchen-week-filter { padding: 14px; }
+    .kitchen-week-filter label, .kitchen-week-filter label:first-child { flex-basis: 100%; }
+    .kitchen-week-filter button { width: 100%; }
+    .kitchen-week-nav { gap: 10px; }
+    .kitchen-week-nav div { order: -1; width: 100%; margin-bottom: 5px; }
+    .kitchen-week-nav a { flex: 1; text-align: center; font-size: .74rem; }
+    .kitchen-week-table-wrap { overflow: visible; border: 0; }
+    .kitchen-week-table { min-width: 0; display: block; }
+    .kitchen-week-table thead { position: absolute; width: 1px; height: 1px; clip-path: inset(50%); overflow: hidden; }
+    .kitchen-week-table tbody { display: grid; gap: 14px; }
+    .kitchen-week-table tbody tr { display: block; border: 1px solid #3b4630; border-radius: 12px; overflow: hidden; }
+    .kitchen-week-table th, .kitchen-week-table td { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 12px; padding: 13px 14px; }
+    .kitchen-week-table td::before { content: attr(data-label); color: #adbc9b; font-size: .68rem; line-height: 1.5; font-weight: 700; }
+    .kitchen-week-table .kitchen-week-date { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; background: #242e1b; }
+    .kitchen-week-date time { display: flex; align-items: baseline; gap: 12px; }
+    .kitchen-week-table tbody tr:last-child > * { border-bottom: 1px solid #303a27; }
+    .kitchen-week-table tbody tr > :last-child { border-bottom: 0; }
+}

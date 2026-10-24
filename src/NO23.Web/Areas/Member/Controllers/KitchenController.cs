@@ -42,11 +42,16 @@ public class KitchenController(
         "vejetaryen"
     ];
 
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(DateOnly? week = null, int? subscriptionId = null)
     {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId)) return Challenge();
+        if (!ModelState.IsValid || week?.Year is < 1900 or > 2100) return BadRequest();
+        var weeklyPlan = await new KitchenWeeklyPlanService(dbContext).LoadAsync(userId, week, subscriptionId);
+        if (weeklyPlan is null) return NotFound();
         return View(await BuildDashboardAsync(
             GetStoredCalculatorInput() ?? new CalorieCalculatorInputViewModel(),
-            GetStoredCalculatorResult()));
+            GetStoredCalculatorResult(), weeklyPlan));
     }
 
     [HttpGet]
@@ -989,10 +994,11 @@ public class KitchenController(
 
     private async Task<KitchenDashboardViewModel> BuildDashboardAsync(
         CalorieCalculatorInputViewModel input,
-        CalorieRecommendationViewModel? recommendation)
+        CalorieRecommendationViewModel? recommendation,
+        KitchenWeeklyPlanViewModel? weeklyPlan = null)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var today = DateOnly.FromDateTime(DateTime.Today);
+        var today = DateOnly.FromDateTime(ClubTime.Now);
 
         ActiveKitchenSubscriptionViewModel? activeSubscription = null;
 
@@ -1049,6 +1055,7 @@ public class KitchenController(
 
         return new KitchenDashboardViewModel
         {
+            WeeklyPlan = weeklyPlan ?? await new KitchenWeeklyPlanService(dbContext).LoadAsync(userId ?? string.Empty) ?? new(),
             CalculatorInput = input,
             Recommendation = recommendation,
             ActiveSubscription = activeSubscription,
