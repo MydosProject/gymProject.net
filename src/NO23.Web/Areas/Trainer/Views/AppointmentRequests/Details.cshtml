@@ -1,0 +1,15 @@
+@using NO23.Web.Services
+@using NO23.Web.Extensions
+@model NO23.Web.Domain.Entities.AppointmentRequest
+@{ ViewData["Title"] = "Ön görüşme"; }
+@section Styles { <link rel="stylesheet" href="~/css/admin-requests.css" asp-append-version="true" /> }
+<section class="admin-page appointment-schedule-page">
+    <header class="admin-page-head trainer-page-head"><div><h1>Ön görüşme</h1><p>Üye kaydı gerektirmeyen görüşme · Ders hakkı kullanılmaz.</p></div></header>
+    <article class="request-summary"><h2>@Model.FullName</h2><p>@Model.PhoneNumber · @Model.Service</p><p>@Model.ScheduleStatus?.GetDisplayName() · @ClubTime.ToLocal(Model.ScheduledAtUtc!.Value).ToString("dd.MM.yyyy HH:mm") · @Model.DurationMinutes dk</p><p>@Model.Notes</p></article>
+    <section class="my-4"><h2>İşlem geçmişi</h2><ol class="request-history">
+    @foreach (var change in Model.ScheduleHistory.OrderByDescending(x => x.ChangedAtUtc).ThenByDescending(x => x.Id))
+    { <li><strong>@change.Status.GetDisplayName()</strong> · @ClubTime.ToLocal(change.ChangedAtUtc).ToString("dd.MM.yyyy HH:mm")<p>@change.Note</p></li> }
+    </ol></section>
+    <a asp-controller="Calendar" asp-action="Index" asp-route-week="@ClubTime.ToLocal(Model.ScheduledAtUtc!.Value).ToString("yyyy-MM-dd")" asp-route-includeCompleted="true" class="btn btn-dark">Takvime dön</a>
+    <p class="mt-3">Gün, saat ve iptal işlemleri yönetici tarafından yapılır.</p>
+</section>

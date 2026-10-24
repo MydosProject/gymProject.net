@@ -249,6 +249,9 @@ namespace NO23.Web.Data.Migrations
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("DurationMinutes")
+                        .HasColumnType("integer");
+
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasMaxLength(160)
@@ -269,6 +272,15 @@ namespace NO23.Web.Data.Migrations
                     b.Property<TimeOnly>("PreferredTime")
                         .HasColumnType("time without time zone");
 
+                    b.Property<int?>("ScheduleStatus")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("ScheduledAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("ScheduledTrainerId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Service")
                         .IsRequired()
                         .HasMaxLength(80)
@@ -280,9 +292,71 @@ namespace NO23.Web.Data.Migrations
                     b.Property<DateTime?>("UpdatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
+                    b.HasIndex("ScheduledTrainerId", "ScheduledAtUtc");
+
+                    b.HasIndex("Status", "CreatedAtUtc");
+
                     b.ToTable("AppointmentRequests");
+                });
+
+            modelBuilder.Entity("NO23.Web.Domain.Entities.AppointmentScheduleHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AppointmentRequestId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("ChangedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ChangedByUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<int>("DurationMinutes")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<int>("PreviousDurationMinutes")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("PreviousStartsAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("PreviousStatus")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("PreviousTrainerId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("StartsAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("TrainerId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppointmentRequestId");
+
+                    b.ToTable("AppointmentScheduleHistories");
                 });
 
             modelBuilder.Entity("NO23.Web.Domain.Entities.BlogPost", b =>
@@ -3320,6 +3394,27 @@ namespace NO23.Web.Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("NO23.Web.Domain.Entities.AppointmentRequest", b =>
+                {
+                    b.HasOne("NO23.Web.Domain.Entities.Trainer", "ScheduledTrainer")
+                        .WithMany()
+                        .HasForeignKey("ScheduledTrainerId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("ScheduledTrainer");
+                });
+
+            modelBuilder.Entity("NO23.Web.Domain.Entities.AppointmentScheduleHistory", b =>
+                {
+                    b.HasOne("NO23.Web.Domain.Entities.AppointmentRequest", "AppointmentRequest")
+                        .WithMany("ScheduleHistory")
+                        .HasForeignKey("AppointmentRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AppointmentRequest");
+                });
+
             modelBuilder.Entity("NO23.Web.Domain.Entities.CartItem", b =>
                 {
                     b.HasOne("NO23.Web.Domain.Entities.KitchenMenuItem", "KitchenMenuItem")
@@ -3977,6 +4072,11 @@ namespace NO23.Web.Data.Migrations
                     b.Navigation("SentTrainerMessages");
 
                     b.Navigation("TrainerProfile");
+                });
+
+            modelBuilder.Entity("NO23.Web.Domain.Entities.AppointmentRequest", b =>
+                {
+                    b.Navigation("ScheduleHistory");
                 });
 
             modelBuilder.Entity("NO23.Web.Domain.Entities.ClassSession", b =>

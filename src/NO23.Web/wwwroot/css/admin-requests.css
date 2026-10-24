@@ -1,0 +1,15 @@
+.pending-request-section { margin:1rem 0 2rem; padding:1.25rem; border:1px solid #bda26566; border-radius:16px; background:#121610; }
+.pending-request-section h2 { margin:0; color:#fff; font-size:1.5rem; }
+.pending-request-section > header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1rem; }
+.pending-request-section > header strong { color:#ead08c; }
+.pending-request-counts { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.75rem; margin-bottom:1rem; }
+.pending-request-counts a { display:flex; align-items:center; justify-content:space-between; padding:1rem; border:1px solid #ffffff2b; border-radius:10px; color:#eee; text-decoration:none; }
+.pending-request-counts a:hover { border-color:#e1c680; background:#272a1b; }
+.pending-request-counts strong { font-size:1.5rem; color:#e1c680; }
+.request-summary { padding:1.5rem; background:#0c2633; border:1px solid #3dc5fc; border-radius:12px; color:#f0f9ff; }
+.request-summary h2, .appointment-schedule-page > section h2, .appointment-schedule-page .admin-form-card h2 { color:#f0f9ff; }
+.request-summary a { color:#8cddff; }
+.request-history { padding-left:1.3rem; }
+.request-history li { padding:.7rem; margin:.5rem 0; border-left:2px solid #38bdf8; color:#edf4f6; }
+.request-history p { margin:.35rem 0; }
+@media(max-width:767px) { .pending-request-counts { grid-template-columns:1fr; } .pending-request-section { padding:1rem; } }

@@ -2,6 +2,8 @@
 
 Maddeler ayrı kabul kriterleriyle ilerletilir. Bir maddenin burada sıraya alınması, geliştirmesinin tamamlandığı anlamına gelmez.
 
+24 Ekim güncellemesi ve yayınlama notları: [Güncel teslimat](TESLIMAT_2026-10-24.md). Kullanıcının son kararıyla **yeni üye kaydında spor paketi seçimi zorunludur**; ana satış tutarını yönetici belirleyebilir.
+
 ## İlk teslimat
 
 | Madde | Durum | Yapılan iş / kabul kriteri |
@@ -20,7 +22,7 @@ Maddeler ayrı kabul kriterleriyle ilerletilir. Bir maddenin burada sıraya alı
 
 | Madde | Durum | Kabul kriteri |
 |---|---|---|
-| Yalnızca Kitchen için kayıt | Tamamlandı | Genel kayıt ekranında “NO:23 Kitchen — yalnızca yemek” seçeneği. Kitchen bağlantısı ön seçim ve dönüş adresi taşır; spor süresi istenmez. KitchenOnly hesap türü sıfır ders ve boş spor üyelik tarihleriyle oluşturulur; gönderilen spor varyantı dikkate alınmaz. Ders rezervasyonu ve sınırsız erişim verilmez. Spor paketi yayımlanmamışsa da Kitchen kaydı çalışır. Üye ana paneli Kitchen'a yönlenir. |
+| Üye kaydında spor paketi seçimi | Tamamlandı, 24 Ekim kuralı | Kitchen bağlantısından gelenler dahil yeni kayıtta spor üyelik paketi ve aktif süre zorunludur. Kitchen-only yeni kayıt seçeneği kaldırıldı; bu kodu doğrudan göndermek de reddedilir. Spor paketi yayımlanmamışsa yeni kayıt açılamaz. Admin seçilen paketin ana satış tutarını belirleyebilir. Önceden oluşturulmuş KitchenOnly hesapları korunur. |
 | Ölçüm ve gelişimde üye arama | Tamamlandı | Yönetici ve eğitmende ortak arama alanı. En az 2 karakter, en fazla 20 sonuç; Türkçe ad/soyad, telefon ve #üye numarasıyla arama. İsim, telefon, numara ve paket gösterilir. Seçim ID ile; klavye desteği ve istek iptali vardır. Antrenör yalnızca atanmış üyelerini arar; seçili üye haricinde tüm üyeler sayfaya yüklenmez. |
 | Antrenörün üye listesi | Tamamlandı | Menüde “Üyelerim”; atanmış üyelerde arama ve sayfalama. Listede ve detayda paket, mevcut kalan hak, iletişim, tarihler, takvim ve ölçüm bağlantıları. Başka antrenörün üyesi ve atanmamış üye için detay/ölçüm/kayıt işlemi bulunamadı sonucu verir. Aktif antrenör bağlantısı olmayan hesaplar engellenir. |
 
@@ -38,12 +40,12 @@ KitchenOnly satışa açık bir spor seviyesi değildir. Uygulamanın başlangı
 - Görsel kontrol sırasında arama alanının odak rengi ve antrenör başlıklarının kontrastı düzeltildi.
 - Teslimat özeti ilk açılışta salondan teslim için 3.000 ₺; adrese teslim seçilince 3.475 ₺; tekrar salondan teslimde 3.000 ₺ gösterdi.
 
-## Sonraki sıra: Talepler ve takvim
+## Üçüncü teslimat: Talepler ve takvim
 
 | Madde | Durum | Kabul kriteri |
 |---|---|---|
-| Genel bakışta yeni talepler | Sırada | Şu an dashboard esas olarak üye PT taleplerini sorguluyor. Misafir randevu ve paket başvuruları da üstte bekleyen işler olarak görünmeli; toplam sayılar ve tüm taleplere ulaşım olmalı. |
-| Üye olmayan kişinin ön görüşmesi | Sırada | Talep yönetici tarafından tarih/saat/antrenör/süre ile planlanır. Üyelik gerekmez. Aynı takvimde ayrı renk ve “Ön görüşme” etiketiyle görünür. Ders hakkı tüketmez. Eğitmen çakışması, yeniden planlama ve iptal kontrol edilir. Tercih edilen saat otomatik kesin randevu kabul edilmez. |
+| Genel bakışta yeni talepler | Tamamlandı | Misafir randevu, paket başvurusu ve üye PT talepleri üstte ayrı sayaçlarla görünür. Son 6 bekleyen kayıt zaman sırasıyla listelenir; sayaçlar tüm bekleyenleri sayar. Tür bazında tüm taleplere ve misafir talebinden planlamaya bağlantı vardır. |
+| Üye olmayan kişinin ön görüşmesi | Tamamlandı | Yönetici tarih/saat/antrenör/süre ile planlar. Tercih edilen saat tek başına rezervasyon değildir. Yönetici ve atanmış eğitmen takviminde mavi “Ön görüşme” kartı görünür; ders hakkı tüketmez. Çakışma iki yönde ve eşzamanlı kayıtlar için kontrol edilir. Gün/saat/antrenör değişimi, iptal ve işlem geçmişi vardır; iptal kartı takvimden kaldırır. Eğitmen başka eğitmenin görüşmesini göremez. |
 | Google Takvim benzeri esneklik | Sırada | Gün/hafta gezinmesi, geçmiş tarihe gitme, okunaklı detaylar ve işlem kapsamları. Geçmiş dersler görüntülenebilir; geçmiş haklar tarih gezinmesiyle değişmez. |
 
 ## Sonraki sıra: Kalan seans ve haftalık Kitchen planı

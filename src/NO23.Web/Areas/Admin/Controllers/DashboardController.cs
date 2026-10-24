@@ -102,6 +102,24 @@ public class DashboardController(ApplicationDbContext dbContext)
             RecentPersonalTrainingRequests = recentRequests
         };
 
+        var guestRequests = dbContext.AppointmentRequests.AsNoTracking().Where(x => x.Status != ServicePackageApplicationStatus.Closed &&
+            (x.ScheduleStatus == null || x.ScheduleStatus == AppointmentScheduleStatus.Cancelled));
+        model.PendingAppointmentRequests = await guestRequests.CountAsync();
+        var packageApplications = dbContext.ServicePackageApplications.AsNoTracking().Where(x => x.Status == ServicePackageApplicationStatus.Pending);
+        model.PendingPackageApplications = await packageApplications.CountAsync();
+        var guestRows = await guestRequests.OrderByDescending(x => x.CreatedAtUtc).ThenByDescending(x => x.Id).Take(6)
+            .Select(x => new AdminPendingRequestItem(x.Id, "AppointmentRequests", "Ön görüşme", x.FullName, x.PhoneNumber, x.Service, x.CreatedAtUtc)).ToListAsync();
+        var packageRows = await packageApplications.OrderByDescending(x => x.CreatedAtUtc).ThenByDescending(x => x.Id).Take(6)
+            .Select(x => new AdminPendingRequestItem(x.Id, "ServicePackageApplications", "Paket başvurusu", x.FullName, x.PhoneNumber,
+                x.ServicePackage.Name + " · " + x.ServicePackageVariant.Name, x.CreatedAtUtc)).ToListAsync();
+        var pendingPersonalRows = await dbContext.PersonalTrainingRequests.AsNoTracking()
+            .Where(x => x.Status == PersonalTrainingRequestStatus.Pending).OrderByDescending(x => x.CreatedAtUtc).ThenByDescending(x => x.Id).Take(6)
+            .Select(x => new AdminPendingRequestItem(x.Id, "PersonalTrainingRequests", "Birebir talebi",
+                x.MemberProfile.ApplicationUser.FirstName + " " + x.MemberProfile.ApplicationUser.LastName,
+                x.MemberProfile.ApplicationUser.PhoneNumber ?? "", x.Trainer.FirstName + " " + x.Trainer.LastName, x.CreatedAtUtc)).ToListAsync();
+        model.PendingRequests = guestRows.Concat(packageRows).Concat(pendingPersonalRows)
+            .OrderByDescending(x => x.CreatedAtUtc).ThenBy(x => x.Controller).ThenByDescending(x => x.Id).Take(6).ToList();
+
         var activeTrainerRows = await dbContext.Trainers.AsNoTracking()
             .Where(x => x.IsActive)
             .OrderBy(x => x.FirstName).ThenBy(x => x.LastName)

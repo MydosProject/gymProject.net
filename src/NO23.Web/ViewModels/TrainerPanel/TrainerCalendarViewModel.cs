@@ -11,6 +11,7 @@ public class TrainerCalendarViewModel
     public int? MemberId { get; init; }
     public IReadOnlyList<SelectListItem> FilterMembers { get; init; } = [];
     public IReadOnlyList<ClassSession> Groups { get; init; } = [];
+    public IReadOnlyList<AppointmentRequest> Appointments { get; init; } = [];
     public IReadOnlyList<TrainerCalendarSessionViewModel> Sessions { get; init; } = [];
     public IReadOnlyList<TrainerAssignedMemberViewModel> Members { get; init; } = [];
     public DateTime WeekStart { get; init; }
@@ -20,12 +21,21 @@ public class TrainerCalendarViewModel
 
 public class TrainerCalendarDayViewModel
 {
+    public IReadOnlyList<AppointmentRequest> Appointments { get; init; } = [];
     public IReadOnlyList<ClassSession> Groups { get; init; } = [];
     public DateTime Date { get; init; }
     public string DayName { get; init; } = string.Empty;
     public bool IsToday { get; init; }
     public IReadOnlyList<TrainerCalendarSessionViewModel> Sessions { get; init; } = [];
+    public IReadOnlyList<TrainerCalendarEntryViewModel> Entries => Groups
+        .Select(x => new TrainerCalendarEntryViewModel(x.StartsAtUtc, x, null, null))
+        .Concat(Sessions.Select(x => new TrainerCalendarEntryViewModel(x.StartsAtUtc, null, x, null)))
+        .Concat(Appointments.Select(x => new TrainerCalendarEntryViewModel(x.ScheduledAtUtc!.Value, null, null, x)))
+        .OrderBy(x => x.StartsAtUtc).ToList();
 }
+
+public record TrainerCalendarEntryViewModel(DateTime StartsAtUtc, ClassSession? Group,
+    TrainerCalendarSessionViewModel? Personal, AppointmentRequest? Appointment);
 
 public class TrainerCalendarSessionViewModel
 {

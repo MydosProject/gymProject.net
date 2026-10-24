@@ -5,6 +5,7 @@
 }
 
 @section Styles {
+    <link rel="stylesheet" href="~/css/consultation-calendar.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/weekly-personal-schedule.css" asp-append-version="true" /><link rel="stylesheet" href="~/css/calendar-bulk.css" asp-append-version="true" />
     <style>
         .trainer-week-toolbar { display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:1rem; }
@@ -74,30 +75,34 @@
                                     <span>@day.DayName</span>
                                     <small>@day.Date.ToString("dd MMM")</small>
                                 </div>
-                                <span class="trainer-week-count @(day.Sessions.Count + day.Groups.Count > 0 ? "is-busy" : "")">
-                                    @(day.Sessions.Count + day.Groups.Count > 0 ? $"{day.Sessions.Count + day.Groups.Count} ders" : "Boş")
+                                <span class="trainer-week-count @(day.Entries.Count > 0 ? "is-busy" : "")">
+                                    @(day.Entries.Count > 0 ? $"{day.Entries.Count} kayıt" : "Boş")
                                 </span>
                             </header>
-                            @if (day.Sessions.Count + day.Groups.Count == 0)
+                            @if (day.Entries.Count == 0)
                             {
                                 <div class="trainer-week-empty">Planlanmış ders yok</div>
                             }
                             else
                             {
                                 <div class="trainer-week-items">
-                                    @foreach (var group in day.Groups)
+                                    @foreach (var entry in day.Entries)
                                     {
+                                    if (entry.Appointment is { } appointment) {
+                                        <partial name="/Views/Shared/_ConsultationCalendarCard.cshtml" model="appointment" />
+                                    }
+                                    else if (entry.Group is { } group) {
                                         <article class="trainer-week-event"><strong>@NO23.Web.Services.ClubTime.ToLocal(group.StartsAtUtc).ToString("HH:mm") · @group.GroupClass.DurationMinutes dk</strong><span>GRUP · @group.GroupClass.Name</span><span>@group.Status.GetDisplayName()</span>
                                             @if(group.Status == ClassSessionStatus.Scheduled){<label><input type="checkbox" name="GroupIds" value="@group.Id" form="calendar-bulk-form" /> Toplu işlem için grup seansını seç</label>}
                                         </article>
                                     }
-                                    @foreach (var item in day.Sessions)
-                                    {
+                                    else if (entry.Personal is { } item) {
                                         <a class="trainer-week-event" href="#session-@item.Id">
                                             <strong>@NO23.Web.Services.ClubTime.ToLocal(item.StartsAtUtc).ToString("HH:mm") · @item.DurationMinutes dk</strong>
                                             <span>@(string.IsNullOrWhiteSpace(item.MemberName) ? "İsimsiz üye" : item.MemberName)</span>
                                             <span>@item.StatusName</span>
                                         </a>
+                                    }
                                     }
                                 </div>
                             }

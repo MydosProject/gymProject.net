@@ -85,6 +85,10 @@ public class CalendarController(
                 item.StartsAtUtc >= startUtc && item.StartsAtUtc < endUtc && (!memberId.HasValue ||
                     item.Reservations.Any(reservation => reservation.MemberProfileId == memberId && reservation.Status != ClassReservationStatus.Cancelled)))
             .OrderBy(item => item.StartsAtUtc).AsSplitQuery().ToListAsync();
+        var appointments = await dbContext.AppointmentRequests.AsNoTracking().Include(x => x.ScheduledTrainer)
+            .Where(x => !memberId.HasValue && x.ScheduledTrainerId == trainerId && x.ScheduledAtUtc >= startUtc && x.ScheduledAtUtc < endUtc &&
+                (x.ScheduleStatus == AppointmentScheduleStatus.Scheduled || (includeCompleted && x.ScheduleStatus == AppointmentScheduleStatus.Completed)))
+            .OrderBy(x => x.ScheduledAtUtc).ToListAsync();
         var filterMembers = await dbContext.MemberProfiles.AsNoTracking().Where(item => item.AssignedTrainerId == trainerId ||
             item.PersonalTrainingSessions.Any(session => session.TrainerId == trainerId) ||
             item.ClassReservations.Any(reservation => reservation.ClassSession.GroupClass.TrainerId == trainerId && reservation.ClassSession.GroupClass.IsActive))
@@ -99,6 +103,7 @@ public class CalendarController(
                 Date = date,
                 DayName = turkishCulture.DateTimeFormat.GetDayName(date.DayOfWeek),
                 IsToday = date == ClubTime.Now.Date,
+                Appointments = appointments.Where(item => ClubTime.ToLocal(item.ScheduledAtUtc!.Value).Date == date).ToList(),
                 Groups = groups.Where(item => ClubTime.ToLocal(item.StartsAtUtc).Date == date).ToList(),
                 Sessions = sessions.Where(item => ClubTime.ToLocal(item.StartsAtUtc).Date == date).ToList()
             };
@@ -106,7 +111,7 @@ public class CalendarController(
 
         return View(new TrainerCalendarViewModel
         {
-            Sessions = sessions,
+            Sessions = sessions, Appointments = appointments,
             Groups = groups, MemberId = memberId, IncludeCompleted = includeCompleted, FilterMembers = filterMembers,
             Members = members,
             WeekStart = weekStart,

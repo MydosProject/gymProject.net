@@ -22,4 +22,20 @@ public class WeeklyCalendarViewModelTests
         Assert.NotNull(entries[0].Personal);
         Assert.NotNull(entries[1].Group);
     }
+
+    [Fact]
+    public void AppointmentsAreSortedTogetherWithLessonsInBothCalendars()
+    {
+        var date = new DateTime(2026, 11, 2);
+        var appointment = new AppointmentRequest { ScheduledAtUtc = ClubTime.ToUtc(date.AddHours(9)) };
+        var group = new ClassSession { StartsAtUtc = ClubTime.ToUtc(date.AddHours(8)) };
+        var personal = new PersonalTrainingSession { StartsAtUtc = ClubTime.ToUtc(date.AddHours(10)) };
+        var admin = new WeeklyCalendarViewModel { Groups = [group], Personal = [personal], Appointments = [appointment] };
+        Assert.Equal(appointment, admin.EntriesFor(date)[1].Appointment);
+        var trainer = new NO23.Web.ViewModels.TrainerPanel.TrainerCalendarDayViewModel
+        {
+            Groups = [group], Appointments = [appointment], Sessions = [new() { StartsAtUtc = personal.StartsAtUtc }]
+        };
+        Assert.Equal(appointment, trainer.Entries[1].Appointment);
+    }
 }

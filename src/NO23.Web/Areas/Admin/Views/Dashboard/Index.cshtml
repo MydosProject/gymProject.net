@@ -1,4 +1,5 @@
 @model AdminDashboardViewModel
+@section Styles { <link rel="stylesheet" href="~/css/admin-requests.css" asp-append-version="true" /> }
 
 @{
     ViewData["Title"] = "Genel Bakış";
@@ -34,6 +35,23 @@
             </p>
         </div>
     </header>
+
+    <section class="pending-request-section" aria-labelledby="pendingRequestsTitle">
+        <header><h2 id="pendingRequestsTitle">Bekleyen talepler</h2><strong>@Model.TotalPendingRequests talep işlem bekliyor</strong></header>
+        <div class="pending-request-counts">
+            <a asp-controller="AppointmentRequests" asp-action="Index"><span>Ön görüşme / randevu</span><strong>@Model.PendingAppointmentRequests</strong></a>
+            <a asp-controller="ServicePackageApplications" asp-action="Index"><span>Paket başvuruları</span><strong>@Model.PendingPackageApplications</strong></a>
+            <a asp-controller="PersonalTrainingRequests" asp-action="Index"><span>Birebir talepler</span><strong>@Model.PendingPersonalTrainingRequests</strong></a>
+        </div>
+        @if (Model.PendingRequests.Count == 0) { <p class="mb-0">Bekleyen talep bulunmuyor.</p> }
+        else {
+            <div class="table-responsive"><table class="table table-dark align-middle mb-0"><thead><tr><th>Talep</th><th>İletişim</th><th>Detay</th><th>Geldiği tarih</th><th></th></tr></thead><tbody>
+            @foreach (var request in Model.PendingRequests) {
+                <tr><td><strong>@request.Name</strong><br /><small>@request.Kind</small></td><td>@request.Phone</td><td>@request.Detail</td><td>@NO23.Web.Services.ClubTime.ToLocal(request.CreatedAtUtc).ToString("dd.MM.yyyy HH:mm")</td><td><a asp-controller="@request.Controller" asp-action="@(request.Controller == "AppointmentRequests" ? "Schedule" : "Index")" asp-route-id="@request.Id">@(request.Controller == "AppointmentRequests" ? "Takvime planla →" : "Talepleri aç →")</a></td></tr>
+            }
+            </tbody></table></div><small>Son 6 bekleyen talep gösteriliyor. Tüm talepler için ilgili başlığı açın.</small>
+        }
+    </section>
 
     <section class="admin-dashboard-metrics"
              aria-label="Kulüp genel durumu">

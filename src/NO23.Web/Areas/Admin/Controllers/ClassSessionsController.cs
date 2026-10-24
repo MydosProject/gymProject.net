@@ -99,6 +99,8 @@ public class ClassSessionsController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(ClassSessionFormViewModel model)
     {
+        await using var transaction = dbContext.Database.IsRelational() && model.Status == ClassSessionStatus.Scheduled
+            ? await dbContext.Database.BeginTransactionAsync() : null;
         if (!await GroupClassExistsAsync(model.GroupClassId))
         {
             ModelState.AddModelError(nameof(model.GroupClassId), "Geçerli bir grup dersi seçmelisin.");
@@ -115,6 +117,7 @@ public class ClassSessionsController(
 
         dbContext.ClassSessions.Add(MapToEntity(model));
         await dbContext.SaveChangesAsync();
+        if (transaction is not null) await transaction.CommitAsync();
 
         return RedirectToAction(nameof(Index));
     }
@@ -137,6 +140,8 @@ public class ClassSessionsController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(int id, ClassSessionFormViewModel model)
     {
+        await using var transaction = dbContext.Database.IsRelational() && model.Status == ClassSessionStatus.Scheduled
+            ? await dbContext.Database.BeginTransactionAsync() : null;
         if (id != model.Id)
         {
             return BadRequest();
@@ -179,6 +184,8 @@ public class ClassSessionsController(
 
             await CancelSessionAsync(session);
 
+            if (transaction is not null) await transaction.CommitAsync();
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -207,6 +214,7 @@ public class ClassSessionsController(
         var scheduleChanged = previousStartsAtUtc != session.StartsAtUtc;
 
         await dbContext.SaveChangesAsync();
+        if (transaction is not null) await transaction.CommitAsync();
 
         if (scheduleChanged)
         {
@@ -372,13 +380,15 @@ public class ClassSessionsController(
         if (model.Status != ClassSessionStatus.Scheduled) return;
         var group = await dbContext.GroupClasses.AsNoTracking().FirstOrDefaultAsync(x => x.Id == model.GroupClassId);
         if (group is null) return;
+        await TrainerScheduleGuard.LockAsync(dbContext, group.TrainerId);
         var start = ClubTime.ToUtc(model.StartsAtLocal);
         var end = start.AddMinutes(group.DurationMinutes);
-        if (await dbContext.ClassSessions.AnyAsync(x => x.Id != id && x.GroupClass.IsActive && x.GroupClass.TrainerId == group.TrainerId &&
+        if (await TrainerScheduleGuard.HasAppointmentAsync(dbContext, group.TrainerId, start, end) ||
+            await dbContext.ClassSessions.AnyAsync(x => x.Id != id && x.GroupClass.IsActive && x.GroupClass.TrainerId == group.TrainerId &&
                 x.Status == ClassSessionStatus.Scheduled && x.StartsAtUtc < end && x.StartsAtUtc.AddMinutes(x.GroupClass.DurationMinutes) > start) ||
             await dbContext.PersonalTrainingSessions.AnyAsync(x => x.TrainerId == group.TrainerId &&
                 x.Status == PersonalTrainingSessionStatus.Scheduled && x.StartsAtUtc < end && x.StartsAtUtc.AddMinutes(x.DurationMinutes) > start))
-            ModelState.AddModelError(nameof(model.StartsAtLocal), "Antrenörün bu saat aralığında başka bir grup veya birebir dersi var.");
+            ModelState.AddModelError(nameof(model.StartsAtLocal), "Antrenörün bu saat aralığında dersi veya ön görüşmesi var.");
         if (id.HasValue && await dbContext.ClassReservations.CountAsync(x => x.ClassSessionId == id && x.Status == ClassReservationStatus.Reserved) > (model.CapacityOverride ?? group.Capacity))
             ModelState.AddModelError(nameof(model.CapacityOverride), "Kontenjan mevcut katılımcı sayısından az olamaz.");
     }

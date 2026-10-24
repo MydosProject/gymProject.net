@@ -28,46 +28,42 @@ public class RegistrationPackageCatalogTests
     [InlineData("kitchen", "/Member/Kitchen/ResumePendingSubscription")]
     [InlineData(null, "/Member/Kitchen/ResumePendingSubscription")]
     [InlineData(null, "/Kitchen/ContinueSubscription?packageId=3&meal=Lunch")]
-    public async Task RegisterGet_KitchenReturnSelectsOnlyKitchenWithoutSportDuration(string? package, string resume)
+    public async Task RegisterGet_KitchenReturnRequiresSportsPackageAndPreservesResumeUrl(string? package, string resume)
     {
         await using var provider = CreateServices();
         var catalog = await SeedCatalogAsync(provider);
         var page = CreatePage(provider);
         await page.OnGetAsync(package: package, returnUrl: resume, variant: catalog.Hybrid.Id);
-        Assert.True(page.IsKitchenRegistration);
-        Assert.Null(page.Input.ServicePackageVariantId);
+        Assert.Equal("hybrid", page.Input.PackageCode);
+        Assert.Equal(catalog.Hybrid.Id, page.Input.ServicePackageVariantId);
+        Assert.DoesNotContain(page.PackageOptions, option => option.Code == "kitchen");
         Assert.Equal(resume, page.ReturnUrl);
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task RegisterPost_KitchenNeedsNoSportsPackageAndIgnoresInjectedVariant(bool injectVariant)
+    public async Task RegisterPost_RejectsKitchenOnlyRegistrationEvenWithInjectedSportsVariant(bool injectVariant)
     {
         await using var provider = CreateServices();
         var catalog = await SeedCatalogAsync(provider);
         var page = CreatePage(provider);
         page.Input = ValidInput("kitchen", injectVariant ? catalog.Black.Id : null);
         const string resume = "/Member/Kitchen/ResumePendingSubscription";
-        var result = Assert.IsType<LocalRedirectResult>(await page.OnPostAsync(resume));
-        Assert.Equal(resume, result.Url);
+        Assert.IsType<PageResult>(await page.OnPostAsync(resume));
+        Assert.NotEmpty(page.ModelState["Input.PackageCode"]!.Errors);
+        Assert.Equal(resume, page.ReturnUrl);
         var db = provider.GetRequiredService<ApplicationDbContext>();
-        var member = await db.MemberProfiles.Include(x => x.MembershipPackage).SingleAsync();
-        Assert.Equal(MembershipPackageCode.KitchenOnly, member.MembershipPackage.Code);
-        Assert.Null(member.ServicePackageVariantId);
-        Assert.Null(member.MembershipStartsAtUtc);
-        Assert.Null(member.MembershipEndsAtUtc);
-        Assert.Equal(0, member.RemainingClassCredits);
-        Assert.False(MemberPackageEntitlement.IsActive(member, DateTime.UtcNow));
-        Assert.False(MemberPackageEntitlement.HasUnlimitedClassAccess(member));
+        Assert.Empty(await db.Users.ToListAsync());
+        Assert.Empty(await db.MemberProfiles.ToListAsync());
         Assert.Empty(await db.Orders.ToListAsync());
-        Assert.NotNull(provider.GetRequiredService<CapturingAuthenticationService>().SignedInUser);
-        var reservation = await new ClassReservationService(db).ReserveAsync(member.ApplicationUserId, 999);
-        Assert.False(reservation.Succeeded);
+        Assert.Null(provider.GetRequiredService<CapturingAuthenticationService>().SignedInUser);
     }
 
-    [Fact]
-    public async Task RegisterPost_KitchenWorksWhenNoSportsPackageIsPublished()
+    [Theory]
+    [InlineData("kitchen")]
+    [InlineData("hybrid")]
+    public async Task RegisterPost_RejectsRegistrationWhenNoSportsPackageIsPublished(string packageCode)
     {
         await using var provider = CreateServices();
         await SeedCatalogAsync(provider);
@@ -75,11 +71,12 @@ public class RegistrationPackageCatalogTests
         foreach (var package in await db.ServicePackages.ToListAsync()) package.IsActive = false;
         await db.SaveChangesAsync();
         var page = CreatePage(provider);
-        page.Input = ValidInput("kitchen", null);
-        var result = Assert.IsType<LocalRedirectResult>(await page.OnPostAsync());
-        Assert.Equal("/Member/Kitchen", result.Url);
+        page.Input = ValidInput(packageCode, null);
+        Assert.IsType<PageResult>(await page.OnPostAsync());
+        Assert.NotEmpty(page.ModelState["Input.PackageCode"]!.Errors);
         Assert.Empty(page.PackageOptions);
-        Assert.Equal(MembershipPackageCode.KitchenOnly, (await db.MemberProfiles.Include(x => x.MembershipPackage).SingleAsync()).MembershipPackage.Code);
+        Assert.Empty(await db.MemberProfiles.ToListAsync());
+        Assert.Empty(await db.Users.ToListAsync());
     }
 
     [Fact]
@@ -152,6 +149,7 @@ public class RegistrationPackageCatalogTests
     [InlineData("inactive-parent", "Input.PackageCode")]
     [InlineData("missing-variant", "Input.ServicePackageVariantId")]
     [InlineData("unknown-variant", "Input.ServicePackageVariantId")]
+    [InlineData("missing-package", "Input.PackageCode")]
     public async Task RegisterPost_RejectsUnavailableSelectionBeforeCreatingAccount(string selection, string errorKey)
     {
         await using var provider = CreateServices();
@@ -165,6 +163,7 @@ public class RegistrationPackageCatalogTests
             "inactive-variant" => ("hybrid", (int?)catalog.InactiveHybrid.Id),
             "inactive-parent" => ("retired-membership", (int?)catalog.Retired.Id),
             "missing-variant" => ("hybrid", (int?)null),
+            "missing-package" => ("", (int?)null),
             _ => ("hybrid", (int?)int.MaxValue)
         };
         page.Input = ValidInput(slug, variantId);
@@ -343,8 +342,34 @@ public class RegistrationPackageCatalogTests
         Assert.Empty(await provider.GetRequiredService<ApplicationDbContext>().Users.ToListAsync());
     }
 
-    [Fact]
-    public async Task AdminCreatePost_PersistsMemberWithLinkedPackageOrderAndInstallmentSchedule()
+    [Theory]
+    [InlineData(null)]
+    [InlineData(int.MaxValue)]
+    public async Task AdminCreatePost_RequiresSportsPackageEvenWhenAdminEntersAnAmount(int? variantId)
+    {
+        await using var provider = CreateServices();
+        await SeedCatalogAsync(provider);
+        var controller = CreateAdminController(provider);
+        var result = await controller.Create(new MemberCreateViewModel
+        {
+            FirstName = "Merve", LastName = "Kırcıoğlu", NationalIdentityNumber = "10000000146",
+            BirthDate = new DateOnly(1995, 6, 15), Password = "Test123!",
+            ServicePackageVariantId = variantId,
+            Payment = new ManualPaymentInputViewModel { Amount = 7000m, Method = PaymentMethod.Cash }
+        });
+        Assert.IsType<ViewResult>(result);
+        Assert.NotEmpty(controller.ModelState[nameof(MemberCreateViewModel.ServicePackageVariantId)]!.Errors);
+        var db = provider.GetRequiredService<ApplicationDbContext>();
+        Assert.Empty(await db.Users.ToListAsync());
+        Assert.Empty(await db.MemberProfiles.ToListAsync());
+        Assert.Empty(await db.Orders.ToListAsync());
+    }
+
+    [Theory]
+    [InlineData(8000, 5000)]
+    [InlineData(7000, 4000)]
+    [InlineData(10000, 7000)]
+    public async Task AdminCreatePost_PersistsChosenSportsPackageWithAgreedAmountAndInstallmentSchedule(decimal amount, decimal secondInstallment)
     {
         await using var provider = CreateServices();
         var catalog = await SeedCatalogAsync(provider);
@@ -364,12 +389,12 @@ public class RegistrationPackageCatalogTests
             Payment = new ManualPaymentInputViewModel
             {
                 Method = PaymentMethod.CreditCard,
-                Amount = 8000m,
+                Amount = amount,
                 InstallmentCount = 2,
                 FirstDueDate = today,
                 Reference = "  POS-TEST  ",
                 Installments = [new() { Amount = 3000m, DueDate = today, PaidOn = today },
-                    new() { Amount = 5000m, DueDate = today.AddMonths(1) }]
+                    new() { Amount = secondInstallment, DueDate = today.AddMonths(1) }]
             }
         });
 
@@ -379,6 +404,7 @@ public class RegistrationPackageCatalogTests
         var profile = await dbContext.MemberProfiles.SingleAsync();
         Assert.Equal(new DateOnly(1995, 6, 15), profile.BirthDate);
         Assert.Equal(catalog.Hybrid.Id, profile.ServicePackageVariantId);
+        Assert.Equal(48, profile.RemainingClassCredits);
         var order = await dbContext.Orders.Include(item => item.PaymentInstallments).Include(item => item.Items).SingleAsync();
         Assert.Equal(profile.Id, order.MemberProfileId);
         Assert.Equal(catalog.Hybrid.Id, order.ServicePackageVariantId);
@@ -386,12 +412,14 @@ public class RegistrationPackageCatalogTests
         Assert.Equal(OrderType.ServicePackagePurchase, order.Type);
         Assert.Equal(PaymentMethod.CreditCard, order.PaymentMethod);
         Assert.Equal(PaymentStatus.Pending, order.PaymentStatus);
-        Assert.Equal(8000m, order.Total);
+        Assert.Equal(amount, order.Total);
+        Assert.Equal(Math.Max(8000m, amount), order.Subtotal);
+        Assert.Equal(order.Subtotal - amount, order.DiscountAmount);
         Assert.Equal("POS-TEST", order.PaymentReference);
         Assert.Equal("admin-1", order.PaymentRecordedByUserId);
         Assert.Equal("HYBRID — 2 Aylık (1 ayı hediye)", Assert.Single(order.Items).ProductName);
         var installments = order.PaymentInstallments.OrderBy(item => item.Number).ToArray();
-        Assert.Equal(new[] { 3000m, 5000m }, installments.Select(item => item.Amount));
+        Assert.Equal(new[] { 3000m, secondInstallment }, installments.Select(item => item.Amount));
         Assert.Equal(new[] { today, today.AddMonths(1) }, installments.Select(item => item.DueDate));
         Assert.Equal(today, installments[0].PaidOn);
         Assert.Equal("admin-1", installments[0].RecordedByUserId);

@@ -115,6 +115,7 @@ public sealed class CalendarBulkOperationService(ApplicationDbContext db)
             if (input.Day.HasValue && await ValidateMonthlyLimitsAsync(proposed, personalIds) is { } limitError)
                 return (false, limitError);
             var trainers = proposed.Select(item => item.TrainerId).Distinct().ToArray();
+            await TrainerScheduleGuard.LockAsync(db, trainers);
             var memberIds = proposed.SelectMany(item => item.MemberIds).Distinct().ToArray();
             var min = proposed.Min(item => item.Start).AddDays(-1);
             var max = proposed.Max(item => item.End).AddDays(1);
@@ -128,11 +129,16 @@ public sealed class CalendarBulkOperationService(ApplicationDbContext db)
                 .AsSplitQuery().ToListAsync();
             var existing = otherPersonal.Select(item => Slot.ForPersonal(item, item.StartsAtUtc))
                 .Concat(otherGroups.Select(item => Slot.ForGroup(item, item.StartsAtUtc))).ToList();
+            var appointments = await db.AppointmentRequests.AsNoTracking().Where(x => trainers.Contains(x.ScheduledTrainerId ?? 0) &&
+                x.ScheduleStatus == AppointmentScheduleStatus.Scheduled && x.ScheduledAtUtc >= min && x.ScheduledAtUtc < max)
+                .Select(x => new { x.ScheduledTrainerId, x.ScheduledAtUtc, x.DurationMinutes }).ToListAsync();
             for (var index = 0; index < proposed.Count; index++)
             {
                 var slot = proposed[index];
-                if (existing.Any(other => Conflicts(slot, other)) || proposed.Take(index).Any(other => Conflicts(slot, other)))
-                    return (false, "Yeni gün / saat eğitmenin veya katılımcının başka dersiyle çakışıyor. Hiçbir ders değiştirilmedi.");
+                if (existing.Any(other => Conflicts(slot, other)) || proposed.Take(index).Any(other => Conflicts(slot, other)) ||
+                    appointments.Any(x => x.ScheduledTrainerId == slot.TrainerId && x.ScheduledAtUtc < slot.End &&
+                        x.ScheduledAtUtc!.Value.AddMinutes(x.DurationMinutes) > slot.Start))
+                    return (false, "Yeni gün / saat başka bir ders veya eğitmenin ön görüşmesi ile çakışıyor. Hiçbir ders değiştirilmedi.");
             }
             await recurrences.AssignLegacyIdentitiesAsync();
             foreach (var slot in proposed)

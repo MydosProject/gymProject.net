@@ -1,0 +1,60 @@
+@using NO23.Web.Services
+@using NO23.Web.Domain.Enums
+@using NO23.Web.Extensions
+@model NO23.Web.ViewModels.Admin.AppointmentScheduleViewModel
+@{ ViewData["Title"] = "Ön görüşme planla"; }
+@section Styles { <link rel="stylesheet" href="~/css/admin-requests.css" asp-append-version="true" /> }
+<section class="admin-page appointment-schedule-page">
+    <header class="admin-page-head"><div><h1>Ön görüşme</h1><p>Üyelik gerektirmez, ders hakkı kullanmaz. Saatler Türkiye saatidir.</p></div><a asp-action="Index" class="btn btn-outline-light">Tüm talepler</a></header>
+    @foreach (var key in new[] { "SuccessMessage", "ErrorMessage" })
+    { if (TempData[key] is string message) { <div class="alert @(key == "SuccessMessage" ? "alert-success" : "alert-danger")">@message</div> } }
+    <article class="request-summary">
+        <span>Talep #@Model.Id · @Model.Request.Status.GetDisplayName()</span>
+        <h2>@Model.Request.FullName</h2><p>@Model.Request.PhoneNumber · @Model.Request.Service</p>
+        <p>Tercih edilen: @Model.Request.PreferredDate.ToString("dd.MM.yyyy") @Model.Request.PreferredTime.ToString("HH:mm")</p>
+        <small>Tercih edilen saat tek başına takvim rezervasyonu değildir. Kesin randevuyu aşağıdan planlayın.</small>
+        @if (!string.IsNullOrWhiteSpace(Model.Request.Notes)) { <p>Talep notu: @Model.Request.Notes</p> }
+        @if (Model.Request.ScheduledAtUtc.HasValue)
+        {
+            <hr /><p><strong>@Model.Request.ScheduleStatus?.GetDisplayName()</strong> · @ClubTime.ToLocal(Model.Request.ScheduledAtUtc.Value).ToString("dd.MM.yyyy HH:mm") · @Model.Request.DurationMinutes dk<br />@Model.Request.ScheduledTrainer?.FirstName @Model.Request.ScheduledTrainer?.LastName</p>
+            <a asp-controller="Calendar" asp-action="Index" asp-route-week="@ClubTime.ToLocal(Model.Request.ScheduledAtUtc.Value).ToString("yyyy-MM-dd")" asp-route-trainerId="@Model.Request.ScheduledTrainerId" asp-route-includeCompleted="true">Takvimde göster →</a>
+        }
+    </article>
+    @if (Model.Request.ScheduleStatus != AppointmentScheduleStatus.Completed)
+    {
+        <form asp-action="Schedule" asp-route-id="@Model.Id" method="post" class="admin-form-card mt-4">
+            <h2>@(Model.Request.ScheduleStatus == AppointmentScheduleStatus.Scheduled ? "Gün / saat / antrenör değiştir" : "Takvime planla")</h2>
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <input asp-for="Id" type="hidden" /><input asp-for="ExpectedVersion" type="hidden" />
+            <div class="row g-3">
+                <div class="col-md-5"><label asp-for="TrainerId" class="form-label"></label><select asp-for="TrainerId" asp-items="Model.Trainers" class="form-select" required><option value="">Antrenör seçin</option></select></div>
+                <div class="col-md-5"><label asp-for="StartsAt" class="form-label"></label><input asp-for="StartsAt" type="datetime-local" class="form-control" required /></div>
+                <div class="col-md-2"><label asp-for="DurationMinutes" class="form-label"></label><input asp-for="DurationMinutes" type="number" min="15" max="240" class="form-control" /></div>
+                <div class="col-12"><label asp-for="Note" class="form-label"></label><input asp-for="Note" maxlength="1000" class="form-control" /></div>
+            </div>
+            <p class="mt-3">Çakışma varsa randevu kaydedilmez. İptal edilmiş görüşmeyi yeniden planlamak yeni bir tarih / saat onayıdır.</p>
+            <button type="submit" class="btn btn-dark">Ön görüşmeyi kaydet</button>
+        </form>
+    }
+    @if (Model.Request.ScheduleStatus == AppointmentScheduleStatus.Scheduled)
+    {
+        <div class="d-flex flex-wrap gap-3 my-4">
+            <form asp-action="Finish" method="post"><input name="id" type="hidden" value="@Model.Id" /><input name="expectedVersion" type="hidden" value="@Model.Request.Version" /><input name="status" type="hidden" value="Cancelled" /><button class="btn btn-outline-danger">Ön görüşmeyi iptal et</button></form>
+            <form asp-action="Finish" method="post"><input name="id" type="hidden" value="@Model.Id" /><input name="expectedVersion" type="hidden" value="@Model.Request.Version" /><input name="status" type="hidden" value="Completed" /><button class="btn btn-outline-light" disabled="@(Model.Request.ScheduledAtUtc!.Value.AddMinutes(Model.Request.DurationMinutes) > DateTime.UtcNow)">Görüşme tamamlandı</button></form>
+        </div>
+    }
+    <section class="mt-4"><h2>Görüşme geçmişi</h2>
+        @if (Model.Request.ScheduleHistory.Count == 0) { <p>Henüz planlama işlemi yok.</p> }
+        <ol class="request-history">
+        @foreach (var change in Model.Request.ScheduleHistory.OrderByDescending(x => x.ChangedAtUtc).ThenByDescending(x => x.Id))
+        {
+            <li><strong>@change.Status.GetDisplayName()</strong> · İşlem: @ClubTime.ToLocal(change.ChangedAtUtc).ToString("dd.MM.yyyy HH:mm")
+                <p>@(change.PreviousStartsAtUtc.HasValue ? ClubTime.ToLocal(change.PreviousStartsAtUtc.Value).ToString("dd.MM.yyyy HH:mm") + " → " : "")@(change.StartsAtUtc.HasValue ? ClubTime.ToLocal(change.StartsAtUtc.Value).ToString("dd.MM.yyyy HH:mm") : "—") · @change.DurationMinutes dk · Antrenör #@change.TrainerId</p>
+                @if (change.PreviousTrainerId.HasValue && change.PreviousTrainerId != change.TrainerId) { <small>Önceki antrenör: #@change.PreviousTrainerId</small> }
+                @if (!string.IsNullOrWhiteSpace(change.Note)) { <p>@change.Note</p> }
+            </li>
+        }
+        </ol>
+    </section>
+</section>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

@@ -11,7 +11,7 @@ public class ManualPaymentInputViewModel
     [EnumDataType(typeof(PaymentMethod)), Display(Name = "Ödeme yöntemi")]
     public PaymentMethod Method { get; set; } = PaymentMethod.CreditCard;
 
-    [ModelBinder(BinderType = typeof(MoneyAmountModelBinder)), Display(Name = "Toplam ödeme tutarı")]
+    [ModelBinder(BinderType = typeof(MoneyAmountModelBinder)), Display(Name = "Ana satış tutarı")]
     public decimal? Amount { get; set; }
 
     [ModelBinder(BinderType = typeof(MoneyAmountModelBinder)), Display(Name = "İlave indirim (%)")]

@@ -43,8 +43,7 @@
                     </h1>
 
                     <p class="register-intro-description">
-                        Spor üyeliğini veya yalnızca Kitchen hizmetini seç,
-                        NO23 deneyimine katıl.
+                        Sana uygun spor üyeliğini seç, NO23 deneyimine katıl.
                     </p>
 
                     <ul class="register-benefits">
@@ -164,14 +163,13 @@
                             </div>
                         </div>
 
-                        <div class="col-12" data-package-selector data-kitchen-registration>
+                        <div class="col-12" data-package-selector>
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <div class="no23-form-field no23-package-field">
                                         <label asp-for="Input.PackageCode"></label>
                                         <select asp-for="Input.PackageCode" class="form-select no23-form-select" data-package-choice>
-                                            <option value="">Paket / hizmet seçin</option>
-                                            <option value="kitchen">NO:23 Kitchen — yalnızca yemek</option>
+                                            <option value="">Spor üyelik paketi seçin</option>
                                             @foreach (var package in Model.PackageOptions)
                                             {
                                                 <option value="@package.Code">@package.Name</option>
@@ -180,10 +178,10 @@
                                         <span asp-validation-for="Input.PackageCode"></span>
                                     </div>
                                 </div>
-                                <div class="col-md-6" data-package-variant-field hidden="@Model.IsKitchenRegistration">
+                                <div class="col-md-6">
                                     <div class="no23-form-field no23-package-option-field">
                                         <label asp-for="Input.ServicePackageVariantId"></label>
-                                        <select asp-for="Input.ServicePackageVariantId" class="form-select no23-form-select" data-package-variant disabled="@Model.IsKitchenRegistration" required="@(!Model.IsKitchenRegistration)">
+                                        <select asp-for="Input.ServicePackageVariantId" class="form-select no23-form-select" data-package-variant required>
                                             <option value="">Üyelik süresi seçin</option>
                                             @foreach (var package in Model.PackageOptions)
                                             {
@@ -201,10 +199,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <p class="package-choice-summary" data-kitchen-notice hidden="@(!Model.IsKitchenRegistration)">
-                                Kitchen hesabı için spor paketi seçmen gerekmez. Yemek planını ve teslimatını Kitchen'da tamamlayabilirsin.
-                                Spor üyeliği ve ders hakkı içermez.
-                            </p>
+                            <p class="form-text">Üye kaydı için spor üyelik paketi ve süre seçimi zorunludur.</p>
                             @if (Model.PackageOptions.Count == 0)
                             {
                                 <p class="register-validation-summary" role="status">Şu anda başvuruya açık üyelik paketi bulunmuyor.</p>
@@ -266,8 +261,8 @@
 
                     <button id="registerSubmit"
                             type="submit"
-                            class="no23-register-submit">
-                        <span data-registration-submit-label>@(Model.IsKitchenRegistration ? "Kitchen hesabımı oluştur" : "Hesabımı oluştur")</span>
+                            class="no23-register-submit" disabled="@(Model.PackageOptions.Count == 0)">
+                        <span>Hesabımı oluştur</span>
                         <span aria-hidden="true">→</span>
                     </button>
 

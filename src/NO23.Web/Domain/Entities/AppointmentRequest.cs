@@ -16,4 +16,11 @@ public class AppointmentRequest
     public ServicePackageApplicationStatus Status { get; set; } = ServicePackageApplicationStatus.Pending;
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAtUtc { get; set; }
+    public int? ScheduledTrainerId { get; set; }
+    public Trainer? ScheduledTrainer { get; set; }
+    public DateTime? ScheduledAtUtc { get; set; }
+    public int DurationMinutes { get; set; } = 30;
+    public AppointmentScheduleStatus? ScheduleStatus { get; set; }
+    [ConcurrencyCheck] public Guid Version { get; set; } = Guid.NewGuid();
+    public ICollection<AppointmentScheduleHistory> ScheduleHistory { get; set; } = [];
 }

@@ -117,12 +117,17 @@ public partial class PersonalTrainingCalendarService
             .Where(s => s.GroupClass.IsActive && s.GroupClass.TrainerId == trainerId && s.Status == ClassSessionStatus.Scheduled &&
                 s.StartsAtUtc >= windowStart && s.StartsAtUtc < windowEnd)
             .Select(s => new { s.StartsAtUtc, s.GroupClass.DurationMinutes }).ToListAsync();
+        var appointments = await dbContext.AppointmentRequests.AsNoTracking()
+            .Where(x => x.ScheduledTrainerId == trainerId && x.ScheduleStatus == AppointmentScheduleStatus.Scheduled &&
+                x.ScheduledAtUtc >= windowStart && x.ScheduledAtUtc < windowEnd)
+            .Select(x => new { x.ScheduledAtUtc, x.DurationMinutes }).ToListAsync();
         foreach (var start in plan.Starts)
         {
             var finish = start.AddMinutes(input.DurationMinutes);
             if (personal.Any(s => s.StartsAtUtc < finish && s.StartsAtUtc.AddMinutes(s.DurationMinutes) > start) ||
-                groups.Any(s => s.StartsAtUtc < finish && s.StartsAtUtc.AddMinutes(s.DurationMinutes) > start))
-                return Fail($"{ClubTime.ToLocal(start):dd.MM.yyyy HH:mm} saatinde eğitmen veya üyenin başka dersi var. Hiçbir ders eklenmedi.");
+                groups.Any(s => s.StartsAtUtc < finish && s.StartsAtUtc.AddMinutes(s.DurationMinutes) > start) ||
+                appointments.Any(x => x.ScheduledAtUtc < finish && x.ScheduledAtUtc!.Value.AddMinutes(x.DurationMinutes) > start))
+                return Fail($"{ClubTime.ToLocal(start):dd.MM.yyyy HH:mm} saatinde eğitmen / üyenin dersi veya eğitmenin ön görüşmesi var. Hiçbir ders eklenmedi.");
         }
         plan.Succeeded = true;
         plan.Message = plan.AvailableLessons is { } limit && plan.LessonCount < limit

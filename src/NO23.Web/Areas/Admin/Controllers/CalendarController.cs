@@ -30,6 +30,11 @@ public class CalendarController(ApplicationDbContext db, PersonalTrainingCalenda
                 .Select(x => new SelectListItem(x.ApplicationUser.FirstName + " " + x.ApplicationUser.LastName + " — " + x.ApplicationUser.Email, x.Id.ToString())).ToListAsync(),
             MemberPackagePeriods = await db.MemberProfiles.AsNoTracking()
                 .Select(x => new MemberPackagePeriodViewModel(x.Id, x.MembershipStartsAtUtc, x.MembershipEndsAtUtc)).ToListAsync(),
+            Appointments = await db.AppointmentRequests.AsNoTracking().Include(x => x.ScheduledTrainer)
+                .Where(x => !memberId.HasValue && x.ScheduledAtUtc >= start && x.ScheduledAtUtc < end &&
+                    (x.ScheduleStatus == AppointmentScheduleStatus.Scheduled || (includeCompleted && x.ScheduleStatus == AppointmentScheduleStatus.Completed)) &&
+                    (!trainerId.HasValue || x.ScheduledTrainerId == trainerId))
+                .OrderBy(x => x.ScheduledAtUtc).ToListAsync(),
             Groups = await db.ClassSessions.AsNoTracking().Include(x => x.GroupClass).ThenInclude(x => x.Trainer)
                 .Include(x => x.Reservations).ThenInclude(x => x.MemberProfile).ThenInclude(x => x.ApplicationUser)
                 .Where(x => x.Status != ClassSessionStatus.Cancelled && (includeCompleted || x.Status != ClassSessionStatus.Completed) && x.GroupClass.IsActive && x.StartsAtUtc >= start && x.StartsAtUtc < end && (!trainerId.HasValue || x.GroupClass.TrainerId == trainerId) &&

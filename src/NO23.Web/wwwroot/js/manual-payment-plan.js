@@ -168,7 +168,7 @@
             }
             plan.querySelector('[data-payment-amount-help]').textContent = base === null || customPrice
                 ? 'Anlaşılan toplam satış tutarını girin.'
-                : `Katalog bedeli: ${money.format(base / 100)}. Anlaşılan toplamı doğrudan yazabilir veya indirim yüzdesi girebilirsiniz.${siblingDiscount ? ' %25 kardeş indirimi hesaba katıldı.' : ''}`;
+                : `Katalog bedeli: ${money.format(base / 100)}. Ana satış tutarını doğrudan yazabilir veya indirim yüzdesi girebilirsiniz.${siblingDiscount ? ' %25 kardeş indirimi hesaba katıldı.' : ''}`;
             if (regenerate) generateRows();
             else summarize();
         }

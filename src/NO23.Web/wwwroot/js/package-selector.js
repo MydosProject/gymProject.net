@@ -35,15 +35,6 @@
         }
 
         function syncVariants(preserveSelection) {
-            if (container.hasAttribute('data-kitchen-registration')) {
-                const kitchen = packageSelect.value === 'kitchen';
-                container.querySelector('[data-package-variant-field]').hidden = kitchen;
-                container.querySelector('[data-kitchen-notice]').hidden = !kitchen;
-                variantSelect.disabled = kitchen;
-                variantSelect.required = !kitchen;
-                const submitLabel = container.closest('form')?.querySelector('[data-registration-submit-label]');
-                if (submitLabel) submitLabel.textContent = kitchen ? 'Kitchen hesabımı oluştur' : 'Hesabımı oluştur';
-            }
             const previous = preserveSelection ? variantSelect.value : '';
             const available = variants.filter(option => option.value && option.dataset.package === packageSelect.value);
             variantSelect.replaceChildren();

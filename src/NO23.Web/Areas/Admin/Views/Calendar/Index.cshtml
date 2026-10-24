@@ -1,5 +1,5 @@
 @model NO23.Web.ViewModels.Admin.WeeklyCalendarViewModel
-@section Styles { <link rel="stylesheet" href="~/css/admin-calendar.css" asp-append-version="true" /><link rel="stylesheet" href="~/css/weekly-personal-schedule.css" asp-append-version="true" /><link rel="stylesheet" href="~/css/calendar-bulk.css" asp-append-version="true" /> }
+@section Styles { <link rel="stylesheet" href="~/css/admin-calendar.css" asp-append-version="true" /><link rel="stylesheet" href="~/css/weekly-personal-schedule.css" asp-append-version="true" /><link rel="stylesheet" href="~/css/calendar-bulk.css" asp-append-version="true" /><link rel="stylesheet" href="~/css/consultation-calendar.css" asp-append-version="true" /> }
 @using NO23.Web.Services
 @using NO23.Web.Domain.Enums
 @using NO23.Web.Extensions
@@ -91,7 +91,7 @@
     </details>
     @await Html.PartialAsync("_CalendarBulkToolbar", new NO23.Web.ViewModels.Admin.CalendarBulkInput { Week = Model.Week, TrainerId = Model.TrainerId, MemberId = Model.MemberId, IncludeCompleted = Model.IncludeCompleted })
     <div class="weekly-calendar-legend" aria-label="Ders türleri">
-        <span class="calendar-kind is-personal">Birebir</span><span class="calendar-kind">Grup</span>
+        <span class="calendar-kind is-personal">Birebir</span><span class="calendar-kind">Grup</span><span class="calendar-kind is-consultation">Ön görüşme</span>
         <p>Toplu işlem için ders kartındaki seçim kutusunu işaretleyin.</p>
     </div>
     <div class="weekly-calendar">
@@ -104,13 +104,17 @@
             <h2>@date.ToString("dddd",culture)<time datetime="@date.ToString("yyyy-MM-dd")">@date.ToString("dd MMM", culture)</time></h2>
             <div class="calendar-day-indicators">
                 @if(date.Date == today){<span class="calendar-today">Bugün</span>}
-                <span class="calendar-day-count">@entries.Count ders</span>
+                <span class="calendar-day-count">@entries.Count kayıt</span>
             </div>
         </header>
         @if(entries.Count==0){<div class="calendar-day-empty"><strong>Ders yok</strong><p>Bu gün için ders planlanmamış.</p></div>}
         @foreach(var entry in entries)
         {
-        if (entry.Group is { } session)
+        if (entry.Appointment is { } appointment)
+        {
+            <partial name="/Views/Shared/_ConsultationCalendarCard.cshtml" model="appointment" />
+        }
+        else if (entry.Group is { } session)
         {
             var participants=session.Reservations.Where(x=>x.Status==ClassReservationStatus.Reserved).ToList();
             <article id="group-session-@session.Id" class="weekly-calendar-session">

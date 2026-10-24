@@ -97,11 +97,17 @@ public class ManualOrderPaymentServiceTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void AdminPackageOrder_AllowsAnAgreedAmountForEveryPackage(bool priceOnRequest)
+    [InlineData(ServicePackageCategory.Membership, false)]
+    [InlineData(ServicePackageCategory.Membership, true)]
+    [InlineData(ServicePackageCategory.PersonalTraining, false)]
+    [InlineData(ServicePackageCategory.PersonalTraining, true)]
+    [InlineData(ServicePackageCategory.GroupClasses, false)]
+    [InlineData(ServicePackageCategory.GroupClasses, true)]
+    [InlineData(ServicePackageCategory.KidsClub, false)]
+    [InlineData(ServicePackageCategory.KidsClub, true)]
+    public void AdminPackageOrder_AllowsAnAgreedAmountForEveryPackage(ServicePackageCategory category, bool priceOnRequest)
     {
-        var variant = Variant(ServicePackageCategory.PersonalTraining);
+        var variant = Variant(category);
         variant.PriceOnRequest = priceOnRequest;
         var input = PaymentInput();
         input.Amount = 125m;

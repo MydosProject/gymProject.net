@@ -9,6 +9,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 {
     public DbSet<MemberProgressPhoto> MemberProgressPhotos => Set<MemberProgressPhoto>();
     public DbSet<AppointmentRequest> AppointmentRequests => Set<AppointmentRequest>();
+    public DbSet<AppointmentScheduleHistory> AppointmentScheduleHistories => Set<AppointmentScheduleHistory>();
 
     public DbSet<UserNotification> UserNotifications => Set<UserNotification>();
 

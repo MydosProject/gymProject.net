@@ -3,11 +3,11 @@
 @{ ViewData["Title"] = "Randevu Talepleri"; }
 <section class="admin-page"><div class="container">
     <header class="admin-page-head"><div><h1>Randevu talepleri</h1><p>Ziyaretçiyi arayarak tarih ve saati netleştir, ardından talebi onayla. Saatler Türkiye saatidir.</p></div></header>
-    @if (TempData["SuccessMessage"] is string message) { <div class="alert alert-success">@message</div> }
+    @foreach (var key in new[] { "SuccessMessage", "ErrorMessage" }) { if (TempData[key] is string message) { <div class="alert @(key == "SuccessMessage" ? "alert-success" : "alert-danger")">@message</div> } }
     <div class="table-responsive"><table class="table table-dark align-middle">
-        <thead><tr><th>İletişim</th><th>Hizmet</th><th>Tercih edilen zaman</th><th>Not</th><th>Durum</th></tr></thead>
+        <thead><tr><th>İletişim</th><th>Hizmet</th><th>Tercih edilen zaman</th><th>Not</th><th>Durum</th><th>Takvim</th></tr></thead>
         <tbody>
-        @if (Model.Count == 0) { <tr><td colspan="5">Henüz randevu talebi bulunmuyor.</td></tr> }
+        @if (Model.Count == 0) { <tr><td colspan="6">Henüz randevu talebi bulunmuyor.</td></tr> }
         @foreach (var request in Model)
         {
             <tr><td>@request.FullName<br />@request.PhoneNumber</td><td>@request.Service</td>
@@ -19,6 +19,9 @@
                         { <option value="@status" selected="@(status == request.Status)">@status.GetDisplayName()</option> }
                     </select><button class="btn btn-outline-light">Kaydet</button>
                 </form></td>
+                <td>@if (request.ScheduleStatus.HasValue) { <span>@request.ScheduleStatus.Value.GetDisplayName()</span><br />@NO23.Web.Services.ClubTime.ToLocal(request.ScheduledAtUtc!.Value).ToString("dd.MM.yyyy HH:mm")<br />@request.ScheduledTrainer?.FirstName @request.ScheduledTrainer?.LastName }
+                    else { <span>Henüz planlanmadı</span> }
+                    <br /><a asp-action="Schedule" asp-route-id="@request.Id">Planla / detay →</a></td>
             </tr>
         }
         </tbody>

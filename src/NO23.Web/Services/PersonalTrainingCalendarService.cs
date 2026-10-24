@@ -35,6 +35,7 @@ public partial class PersonalTrainingCalendarService(ApplicationDbContext dbCont
         {
             await using var transaction = dbContext.Database.IsRelational()
                 ? await dbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable) : null;
+            await TrainerScheduleGuard.LockAsync(dbContext, trainerId);
             var plan = await BuildWeeklyPlanAsync(trainerId, input, allowUnassignedMember, allowPastDates);
             if (!plan.Succeeded) return (false, plan.Message);
             var recurrenceIds = input.Days.Distinct().ToDictionary(day => day, _ => Guid.NewGuid());
@@ -148,6 +149,19 @@ public partial class PersonalTrainingCalendarService(ApplicationDbContext dbCont
         int trainerId, int memberProfileId, DateTime startsAtUtc, int durationMinutes, string? note,
         bool allowUnassignedMember, bool allowPastDates)
     {
+        try { return await CreateLockedAsync(trainerId, memberProfileId, startsAtUtc, durationMinutes, note, allowUnassignedMember, allowPastDates); }
+        catch (DbUpdateException) { return (false, "Takvim başka bir işlemle değişti. Sayfayı yenileyip tekrar deneyin."); }
+        catch (Exception exception) when (exception.GetBaseException() is Npgsql.PostgresException { SqlState: "40001" or "40P01" })
+        { return (false, "Takvim başka bir işlemle değişti. Sayfayı yenileyip tekrar deneyin."); }
+    }
+
+    private async Task<(bool Succeeded, string Message)> CreateLockedAsync(
+        int trainerId, int memberProfileId, DateTime startsAtUtc, int durationMinutes, string? note,
+        bool allowUnassignedMember, bool allowPastDates)
+    {
+        await using var transaction = dbContext.Database.IsRelational()
+            ? await dbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable) : null;
+        await TrainerScheduleGuard.LockAsync(dbContext, trainerId);
         if (!allowPastDates && startsAtUtc <= DateTime.UtcNow)
             return (false, "Ders için gelecekte bir tarih ve saat seçmelisiniz.");
         if (!await dbContext.Trainers.AnyAsync(x => x.Id == trainerId && x.IsActive))
@@ -179,7 +193,7 @@ public partial class PersonalTrainingCalendarService(ApplicationDbContext dbCont
             (item.TrainerId == trainerId || item.MemberProfileId == memberProfileId) && item.Status == PersonalTrainingSessionStatus.Scheduled &&
             item.StartsAtUtc < endsAtUtc && item.StartsAtUtc.AddMinutes(item.DurationMinutes) > startsAtUtc);
         if (hasConflict || await HasGroupConflictAsync(trainerId, startsAtUtc, endsAtUtc))
-            return (false, "Bu saat aralığında başka bir dersiniz bulunuyor.");
+            return (false, "Bu saat aralığında başka bir ders veya ön görüşme bulunuyor.");
 
         dbContext.PersonalTrainingSessions.Add(new PersonalTrainingSession
         {
@@ -191,6 +205,7 @@ public partial class PersonalTrainingCalendarService(ApplicationDbContext dbCont
             Note = note?.Trim()
         });
         await dbContext.SaveChangesAsync();
+        if (transaction is not null) await transaction.CommitAsync();
         return (true, "Ders takvime eklendi.");
     }
 
@@ -212,6 +227,7 @@ public partial class PersonalTrainingCalendarService(ApplicationDbContext dbCont
     {
         await using var transaction = dbContext.Database.IsRelational()
             ? await dbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable) : null;
+        await TrainerScheduleGuard.LockAsync(dbContext, trainerId);
         var session = await dbContext.PersonalTrainingSessions
             .Include(item => item.MemberProfile)
             .ThenInclude(item => item.MembershipPackage)
@@ -245,7 +261,7 @@ public partial class PersonalTrainingCalendarService(ApplicationDbContext dbCont
                 item.StartsAtUtc < newEnd &&
                 item.StartsAtUtc.AddMinutes(item.DurationMinutes) > postponedStartsAtUtc.Value);
             if (hasConflict || await HasGroupConflictAsync(trainerId, postponedStartsAtUtc.Value, newEnd))
-                return (false, "Yeni saat aralığında başka bir dersiniz bulunuyor.");
+                return (false, "Yeni saat aralığında başka bir ders veya ön görüşme bulunuyor.");
 
             if (session.RecurrenceId is null)
             {
@@ -283,8 +299,9 @@ public partial class PersonalTrainingCalendarService(ApplicationDbContext dbCont
         return (true, status == PersonalTrainingSessionStatus.Postponed
             ? "Ders ertelendi; ders hakkı düşülmedi." : "Ders durumu güncellendi.");
     }
-    private Task<bool> HasGroupConflictAsync(int trainerId, DateTime start, DateTime end) =>
-        dbContext.ClassSessions.AnyAsync(x => x.GroupClass.IsActive && x.GroupClass.TrainerId == trainerId &&
+    private async Task<bool> HasGroupConflictAsync(int trainerId, DateTime start, DateTime end) =>
+        await TrainerScheduleGuard.HasAppointmentAsync(dbContext, trainerId, start, end) ||
+        await dbContext.ClassSessions.AnyAsync(x => x.GroupClass.IsActive && x.GroupClass.TrainerId == trainerId &&
             x.Status == ClassSessionStatus.Scheduled && x.StartsAtUtc < end &&
             x.StartsAtUtc.AddMinutes(x.GroupClass.DurationMinutes) > start);
 }

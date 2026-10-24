@@ -1,0 +1,11 @@
+@using NO23.Web.Services
+@using NO23.Web.Extensions
+@using NO23.Web.Data.Seed
+@model NO23.Web.Domain.Entities.AppointmentRequest
+<article class="consultation-calendar-card" id="appointment-@Model.Id">
+    <div><strong>Ön görüşme</strong><span>@Model.DurationMinutes dk</span></div>
+    <time datetime="@ClubTime.ToLocal(Model.ScheduledAtUtc!.Value).ToString("yyyy-MM-ddTHH:mm")">@ClubTime.ToLocal(Model.ScheduledAtUtc.Value).ToString("HH:mm")</time>
+    <h3>@Model.FullName</h3><p>@Model.Service</p><p>@Model.ScheduledTrainer?.FirstName @Model.ScheduledTrainer?.LastName</p>
+    <span>@Model.ScheduleStatus?.GetDisplayName()</span><small>Ders hakkı kullanılmaz</small>
+    <a asp-area="@(User.IsInRole(ApplicationRoles.Admin) ? "Admin" : "Trainer")" asp-controller="AppointmentRequests" asp-action="@(User.IsInRole(ApplicationRoles.Admin) ? "Schedule" : "Details")" asp-route-id="@Model.Id">Görüşme detayı →</a>
+</article>

@@ -17,12 +17,15 @@ public class WeeklyCalendarViewModel
     public List<MemberPackagePeriodViewModel> MemberPackagePeriods { get; set; } = [];
     public List<ClassSession> Groups { get; set; } = [];
     public List<PersonalTrainingSession> Personal { get; set; } = [];
+    public List<AppointmentRequest> Appointments { get; set; } = [];
 
     public IReadOnlyList<WeeklyCalendarEntryViewModel> EntriesFor(DateTime date) =>
         Groups.Where(session => NO23.Web.Services.ClubTime.ToLocal(session.StartsAtUtc).Date == date.Date)
             .Select(session => new WeeklyCalendarEntryViewModel(session.StartsAtUtc, session, null))
             .Concat(Personal.Where(session => NO23.Web.Services.ClubTime.ToLocal(session.StartsAtUtc).Date == date.Date)
                 .Select(session => new WeeklyCalendarEntryViewModel(session.StartsAtUtc, null, session)))
+            .Concat(Appointments.Where(request => NO23.Web.Services.ClubTime.ToLocal(request.ScheduledAtUtc!.Value).Date == date.Date)
+                .Select(request => new WeeklyCalendarEntryViewModel(request.ScheduledAtUtc!.Value, null, null, request)))
             .OrderBy(entry => entry.StartsAtUtc)
             .ThenBy(entry => entry.Group is null ? 1 : 0)
             .ToList();
@@ -36,7 +39,8 @@ public record MemberPackagePeriodViewModel(
 public record WeeklyCalendarEntryViewModel(
     DateTime StartsAtUtc,
     ClassSession? Group,
-    PersonalTrainingSession? Personal);
+    PersonalTrainingSession? Personal,
+    AppointmentRequest? Appointment = null);
 
 public class WeeklyGroupInput
 {

@@ -1,0 +1,9 @@
+.consultation-calendar-card { margin:0 0 .75rem; padding:.8rem; border:1px solid #64d3ff; border-left:5px solid #38bdf8; border-radius:11px; background:#0b2a3a; color:#f0f9ff; overflow-wrap:anywhere; }
+.consultation-calendar-card > div { display:flex; justify-content:space-between; gap:.4rem; font-size:.75rem; }
+.consultation-calendar-card > div strong { color:#8cddff; text-transform:uppercase; letter-spacing:.04em; }
+.consultation-calendar-card time { display:block; margin:.5rem 0; color:#fff; font-size:1.5rem; font-weight:800; }
+.consultation-calendar-card h3 { margin:0 0 .5rem; color:#fff; font-size:1rem; }
+.consultation-calendar-card p, .consultation-calendar-card span { margin:0 0 .4rem; color:#deeff7; font-size:.8rem; }
+.consultation-calendar-card small { display:block; color:#a7cbdc; margin:.4rem 0; }
+.consultation-calendar-card a { color:#8cddff; font-weight:700; font-size:.8rem; }
+.calendar-kind.is-consultation { background:#0b2a3a; color:#8cddff; border:1px solid #38bdf8; }

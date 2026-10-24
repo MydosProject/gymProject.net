@@ -13,12 +13,19 @@ public class AdminDashboardViewModel
     public int PendingPersonalTrainingRequests { get; set; }
 
     public int PendingOrders { get; set; }
+    public int PendingAppointmentRequests { get; set; }
+    public int PendingPackageApplications { get; set; }
+    public int TotalPendingRequests => PendingAppointmentRequests + PendingPackageApplications + PendingPersonalTrainingRequests;
+    public IReadOnlyList<AdminPendingRequestItem> PendingRequests { get; set; } = [];
 
     public IReadOnlyList<PersonalTrainingRequestListItemViewModel>
         RecentPersonalTrainingRequests { get; init; } = [];
 
     public IReadOnlyList<TrainerMonthlyLessonViewModel> MonthlyTrainerLessons { get; set; } = [];
 }
+
+public record AdminPendingRequestItem(int Id, string Controller, string Kind, string Name, string Phone,
+    string Detail, DateTime CreatedAtUtc);
 
 public class TrainerMonthlyLessonViewModel
 {

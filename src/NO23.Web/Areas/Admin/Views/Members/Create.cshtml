@@ -112,7 +112,7 @@
                         <label asp-for="Payment.Amount" class="form-label"></label>
                         <input asp-for="Payment.Amount" type="number" min="0.01" step="0.01" class="form-control" data-payment-amount />
                         <span asp-validation-for="Payment.Amount" class="text-danger"></span>
-                        <small class="form-text text-muted" data-payment-amount-help>Katalog fiyatı önerilir; anlaşılan satış tutarını doğrudan değiştirebilirsiniz.</small>
+                        <small class="form-text text-muted" data-payment-amount-help>Spor paketi seçimi zorunludur. Ana satış tutarını yönetici belirleyebilir.</small>
                     </div>
                     <div class="col-md-4">
                         <label asp-for="Payment.Reference" class="form-label"></label>
