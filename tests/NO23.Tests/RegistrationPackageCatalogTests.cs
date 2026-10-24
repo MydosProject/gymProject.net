@@ -1,13 +1,20 @@
 using System.Security.Claims;
+using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging.Abstractions;
 using NO23.Web.Areas.Admin.Controllers;
 using NO23.Web.Areas.Identity.Pages.Account;
 using NO23.Web.Data;
@@ -17,6 +24,7 @@ using NO23.Web.Domain.Enums;
 using NO23.Web.Infrastructure.Identity;
 using NO23.Web.Infrastructure.Validation;
 using NO23.Web.Services;
+using NO23.Web.Services.Payments;
 using NO23.Web.ViewModels.Admin;
 using NO23.Web.ViewModels.Member;
 
@@ -28,36 +36,55 @@ public class RegistrationPackageCatalogTests
     [InlineData("kitchen", "/Member/Kitchen/ResumePendingSubscription")]
     [InlineData(null, "/Member/Kitchen/ResumePendingSubscription")]
     [InlineData(null, "/Kitchen/ContinueSubscription?packageId=3&meal=Lunch")]
-    public async Task RegisterGet_KitchenReturnRequiresSportsPackageAndPreservesResumeUrl(string? package, string resume)
+    public async Task RegisterGet_KitchenCheckoutUsesAccountOnlyFormAndPreservesResumeUrl(string? package, string resume)
     {
         await using var provider = CreateServices();
         var catalog = await SeedCatalogAsync(provider);
         var page = CreatePage(provider);
         await page.OnGetAsync(package: package, returnUrl: resume, variant: catalog.Hybrid.Id);
-        Assert.Equal("hybrid", page.Input.PackageCode);
-        Assert.Equal(catalog.Hybrid.Id, page.Input.ServicePackageVariantId);
-        Assert.DoesNotContain(page.PackageOptions, option => option.Code == "kitchen");
+        Assert.True(page.IsKitchenRegistration);
+        Assert.Equal(RegistrationFlow.Kitchen, page.Input.Flow);
+        Assert.Equal(string.Empty, page.Input.PackageCode);
+        Assert.Null(page.Input.ServicePackageVariantId);
+        Assert.Empty(page.PackageOptions);
+        Assert.Empty(page.ServiceOptions);
         Assert.Equal(resume, page.ReturnUrl);
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task RegisterPost_RejectsKitchenOnlyRegistrationEvenWithInjectedSportsVariant(bool injectVariant)
+    public async Task RegisterPost_KitchenCheckoutCreatesAccountWithoutSportsEvenWithInjectedVariant(bool injectVariant)
     {
         await using var provider = CreateServices();
         var catalog = await SeedCatalogAsync(provider);
         var page = CreatePage(provider);
         page.Input = ValidInput("kitchen", injectVariant ? catalog.Black.Id : null);
+        page.Input.Flow = RegistrationFlow.Kitchen;
+        page.Input.FitnessGoal = "Injected sports data";
         const string resume = "/Member/Kitchen/ResumePendingSubscription";
-        Assert.IsType<PageResult>(await page.OnPostAsync(resume));
-        Assert.NotEmpty(page.ModelState["Input.PackageCode"]!.Errors);
+        Assert.Equal(resume, Assert.IsType<LocalRedirectResult>(await page.OnPostAsync(resume)).Url);
         Assert.Equal(resume, page.ReturnUrl);
         var db = provider.GetRequiredService<ApplicationDbContext>();
-        Assert.Empty(await db.Users.ToListAsync());
-        Assert.Empty(await db.MemberProfiles.ToListAsync());
+        var profile = await db.MemberProfiles.Include(x => x.MembershipPackage).SingleAsync();
+        Assert.Equal(MembershipPackageCode.KitchenOnly, profile.MembershipPackage.Code);
+        Assert.Null(profile.ServicePackageVariantId);
+        Assert.Null(profile.MembershipPackageOptionId);
+        Assert.Null(profile.MembershipStartsAtUtc);
+        Assert.Null(profile.MembershipEndsAtUtc);
+        Assert.Null(profile.FitnessGoal);
+        Assert.Equal(0, profile.RemainingClassCredits);
+        Assert.False(MemberPackageEntitlement.HasUnlimitedClassAccess(profile));
+        Assert.False(MemberPackageEntitlement.IsActive(profile, DateTime.UtcNow));
         Assert.Empty(await db.Orders.ToListAsync());
-        Assert.Null(provider.GetRequiredService<CapturingAuthenticationService>().SignedInUser);
+        Assert.NotNull(provider.GetRequiredService<CapturingAuthenticationService>().SignedInUser);
+        Assert.True(await provider.GetRequiredService<UserManager<ApplicationUser>>()
+            .IsInRoleAsync(await db.Users.SingleAsync(), ApplicationRoles.Member));
+        var admin = CreateAdminController(provider);
+        var listed = Assert.Single(Assert.IsAssignableFrom<IReadOnlyList<MemberListItemViewModel>>(
+            Assert.IsType<ViewResult>(await admin.Index()).Model));
+        Assert.True(listed.IsKitchenOnly);
+        Assert.False(listed.IsUnlimitedPackage);
     }
 
     [Theory]
@@ -77,6 +104,145 @@ public class RegistrationPackageCatalogTests
         Assert.Empty(page.PackageOptions);
         Assert.Empty(await db.MemberProfiles.ToListAsync());
         Assert.Empty(await db.Users.ToListAsync());
+    }
+
+    [Fact]
+    public async Task KitchenCheckout_DoesNotDependOnSportsCatalogAvailability()
+    {
+        await using var provider = CreateServices();
+        await SeedCatalogAsync(provider);
+        var db = provider.GetRequiredService<ApplicationDbContext>();
+        foreach (var package in await db.ServicePackages.ToListAsync()) package.IsActive = false;
+        await db.SaveChangesAsync();
+        var page = CreatePage(provider);
+        Assert.IsType<PageResult>(await page.OnGetAsync(flow: RegistrationFlow.Kitchen));
+        Assert.Empty(page.PackageOptions);
+        page.Input = ValidInput(string.Empty, null);
+        page.Input.Flow = RegistrationFlow.Kitchen;
+        Assert.Equal("/Member/Kitchen", Assert.IsType<LocalRedirectResult>(await page.OnPostAsync()).Url);
+        Assert.Equal(0, (await db.MemberProfiles.SingleAsync()).RemainingClassCredits);
+        Assert.Empty(await db.Orders.ToListAsync());
+    }
+
+    [Fact]
+    public async Task RegisterGet_ExplicitSportsFlowKeepsPackageSelectionEvenWithKitchenReturnUrl()
+    {
+        await using var provider = CreateServices();
+        var catalog = await SeedCatalogAsync(provider);
+        var page = CreatePage(provider);
+        await page.OnGetAsync(returnUrl: "/Member/Kitchen/ResumePendingSubscription", flow: RegistrationFlow.Sports);
+        Assert.False(page.IsKitchenRegistration);
+        Assert.Equal("hybrid", page.Input.PackageCode);
+        Assert.Equal(catalog.Hybrid.Id, page.Input.ServicePackageVariantId);
+    }
+
+    [Theory]
+    [InlineData("//example.test/Member/Kitchen/ResumePendingSubscription")]
+    [InlineData("https://example.test/Member/Kitchen/ResumePendingSubscription")]
+    public async Task KitchenRegistration_DoesNotRedirectToExternalUrls(string returnUrl)
+    {
+        await using var provider = CreateServices();
+        await SeedCatalogAsync(provider);
+        var page = CreatePage(provider);
+        await page.OnGetAsync(returnUrl: returnUrl, flow: RegistrationFlow.Kitchen);
+        Assert.Null(page.ReturnUrl);
+        page.Input = ValidInput(string.Empty, null);
+        page.Input.Flow = RegistrationFlow.Kitchen;
+        Assert.Equal("/Member/Kitchen", Assert.IsType<LocalRedirectResult>(await page.OnPostAsync(returnUrl)).Url);
+    }
+
+    [Fact]
+    public async Task Registration_InvalidFlowCannotCreateAnAccount()
+    {
+        await using var provider = CreateServices();
+        var catalog = await SeedCatalogAsync(provider);
+        var page = CreatePage(provider);
+        Assert.IsType<BadRequestResult>(await page.OnGetAsync(flow: (RegistrationFlow)99));
+        page.Input = ValidInput("hybrid", catalog.Hybrid.Id);
+        page.Input.Flow = (RegistrationFlow)99;
+        Assert.IsType<PageResult>(await page.OnPostAsync());
+        Assert.NotEmpty(page.ModelState["Input.Flow"]!.Errors);
+        Assert.Empty(await provider.GetRequiredService<ApplicationDbContext>().Users.ToListAsync());
+    }
+
+    [Fact]
+    public void RegistrationValidation_RequiresSportsPackageAndDurationOnlyForSportsFlow()
+    {
+        var input = ValidInput(string.Empty, null);
+        var errors = new List<ValidationResult>();
+        Assert.False(Validator.TryValidateObject(input, new ValidationContext(input), errors, true));
+        Assert.Contains(errors, x => x.MemberNames.Contains(nameof(input.PackageCode)));
+        Assert.Contains(errors, x => x.MemberNames.Contains(nameof(input.ServicePackageVariantId)));
+        input.Flow = RegistrationFlow.Kitchen;
+        errors.Clear();
+        Assert.True(Validator.TryValidateObject(input, new ValidationContext(input), errors, true));
+    }
+
+    [Fact]
+    public async Task KitchenCheckout_RegistrationRetryPreservesMealsCaloriesAndDeliveryUntilCheckout()
+    {
+        await using var provider = CreateServices();
+        await SeedCatalogAsync(provider);
+        var db = provider.GetRequiredService<ApplicationDbContext>();
+        var package = new KitchenSubscriptionPackage
+        {
+            Name = "5 Günlük Kitchen", Plan = KitchenSubscriptionPlan.FiveDays, Days = 5,
+            UnitPrice = 3000, TwoMainMealsPrice = 5500, ThreeMainMealsPrice = 7500, DailyDeliveryFee = 95
+        };
+        db.KitchenSubscriptionPackages.Add(package);
+        await db.SaveChangesAsync();
+        var page = CreatePage(provider);
+        page.HttpContext.Session = new MemorySession();
+        var pending = new PendingKitchenSubscriptionData(package.Plan,
+            [KitchenMealSlot.Breakfast, KitchenMealSlot.Lunch, KitchenMealSlot.AfternoonSnack],
+            OrderDeliveryMethod.AddressDelivery, new CalorieCalculatorInputViewModel(),
+            new CalorieRecommendationViewModel { DailyCalories = 2270, ProteinGrams = 98, CarbohydrateGrams = 298, FatGrams = 76 });
+        var raw = JsonSerializer.Serialize(pending);
+        page.HttpContext.Session.SetString(PendingKitchenSubscription.SessionKey, raw);
+        const string resume = "/Member/Kitchen/ResumePendingSubscription";
+        await page.OnGetAsync(flow: RegistrationFlow.Kitchen, returnUrl: resume);
+        page.Input = ValidInput(string.Empty, null);
+        page.Input.Flow = RegistrationFlow.Kitchen;
+        page.Input.Password = page.Input.ConfirmPassword = "missinguppercase123!";
+        Assert.IsType<PageResult>(await page.OnPostAsync());
+        Assert.True(page.IsKitchenRegistration);
+        Assert.Equal(raw, page.HttpContext.Session.GetString(PendingKitchenSubscription.SessionKey));
+        Assert.Empty(await db.Users.ToListAsync());
+
+        page.ModelState.Clear();
+        page.Input.Password = page.Input.ConfirmPassword = "Kitchen123!";
+        Assert.Equal(resume, Assert.IsType<LocalRedirectResult>(await page.OnPostAsync()).Url);
+        Assert.Equal(raw, page.HttpContext.Session.GetString(PendingKitchenSubscription.SessionKey));
+        page.HttpContext.User = provider.GetRequiredService<CapturingAuthenticationService>().SignedInUser!;
+        var options = Options.Create(new IyzicoOptions());
+        var payments = new IyzicoPaymentService(db, new NoPaymentClient(), new KitchenPlanMatchingService(db),
+            options, NullLogger<IyzicoPaymentService>.Instance);
+        var kitchen = new NO23.Web.Areas.Member.Controllers.KitchenController(db, new CalorieCalculatorService(),
+            new CommerceService(db), payments, options, Options.Create(new ClubPickupOptions()))
+        {
+            ControllerContext = new ControllerContext { HttpContext = page.HttpContext },
+            Url = page.Url,
+            TempData = new TempDataDictionary(page.HttpContext, new MemoryTempDataProvider())
+        };
+        var redirect = Assert.IsType<RedirectToActionResult>(await kitchen.ResumePendingSubscription());
+        Assert.Equal("Checkout", redirect.ActionName);
+        Assert.Equal(OrderDeliveryMethod.AddressDelivery, redirect.RouteValues!["deliveryMethod"]);
+        var subscription = await db.KitchenSubscriptions.SingleAsync();
+        Assert.Equal(KitchenSubscriptionStatus.PendingPayment, subscription.Status);
+        Assert.Equal(5500m, subscription.PackagePriceSnapshot);
+        Assert.Equal(95m, subscription.DailyDeliveryFeeSnapshot);
+        Assert.Equal(2270, subscription.DailyCalories);
+        Assert.True(KitchenMealSelection.TryCreateMask(pending.SelectedMeals, out var mask));
+        Assert.Equal(mask, subscription.SelectedMealSlotsMask);
+        Assert.Null(page.HttpContext.Session.GetString(PendingKitchenSubscription.SessionKey));
+        var checkout = Assert.IsType<KitchenCheckoutViewModel>(Assert.IsType<ViewResult>(
+            await kitchen.Checkout(subscription.Id, pending.DeliveryMethod)).Model);
+        Assert.Equal(5975m, checkout.AddressDeliveryTotal);
+        Assert.Equal(pending.DeliveryMethod, checkout.DeliveryMethod);
+        Assert.Contains("Kahvaltı", checkout.SelectedMeals);
+        Assert.Contains("Öğle", checkout.SelectedMeals);
+        Assert.Empty(await db.Orders.ToListAsync());
+        Assert.Equal(0, (await db.MemberProfiles.SingleAsync()).RemainingClassCredits);
     }
 
     [Fact]
@@ -533,7 +699,8 @@ public class RegistrationPackageCatalogTests
         return new RegisterModel(provider.GetRequiredService<UserManager<ApplicationUser>>(),
             provider.GetRequiredService<SignInManager<ApplicationUser>>(), provider.GetRequiredService<ApplicationDbContext>())
         {
-            PageContext = new PageContext { HttpContext = httpContext }
+            PageContext = new PageContext { HttpContext = httpContext },
+            Url = new UrlHelper(new ActionContext(httpContext, new RouteData(), new ActionDescriptor()))
         };
     }
 
@@ -639,6 +806,28 @@ public class RegistrationPackageCatalogTests
         public void SaveTempData(HttpContext context, IDictionary<string, object> values)
         {
         }
+    }
+
+    private sealed class MemorySession : ISession
+    {
+        private readonly Dictionary<string, byte[]> values = [];
+        public bool IsAvailable => true;
+        public string Id { get; } = Guid.NewGuid().ToString();
+        public IEnumerable<string> Keys => values.Keys;
+        public void Clear() => values.Clear();
+        public void Remove(string key) => values.Remove(key);
+        public void Set(string key, byte[] value) => values[key] = value;
+        public bool TryGetValue(string key, [NotNullWhen(true)] out byte[]? value) => values.TryGetValue(key, out value);
+        public Task LoadAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task CommitAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
+    }
+
+    private sealed class NoPaymentClient : IIyzicoCheckoutClient
+    {
+        public Task<IyzicoCheckoutInitializeResult> InitializeAsync(IyzicoCheckoutInitializeRequest request,
+            CancellationToken cancellationToken = default) => throw new InvalidOperationException("Registration must not initiate payment.");
+        public Task<IyzicoCheckoutRetrieveResult> RetrieveAsync(string conversationId, string token,
+            CancellationToken cancellationToken = default) => throw new InvalidOperationException("Registration must not retrieve payment.");
     }
 
     private sealed class CapturingAuthenticationService : IAuthenticationService

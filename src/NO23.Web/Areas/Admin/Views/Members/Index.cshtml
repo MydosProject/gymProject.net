@@ -93,6 +93,8 @@
                                 <td data-label="İletişim">@(string.IsNullOrWhiteSpace(member.PhoneNumber) ? "-" : member.PhoneNumber)</td>
                                 <td data-label="Paket">
                                     <span class="admin-status">@member.PackageName</span>
+                                    @if (member.IsKitchenOnly)
+                                    { <small class="admin-cell-note d-block">Kitchen hesabı · Spor üyeliği yok</small> }
                                     @if (member.MembershipEndsAtUtc is { } membershipEnd)
                                     {
                                         <small class="admin-cell-note d-block">Bitiş: @NO23.Web.Services.ClubTime.ToLocal(membershipEnd).ToString("dd.MM.yyyy")</small>
@@ -108,8 +110,8 @@
                                 </td>
                                 <td data-label="Hedef">@(string.IsNullOrWhiteSpace(member.FitnessGoal) ? "-" : member.FitnessGoal)</td>
                                 <td data-label="Kalan ders">
-                                    <strong>@(member.IsUnlimitedPackage ? "Sınırsız" : member.RemainingClassCredits)</strong>
-                                    <small class="admin-cell-note">Ders hakkı</small>
+                                    <strong>@(member.IsKitchenOnly ? "—" : member.IsUnlimitedPackage ? "Sınırsız" : member.RemainingClassCredits)</strong>
+                                    <small class="admin-cell-note">@(member.IsKitchenOnly ? "Spor üyeliği yok" : "Ders hakkı")</small>
                                 </td>
                                 <td data-label="Personel Trainer">
                                     <form asp-action="AssignTrainer" method="post" class="d-flex gap-2">

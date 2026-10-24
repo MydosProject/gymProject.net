@@ -2,7 +2,7 @@
 
 Maddeler ayrı kabul kriterleriyle ilerletilir. Bir maddenin burada sıraya alınması, geliştirmesinin tamamlandığı anlamına gelmez.
 
-24 Ekim güncellemesi ve yayınlama notları: [Güncel teslimat](TESLIMAT_2026-10-24.md). Kullanıcının son kararıyla **yeni üye kaydında spor paketi seçimi zorunludur**; ana satış tutarını yönetici belirleyebilir.
+24 Ekim güncellemesi ve yayınlama notları: [Güncel teslimat](TESLIMAT_2026-10-24.md). Kullanıcının son kararıyla **Kitchen'de öğün seçip gelen kişi yalnızca Kitchen hesabı açar; spor paketinden gelen kayıtta paket/süre zorunludur**. Ana satış tutarını yönetici belirleyebilir.
 
 ## İlk teslimat
 
@@ -22,7 +22,7 @@ Maddeler ayrı kabul kriterleriyle ilerletilir. Bir maddenin burada sıraya alı
 
 | Madde | Durum | Kabul kriteri |
 |---|---|---|
-| Üye kaydında spor paketi seçimi | Tamamlandı, 24 Ekim kuralı | Kitchen bağlantısından gelenler dahil yeni kayıtta spor üyelik paketi ve aktif süre zorunludur. Kitchen-only yeni kayıt seçeneği kaldırıldı; bu kodu doğrudan göndermek de reddedilir. Spor paketi yayımlanmamışsa yeni kayıt açılamaz. Admin seçilen paketin ana satış tutarını belirleyebilir. Önceden oluşturulmuş KitchenOnly hesapları korunur. |
+| Kitchen ve spor kayıt akışlarının ayrılması | Tamamlandı, 24 Ekim son karar | Öğünlerini seçen Kitchen müşterisi son adımda hesap açıp aynı öğün, kalori hedefi ve teslimat tercihiyle ödemeye döner; spor paketi/süresi ve ders hakkı verilmez. Spor kayıt ekranında yayınlanmış paket ve aktif süre zorunludur. İki akış aynı hesap altyapısını kullanır; mevcut hesapla giriş de korunur. Kitchen kaydı spor kataloğunun açık olmasına bağlı değildir. |
 | Ölçüm ve gelişimde üye arama | Tamamlandı | Yönetici ve eğitmende ortak arama alanı. En az 2 karakter, en fazla 20 sonuç; Türkçe ad/soyad, telefon ve #üye numarasıyla arama. İsim, telefon, numara ve paket gösterilir. Seçim ID ile; klavye desteği ve istek iptali vardır. Antrenör yalnızca atanmış üyelerini arar; seçili üye haricinde tüm üyeler sayfaya yüklenmez. |
 | Antrenörün üye listesi | Tamamlandı | Menüde “Üyelerim”; atanmış üyelerde arama ve sayfalama. Listede ve detayda paket, mevcut kalan hak, iletişim, tarihler, takvim ve ölçüm bağlantıları. Başka antrenörün üyesi ve atanmamış üye için detay/ölçüm/kayıt işlemi bulunamadı sonucu verir. Aktif antrenör bağlantısı olmayan hesaplar engellenir. |
 

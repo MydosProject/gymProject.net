@@ -3,7 +3,7 @@
 @model NO23.Web.Areas.Identity.Pages.Account.RegisterModel
 @using NO23.Web.Services
 @{
-    ViewData["Title"] = "Bize Katıl";
+    ViewData["Title"] = Model.IsKitchenRegistration ? "Kitchen Hesabı Oluştur" : "Bize Katıl";
     Layout = "/Views/Shared/_Layout.cshtml";
     var clubToday = DateOnly.FromDateTime(ClubTime.Now);
     var selectedOption = Model.ServiceOptions.FirstOrDefault(option => option.Id == Model.Input.ServicePackageVariantId &&
@@ -37,6 +37,18 @@
                 <div class="register-intro-content">
                     <p class="register-kicker">NO23 · Sports Club & Kitchen</p>
 
+                    @if (Model.IsKitchenRegistration)
+                    {
+                    <h1>Öğünlerini seçtin.<span>Şimdi hesabını aç.</span></h1>
+                    <p class="register-intro-description">Kitchen planını ve teslimatlarını tek hesabından takip et.</p>
+                    <ul class="register-benefits">
+                        <li><span>01</span><div><strong>Seçimlerin hazır</strong><small>Öğünlerini yeniden seçmen gerekmez</small></div></li>
+                        <li><span>02</span><div><strong>Kitchen hesabı</strong><small>Spor üyeliği satın alman gerekmez</small></div></li>
+                        <li><span>03</span><div><strong>Ödemeye devam et</strong><small>Hesabını aç, planını tamamla</small></div></li>
+                    </ul>
+                    }
+                    else
+                    {
                     <h1>
                         Hedefine giden yol
                         <span>burada başlıyor.</span>
@@ -69,6 +81,7 @@
                             </div>
                         </li>
                     </ul>
+                    }
                 </div>
 
                 <p class="register-intro-footer">
@@ -79,7 +92,7 @@
             <div class="register-form-panel">
                 <div class="register-form-heading">
                     <div>
-                        <p class="register-form-kicker">Hesap oluştur</p>
+                        <p class="register-form-kicker">@(Model.IsKitchenRegistration ? "NO:23 Kitchen · Hesap oluştur" : "Spor üyeliği · Hesap oluştur")</p>
                         <h2>Bilgilerini tamamla.</h2>
                     </div>
 
@@ -87,7 +100,9 @@
                 </div>
 
                 <p class="register-form-description">
-                    Birkaç temel bilgiyle hesabını ve üyelik profilini oluşturalım.
+                    @(Model.IsKitchenRegistration
+                        ? "Seçtiğin öğünler saklandı. Hesabını oluşturduktan sonra Kitchen ödeme adımına devam edeceksin."
+                        : "Birkaç temel bilgiyle hesabını ve spor üyelik profilini oluşturalım.")
                 </p>
 
                 <form id="registerForm"
@@ -100,6 +115,8 @@
                          role="alert"></div>
 
                     <input type="hidden" asp-for="ReturnUrl" />
+                    <input type="hidden" asp-for="Input.Flow" />
+                    <span asp-validation-for="Input.Flow" class="text-danger"></span>
 
                     <div class="row g-3 g-lg-4">
                         <div class="col-md-6">
@@ -163,12 +180,14 @@
                             </div>
                         </div>
 
+                        @if (!Model.IsKitchenRegistration)
+                        {
                         <div class="col-12" data-package-selector>
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <div class="no23-form-field no23-package-field">
                                         <label asp-for="Input.PackageCode"></label>
-                                        <select asp-for="Input.PackageCode" class="form-select no23-form-select" data-package-choice>
+                                        <select asp-for="Input.PackageCode" class="form-select no23-form-select" data-package-choice required>
                                             <option value="">Spor üyelik paketi seçin</option>
                                             @foreach (var package in Model.PackageOptions)
                                             {
@@ -199,7 +218,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <p class="form-text">Üye kaydı için spor üyelik paketi ve süre seçimi zorunludur.</p>
+                            <p class="form-text">Spor üyeliği için paket ve süre seçimi zorunludur.</p>
                             @if (Model.PackageOptions.Count == 0)
                             {
                                 <p class="register-validation-summary" role="status">Şu anda başvuruya açık üyelik paketi bulunmuyor.</p>
@@ -223,6 +242,7 @@
                                 <span asp-validation-for="Input.FitnessGoal"></span>
                             </div>
                         </div>
+                        }
 
                         <div class="col-12">
                             <div class="no23-form-field">
@@ -261,8 +281,8 @@
 
                     <button id="registerSubmit"
                             type="submit"
-                            class="no23-register-submit" disabled="@(Model.PackageOptions.Count == 0)">
-                        <span>Hesabımı oluştur</span>
+                            class="no23-register-submit" disabled="@(!Model.IsKitchenRegistration && Model.PackageOptions.Count == 0)">
+                        <span>@(Model.IsKitchenRegistration ? "Hesabımı oluştur ve Kitchen'e devam et" : "Hesabımı oluştur")</span>
                         <span aria-hidden="true">→</span>
                     </button>
 

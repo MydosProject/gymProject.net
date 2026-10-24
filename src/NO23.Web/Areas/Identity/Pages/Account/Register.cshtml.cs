@@ -27,21 +27,27 @@ public class RegisterModel(
 
     public IReadOnlyList<PackageOption> PackageOptions { get; private set; } = [];
     public IReadOnlyList<ServiceOption> ServiceOptions { get; private set; } = [];
+    public bool IsKitchenRegistration => Input.Flow == RegistrationFlow.Kitchen;
 
     public async Task<IActionResult> OnGetAsync(
         string? package = null,
         int? option = null,
         string? returnUrl = null,
-        int? variant = null)
+        int? variant = null,
+        RegistrationFlow? flow = null)
     {
+        if (flow.HasValue && !Enum.IsDefined(flow.Value)) return BadRequest();
+        Input.Flow = flow ?? (string.Equals(package, "kitchen", StringComparison.OrdinalIgnoreCase) ||
+            (string.IsNullOrEmpty(package) && IsKitchenReturnUrl(returnUrl))
+                ? RegistrationFlow.Kitchen : RegistrationFlow.Sports);
         if (User.Identity?.IsAuthenticated == true)
         {
-            if (IsKitchenReturnUrl(returnUrl))
+            if (IsKitchenRegistration || IsKitchenReturnUrl(returnUrl))
                 return LocalRedirect(!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl) ? returnUrl : "/Member/Kitchen");
             return LocalRedirect(Url.Content("~/plans/membership"));
         }
 
-        ReturnUrl = returnUrl;
+        ReturnUrl = Url.IsLocalUrl(returnUrl) ? returnUrl : null;
         await LoadPackageOptionsAsync(package, variant);
 
         return Page();
@@ -55,15 +61,32 @@ public class RegisterModel(
             return LocalRedirect(Url.Content("~/plans/membership"));
         }
 
-        ReturnUrl = returnUrl ?? ReturnUrl;
+        var destination = returnUrl ?? ReturnUrl;
+        ReturnUrl = Url.IsLocalUrl(destination) ? destination : null;
+        if (!Enum.IsDefined(Input.Flow))
+            ModelState.AddModelError("Input.Flow", "Geçerli bir kayıt türü seçmelisin.");
         var postedPackageCode = Input.PackageCode;
         var postedOptionId = Input.ServicePackageVariantId;
         await LoadPackageOptionsAsync(postedPackageCode, postedOptionId);
-        Input.PackageCode = postedPackageCode;
-        Input.ServicePackageVariantId = postedOptionId;
+        if (IsKitchenRegistration)
+        {
+            // This flow creates a customer account, never a sports membership.
+            Input.PackageCode = string.Empty;
+            Input.ServicePackageVariantId = null;
+            Input.FitnessGoal = null;
+            ModelState.Remove("Input.PackageCode");
+            ModelState.Remove("Input.ServicePackageVariantId");
+        }
+        else
+        {
+            Input.PackageCode = postedPackageCode;
+            Input.ServicePackageVariantId = postedOptionId;
+        }
 
-        var selectedPackage =
-            await FindSelectedPackageAsync(Input.PackageCode);
+        var selectedPackage = IsKitchenRegistration ? null : await FindSelectedPackageAsync(Input.PackageCode);
+        var kitchenAccountPackage = IsKitchenRegistration
+            ? await dbContext.MembershipPackages.FirstOrDefaultAsync(x => x.Code == MembershipPackageCode.KitchenOnly)
+            : null;
 
         ServicePackageVariant? selectedVariant = null;
         MemberProfile? referringMember = null;
@@ -78,7 +101,12 @@ public class RegisterModel(
             }
         }
 
-        if (selectedPackage is null)
+        if (IsKitchenRegistration)
+        {
+            if (kitchenAccountPackage is null)
+                ModelState.AddModelError(string.Empty, "Kitchen hesabı şu anda oluşturulamıyor. Lütfen daha sonra tekrar dene.");
+        }
+        else if (selectedPackage is null)
         {
             ModelState.AddModelError(
                 "Input.PackageCode",
@@ -207,20 +235,20 @@ public class RegisterModel(
             }
         }
 
-        var membershipStartsAtUtc = DateTime.UtcNow;
+        DateTime? membershipStartsAtUtc = IsKitchenRegistration ? null : DateTime.UtcNow;
         dbContext.MemberProfiles.Add(new MemberProfile
         {
             ApplicationUserId = user.Id,
             NationalIdentityNumber = Input.NationalIdentityNumber,
             BirthDate = Input.BirthDate,
-            MembershipPackageId = selectedPackage!.MembershipPackageId!.Value,
-            ServicePackageVariantId = selectedVariant!.Id,
+            MembershipPackageId = IsKitchenRegistration ? kitchenAccountPackage!.Id : selectedPackage!.MembershipPackageId!.Value,
+            ServicePackageVariantId = selectedVariant?.Id,
             MembershipStartsAtUtc = membershipStartsAtUtc,
-            MembershipEndsAtUtc = MemberPackageEntitlement.CalculateEndDate(
-                selectedVariant, membershipStartsAtUtc),
+            MembershipEndsAtUtc = selectedVariant is null ? null : MemberPackageEntitlement.CalculateEndDate(
+                selectedVariant, membershipStartsAtUtc!.Value),
             FitnessGoal = Input.FitnessGoal,
             RemainingClassCredits =
-                MemberPackageEntitlement.CalculateInitialCredits(selectedVariant),
+                selectedVariant is null ? 0 : MemberPackageEntitlement.CalculateInitialCredits(selectedVariant),
             ReferralCode = await GenerateReferralCodeAsync(),
             ReferredByMemberProfileId = referringMember?.Id
         });
@@ -233,13 +261,21 @@ public class RegisterModel(
             isPersistent: false);
 
         return LocalRedirect(
-            ReturnUrl ?? Url.Content("~/"));
+            ReturnUrl ?? (IsKitchenRegistration ? "/Member/Kitchen" : Url.Content("~/")));
     }
 
     private async Task LoadPackageOptionsAsync(
         string? selectedPackageCode,
         int? selectedOptionId = null)
     {
+        if (IsKitchenRegistration)
+        {
+            PackageOptions = [];
+            ServiceOptions = [];
+            Input.PackageCode = string.Empty;
+            Input.ServicePackageVariantId = null;
+            return;
+        }
         var packages = await dbContext.ServicePackages
             .AsNoTracking()
             .Include(package => package.MembershipPackage)
@@ -325,8 +361,11 @@ public class RegisterModel(
                 member.LastName));
     }
 
-    public class InputModel
+    public class InputModel : IValidatableObject
     {
+        [EnumDataType(typeof(RegistrationFlow))]
+        public RegistrationFlow Flow { get; set; } = RegistrationFlow.Sports;
+
         [Required(ErrorMessage = "Ad alanı zorunludur.")]
         [StringLength(80)]
         [Display(Name = "Ad")]
@@ -355,11 +394,9 @@ public class RegisterModel(
         [Display(Name = "Telefon")]
         public string? PhoneNumber { get; set; }
 
-        [Required(ErrorMessage = "Paket seçmelisin.")]
         [Display(Name = "Spor üyelik paketi")]
         public string PackageCode { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Üyelik süresi seçmelisin.")]
         [Range(1, int.MaxValue)]
         [Display(Name = "Üyelik süresi")]
         public int? ServicePackageVariantId { get; set; }
@@ -389,6 +426,15 @@ public class RegisterModel(
         [StringLength(32)]
         [Display(Name = "Davet kodu")]
         public string? ReferralCode { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (Flow != RegistrationFlow.Sports) yield break;
+            if (string.IsNullOrWhiteSpace(PackageCode))
+                yield return new ValidationResult("Spor üyelik paketi seçmelisin.", [nameof(PackageCode)]);
+            if (!ServicePackageVariantId.HasValue)
+                yield return new ValidationResult("Üyelik süresi seçmelisin.", [nameof(ServicePackageVariantId)]);
+        }
     }
 
     public record PackageOption(

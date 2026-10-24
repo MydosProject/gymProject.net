@@ -24,6 +24,7 @@ public class MemberListItemViewModel
     public int RemainingClassCredits { get; init; }
 
     public bool IsUnlimitedPackage { get; init; }
+    public bool IsKitchenOnly { get; init; }
 
     public int MemberProfileId { get; init; }
 

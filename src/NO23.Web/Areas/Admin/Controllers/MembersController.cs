@@ -196,7 +196,9 @@ public class MembersController(
                 FitnessGoal = profile.FitnessGoal,
                 RemainingClassCredits = profile.RemainingClassCredits,
                 MembershipEndsAtUtc = profile.MembershipEndsAtUtc,
-                IsUnlimitedPackage = profile.ServicePackageVariantId == null && profile.MembershipPackage.WeeklyClassLimit == null,
+                IsKitchenOnly = profile.MembershipPackage.Code == MembershipPackageCode.KitchenOnly,
+                IsUnlimitedPackage = profile.MembershipPackage.Code != MembershipPackageCode.KitchenOnly &&
+                    profile.ServicePackageVariantId == null && profile.MembershipPackage.WeeklyClassLimit == null,
                 AssignedTrainerId = profile.AssignedTrainerId,
                 AssignedTrainerName = profile.AssignedTrainer == null
                     ? null
