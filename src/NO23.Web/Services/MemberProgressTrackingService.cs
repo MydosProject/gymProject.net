@@ -6,7 +6,7 @@ using NO23.Web.ViewModels.Member;
 
 namespace NO23.Web.Services;
 
-public class MemberProgressTrackingService(ApplicationDbContext dbContext)
+public class MemberProgressTrackingService(ApplicationDbContext dbContext, IClubClock clock)
 {
     public async Task<MemberProgressTrackingResult> UpsertAsync(
         string userId,
@@ -20,7 +20,7 @@ public class MemberProgressTrackingService(ApplicationDbContext dbContext)
             return MemberProgressTrackingResult.Fail("Oturum bilgisi bulunamadı.");
         }
 
-        var today = DateOnly.FromDateTime(DateTime.Today);
+        var today = clock.TodayDate;
 
         if (input.EntryDate > today)
         {
@@ -119,7 +119,7 @@ public class MemberProgressTrackingService(ApplicationDbContext dbContext)
         DateOnly entryDate,
         int? caloriesConsumed)
     {
-        var today = DateOnly.FromDateTime(DateTime.Today);
+        var today = clock.TodayDate;
         var participations = (await dbContext.CommunityChallengeParticipations
             .Include(item => item.CommunityChallenge)
             .Include(item => item.ProgressEntries)

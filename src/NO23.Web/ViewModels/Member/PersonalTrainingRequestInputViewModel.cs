@@ -10,7 +10,7 @@ public class PersonalTrainingRequestInputViewModel
 
     [Required]
     [Display(Name = "Tercih edilen gün")]
-    public DateOnly PreferredDate { get; set; } = DateOnly.FromDateTime(DateTime.Today.AddDays(1));
+    public DateOnly PreferredDate { get; set; } = DateOnly.FromDateTime(NO23.Web.Services.ClubTime.Today.AddDays(1));
 
     [Required]
     [StringLength(40)]

@@ -18,7 +18,7 @@ public class KitchenStockController(
 {
     public async Task<IActionResult> Index(DateOnly? date)
     {
-        var selectedDate = date ?? DateOnly.FromDateTime(DateTime.Today);
+        var selectedDate = date ?? DateOnly.FromDateTime(NO23.Web.Services.ClubTime.Today);
 
         return View(await BuildDashboardAsync(
             selectedDate,
@@ -112,7 +112,7 @@ public class KitchenStockController(
         }
 
         ViewData["SelectedDate"] = date?.ToString("yyyy-MM-dd") ?? DateOnly
-            .FromDateTime(DateTime.Today)
+            .FromDateTime(NO23.Web.Services.ClubTime.Today)
             .ToString("yyyy-MM-dd");
 
         return View(MapToFormModel(ingredient));

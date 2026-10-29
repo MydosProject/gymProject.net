@@ -13,6 +13,8 @@ using NO23.Web.Services.Payments;
 using NO23.Web.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddSingleton<IClubClock, ClubClock>();
 
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
@@ -418,7 +420,7 @@ if (app.Environment.IsDevelopment())
 
     api.MapGet("/community-challenges", async (ApplicationDbContext dbContext) =>
     {
-        var today = DateOnly.FromDateTime(DateTime.Today);
+        var today = DateOnly.FromDateTime(NO23.Web.Services.ClubTime.Today);
         var challengeRows = await dbContext.CommunityChallenges
             .AsNoTracking()
             .Where(item => item.Status != CommunityChallengeStatus.Cancelled)

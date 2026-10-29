@@ -91,7 +91,7 @@ public class HomeController(
             .ToListAsync();
 
         var memberName = (profile.ApplicationUser.FirstName + " " + profile.ApplicationUser.LastName).Trim();
-        var today = DateOnly.FromDateTime(DateTime.Today);
+        var today = DateOnly.FromDateTime(NO23.Web.Services.ClubTime.Today);
         var hasActiveKitchenSubscription = await dbContext.KitchenSubscriptions
             .AsNoTracking()
             .AnyAsync(subscription =>

@@ -162,7 +162,7 @@ public class CalendarController(
             TempData["ErrorMessage"] = "Ders bilgilerini kontrol edin.";
             return RedirectToAction(nameof(Index), new
             {
-                week = (model.Week ?? DateTime.Today).ToString("yyyy-MM-dd"), includeCompleted = model.IncludeCompleted, memberId = model.FilterMemberId
+                week = (model.Week ?? NO23.Web.Services.ClubTime.Today).ToString("yyyy-MM-dd"), includeCompleted = model.IncludeCompleted, memberId = model.FilterMemberId
             });
         }
 
@@ -172,7 +172,7 @@ public class CalendarController(
         TempData[result.Succeeded ? "StatusMessage" : "ErrorMessage"] = result.Message;
         return RedirectToAction(nameof(Index), new
         {
-            week = (result.Succeeded ? model.StartsAt : model.Week ?? DateTime.Today).ToString("yyyy-MM-dd"), includeCompleted = model.IncludeCompleted, memberId = model.FilterMemberId
+            week = (result.Succeeded ? model.StartsAt : model.Week ?? NO23.Web.Services.ClubTime.Today).ToString("yyyy-MM-dd"), includeCompleted = model.IncludeCompleted, memberId = model.FilterMemberId
         });
     }
 
@@ -210,7 +210,7 @@ public class CalendarController(
         var targetWeek = model.Status == PersonalTrainingSessionStatus.Postponed &&
             model.PostponedStartsAt is not null
                 ? model.PostponedStartsAt.Value
-                : model.Week ?? DateTime.Today;
+                : model.Week ?? NO23.Web.Services.ClubTime.Today;
         return RedirectToAction(nameof(Index), new { week = targetWeek.ToString("yyyy-MM-dd"), includeCompleted = model.IncludeCompleted, memberId = model.FilterMemberId });
     }
 

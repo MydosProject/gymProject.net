@@ -37,7 +37,7 @@ public class LessonCreditSummaryTests
             new NO23.Web.ViewModels.TrainerPanel.WeeklyPersonalSessionInput { MemberProfileId = member.Id, Week = ClubTime.Now.AddDays(7), Days = [DayOfWeek.Monday] });
         Assert.Equal(summary.Remaining, preview.RemainingCredits);
         Assert.Equal(7, preview.StoredBalance);
-        var goals = new NO23.Web.Areas.Member.Controllers.GoalsController(db)
+        var goals = new NO23.Web.Areas.Member.Controllers.GoalsController(db, new ClubClock(TimeProvider.System))
         {
             ControllerContext = new Microsoft.AspNetCore.Mvc.ControllerContext
             {

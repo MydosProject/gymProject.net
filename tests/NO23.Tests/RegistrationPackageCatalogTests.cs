@@ -218,7 +218,7 @@ public class RegistrationPackageCatalogTests
         var payments = new IyzicoPaymentService(db, new NoPaymentClient(), new KitchenPlanMatchingService(db),
             options, NullLogger<IyzicoPaymentService>.Instance);
         var kitchen = new NO23.Web.Areas.Member.Controllers.KitchenController(db, new CalorieCalculatorService(),
-            new CommerceService(db), payments, options, Options.Create(new ClubPickupOptions()))
+            new CommerceService(db), payments, options, Options.Create(new ClubPickupOptions()), new ClubClock(TimeProvider.System))
         {
             ControllerContext = new ControllerContext { HttpContext = page.HttpContext },
             Url = page.Url,

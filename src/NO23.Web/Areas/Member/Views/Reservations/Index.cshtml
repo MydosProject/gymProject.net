@@ -89,7 +89,7 @@
                 <div class="member-reservation-list">
                     @foreach (var reservation in Model.UpcomingReservations)
                     {
-                        var localStart = reservation.StartsAtUtc.ToLocalTime();
+                        var localStart = NO23.Web.Services.ClubTime.ToLocal(reservation.StartsAtUtc);
 
                         <article class="member-reservation-card">
                             <div class="member-reservation-date">
@@ -151,7 +151,7 @@
                     {
                         var isFull = session.ReservedCount >= session.Capacity;
                         var remainingCapacity = Math.Max(0, session.Capacity - session.ReservedCount);
-                        var localStart = session.StartsAtUtc.ToLocalTime();
+                        var localStart = NO23.Web.Services.ClubTime.ToLocal(session.StartsAtUtc);
 
                         <article class="member-session-card
                             @(session.IsReservedByMember
@@ -350,7 +350,7 @@
                                     <span>Tercih edilen gün</span>
                                     <input type="date"
                                            name="PreferredDate"
-                                           min="@DateOnly.FromDateTime(DateTime.Today).ToString("yyyy-MM-dd")"
+                                           min="@DateOnly.FromDateTime(NO23.Web.Services.ClubTime.Today).ToString("yyyy-MM-dd")"
                                            value="@Model.PersonalTrainingRequestInput.PreferredDate.ToString("yyyy-MM-dd")"
                                            required />
                                 </label>
@@ -420,7 +420,7 @@
                     {
                         @foreach (var request in Model.PersonalTrainingRequests)
                         {
-                            var scheduledAtLocal = request.ScheduledAtUtc?.ToLocalTime();
+                            var scheduledAtLocal = request.ScheduledAtUtc.HasValue ? NO23.Web.Services.ClubTime.ToLocal(request.ScheduledAtUtc.Value) : (DateTime?)null;
 
                            <article class="member-personal-request-card"
                                 data-personal-training-request

@@ -13,7 +13,7 @@ namespace NO23.Web.Areas.Member.Controllers;
 
 [Area("Member")]
 [Authorize(Roles = ApplicationRoles.Member)]
-public class GoalsController(ApplicationDbContext dbContext) : Controller
+public class GoalsController(ApplicationDbContext dbContext, IClubClock clock) : Controller
 {
     [HttpGet]
     public async Task<IActionResult> Index()
@@ -61,7 +61,7 @@ public class GoalsController(ApplicationDbContext dbContext) : Controller
             return Challenge();
         }
 
-        var selectedDate = date ?? DateOnly.FromDateTime(DateTime.Today);
+        var selectedDate = date ?? clock.TodayDate;
 
         var memberProfileId = await dbContext.MemberProfiles
             .AsNoTracking()
@@ -80,7 +80,7 @@ public class GoalsController(ApplicationDbContext dbContext) : Controller
                 entry.MemberProfileId == memberProfileId.Value &&
                 entry.EntryDate == selectedDate);
 
-        var today = DateOnly.FromDateTime(DateTime.Today);
+        var today = clock.TodayDate;
         var chartStartDate = today.AddDays(-13);
 
         var calorieChartItems = await dbContext.MemberProgressEntries
@@ -256,7 +256,7 @@ public class GoalsController(ApplicationDbContext dbContext) : Controller
         IReadOnlyList<MemberChallengeProgressCardViewModel>>
         BuildChallengeProgressCardsAsync(int memberProfileId)
     {
-        var today = DateOnly.FromDateTime(DateTime.Today);
+        var today = clock.TodayDate;
 
         var participations =
             await dbContext.CommunityChallengeParticipations

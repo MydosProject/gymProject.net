@@ -152,7 +152,7 @@ public class KitchenWeeklyPlanTests
         var other = AddSubscription(db, "other");
         await db.SaveChangesAsync();
         var controller = new NO23.Web.Areas.Member.Controllers.KitchenController(db, new(), new(db), null!,
-            Options.Create(new IyzicoOptions()), Options.Create(new ClubPickupOptions()))
+            Options.Create(new IyzicoOptions()), Options.Create(new ClubPickupOptions()), new ClubClock(TimeProvider.System))
         {
             ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
         };
@@ -173,6 +173,35 @@ public class KitchenWeeklyPlanTests
         Assert.Null(result.Subscription);
         Assert.Empty(result.MealSlots);
         Assert.All(result.Days, x => Assert.Equal(KitchenWeekDayState.OutsidePackage, x.State));
+    }
+
+    [Theory]
+    [InlineData(0, false)]
+    [InlineData(1, true)]
+    public async Task SkipDay_UsesIstanbulDateAt0030AndPreservesTodaysMeals(int offset, bool canSkip)
+    {
+        await using var db = Db();
+        var own = AddSubscription(db, "own");
+        var day = AddDay(AddPlan(own), new DateOnly(2026, 11, 2).AddDays(offset), "Gece sınırı öğünü");
+        await db.SaveChangesAsync();
+        var context = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity(
+            [new Claim(ClaimTypes.NameIdentifier, "own")], "test")) };
+        var clock = new ClubClock(new FixedTimeProvider(new DateTimeOffset(2026, 11, 1, 21, 30, 0, TimeSpan.Zero)));
+        var controller = new NO23.Web.Areas.Member.Controllers.KitchenController(db, new(), new(db), null!,
+            Options.Create(new IyzicoOptions()), Options.Create(new ClubPickupOptions()), clock)
+        {
+            ControllerContext = new ControllerContext { HttpContext = context },
+            TempData = new Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary(context, new TestTempDataProvider())
+        };
+        Assert.IsType<RedirectToActionResult>(await controller.SkipDay(day.Id));
+        Assert.All(day.Items, item => Assert.Equal(canSkip, item.IsSkipped));
+        Assert.Equal(canSkip, controller.TempData.ContainsKey("SuccessMessage"));
+    }
+
+    private sealed class TestTempDataProvider : Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataProvider
+    {
+        public IDictionary<string, object> LoadTempData(HttpContext context) => new Dictionary<string, object>();
+        public void SaveTempData(HttpContext context, IDictionary<string, object> values) { }
     }
 
     private static ApplicationDbContext Db() => new(new DbContextOptionsBuilder<ApplicationDbContext>()

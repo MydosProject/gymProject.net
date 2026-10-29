@@ -105,7 +105,7 @@ public class AdminOperationsTests
         db.MemberProgressEntries.Add(new MemberProgressEntry { MemberProfileId = member.Id, EntryDate = today.AddMonths(-1), BodyWeightKg = 85 });
         db.MemberProgressEntries.Add(new MemberProgressEntry { MemberProfileId = member.Id, EntryDate = today, CaloriesConsumed = 2100 });
         await db.SaveChangesAsync();
-        var controller = Setup(new MemberProgressController(db, new MemberProgressTrackingService(db)));
+        var controller = Setup(new MemberProgressController(db, new MemberProgressTrackingService(db, new ClubClock(TimeProvider.System))));
         Assert.IsType<RedirectToActionResult>(await controller.Save(member.Id, new MemberProgressEntryInputViewModel { EntryDate = today, BodyWeightKg = 82, BodyFatPercent = 20 }));
         Assert.Equal(2100, (await db.MemberProgressEntries.SingleAsync(x => x.EntryDate == today)).CaloriesConsumed);
         var model = Assert.IsType<MemberProgressPage>(Assert.IsType<ViewResult>(await controller.Index(member.Id, null, null, null)).Model);

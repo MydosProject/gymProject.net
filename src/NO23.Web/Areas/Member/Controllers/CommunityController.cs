@@ -43,7 +43,7 @@ public class CommunityController(
             .ToListAsync();
 
         var joinedChallengeIdSet = joinedChallengeIds.ToHashSet();
-        var today = DateOnly.FromDateTime(DateTime.Today);
+        var today = DateOnly.FromDateTime(NO23.Web.Services.ClubTime.Today);
         var challengeRows = await dbContext.CommunityChallenges
             .AsNoTracking()
             .Where(item => item.Status != CommunityChallengeStatus.Cancelled)
@@ -139,7 +139,7 @@ public class CommunityController(
                 new
                 {
                     area = "Member",
-                    date = DateOnly.FromDateTime(DateTime.Today).ToString("yyyy-MM-dd")
+                    date = DateOnly.FromDateTime(NO23.Web.Services.ClubTime.Today).ToString("yyyy-MM-dd")
                 });
         }
 

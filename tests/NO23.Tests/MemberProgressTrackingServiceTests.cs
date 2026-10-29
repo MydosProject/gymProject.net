@@ -14,7 +14,7 @@ public class MemberProgressTrackingServiceTests
     {
         await using var dbContext = CreateDbContext();
         var profile = await SeedMemberAsync(dbContext);
-        var service = new MemberProgressTrackingService(dbContext);
+        var service = new MemberProgressTrackingService(dbContext, new ClubClock(TimeProvider.System));
 
         var result = await service.UpsertAsync(
             profile.ApplicationUserId,
@@ -33,7 +33,7 @@ public class MemberProgressTrackingServiceTests
     {
         await using var dbContext = CreateDbContext();
         var profile = await SeedMemberAsync(dbContext);
-        var service = new MemberProgressTrackingService(dbContext);
+        var service = new MemberProgressTrackingService(dbContext, new ClubClock(TimeProvider.System));
         var entryDate = DateOnly.FromDateTime(DateTime.Today);
 
         await service.UpsertAsync(
@@ -65,7 +65,7 @@ public class MemberProgressTrackingServiceTests
     {
         await using var dbContext = CreateDbContext();
         var profile = await SeedMemberAsync(dbContext);
-        var service = new MemberProgressTrackingService(dbContext);
+        var service = new MemberProgressTrackingService(dbContext, new ClubClock(TimeProvider.System));
         var entryDate = DateOnly.FromDateTime(DateTime.Today);
 
         await service.UpsertAsync(
@@ -95,7 +95,7 @@ public class MemberProgressTrackingServiceTests
     {
         await using var dbContext = CreateDbContext();
         var profile = await SeedMemberAsync(dbContext);
-        var service = new MemberProgressTrackingService(dbContext);
+        var service = new MemberProgressTrackingService(dbContext, new ClubClock(TimeProvider.System));
         var entryDate = DateOnly.FromDateTime(DateTime.Today);
 
         await service.UpsertAsync(
@@ -134,7 +134,7 @@ public class MemberProgressTrackingServiceTests
     {
         await using var dbContext = CreateDbContext();
         var profile = await SeedMemberAsync(dbContext);
-        var service = new MemberProgressTrackingService(dbContext);
+        var service = new MemberProgressTrackingService(dbContext, new ClubClock(TimeProvider.System));
         var entryDate = DateOnly.FromDateTime(DateTime.Today);
 
         var result = await service.UpsertAsync(
@@ -176,7 +176,7 @@ public class MemberProgressTrackingServiceTests
         var profile = await SeedMemberAsync(dbContext);
         var entryDate = DateOnly.FromDateTime(DateTime.Today);
         await SeedChallengeParticipationAsync(dbContext, profile, entryDate);
-        var service = new MemberProgressTrackingService(dbContext);
+        var service = new MemberProgressTrackingService(dbContext, new ClubClock(TimeProvider.System));
 
         await service.UpsertAsync(
             profile.ApplicationUserId,
@@ -208,7 +208,7 @@ public class MemberProgressTrackingServiceTests
         var profile = await SeedMemberAsync(dbContext);
         var entryDate = DateOnly.FromDateTime(DateTime.Today);
         await SeedChallengeParticipationAsync(dbContext, profile, entryDate);
-        var service = new MemberProgressTrackingService(dbContext);
+        var service = new MemberProgressTrackingService(dbContext, new ClubClock(TimeProvider.System));
 
         await service.UpsertAsync(
             profile.ApplicationUserId,
@@ -235,7 +235,7 @@ public class MemberProgressTrackingServiceTests
     {
         await using var dbContext = CreateDbContext();
         var profile = await SeedMemberAsync(dbContext);
-        var service = new MemberProgressTrackingService(dbContext);
+        var service = new MemberProgressTrackingService(dbContext, new ClubClock(TimeProvider.System));
 
         var result = await service.UpsertAsync(
             profile.ApplicationUserId,
@@ -255,7 +255,7 @@ public class MemberProgressTrackingServiceTests
         var profile = await SeedMemberAsync(dbContext);
         var entryDate = DateOnly.FromDateTime(DateTime.Today);
         var participation = await SeedChallengeParticipationAsync(dbContext, profile, entryDate);
-        var service = new MemberProgressTrackingService(dbContext);
+        var service = new MemberProgressTrackingService(dbContext, new ClubClock(TimeProvider.System));
 
         var result = await service.UpsertAsync(
             profile.ApplicationUserId,
@@ -287,7 +287,7 @@ public class MemberProgressTrackingServiceTests
             startsOn: entryDate.AddDays(-3),
             endsOn: today.AddDays(-1),
             status: CommunityChallengeStatus.Active);
-        var service = new MemberProgressTrackingService(dbContext);
+        var service = new MemberProgressTrackingService(dbContext, new ClubClock(TimeProvider.System));
 
         var result = await service.UpsertAsync(
             profile.ApplicationUserId,
@@ -306,7 +306,7 @@ public class MemberProgressTrackingServiceTests
     {
         await using var db = CreateDbContext();
         var member = await SeedMemberAsync(db);
-        var service = new MemberProgressTrackingService(db);
+        var service = new MemberProgressTrackingService(db, new ClubClock(TimeProvider.System));
         var date = DateOnly.FromDateTime(DateTime.Today);
         Assert.True((await service.UpsertAsync(member.ApplicationUserId, new() { EntryDate = date, GluteCm = 94.555m })).Succeeded);
         var result = await service.UpsertAsync(member.ApplicationUserId, new() { EntryDate = date }, preserveTrainerMeasurements: true);
@@ -314,6 +314,21 @@ public class MemberProgressTrackingServiceTests
         var entry = await db.MemberProgressEntries.SingleAsync();
         Assert.Equal(94.56m, entry.GluteCm);
         Assert.Null(entry.HipCm);
+    }
+
+    [Theory]
+    [InlineData(0, true)]
+    [InlineData(1, false)]
+    public async Task UpsertAsync_UsesClubDateAfterUtcMidnightBoundary(int dayOffset, bool allowed)
+    {
+        await using var db = CreateDbContext();
+        var member = await SeedMemberAsync(db);
+        var clock = new ClubClock(new FixedTimeProvider(new DateTimeOffset(2026, 11, 1, 21, 30, 0, TimeSpan.Zero)));
+        var service = new MemberProgressTrackingService(db, clock);
+        var result = await service.UpsertAsync(member.ApplicationUserId,
+            new() { EntryDate = new DateOnly(2026, 11, 2).AddDays(dayOffset), CaloriesConsumed = 1900 });
+        Assert.Equal(allowed, result.Succeeded);
+        Assert.Equal(allowed ? 1 : 0, await db.MemberProgressEntries.CountAsync());
     }
 
     private static ApplicationDbContext CreateDbContext()

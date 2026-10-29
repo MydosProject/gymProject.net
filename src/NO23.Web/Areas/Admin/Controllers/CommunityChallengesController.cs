@@ -16,7 +16,7 @@ public class CommunityChallengesController(ApplicationDbContext dbContext) : Con
 {
     public async Task<IActionResult> Index()
     {
-        var today = DateOnly.FromDateTime(DateTime.Today);
+        var today = DateOnly.FromDateTime(NO23.Web.Services.ClubTime.Today);
         var challengeRows = await dbContext.CommunityChallenges
             .AsNoTracking()
             .OrderBy(item => item.DisplayOrder)
@@ -164,7 +164,7 @@ public class CommunityChallengesController(ApplicationDbContext dbContext) : Con
                     challenge.Status,
                     challenge.StartsOn,
                     challenge.EndsOn,
-                    DateOnly.FromDateTime(DateTime.Today))
+                    DateOnly.FromDateTime(NO23.Web.Services.ClubTime.Today))
                 .ToString(),
             StartsOn = challenge.StartsOn,
             EndsOn = challenge.EndsOn,
@@ -246,7 +246,7 @@ public class CommunityChallengesController(ApplicationDbContext dbContext) : Con
             item.Status,
             item.StartsOn,
             item.EndsOn,
-            DateOnly.FromDateTime(DateTime.Today));
+            DateOnly.FromDateTime(NO23.Web.Services.ClubTime.Today));
 
         if (!CommunityChallengeLifecycle.IsJoinOpen(effectiveStatus))
         {
@@ -293,7 +293,7 @@ public class CommunityChallengesController(ApplicationDbContext dbContext) : Con
             model.Status,
             model.StartsOn,
             model.EndsOn,
-            DateOnly.FromDateTime(DateTime.Today));
+            DateOnly.FromDateTime(NO23.Web.Services.ClubTime.Today));
         item.ImageUrl = model.ImageUrl?.Trim();
         item.DisplayOrder = model.DisplayOrder;
         item.UpdatedAtUtc = DateTime.UtcNow;

@@ -9,13 +9,30 @@ namespace NO23.Tests;
 
 public class PersonalTrainingRequestServiceTests
 {
+    [Theory]
+    [InlineData(-1, false)]
+    [InlineData(0, true)]
+    [InlineData(1, true)]
+    public async Task CreateAsync_ValidatesRequestedDateAgainstIstanbulToday(int offset, bool allowed)
+    {
+        await using var db = CreateDbContext();
+        var member = await SeedMemberAsync(db, includesPersonalTrainingSupport: true);
+        var trainer = await SeedTrainerAsync(db);
+        var clock = new ClubClock(new FixedTimeProvider(new DateTimeOffset(2026, 11, 1, 21, 30, 0, TimeSpan.Zero)));
+        var service = new PersonalTrainingRequestService(db, clock);
+        var result = await service.CreateAsync(member.ApplicationUserId,
+            BuildInput(trainer.Id, new DateOnly(2026, 11, 2).AddDays(offset)));
+        Assert.Equal(allowed, result.Succeeded);
+        Assert.Equal(allowed ? 1 : 0, await db.PersonalTrainingRequests.CountAsync());
+    }
+
     [Fact]
     public async Task CreateAsync_CreatesRequest_WhenPackageIncludesPersonalTrainingSupport()
     {
         await using var dbContext = CreateDbContext();
         var profile = await SeedMemberAsync(dbContext, includesPersonalTrainingSupport: true);
         var trainer = await SeedTrainerAsync(dbContext);
-        var service = new PersonalTrainingRequestService(dbContext);
+        var service = new PersonalTrainingRequestService(dbContext, new ClubClock(TimeProvider.System));
 
         var result = await service.CreateAsync(profile.ApplicationUserId, BuildInput(trainer.Id));
 
@@ -44,7 +61,7 @@ public class PersonalTrainingRequestServiceTests
         await using var dbContext = CreateDbContext();
         var profile = await SeedMemberAsync(dbContext, includesPersonalTrainingSupport: false);
         var trainer = await SeedTrainerAsync(dbContext);
-        var service = new PersonalTrainingRequestService(dbContext);
+        var service = new PersonalTrainingRequestService(dbContext, new ClubClock(TimeProvider.System));
 
         var result = await service.CreateAsync(profile.ApplicationUserId, BuildInput(trainer.Id));
 
@@ -58,7 +75,7 @@ public class PersonalTrainingRequestServiceTests
         await using var dbContext = CreateDbContext();
         var profile = await SeedMemberAsync(dbContext, includesPersonalTrainingSupport: true);
         var trainer = await SeedTrainerAsync(dbContext, isActive: false);
-        var service = new PersonalTrainingRequestService(dbContext);
+        var service = new PersonalTrainingRequestService(dbContext, new ClubClock(TimeProvider.System));
 
         var result = await service.CreateAsync(profile.ApplicationUserId, BuildInput(trainer.Id));
 
@@ -72,7 +89,7 @@ public class PersonalTrainingRequestServiceTests
         await using var dbContext = CreateDbContext();
         var profile = await SeedMemberAsync(dbContext, includesPersonalTrainingSupport: true);
         var trainer = await SeedTrainerAsync(dbContext);
-        var service = new PersonalTrainingRequestService(dbContext);
+        var service = new PersonalTrainingRequestService(dbContext, new ClubClock(TimeProvider.System));
 
         var result = await service.CreateAsync(
             profile.ApplicationUserId,
@@ -94,7 +111,7 @@ public class PersonalTrainingRequestServiceTests
         var trainer = await SeedTrainerAsync(dbContext);
 
         var service =
-            new PersonalTrainingRequestService(dbContext);
+            new PersonalTrainingRequestService(dbContext, new ClubClock(TimeProvider.System));
 
         var firstResult =
             await service.CreateAsync(
@@ -147,7 +164,7 @@ public class PersonalTrainingRequestServiceTests
         await dbContext.SaveChangesAsync();
 
         var service =
-            new PersonalTrainingRequestService(dbContext);
+            new PersonalTrainingRequestService(dbContext, new ClubClock(TimeProvider.System));
 
         var result =
             await service.CreateAsync(
@@ -191,7 +208,7 @@ public class PersonalTrainingRequestServiceTests
         await dbContext.SaveChangesAsync();
 
         var service =
-            new PersonalTrainingRequestService(dbContext);
+            new PersonalTrainingRequestService(dbContext, new ClubClock(TimeProvider.System));
 
         var result =
             await service.CreateAsync(
@@ -240,7 +257,7 @@ public class PersonalTrainingRequestServiceTests
         await dbContext.SaveChangesAsync();
 
         var service =
-            new PersonalTrainingRequestService(dbContext);
+            new PersonalTrainingRequestService(dbContext, new ClubClock(TimeProvider.System));
 
         var result =
             await service.CancelByMemberAsync(
@@ -282,7 +299,7 @@ public class PersonalTrainingRequestServiceTests
         await dbContext.SaveChangesAsync();
 
         var service =
-            new PersonalTrainingRequestService(dbContext);
+            new PersonalTrainingRequestService(dbContext, new ClubClock(TimeProvider.System));
 
         var result =
             await service.CancelByMemberAsync(
@@ -302,7 +319,7 @@ public class PersonalTrainingRequestServiceTests
         var profile = await SeedMemberAsync(dbContext, includesPersonalTrainingSupport: true);
         var trainer = await SeedTrainerAsync(dbContext);
         var request = await SeedPersonalTrainingRequestAsync(dbContext, profile, trainer);
-        var service = new PersonalTrainingRequestService(dbContext);
+        var service = new PersonalTrainingRequestService(dbContext, new ClubClock(TimeProvider.System));
         var scheduledAtLocal = DateTime.Now.AddDays(2).Date.AddHours(14);
 
         var scheduleResult = await service.UpdateByAdminAsync(
@@ -331,7 +348,7 @@ public class PersonalTrainingRequestServiceTests
         var profile = await SeedMemberAsync(dbContext, includesPersonalTrainingSupport: true);
         var trainer = await SeedTrainerAsync(dbContext);
         var request = await SeedPersonalTrainingRequestAsync(dbContext, profile, trainer);
-        var service = new PersonalTrainingRequestService(dbContext);
+        var service = new PersonalTrainingRequestService(dbContext, new ClubClock(TimeProvider.System));
 
         var result = await service.UpdateByAdminAsync(
             request.Id,
@@ -362,7 +379,7 @@ public class PersonalTrainingRequestServiceTests
                 trainer);
 
         var service =
-            new PersonalTrainingRequestService(dbContext);
+            new PersonalTrainingRequestService(dbContext, new ClubClock(TimeProvider.System));
 
         var scheduledAtLocal =
             DateTime.Now.AddDays(2)
@@ -413,7 +430,7 @@ public class PersonalTrainingRequestServiceTests
                 trainer);
 
         var service =
-            new PersonalTrainingRequestService(dbContext);
+            new PersonalTrainingRequestService(dbContext, new ClubClock(TimeProvider.System));
 
         var result =
             await service.UpdateByTrainerAsync(
@@ -460,7 +477,7 @@ public class PersonalTrainingRequestServiceTests
                 requestTrainer);
 
         var service =
-            new PersonalTrainingRequestService(dbContext);
+            new PersonalTrainingRequestService(dbContext, new ClubClock(TimeProvider.System));
 
         var result =
             await service.UpdateByTrainerAsync(
@@ -508,7 +525,7 @@ public class PersonalTrainingRequestServiceTests
         await dbContext.SaveChangesAsync();
 
         var service =
-            new PersonalTrainingRequestService(dbContext);
+            new PersonalTrainingRequestService(dbContext, new ClubClock(TimeProvider.System));
 
         var result =
             await service.UpdateByTrainerAsync(

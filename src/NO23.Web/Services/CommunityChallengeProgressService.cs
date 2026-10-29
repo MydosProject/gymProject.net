@@ -5,7 +5,7 @@ using NO23.Web.Domain.Enums;
 
 namespace NO23.Web.Services;
 
-public class CommunityChallengeProgressService(ApplicationDbContext dbContext)
+public class CommunityChallengeProgressService(ApplicationDbContext dbContext, IClubClock clock)
 {
     public async Task<CommunityChallengeActionResult> JoinAsync(string userId, string challengeSlug)
     {
@@ -34,7 +34,7 @@ public class CommunityChallengeProgressService(ApplicationDbContext dbContext)
                     challenge.Status,
                     challenge.StartsOn,
                     challenge.EndsOn,
-                    DateOnly.FromDateTime(DateTime.Today))))
+                    clock.TodayDate)))
         {
             return CommunityChallengeActionResult.Fail("Challenge katilima acik degil.");
         }
@@ -126,7 +126,7 @@ public class CommunityChallengeProgressService(ApplicationDbContext dbContext)
             challenge.Status,
             challenge.StartsOn,
             challenge.EndsOn,
-            DateOnly.FromDateTime(DateTime.Today));
+            clock.TodayDate);
 
         if (!CommunityChallengeLifecycle.CanLogCalories(effectiveStatus))
         {
@@ -134,7 +134,7 @@ public class CommunityChallengeProgressService(ApplicationDbContext dbContext)
                 "Bu challenge için kalori girişi kapalı.");
         }
 
-        var today = DateOnly.FromDateTime(DateTime.Today);
+        var today = clock.TodayDate;
 
         if (request.EntryDate > today)
         {

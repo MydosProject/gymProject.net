@@ -3,7 +3,7 @@
 
 @{
     ViewData["Title"] = "Kalori Takibi ve Ölçümler";
-    var today = DateOnly.FromDateTime(DateTime.Today);
+    var today = DateOnly.FromDateTime(NO23.Web.Services.ClubTime.Today);
 
     string FormatDecimal(decimal? value)
     {

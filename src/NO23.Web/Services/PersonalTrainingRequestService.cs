@@ -6,7 +6,7 @@ using NO23.Web.ViewModels.Member;
 
 namespace NO23.Web.Services;
 
-public class PersonalTrainingRequestService(ApplicationDbContext dbContext)
+public class PersonalTrainingRequestService(ApplicationDbContext dbContext, IClubClock clock)
 {
     public static readonly IReadOnlyList<string> PreferredTimeWindows =
     [
@@ -24,7 +24,7 @@ public class PersonalTrainingRequestService(ApplicationDbContext dbContext)
             return PersonalTrainingRequestResult.Fail("Geçerli bir saat aralığı seçmelisin.");
         }
 
-        if (model.PreferredDate < DateOnly.FromDateTime(DateTime.Today))
+        if (model.PreferredDate < clock.TodayDate)
         {
             return PersonalTrainingRequestResult.Fail("Geçmiş tarihli birebir talep oluşturulamaz.");
         }

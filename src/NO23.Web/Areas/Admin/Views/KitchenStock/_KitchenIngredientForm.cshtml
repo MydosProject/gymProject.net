@@ -4,7 +4,7 @@
 <div class="bg-white border rounded-3 p-4 text-dark admin-form-card">
     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
     <input type="hidden" asp-for="Id" />
-    <input type="hidden" name="selectedDate" value="@(ViewData["SelectedDate"] ?? DateOnly.FromDateTime(DateTime.Today).ToString("yyyy-MM-dd"))" />
+    <input type="hidden" name="selectedDate" value="@(ViewData["SelectedDate"] ?? DateOnly.FromDateTime(NO23.Web.Services.ClubTime.Today).ToString("yyyy-MM-dd"))" />
 
     <div class="row g-3">
         <div class="col-md-6">
@@ -41,7 +41,7 @@
 
     <div class="d-flex justify-content-end gap-2 mt-4">
         <a asp-action="Index"
-           asp-route-date="@(ViewData["SelectedDate"] ?? DateOnly.FromDateTime(DateTime.Today).ToString("yyyy-MM-dd"))"
+           asp-route-date="@(ViewData["SelectedDate"] ?? DateOnly.FromDateTime(NO23.Web.Services.ClubTime.Today).ToString("yyyy-MM-dd"))"
            class="btn btn-outline-secondary">Vazgeç</a>
         <button type="submit" class="btn btn-dark">Kaydet</button>
     </div>

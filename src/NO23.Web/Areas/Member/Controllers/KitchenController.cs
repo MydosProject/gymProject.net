@@ -24,7 +24,7 @@ public class KitchenController(
     CommerceService commerceService,
     IyzicoPaymentService iyzicoPaymentService,
     IOptions<IyzicoOptions> paymentOptions,
-    IOptions<ClubPickupOptions> clubPickupOptions) : Controller
+    IOptions<ClubPickupOptions> clubPickupOptions, IClubClock clock) : Controller
 {
     private readonly IyzicoOptions paymentSettings = paymentOptions.Value;
     private readonly ClubPickupOptions clubPickupSettings = clubPickupOptions.Value;
@@ -137,7 +137,7 @@ public class KitchenController(
             TempData["ErrorMessage"] = error ?? "Seçilen Kitchen paketi artık kullanılamıyor.";
             return RedirectToAction(nameof(Index));
         }
-        var today = DateOnly.FromDateTime(DateTime.Today);
+        var today = DateOnly.FromDateTime(clock.Today);
         if (await dbContext.KitchenSubscriptions.AnyAsync(x => x.MemberProfileId == profile.Id &&
             x.Status == KitchenSubscriptionStatus.Active && x.EndsOn >= today))
         {
@@ -153,7 +153,7 @@ public class KitchenController(
         var discounts = await new MembershipPricingService(dbContext).GetAsync(userId);
         var input = pending.CalculatorInput;
         var recommendation = pending.Recommendation;
-        var startsOn = DateOnly.FromDateTime(DateTime.Today.AddDays(1));
+        var startsOn = DateOnly.FromDateTime(clock.Today.AddDays(1));
         var subscription = new KitchenSubscription
         {
             MemberProfileId = profile.Id, KitchenSubscriptionPackageId = package.Id, Plan = package.Plan,
@@ -263,7 +263,7 @@ public class KitchenController(
 
         var today =
             DateOnly.FromDateTime(
-                DateTime.Today);
+                clock.Today);
 
         var hasActiveSubscription =
             await dbContext.KitchenSubscriptions
@@ -286,7 +286,7 @@ public class KitchenController(
        
         var startsOn =
             DateOnly.FromDateTime(
-                DateTime.Today.AddDays(1));
+                clock.Today.AddDays(1));
 
         var membershipDiscounts = await new MembershipPricingService(dbContext).GetAsync(userId);
         var subscription =
@@ -972,10 +972,10 @@ public class KitchenController(
             changedAtUtc;
     }
 
-    private static KitchenMealPlanChangeResult ValidateMealPlanChange(KitchenMealPlanDay day)
+    private KitchenMealPlanChangeResult ValidateMealPlanChange(KitchenMealPlanDay day)
     {
         var subscription = day.KitchenMealPlan.KitchenSubscription;
-        var today = DateOnly.FromDateTime(DateTime.Today);
+        var today = DateOnly.FromDateTime(clock.Today);
 
         if (subscription.Status != KitchenSubscriptionStatus.Active)
         {
@@ -998,7 +998,7 @@ public class KitchenController(
         KitchenWeeklyPlanViewModel? weeklyPlan = null)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var today = DateOnly.FromDateTime(ClubTime.Now);
+        var today = clock.TodayDate;
 
         ActiveKitchenSubscriptionViewModel? activeSubscription = null;
 
@@ -1198,7 +1198,7 @@ public class KitchenController(
                             UnitPrice = item.UnitPriceSnapshot,
                             TotalPrice = item.UnitPriceSnapshot * item.Quantity,
                             IsSkipped = item.IsSkipped,
-                            CanSkip = day.PlanDate > DateOnly.FromDateTime(DateTime.Today)
+                            CanSkip = day.PlanDate > DateOnly.FromDateTime(clock.Today)
                         })
                         .ToList();
                     var activeMeals = meals
@@ -1239,7 +1239,7 @@ public class KitchenController(
                         TotalCarbohydrateGrams = activeMeals.Sum(meal => meal.CarbohydrateGrams),
                         TotalFatGrams = activeMeals.Sum(meal => meal.FatGrams),
                         TotalPrice = activeMeals.Sum(meal => meal.TotalPrice),
-                        CanSkip = day.PlanDate > DateOnly.FromDateTime(DateTime.Today),
+                        CanSkip = day.PlanDate > DateOnly.FromDateTime(clock.Today),
                         Meals = meals
                     };
                 })

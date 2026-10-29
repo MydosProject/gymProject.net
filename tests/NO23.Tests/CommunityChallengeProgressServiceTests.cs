@@ -25,7 +25,7 @@ public class CommunityChallengeProgressServiceTests
             startsOn: today.AddDays(startsOffset),
             endsOn: today.AddDays(endsOffset),
             storedStatus: CommunityChallengeStatus.Completed);
-        var service = new CommunityChallengeProgressService(dbContext);
+        var service = new CommunityChallengeProgressService(dbContext, new ClubClock(TimeProvider.System));
 
         var result = await service.JoinAsync(profile.ApplicationUserId, challenge.Slug);
 
@@ -50,7 +50,7 @@ public class CommunityChallengeProgressServiceTests
         };
         dbContext.CommunityChallengeParticipations.Add(participation);
         await dbContext.SaveChangesAsync();
-        var service = new CommunityChallengeProgressService(dbContext);
+        var service = new CommunityChallengeProgressService(dbContext, new ClubClock(TimeProvider.System));
 
         var result = await service.UpsertDailyCaloriesAsync(
             profile.ApplicationUserId,

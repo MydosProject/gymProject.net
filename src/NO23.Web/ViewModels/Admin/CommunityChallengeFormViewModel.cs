@@ -49,10 +49,10 @@ public class CommunityChallengeFormViewModel
     public int RequiredCompletionPercent { get; set; } = 80;
 
     [Display(Name = "Başlangıç tarihi")]
-    public DateOnly StartsOn { get; set; } = DateOnly.FromDateTime(DateTime.Today.AddDays(7));
+    public DateOnly StartsOn { get; set; } = DateOnly.FromDateTime(NO23.Web.Services.ClubTime.Today.AddDays(7));
 
     [Display(Name = "Bitiş tarihi")]
-    public DateOnly EndsOn { get; set; } = DateOnly.FromDateTime(DateTime.Today.AddDays(28));
+    public DateOnly EndsOn { get; set; } = DateOnly.FromDateTime(NO23.Web.Services.ClubTime.Today.AddDays(28));
 
     [Display(Name = "Durum")]
     public CommunityChallengeStatus Status { get; set; } = CommunityChallengeStatus.Upcoming;

@@ -3,7 +3,7 @@
     ViewData["Title"] = "Community Challenge'ları";
     var openCount = Model.Count(item =>
             (item.Status == "Upcoming" || item.Status == "Active") &&
-            item.EndsOn >= DateOnly.FromDateTime(DateTime.Today));
+            item.EndsOn >= DateOnly.FromDateTime(NO23.Web.Services.ClubTime.Today));
 
     string GetStatusName(string status)
     {

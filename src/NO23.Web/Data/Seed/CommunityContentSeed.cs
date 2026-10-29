@@ -52,8 +52,8 @@ public static class CommunityContentSeed
             TargetDailyCalories = 2100,
             CalorieTolerancePercent = 10,
             RequiredCompletionPercent = 80,
-            StartsOn = DateOnly.FromDateTime(DateTime.Today.AddDays(3)),
-            EndsOn = DateOnly.FromDateTime(DateTime.Today.AddDays(24)),
+            StartsOn = DateOnly.FromDateTime(NO23.Web.Services.ClubTime.Today.AddDays(3)),
+            EndsOn = DateOnly.FromDateTime(NO23.Web.Services.ClubTime.Today.AddDays(24)),
             Status = CommunityChallengeStatus.Upcoming,
             DisplayOrder = 10
         },
@@ -68,8 +68,8 @@ public static class CommunityContentSeed
             TargetDailyCalories = 2000,
             CalorieTolerancePercent = 10,
             RequiredCompletionPercent = 75,
-            StartsOn = DateOnly.FromDateTime(DateTime.Today.AddDays(10)),
-            EndsOn = DateOnly.FromDateTime(DateTime.Today.AddDays(40)),
+            StartsOn = DateOnly.FromDateTime(NO23.Web.Services.ClubTime.Today.AddDays(10)),
+            EndsOn = DateOnly.FromDateTime(NO23.Web.Services.ClubTime.Today.AddDays(40)),
             Status = CommunityChallengeStatus.Upcoming,
             DisplayOrder = 20
         }

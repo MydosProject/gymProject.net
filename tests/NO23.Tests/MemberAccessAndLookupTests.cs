@@ -111,7 +111,7 @@ public class MemberAccessAndLookupTests
     {
         await using var db = Db();
         var (coach, own, other, unassigned) = await Seed(db);
-        var controller = Setup(new Measurements(db, new MemberProgressTrackingService(db)), coach.ApplicationUserId);
+        var controller = Setup(new Measurements(db, new MemberProgressTrackingService(db, new ClubClock(TimeProvider.System))), coach.ApplicationUserId);
         var results = Assert.IsAssignableFrom<IReadOnlyList<MemberLookupResult>>(
             Assert.IsType<JsonResult>(await controller.SearchMembers("ışıl", default)).Value);
         Assert.Equal(own.Id, Assert.Single(results).Id);
@@ -138,7 +138,7 @@ public class MemberAccessAndLookupTests
         coach.IsActive = active;
         await db.SaveChangesAsync();
         var members = Setup(new Members(db), userId);
-        var measurements = Setup(new Measurements(db, new MemberProgressTrackingService(db)), userId);
+        var measurements = Setup(new Measurements(db, new MemberProgressTrackingService(db, new ClubClock(TimeProvider.System))), userId);
         Assert.IsType<ForbidResult>(await members.Index(null));
         Assert.IsType<ForbidResult>(await members.Details(own.Id));
         Assert.IsType<ForbidResult>(await measurements.SearchMembers("ışıl", default));

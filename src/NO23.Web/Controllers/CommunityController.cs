@@ -77,7 +77,7 @@ public class CommunityController(
             })
             .ToList();
 
-        var today = DateOnly.FromDateTime(DateTime.Today);
+        var today = DateOnly.FromDateTime(NO23.Web.Services.ClubTime.Today);
         var challengeRows = await dbContext.CommunityChallenges
             .AsNoTracking()
             .Where(item => item.Status != CommunityChallengeStatus.Cancelled)
@@ -295,7 +295,7 @@ public class CommunityController(
             challenge.Status,
             challenge.StartsOn,
             challenge.EndsOn,
-            DateOnly.FromDateTime(DateTime.Today));
+            DateOnly.FromDateTime(NO23.Web.Services.ClubTime.Today));
 
         if (!CommunityChallengeLifecycle.IsJoinOpen(effectiveStatus))
         {

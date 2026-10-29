@@ -163,7 +163,7 @@ public class ReservationsController(
             PersonalTrainingRequestInput = new PersonalTrainingRequestInputViewModel
             {
                 TrainerId = selectedTrainerId ?? 0,
-                PreferredDate = DateOnly.FromDateTime(DateTime.Today.AddDays(1)),
+                PreferredDate = DateOnly.FromDateTime(NO23.Web.Services.ClubTime.Today.AddDays(1)),
                 PreferredTimeWindow = PersonalTrainingRequestService.PreferredTimeWindows[0]
             },
             PreferredTimeWindows = PersonalTrainingRequestService.PreferredTimeWindows,
