@@ -30,9 +30,10 @@ public class ServicePackageApplicationsController(ApplicationDbContext dbContext
         if (!string.IsNullOrEmpty(query))
         {
             var term = query.ToLower(System.Globalization.CultureInfo.GetCultureInfo("tr-TR"));
+            var emailTerm = query.ToLowerInvariant();
             int.TryParse(query.TrimStart('#'), out var id);
             source = source.Where(x => x.Id == id || x.FullName.Replace("I", "ı").Replace("İ", "i").ToLower().Contains(term) ||
-                x.Email.ToLower().Contains(term) || x.PhoneNumber.Contains(query));
+                x.Email.ToLower().Contains(emailTerm) || x.PhoneNumber.Contains(query));
         }
         var navigation = new NO23.Web.ViewModels.ListNavigationViewModel(await source.CountAsync(), page, query, state,
             Enum.GetValues<ServicePackageApplicationStatus>().Select(x => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem(NO23.Web.Extensions.EnumDisplayNameExtensions.GetDisplayName(x), x.ToString())).ToArray());

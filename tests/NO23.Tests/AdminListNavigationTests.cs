@@ -67,6 +67,17 @@ public class AdminListNavigationTests
 
     private static ApplicationDbContext Db() => new(new DbContextOptionsBuilder<ApplicationDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
     [Fact]
+    public async Task Members_UppercaseAsciiEmailIsIndependentOfTurkishNameCasing()
+    {
+        await using var db = await Members();
+        var member = await db.MemberProfiles.Include(x => x.ApplicationUser).FirstAsync();
+        member.ApplicationUser.Email = "ipek@example.test";
+        await db.SaveChangesAsync();
+        var page = await TestMembershipModule.CreateDirectory(db).LoadAsync(1, "IPEK@EXAMPLE.TEST", null);
+        Assert.Equal(member.Id, Assert.Single(page.Members).MemberProfileId);
+    }
+
+    [Fact]
     public async Task MemberDirectory_MonthlyMetricUsesIstanbulMonthBoundary()
     {
         await using var db = await Members();

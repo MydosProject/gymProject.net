@@ -57,12 +57,13 @@ public sealed class MemberDirectoryService(ApplicationDbContext db, LessonCredit
         if (!string.IsNullOrEmpty(query))
         {
             var normalized = query.ToLower(CultureInfo.GetCultureInfo("tr-TR"));
+            var emailTerm = query.ToLowerInvariant();
             int.TryParse(query.TrimStart('#'), out var memberId);
             var phone = new string(query.Where(char.IsDigit).ToArray());
             var numericPhone = phone.Length >= 2 && query.All(c => char.IsDigit(c) || "+- ()".Contains(c));
             filtered = filtered.Where(x => x.MemberProfileId == memberId ||
                 x.FullName.Replace("I", "ı").Replace("İ", "i").ToLower().Contains(normalized) ||
-                x.Email.ToLower().Contains(normalized) ||
+                x.Email.ToLower().Contains(emailTerm) ||
                 (numericPhone && x.PhoneNumber != null && x.PhoneNumber.Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "").Contains(phone)));
         }
         var now = ClubTime.ToUtc(clock.Now);

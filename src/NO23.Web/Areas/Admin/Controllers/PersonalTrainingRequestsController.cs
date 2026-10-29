@@ -33,10 +33,11 @@ public class PersonalTrainingRequestsController(
         if (!string.IsNullOrEmpty(query))
         {
             var term = query.ToLower(System.Globalization.CultureInfo.GetCultureInfo("tr-TR"));
+            var emailTerm = query.ToLowerInvariant();
             int.TryParse(query.TrimStart('#'), out var id);
             source = source.Where(x => x.Id == id ||
                 (x.MemberProfile.ApplicationUser.FirstName + " " + x.MemberProfile.ApplicationUser.LastName).Replace("I", "ı").Replace("İ", "i").ToLower().Contains(term) ||
-                (x.MemberProfile.ApplicationUser.Email != null && x.MemberProfile.ApplicationUser.Email.ToLower().Contains(term)) ||
+                (x.MemberProfile.ApplicationUser.Email != null && x.MemberProfile.ApplicationUser.Email.ToLower().Contains(emailTerm)) ||
                 (x.MemberProfile.ApplicationUser.PhoneNumber != null && x.MemberProfile.ApplicationUser.PhoneNumber.Contains(query)));
         }
         var navigation = new NO23.Web.ViewModels.ListNavigationViewModel(await source.CountAsync(), page, query, state,
