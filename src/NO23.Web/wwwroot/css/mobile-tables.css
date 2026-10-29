@@ -7,4 +7,12 @@
 @media (max-width: 991.98px) {
     .mobile-table-value :is(input, select, button, .btn) { max-width: 100%; }
     .mobile-table-value > .d-flex { flex-wrap: wrap; }
+    .trainer-panel-body .admin-content .table[data-mobile-table] tbody tr {
+        background: #11170d;
+        border-color: #343d25;
+    }
+    .trainer-panel-body .admin-content .table[data-mobile-table] tbody td { color: #f4f1e9; }
+    .trainer-panel-body .admin-content .table[data-mobile-table] tbody td::before { color: #aab59d; }
+    .trainer-panel-body .admin-content .table[data-mobile-table] tbody td[data-label="İşlem"] { background: #182112; }
+    .trainer-panel-body .admin-content .table[data-mobile-table] a { color: #d2ff00; }
 }

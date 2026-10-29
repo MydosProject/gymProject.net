@@ -13,6 +13,7 @@ public sealed class MobileTableTagHelper : TagHelper
         context.Items[typeof(MobileTableTagHelper)] = MobileLabels?.Split('|');
         context.Items[typeof(MobileTableRowTagHelper)] = null!;
         output.Attributes.RemoveAll("mobile-labels");
+        if (MobileLabels is not null) output.Attributes.SetAttribute("data-mobile-table", "true");
         output.Content.SetHtmlContent(await output.GetChildContentAsync());
     }
 }
