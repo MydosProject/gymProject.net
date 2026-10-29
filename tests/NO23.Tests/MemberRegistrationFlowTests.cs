@@ -82,7 +82,7 @@ public class MemberRegistrationFlowTests
         dbContext.ServicePackageVariants.Add(variant);
         await dbContext.SaveChangesAsync();
 
-        var controller = new MembersController(dbContext, userManager)
+        var controller = new MembersController(dbContext, userManager, TestMembershipModule.CreateDirectory(dbContext))
         {
             ControllerContext = new ControllerContext
             {
@@ -178,7 +178,7 @@ public class MemberRegistrationFlowTests
         dbContext.Orders.Add(order);
         await dbContext.SaveChangesAsync();
 
-        var controller = SetupController(new MembersController(dbContext, userManager));
+        var controller = SetupController(new MembersController(dbContext, userManager, TestMembershipModule.CreateDirectory(dbContext)));
         var result = await controller.DeleteConfirmed(profile.Id);
 
         Assert.IsType<RedirectToActionResult>(result);

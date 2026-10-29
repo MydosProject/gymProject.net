@@ -708,7 +708,7 @@ public class RegistrationPackageCatalogTests
     {
         var httpContext = new DefaultHttpContext { RequestServices = provider };
         var controller = new MembersController(provider.GetRequiredService<ApplicationDbContext>(),
-            provider.GetRequiredService<UserManager<ApplicationUser>>())
+            provider.GetRequiredService<UserManager<ApplicationUser>>(), TestMembershipModule.CreateDirectory(provider.GetRequiredService<ApplicationDbContext>()))
         {
             ControllerContext = new ControllerContext { HttpContext = httpContext, RouteData = new(), ActionDescriptor = new() },
             TempData = new TempDataDictionary(httpContext, new MemoryTempDataProvider())

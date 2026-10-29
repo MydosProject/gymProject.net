@@ -19,7 +19,7 @@ public class AdminListNavigationTests
     public async Task Members_PagesAreBoundedWhileOverallMetricsRemainGlobal(int page, int expected)
     {
         await using var db = await Members();
-        var controller = new MembersController(db, null!);
+        var controller = new MembersController(db, null!, TestMembershipModule.CreateDirectory(db));
         var result = Assert.IsType<ViewResult>(await controller.Index(page));
         var rows = Assert.IsAssignableFrom<IReadOnlyList<MemberListItemViewModel>>(result.Model);
         Assert.Equal(expected, rows.Count);
@@ -32,7 +32,7 @@ public class AdminListNavigationTests
     public async Task Members_SearchKeepsSameNamedPeopleDistinctAndCombinesState()
     {
         await using var db = await Members();
-        var controller = new MembersController(db, null!);
+        var controller = new MembersController(db, null!, TestMembershipModule.CreateDirectory(db));
         var rows = Assert.IsAssignableFrom<IReadOnlyList<MemberListItemViewModel>>(
             Assert.IsType<ViewResult>(await controller.Index(query: "İPEK AYNI")).Model);
         Assert.Equal(2, rows.Count);
@@ -66,6 +66,21 @@ public class AdminListNavigationTests
     }
 
     private static ApplicationDbContext Db() => new(new DbContextOptionsBuilder<ApplicationDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
+    [Fact]
+    public async Task MemberDirectory_MonthlyMetricUsesIstanbulMonthBoundary()
+    {
+        await using var db = await Members();
+        foreach (var member in db.MemberProfiles) member.CreatedAtUtc = new DateTime(2026, 10, 15, 0, 0, 0, DateTimeKind.Utc);
+        var rows = await db.MemberProfiles.OrderBy(x => x.Id).Take(2).ToListAsync();
+        rows[0].CreatedAtUtc = new DateTime(2026, 10, 31, 20, 59, 0, DateTimeKind.Utc);
+        rows[1].CreatedAtUtc = new DateTime(2026, 10, 31, 21, 1, 0, DateTimeKind.Utc);
+        await db.SaveChangesAsync();
+        var clock = new NO23.Web.Services.ClubClock(new FixedTimeProvider(new DateTimeOffset(2026, 10, 31, 21, 30, 0, TimeSpan.Zero)));
+        var page = await TestMembershipModule.CreateDirectory(db, clock).LoadAsync(1, null, null);
+        Assert.Equal(1, page.NewThisMonthCount);
+        Assert.Equal(37, page.OverallCount);
+    }
+
     private static async Task<ApplicationDbContext> Members()
     {
         var db = Db();

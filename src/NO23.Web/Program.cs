@@ -11,10 +11,12 @@ using NO23.Web.Services.Email;
 using NO23.Web.ViewModels.Api;
 using NO23.Web.Services.Payments;
 using NO23.Web.Hubs;
+using NO23.Web.Features.Membership;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<IClubClock, ClubClock>();
+builder.Services.AddMembershipModule();
 
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")

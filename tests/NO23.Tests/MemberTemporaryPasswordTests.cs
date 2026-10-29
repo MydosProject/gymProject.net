@@ -104,7 +104,7 @@ public class MemberTemporaryPasswordTests
     private static NO23.Web.Areas.Admin.Controllers.MembersController Controller(ApplicationDbContext db, UserManager<ApplicationUser> manager)
     {
         var context = new DefaultHttpContext();
-        var controller = new NO23.Web.Areas.Admin.Controllers.MembersController(db, manager) { ControllerContext = new() { HttpContext = context } };
+        var controller = new NO23.Web.Areas.Admin.Controllers.MembersController(db, manager, TestMembershipModule.CreateDirectory(db)) { ControllerContext = new() { HttpContext = context } };
         controller.Url = new UrlHelper(new ActionContext(context, new RouteData(), new ActionDescriptor()));
         controller.TempData = new TempDataDictionary(context, new MemoryTempData());
         return controller;
