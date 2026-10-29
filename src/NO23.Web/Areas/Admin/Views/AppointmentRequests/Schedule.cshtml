@@ -39,7 +39,7 @@
     @if (Model.Request.ScheduleStatus == AppointmentScheduleStatus.Scheduled)
     {
         <div class="d-flex flex-wrap gap-3 my-4">
-            <form data-submit-once asp-action="Finish" method="post"><input name="id" type="hidden" value="@Model.Id" /><input name="expectedVersion" type="hidden" value="@Model.Request.Version" /><input name="status" type="hidden" value="Cancelled" /><button class="btn btn-outline-danger">Ön görüşmeyi iptal et</button></form>
+            <form data-submit-once asp-action="Finish" method="post" data-confirm="@($"{Model.Request.FullName} için planlanmış ön görüşme iptal edilsin mi?")"><input name="id" type="hidden" value="@Model.Id" /><input name="expectedVersion" type="hidden" value="@Model.Request.Version" /><input name="status" type="hidden" value="Cancelled" /><button class="btn btn-outline-danger">Ön görüşmeyi iptal et</button></form>
             <form data-submit-once asp-action="Finish" method="post"><input name="id" type="hidden" value="@Model.Id" /><input name="expectedVersion" type="hidden" value="@Model.Request.Version" /><input name="status" type="hidden" value="Completed" /><button class="btn btn-outline-light" disabled="@(Model.Request.ScheduledAtUtc!.Value.AddMinutes(Model.Request.DurationMinutes) > DateTime.UtcNow)">Görüşme tamamlandı</button></form>
         </div>
     }

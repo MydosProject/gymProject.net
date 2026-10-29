@@ -88,7 +88,7 @@
                             <tr>
                                 <td data-label="Üye">
                                     <strong>@(string.IsNullOrWhiteSpace(member.FullName) ? "İsimsiz üye" : member.FullName)</strong>
-                                    <small class="admin-cell-note">@member.Email</small>
+                                    <small class="admin-cell-note">#@member.MemberProfileId · @(string.IsNullOrWhiteSpace(member.Email) ? "E-posta kayıtlı değil" : member.Email)</small>
                                 </td>
                                 <td data-label="İletişim">@(string.IsNullOrWhiteSpace(member.PhoneNumber) ? "-" : member.PhoneNumber)</td>
                                 <td data-label="Paket">
