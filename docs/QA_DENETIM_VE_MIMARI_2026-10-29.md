@@ -371,3 +371,18 @@ Tüm Z vakaları sunucu/konteyner saat dilimi **UTC** iken, Türkiye saatiyle 00
 **Modülerleştirme yaklaşımı:** Modüler monolit bu uygulama için uygun bir yönelimdir. Modül sınırları iş kurallarının sahipliğini ve ortak işlemlerin transaction sorumluluğunu tanımlamalı. Klasör taşıma tek başına modülerlik sağlamaz. Önce davranış ve HTTP testleri eklenmeli, ardından küçük servis çıkarımları ve DI düzenlemesi yapılmalı; controller/view taşıma sırasında Area, route ve Razor view keşfi korunmalı. Ödeme ayrı çalışma alanı olarak bırakılırken Takvim/Rezervasyon ve Üyelik/Haklar üzerinde sınırlı bir başlangıç yapılabilir.
 
 Kaynaklar: [Microsoft — ortak web uygulaması mimarileri](https://learn.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/common-web-application-architectures), [Microsoft — bağımlılık enjeksiyonu rehberi](https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines).
+
+## 9. Uygulama durumu — ödeme dışı ilk paket
+
+`codex/qa-kullanim` dalında sıralı uygulama yapıldı. Ayrıntı ve ekran bazlı kontrol adımları: [Ödeme dışı kullanım teslimatı](TESLIMAT_KULLANIM_2026-10-29.md).
+
+| Bulgu | Güncel durum |
+|---|---|
+| UI-04 / UI-05 | Hedeflenen onaysız admin/üye işlemlerine ortak onay eklendi; PT ve ön görüşme iptali de kapsandı. Vazgeçmede sıfır POST, iptalde mevcut hak kuralları doğrulandı. |
+| UI-01 | Ödeme dışındaki hedef tablolara ortak mobil etiket desteği ve eğitmen kartlarına kontrast düzeltmesi uygulandı. Ödeme geçmişi tablosu ayrı iş olarak açık. Kitchen reçetelerinin bütün dolu durumları için manuel kabul kapsamı tamamlanmadı. |
+| BE-07 | Ödeme dışı sunucu günü kullanımları İstanbul gününe bağlandı; kontrollü saatle sınır testleri eklendi. Ödeme servisleri ve checkout tarihleri ayrı pakette açık. |
+| UI-06 | Üyeler ve üç talep listesinde arama/durum filtresi ve sunucuda sayfalama var. Diğer uzun listelere yayılması açık. |
+| UI-02 | Seçili native POST formlarında tek gönderim ve işlem göstergesi var. Düğme değeri/validasyon/geri dönüş test edildi. Bütün sunucu işlemleri için genel idempotency tamamlanmış sayılmaz. |
+| Mimari | Üye listeleme ayrı Membership servisine çıkarıldı; DI ve saat bağımlılığı açık. Modülerleşmenin ilk adımıdır; diğer modüller ve mimari sınır testleri açık. |
+
+Son otomatik tur **695 başarılı / 0 başarısız / 0 atlanan** (başlangıç 673). Ayrı PostgreSQL veritabanı ve tarayıcıda hedeflenen smoke kontrolleri geçti. Kalıcı PostgreSQL/Playwright CI kapsamı, ödeme bulguları ve canlı dağıtım doğrulaması bu teslimatta tamamlanmadı. İlk raporun kanıt ve kapsam notları tarihsel denetim durumunu gösterir; güncel kapanış için bu bölüm ve teslimat notu esas alınmalıdır.
