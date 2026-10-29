@@ -1,0 +1,9 @@
+@model NO23.Web.ViewModels.ListNavigationViewModel
+<form method="get" class="list-filters" role="search" aria-label="Liste arama ve filtreleri">
+    <label>Arama<input name="query" value="@Model.Query" maxlength="80" type="search" class="form-control" placeholder="Ad, iletişim bilgisi veya #kayıt no" /></label>
+    <label>Durum<select name="state" class="form-select"><option value="">Tümü</option>
+        @foreach (var option in Model.States) { <option value="@option.Value" selected="@(option.Value == Model.State)">@option.Text</option> }
+    </select></label>
+    <button type="submit" class="btn btn-dark">Filtrele</button>
+    @if (!string.IsNullOrEmpty(Model.Query) || !string.IsNullOrEmpty(Model.State)) { <a asp-action="Index" class="btn btn-outline-dark">Temizle</a> }
+</form>

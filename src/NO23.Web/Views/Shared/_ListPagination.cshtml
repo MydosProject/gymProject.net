@@ -1,0 +1,15 @@
+@model NO23.Web.ViewModels.ListNavigationViewModel
+<nav class="list-pagination" aria-label="Liste sayfaları">
+    <p>@Model.TotalCount kayıt · Sayfa @Model.Page / @Model.TotalPages</p>
+    <ul class="pagination flex-wrap mb-0">
+        @if (Model.Page > 1) { <li class="page-item"><a class="page-link" asp-action="Index" asp-all-route-data="Model.Routes(1)">İlk</a></li><li class="page-item"><a class="page-link" asp-action="Index" asp-all-route-data="Model.Routes(Model.Page - 1)">← Önceki</a></li> }
+        @for (var pageNumber = Math.Max(1, Model.Page - 2); pageNumber <= Math.Min(Model.TotalPages, Model.Page + 2); pageNumber++)
+        {
+            <li class="page-item @(pageNumber == Model.Page ? "active" : "")">
+                @if (pageNumber == Model.Page) { <span class="page-link" aria-current="page">@pageNumber</span> }
+                else { <a class="page-link" asp-action="Index" asp-all-route-data="Model.Routes(pageNumber)">@pageNumber</a> }
+            </li>
+        }
+        @if (Model.Page < Model.TotalPages) { <li class="page-item"><a class="page-link" asp-action="Index" asp-all-route-data="Model.Routes(Model.Page + 1)">Sonraki →</a></li><li class="page-item"><a class="page-link" asp-action="Index" asp-all-route-data="Model.Routes(Model.TotalPages)">Son</a></li> }
+    </ul>
+</nav>

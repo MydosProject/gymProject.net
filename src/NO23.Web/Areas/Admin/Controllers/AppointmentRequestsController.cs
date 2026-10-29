@@ -8,14 +8,38 @@ using NO23.Web.Data.Seed;
 using NO23.Web.Domain.Enums;
 using NO23.Web.Services;
 using NO23.Web.ViewModels.Admin;
+using NO23.Web.ViewModels;
+using NO23.Web.Extensions;
 
 namespace NO23.Web.Areas.Admin.Controllers;
 
 [Area("Admin"), Authorize(Roles = ApplicationRoles.Admin)]
 public class AppointmentRequestsController(ApplicationDbContext dbContext) : Controller
 {
-    public async Task<IActionResult> Index() => View(await dbContext.AppointmentRequests.AsNoTracking().Include(x => x.ScheduledTrainer)
-        .OrderBy(x => x.Status != ServicePackageApplicationStatus.Pending).ThenByDescending(x => x.CreatedAtUtc).ToListAsync());
+    public async Task<IActionResult> Index(int page = 1, string? query = null, string? state = null)
+    {
+        query = query?.Trim();
+        if (!ModelState.IsValid || query?.Length > 80) return BadRequest();
+        var requests = dbContext.AppointmentRequests.AsNoTracking().Include(x => x.ScheduledTrainer).AsQueryable();
+        if (!string.IsNullOrEmpty(state))
+        {
+            if (!Enum.TryParse<ServicePackageApplicationStatus>(state, true, out var status) || !Enum.IsDefined(status)) return BadRequest();
+            requests = requests.Where(x => x.Status == status);
+            state = status.ToString();
+        }
+        if (!string.IsNullOrEmpty(query))
+        {
+            var term = query.ToLower(System.Globalization.CultureInfo.GetCultureInfo("tr-TR"));
+            int.TryParse(query.TrimStart('#'), out var id);
+            requests = requests.Where(x => x.Id == id || x.FullName.Replace("I", "ı").Replace("İ", "i").ToLower().Contains(term) || x.PhoneNumber.Contains(query));
+        }
+        var navigation = new ListNavigationViewModel(await requests.CountAsync(), page, query, state,
+            Enum.GetValues<ServicePackageApplicationStatus>().Select(x => new SelectListItem(x.GetDisplayName(), x.ToString())).ToArray());
+        ViewData["ListNavigation"] = navigation;
+        return View(await requests.OrderBy(x => x.Status != ServicePackageApplicationStatus.Pending)
+            .ThenByDescending(x => x.CreatedAtUtc).ThenByDescending(x => x.Id)
+            .Skip(navigation.Skip).Take(ListNavigationViewModel.PageSize).ToListAsync());
+    }
 
     [HttpGet]
     public async Task<IActionResult> Schedule(int id)
@@ -58,14 +82,14 @@ public class AppointmentRequestsController(ApplicationDbContext dbContext) : Con
     }
 
     [HttpPost, ValidateAntiForgeryToken]
-    public async Task<IActionResult> UpdateStatus(int id, ServicePackageApplicationStatus status)
+    public async Task<IActionResult> UpdateStatus(int id, ServicePackageApplicationStatus status, int page = 1, string? query = null, string? state = null)
     {
         if (!Enum.IsDefined(status)) return BadRequest();
         if (!await dbContext.AppointmentRequests.AnyAsync(x => x.Id == id)) return NotFound();
         var result = await new AppointmentSchedulingService(dbContext).UpdateRequestStatusAsync(id, status,
             User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "");
         TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] = result.Message;
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(Index), new { page, query, state });
     }
 
     private async Task<AppointmentScheduleViewModel?> PopulateAsync(AppointmentScheduleViewModel model)

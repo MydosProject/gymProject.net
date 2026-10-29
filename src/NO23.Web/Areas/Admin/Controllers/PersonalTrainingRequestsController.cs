@@ -17,13 +17,37 @@ public class PersonalTrainingRequestsController(
     PersonalTrainingRequestService personalTrainingRequestService,
     UserNotificationRealtimeService notificationService) : Controller
 {
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(int page = 1, string? query = null, string? state = null)
     {
-        var rows = await dbContext.PersonalTrainingRequests
-            .AsNoTracking()
+        query = query?.Trim();
+        if (!ModelState.IsValid || query?.Length > 80) return BadRequest();
+        var source = dbContext.PersonalTrainingRequests.AsNoTracking().AsQueryable();
+        ViewBag.OverallCount = await source.CountAsync();
+        ViewBag.PendingCount = await source.CountAsync(x => x.Status == PersonalTrainingRequestStatus.Pending);
+        if (!string.IsNullOrEmpty(state))
+        {
+            if (!Enum.TryParse<PersonalTrainingRequestStatus>(state, true, out var status) || !Enum.IsDefined(status)) return BadRequest();
+            source = source.Where(x => x.Status == status);
+            state = status.ToString();
+        }
+        if (!string.IsNullOrEmpty(query))
+        {
+            var term = query.ToLower(System.Globalization.CultureInfo.GetCultureInfo("tr-TR"));
+            int.TryParse(query.TrimStart('#'), out var id);
+            source = source.Where(x => x.Id == id ||
+                (x.MemberProfile.ApplicationUser.FirstName + " " + x.MemberProfile.ApplicationUser.LastName).Replace("I", "ı").Replace("İ", "i").ToLower().Contains(term) ||
+                (x.MemberProfile.ApplicationUser.Email != null && x.MemberProfile.ApplicationUser.Email.ToLower().Contains(term)) ||
+                (x.MemberProfile.ApplicationUser.PhoneNumber != null && x.MemberProfile.ApplicationUser.PhoneNumber.Contains(query)));
+        }
+        var navigation = new NO23.Web.ViewModels.ListNavigationViewModel(await source.CountAsync(), page, query, state,
+            Enum.GetValues<PersonalTrainingRequestStatus>().Select(x => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem(x.GetDisplayName(), x.ToString())).ToArray());
+        ViewData["ListNavigation"] = navigation;
+        var rows = await source
             .OrderByDescending(request =>
                 request.Status == PersonalTrainingRequestStatus.Pending)
             .ThenByDescending(request => request.CreatedAtUtc)
+            .ThenByDescending(request => request.Id)
+            .Skip(navigation.Skip).Take(NO23.Web.ViewModels.ListNavigationViewModel.PageSize)
             .Select(request => new
             {
                 request.Id,

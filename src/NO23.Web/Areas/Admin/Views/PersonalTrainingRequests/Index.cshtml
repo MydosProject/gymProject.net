@@ -1,10 +1,11 @@
 @model IReadOnlyList<PersonalTrainingRequestListItemViewModel>
 
 @{
+    var navigation = (NO23.Web.ViewModels.ListNavigationViewModel)ViewData["ListNavigation"]!;
     ViewData["Title"] = "Birebir Talepler";
 
-    var pendingCount = Model.Count(request => request.IsPending);
-    var processedCount = Model.Count - pendingCount;
+    var pendingCount = (int)ViewBag.PendingCount;
+    var processedCount = (int)ViewBag.OverallCount - pendingCount;
 }
 
 <section class="admin-page admin-personal-requests-page">
@@ -31,6 +32,7 @@
                 </a>
             </div>
         </header>
+<partial name="/Views/Shared/_ListFilters.cshtml" model="navigation" />
 
         <section class="admin-personal-overview"
                  aria-label="Birebir talep özeti">
@@ -40,7 +42,7 @@
                     <small>Toplam talep</small>
                 </div>
 
-                <strong>@Model.Count.ToString("00")</strong>
+                <strong>@(((int)ViewBag.OverallCount).ToString("00"))</strong>
 
                 <p>Tüm birebir antrenman kayıtları</p>
             </article>
@@ -221,4 +223,5 @@
             </div>
         </section>
     </div>
+<partial name="/Views/Shared/_ListPagination.cshtml" model="navigation" />
 </section>

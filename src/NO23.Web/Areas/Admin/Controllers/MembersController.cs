@@ -167,9 +167,11 @@ public class MembersController(
             : $"Üye hesabı ve Kids paketi oluşturuldu. Aile kodu: {family.Code}";
         return RedirectToAction(nameof(Index));
     }
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(int page = 1, string? query = null, string? state = null)
     {
-        var members = await dbContext.MemberProfiles
+        query = query?.Trim();
+        if (!ModelState.IsValid || query?.Length > 80 || state is not (null or "" or "active" or "expired" or "kitchen")) return BadRequest();
+        var allMembers = dbContext.MemberProfiles
             .AsNoTracking()
             .Include(profile => profile.ApplicationUser)
             .Include(profile => profile.MembershipPackage)
@@ -204,8 +206,36 @@ public class MembersController(
                     ? null
                     : profile.AssignedTrainer.FirstName + " " + profile.AssignedTrainer.LastName,
                 CreatedAtUtc = profile.CreatedAtUtc
-            })
-            .ToListAsync();
+            });
+        ViewBag.OverallCount = await allMembers.CountAsync();
+        ViewBag.PackageCount = await allMembers.Select(x => x.PackageName).Distinct().CountAsync();
+        var month = ClubTime.ToUtc(new DateTime(ClubTime.Today.Year, ClubTime.Today.Month, 1));
+        ViewBag.NewThisMonthCount = await allMembers.CountAsync(x => x.CreatedAtUtc >= month && x.CreatedAtUtc < month.AddMonths(1));
+        var filtered = allMembers;
+        if (!string.IsNullOrEmpty(query))
+        {
+            var normalized = query.ToLower(CultureInfo.GetCultureInfo("tr-TR"));
+            int.TryParse(query.TrimStart('#'), out var memberId);
+            var phone = new string(query.Where(char.IsDigit).ToArray());
+            var numericPhone = phone.Length >= 2 && query.All(c => char.IsDigit(c) || "+- ()".Contains(c));
+            filtered = filtered.Where(x => x.MemberProfileId == memberId ||
+                x.FullName.Replace("I", "ı").Replace("İ", "i").ToLower().Contains(normalized) ||
+                x.Email.ToLower().Contains(normalized) ||
+                (numericPhone && x.PhoneNumber != null && x.PhoneNumber.Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "").Contains(phone)));
+        }
+        var now = DateTime.UtcNow;
+        filtered = state switch
+        {
+            "kitchen" => filtered.Where(x => x.IsKitchenOnly),
+            "expired" => filtered.Where(x => !x.IsKitchenOnly && x.MembershipEndsAtUtc <= now),
+            "active" => filtered.Where(x => !x.IsKitchenOnly && (!x.MembershipEndsAtUtc.HasValue || x.MembershipEndsAtUtc > now)),
+            _ => filtered
+        };
+        var navigation = new NO23.Web.ViewModels.ListNavigationViewModel(await filtered.CountAsync(), page, query, state,
+            [new("Süresi devam eden spor", "active"), new("Süresi biten spor", "expired"), new("Kitchen hesapları", "kitchen")]);
+        ViewData["ListNavigation"] = navigation;
+        var members = await filtered.OrderByDescending(x => x.CreatedAtUtc).ThenByDescending(x => x.MemberProfileId)
+            .Skip(navigation.Skip).Take(NO23.Web.ViewModels.ListNavigationViewModel.PageSize).ToListAsync();
 
         var creditSummaries = await new LessonCreditSummaryService(dbContext).LoadAsync(members.Select(m => m.MemberProfileId));
         foreach (var member in members) member.Credits = creditSummaries.GetValueOrDefault(member.MemberProfileId);
@@ -460,7 +490,7 @@ public class MembersController(
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> AssignTrainer(int memberProfileId, int? trainerId)
+    public async Task<IActionResult> AssignTrainer(int memberProfileId, int? trainerId, int page = 1, string? query = null, string? state = null)
     {
         var member = await dbContext.MemberProfiles.FindAsync(memberProfileId);
         if (member is null) return NotFound();
@@ -471,7 +501,7 @@ public class MembersController(
         member.UpdatedAtUtc = DateTime.UtcNow;
         await dbContext.SaveChangesAsync();
         TempData["StatusMessage"] = trainerId is null ? "Antrenör ataması kaldırıldı." : "Antrenör üyeye atandı.";
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(Index), new { page, query, state });
     }
 
     private async Task LoadEditOptionsAsync(int? variantId, int? trainerId)

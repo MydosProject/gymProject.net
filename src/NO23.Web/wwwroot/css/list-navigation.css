@@ -1,0 +1,8 @@
+.list-filters { display:flex; flex-wrap:wrap; gap:1rem; align-items:end; margin:1.5rem 0; }
+.list-filters label { display:grid; gap:.4rem; min-width:0; flex:1 1 14rem; }
+.list-filters input, .list-filters select { width:100%; min-width:0; }
+.list-pagination { display:flex; flex-wrap:wrap; gap:1rem; justify-content:space-between; align-items:center; margin:1.5rem 0; }
+.list-pagination p { margin:0; }
+.list-pagination .page-link { color:var(--admin-text, #f4f1e9); background:var(--admin-card, #151712); border-color:var(--admin-line, #33372c); min-height:44px; }
+.list-pagination .active .page-link { color:#111; background:#d3ad5f; border-color:#d3ad5f; }
+@media(max-width:575.98px) { .list-filters > .btn { flex:1 1 auto; } }

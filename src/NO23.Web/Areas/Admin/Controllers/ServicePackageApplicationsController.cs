@@ -14,15 +14,37 @@ public class ServicePackageApplicationsController(ApplicationDbContext dbContext
     : Controller
 {
     [HttpGet]
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(int page = 1, string? query = null, string? state = null)
     {
-        var applications = await dbContext.ServicePackageApplications
-            .AsNoTracking()
+        query = query?.Trim();
+        if (!ModelState.IsValid || query?.Length > 80) return BadRequest();
+        var source = dbContext.ServicePackageApplications.AsNoTracking().AsQueryable();
+        ViewBag.OverallCount = await source.CountAsync();
+        ViewBag.PendingCount = await source.CountAsync(x => x.Status == ServicePackageApplicationStatus.Pending);
+        if (!string.IsNullOrEmpty(state))
+        {
+            if (!Enum.TryParse<ServicePackageApplicationStatus>(state, true, out var status) || !Enum.IsDefined(status)) return BadRequest();
+            source = source.Where(x => x.Status == status);
+            state = status.ToString();
+        }
+        if (!string.IsNullOrEmpty(query))
+        {
+            var term = query.ToLower(System.Globalization.CultureInfo.GetCultureInfo("tr-TR"));
+            int.TryParse(query.TrimStart('#'), out var id);
+            source = source.Where(x => x.Id == id || x.FullName.Replace("I", "ı").Replace("İ", "i").ToLower().Contains(term) ||
+                x.Email.ToLower().Contains(term) || x.PhoneNumber.Contains(query));
+        }
+        var navigation = new NO23.Web.ViewModels.ListNavigationViewModel(await source.CountAsync(), page, query, state,
+            Enum.GetValues<ServicePackageApplicationStatus>().Select(x => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem(NO23.Web.Extensions.EnumDisplayNameExtensions.GetDisplayName(x), x.ToString())).ToArray());
+        ViewData["ListNavigation"] = navigation;
+        var applications = await source
             .OrderBy(application =>
                 application.Status == ServicePackageApplicationStatus.Pending
                     ? 0
                     : 1)
             .ThenByDescending(application => application.CreatedAtUtc)
+            .ThenByDescending(application => application.Id)
+            .Skip(navigation.Skip).Take(NO23.Web.ViewModels.ListNavigationViewModel.PageSize)
             .Select(application => new
             {
                 application.Id,
@@ -68,7 +90,7 @@ public class ServicePackageApplicationsController(ApplicationDbContext dbContext
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> UpdateStatus(
         int id,
-        ServicePackageApplicationStatus status)
+        ServicePackageApplicationStatus status, int page = 1, string? query = null, string? state = null)
     {
         if (!Enum.IsDefined(typeof(ServicePackageApplicationStatus), status))
         {
@@ -88,6 +110,6 @@ public class ServicePackageApplicationsController(ApplicationDbContext dbContext
         await dbContext.SaveChangesAsync();
 
         TempData["SuccessMessage"] = "Başvuru durumu güncellendi.";
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(Index), new { page, query, state });
     }
 }
