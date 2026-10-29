@@ -2,7 +2,7 @@
 
 **Kapsam:** `no23-V8` / `2bda53e`. Kod incelemesi (backend, UI, dağıtım dosyaları) ve geçici xUnit sondaları. Mevcut [QA bulguları](QA_BULGULARI_2026-10-29.md) ve [60 test senaryosu](TEST_CASELERI_2026-10-29.md) tekrar edilmedi; bu belge onların **devamıdır**.
 
-**Revizyon (29.10.2026, ikinci gözden geçirme sonrası):** Test kapsamı ifadesi, Data Protection riski ve BE-02'nin önceliği düzeltildi; ürün kararı gerektiren değerler ve bakım gözlemleri bulgulardan ayrıldı; uygulama sırası güncellendi.
+**Revizyon (29.10.2026, ikinci gözden geçirme sonrası):** Test kapsamı ifadesi, Data Protection riski ve BE-02'nin önceliği düzeltildi; ürün kararı gerektiren değerler ve bakım gözlemleri bulgulardan ayrıldı; uygulama sırası güncellendi. Ek olarak ödeme dışı kullanım/UI bulguları (UI-04…UI-06), gözlenen mimari sorunlar ve modülerleştirme önerisi eklendi (§4, §5.8, §5.9).
 
 **Otomatik test durumu:** 673 test geçti, 0 başarısız. 65 test dosyasının (yardımcı `FakeIyzicoCheckoutClient` hariç) 23'ü veritabanı kullanmayan saf birim testidir (hesaplayıcılar, doğrulayıcılar, model binder'lar). Veritabanı kullanan 42 dosyanın tamamı EF Core InMemory sağlayıcısıyla çalışıyor. Kodda yaygın olan `IsRelational() ? BeginTransaction(...) : null` deseni nedeniyle transaction, `FOR UPDATE`, `Serializable`, unique/check kısıtları ve eşzamanlılık yolları bu testlerde çalışmıyor. **Asıl eksik:** ödeme, stok ve ders hakkı işlemlerinin gerçek PostgreSQL üzerinde kalıcı otomatik testlerinin olmaması. Önceki turlarda yapılan manuel PostgreSQL kontrolleri bu kapsamın yerini tutmaz. Aşağıdaki P0/P1 hataların hiçbiri mevcut paket tarafından yakalanmıyor.
 
@@ -32,6 +32,9 @@
 | BE-09 | P2 | Güvenlik | Anonim POST'larda hız sınırı yok (misafir sipariş stok kilitleyebilir) | KOD |
 | SEC-04 | P2 | Dağıtım | Migration uygulama açılışında; güvenlik başlıkları ve ForwardedHeaders yok | RİSK |
 | UI-02 | P2 | Formlar | Genel çift gönderim koruması yok (sunucu tarafı korumaya ek destek) | KOD |
+| UI-04 | P1 | Admin | Silme/çıkarma işlemlerinin bir kısmı onay sormadan tek tıkla uygulanıyor | KOD |
+| UI-05 | P2 | Üye | Grup dersi rezervasyonu onay sormadan tek tıkla iptal ediliyor | KOD |
+| UI-06 | P2 | Admin | Büyüyen listelerde sayfalama ve filtre yok | KOD |
 
 \* SEC-01/SEC-02 yalnız canlı ortam [k8s.yaml](../k8s.yaml) ile çalışıyorsa P0'dır; canlının hangi yapılandırmayla çalıştığı bu incelemede doğrulanmadı. [docker-compose.yml](../docker-compose.yml) tarafında veritabanı diski zaten kalıcı tanımlıdır.
 
@@ -167,6 +170,30 @@ Uygulamada anahtar saklama yeri yapılandırılmamış (`AddDataProtection().Per
 
 `admin.css` + `site.css`'de 187 `!important`, 156 media query; aynı bileşen için birden fazla dosyada çakışan kurallar var. Bu sayılar tek başına hata kanıtı değildir; bakım maliyeti ve regresyon olasılığı göstergesidir (üye tablosu düzeltmesinin nedeni de bir `.table` kuralına yenilmekti). **Öneri:** Bileşen bazlı dosyalar, tasarım token'ları (CSS değişkenleri zaten kısmen var), görsel regresyon testi.
 
+### UI-04 — Onaysız silme/çıkarma (P1, KOD)
+
+Aşağıdaki işlemler tek tıkla, onay penceresi olmadan sunucuya gider:
+
+| Ekran | İşlem | Not |
+|---|---|---|
+| [Admin/Calendar/Index.cshtml:124](../src/NO23.Web/Areas/Admin/Views/Calendar/Index.cshtml:124) | Üyeyi gruptan "Çıkar" | Ders hakkını etkiler |
+| [KitchenAllergens/Index.cshtml:19](../src/NO23.Web/Areas/Admin/Views/KitchenAllergens/Index.cshtml:19) | Alerjen "Sil" | |
+| [MembershipPackageOptions/Index.cshtml:8](../src/NO23.Web/Areas/Admin/Views/MembershipPackageOptions/Index.cshtml:8) | Paket seçeneği "Sil" | |
+| [ServicePackages/Edit.cshtml:4](../src/NO23.Web/Areas/Admin/Views/ServicePackages/Edit.cshtml:4) | Varyant "Sil" | |
+| [MemberProgress/Index.cshtml:81](../src/NO23.Web/Areas/Admin/Views/MemberProgress/Index.cshtml:81) | "Fotoğrafı sil" | Geri alınamaz |
+
+Davranış tutarsızdır: ders seansı iptali, Kitchen menü silme, grup dersi kaldırma ve etkinlik rezervasyonu iptalinde onay penceresi veya `confirm` vardır. **Önlem:** Tek bir `_ConfirmDialog` partial'ı (veya `data-confirm` niteliğini işleyen ortak JS); tüm sil/iptal/çıkar işlemleri bunu kullanır.
+
+### UI-05 — Üyenin grup rezervasyonu tek tıkla iptal oluyor (P2, KOD)
+
+[Member/Reservations/Index.cshtml:105](../src/NO23.Web/Areas/Member/Views/Reservations/Index.cshtml:105) ve Member ana sayfasındaki "İptal Et" formu onay sormuyor. Kişisel antrenman iptalindeki `data-personal-training-cancel-form` ve ilgili JS yalnız güncel duruma göre formu/düğmeyi değiştiriyor; kullanıcı onayı veya gönderim sırasında çift tıklama kilidi sağlamıyor. Dolu bir derste yanlış tıklayan üye yerini kaybeder. **Önlem:** Grup ve PT iptallerini UI-04 ile aynı ortak onay bileşeni üzerinden değerlendirin; gönderim korumasını ayrıca UI-02 kapsamında doğrulayın.
+
+### UI-06 — Sayfalama ve filtre eksikliği (P2, KOD)
+
+24 admin/eğitmen liste ekranının `Index` action'ında sayfalama yok. Zamanla en çok büyüyecek olanlar: Üyeler, Siparişler, Randevu talepleri, PT talepleri, Paket başvuruları, Kitchen abonelikleri. Kayıt arttıkça sayfa yavaşlar ve aranan kayıt bulunamaz hale gelir (mevcut Y-08 performans vakasıyla ilişkili). **Önlem:** Ortak sayfalama + arama/durum filtresi bileşeni; önce Üyeler ve Siparişler.
+
+**Kontrol edilip sorun bulunmayanlar:** Görsellerde `alt` metni, tüm düzenlerde `lang="tr"`, Türkçe doğrulama mesajları.
+
 ---
 
 ## 5. Mimari öneriler
@@ -211,6 +238,50 @@ Sipariş ve ödeme durumları şu an callback, worker, admin ve `OrderWorkflowSe
 ### 5.7 Arka plan işleri ve yan etkiler
 
 Bildirim/SignalR yayınları `SaveChanges` sonrasında yapılıyor (doğru). Kopya sayısı artacaksa Outbox tablosu + tek işleyici, iş zamanlayıcı olarak Quartz/Hangfire (Postgres depolama) düşünülebilir.
+
+### 5.8 Modülerleştirme: modüler monolit (mikroservis değil)
+
+Uygulamayı daha modüler hale getirmek mantıklıdır; ancak **mikroservise bölmek önerilmez**. Ders hakkı, ödeme, Kitchen aboneliği ve stok aynı işlem içinde tutarlı kalmak zorunda; ayrı servisler ve veritabanları bu raporda bulunan tutarlılık sorunlarını büyütür. Hedef: **tek uygulama ve tek veritabanı, sınırları net modüller.**
+
+Önerilen modüller:
+
+| Modül | Kapsam |
+|---|---|
+| Kimlik | Hesap, roller, parola işlemleri |
+| Üyelik ve Haklar | Paketler, ders hakları, ölçüm ve gelişim |
+| Takvim ve Rezervasyon | Grup dersleri, PT, randevular, otomatik tamamlama |
+| Ticaret | Sepet, sipariş, ödeme, mağaza stoğu, kampanya |
+| Kitchen | Menü, abonelik, haftalık plan, üretim, mutfak stoğu |
+| Topluluk ve İçerik | Etkinlik, challenge, blog, başarı hikâyeleri |
+| Mesajlaşma ve Bildirim | Eğitmen sohbeti, kullanıcı bildirimleri |
+
+**Kademeli yol (büyük yeniden yazım olmadan):**
+1. Klasörleri modüle göre düzenle: her modülün controller, servis ve view model'leri kendi klasöründe. Proje bölmeye gerek yok.
+2. Modüller birbirinin tablolarına doğrudan değil, servisleri üzerinden erişsin (ör. Ticaret, Kitchen aboneliğini `KitchenSubscriptionService.Activate(...)` ile aktive eder).
+3. Sınırları NetArchTest gibi mimari testlerle CI'da koru.
+4. Sınırlar oturduktan sonra, gerekirse modülleri ayrı `.csproj` projelerine böl. Bu adım isteğe bağlıdır.
+
+Yeni özellik geliştirmeyi durdurmadan, her sprintte bir modül taşımak en gerçekçi yoldur. Başlangıç için en riskli ve en çok kopyalanmış mantığın bulunduğu **Ticaret** ve **Kitchen** önerilir.
+
+### 5.9 Gözlenen mimari sorunlar
+
+| Sorun | Kanıt | Neden önemli |
+|---|---|---|
+| Kalın controller'lar | 54 controller `ApplicationDbContext`'i doğrudan kullanıyor; [Member/KitchenController.cs](../src/NO23.Web/Areas/Member/Controllers/KitchenController.cs) 1505 satır, view'ı 1155 satır | İş kuralı HTTP katmanında kalıyor; test ve yeniden kullanım zorlaşıyor |
+| Tutarsız bağımlılık yönetimi | 42 yerde `new XService(dbContext)` (en çok `LessonCreditSummaryService` 11, `MembershipPricingService` 6); 6 constructor'da opsiyonel servis (`Service? x = null`) ve kullanım yerinde `?? new ...` | Bağımlılıklar görünmez; opsiyonel bildirim servisi verilmezse bildirim sessizce atlanır; test kolaylığı üretim koduna sızmış |
+| Kopyalanmış iş mantığı | `ActivateKitchenPackageAsync` iki serviste ayrı ayrı: [IyzicoPaymentService.cs:518](../src/NO23.Web/Services/Payments/IyzicoPaymentService.cs:518), [IyzicoPendingPaymentService.cs:421](../src/NO23.Web/Services/Payments/IyzicoPendingPaymentService.cs:421) | Biri düzeltilip diğeri unutulursa davranış ayrışır |
+| Dağınık transaction kuralları | Her servis kendi izolasyon seviyesini seçiyor; `IsRelational() ? transaction : null` deseni | Hangi işlemin hangi garantiyle çalıştığı izlenemiyor; testlerde transaction kodu çalışmıyor |
+| Statik zaman ve yardımcılar | Statik yardımcılar ve doğrudan sistem saatine erişim; `ClubTime` sabit +3, farklı akışlarda `DateTime.Now/Today` kullanımı | Doğrudan saat okuyan iş kurallarında gün sınırı testleri zorlaşır. Saf hesaplayıcıların statik olması tek başına hata değildir; zaman bağımlılığı ayrıca ele alınmalı |
+| Dolu `Program.cs` | ~300 satır inline geliştirme API'si | Başlangıç kodu okunaksız; endpoint'ler ayrı dosyaya taşınmalı |
+| Ortak UI bileşeni eksikliği | Tablo, onay penceresi, iptal düğmesi her ekranda yeniden yazılmış; 16 inline script bloğu | UI-01, UI-04, UI-05 gibi aynı hata sınıfı tekrar tekrar ortaya çıkıyor |
+
+**Öncelikli tavsiyeler:**
+1. **Ortak UI bileşenleri:** Mobil etiketler ve ortak onay bileşeniyle UI-01, UI-04, UI-05'i ele al. Basit tablolar başlıktan etiket üretebilir; çok satırlı başlık, `colspan`, boş liste ve işlem hücreleri ayrıca tasarlanmalı. Kapanış, etkilenen ekranlarda tarayıcı ve sunucu kontrolleriyle doğrulanmalı.
+2. **Ortak sayfalama/filtre:** UI-06; önce Üyeler ve Siparişler.
+3. **DI temizliği:** İş servisi bağımlılıklarını açıkça enjekte et; opsiyonel bağımlılıkların davranışını belirle ve uygun servis kayıtlarını yap. Bu değişiklik risksiz değildir: servis yaşam süreleri, hosted service scope'ları, test kurulumları ve döngüsel bağımlılıklar kontrol edilmeli. Modül bazında ilerlenmeli.
+4. **`TimeProvider` + İstanbul saati:** BE-07'yi çözer, testleri deterministik yapar.
+5. **Modül klasörleri:** Ticaret ve Kitchen'dan başla; kopya `ActivateKitchenPackageAsync` tek Kitchen servisine taşınsın.
+6. **Gerçek PostgreSQL entegrasyon testleri:** Taşıma sırasında davranışın değişmediğini güvenceye alır.
 
 ---
 
@@ -258,6 +329,9 @@ Tüm Z vakaları sunucu/konteyner saat dilimi **UTC** iken, Türkiye saatiyle 00
 | G-16 | P2 | Seanslar, Hizmet paketleri, Alerjenler, Eğitmen → Üyeler | 390 px. | Etiketsiz hücre sayısı 0. | UI-01 |
 | G-17 | P2 | Tüm admin/eğitmen listeleri | Otomatik tarama: 390 px'de görünür her `td` için `::before` boş değil. | 0 ihlal. | UI-01 |
 | G-18 | P2 | Ödeme, sipariş, ders kaydet formları | Gönder düğmesine hızlı 3 tıkla. | Düğme kilitlenir; tek kayıt. | UI-02 |
+| G-19 | P1 | Admin takvim, alerjen, paket seçeneği, varyant, ölçüm fotoğrafı | Her sil/çıkar düğmesine bir kez tıkla, ardından onay penceresinde Vazgeç'i seç. | Onay penceresi açılır; Vazgeç sonrası kayıt ve ders hakkı değişmez. | UI-04 |
+| G-20 | P2 | Üye → Rezervasyonlar ve ana sayfa | Grup dersi rezervasyonunda "İptal Et"e tıkla, Vazgeç'i seç; sonra onayla. | İlk denemede rezervasyon korunur; onay sonrası iptal edilir ve hak bir kez iade edilir. | UI-05 |
+| G-21 | P2 | Üyeler, Siparişler, talep listeleri | 1000 kayıtlık test verisinde listeyi aç; ad/numara/durumla filtrele; son sayfaya git. | Sayfa başına sınırlı kayıt; filtre doğru sonuç verir; sayfa yüklemesi kabul edilen bütçe içinde. | UI-06 |
 
 ### D — Dağıtım ve dayanıklılık (yeni grup)
 
@@ -278,7 +352,22 @@ Tüm Z vakaları sunucu/konteyner saat dilimi **UTC** iken, Türkiye saatiyle 00
 1. **Ödeme / iptal / stok bütünlüğü (yayın engeli):** BE-01 ve BE-02 düzeltmeleri, ardından BE-05 ve BE-06 (durum makinesi + kilit/xmin). Testcontainers altyapısı ve O-11…O-15, O-19, O-20'nin gerçek PostgreSQL'de otomasyonu. Canlıda BE-01/BE-02'den etkilenmiş siparişleri raporla.
 2. **Canlı ortam ve yedek doğrulaması:** Canlının k8s.yaml ile çalışıp çalışmadığını doğrula; çalışıyorsa SEC-01, SEC-02 (ortam, kalıcı disk, secret) ve SEC-03. Yedekten geri yükleme provası (D-03).
 3. **Tekrar ödeme ve kampanya:** BE-04 (sunucu tarafı idempotency), BE-03, UI-02 (düğme kilidi ek destek). O-16…O-18, G-18.
-4. **Saat ve mobil ekranlar:** BE-07 (`TimeProvider`, Z-01…Z-06), UI-01 (önce ödeme ve ders hakkı tabloları G-13/G-14, sonra TagHelper ile kalıcı çözüm + G-17 otomatik tarama).
-5. **Kademeli mimari düzenleme:** Rate limiting (değerler ürün kararıyla), güvenlik başlıkları, BE-08, M-01 CSS sadeleştirme, controller'lardan servis katmanına kademeli taşıma.
+4. **Saat ve mobil/kullanım ekranları:** BE-07 (`TimeProvider`, Z-01…Z-06), UI-01 (önce ödeme ve ders hakkı tabloları G-13/G-14, sonra TagHelper ile kalıcı çözüm + G-17 otomatik tarama), UI-04/UI-05 ortak onay bileşeni (G-19/G-20), UI-06 sayfalama (G-21).
+5. **Kademeli mimari düzenleme:** DI temizliği (§5.9), modül klasörlerine geçiş Ticaret ve Kitchen ile başlayarak (§5.8), rate limiting (değerler ürün kararıyla), güvenlik başlıkları, BE-08, M-01 CSS sadeleştirme.
 
 **Regresyon testi kuralı:** Her düzeltme önce ilgili vakanın başarısız olduğunu gerçek PostgreSQL'de göstermeli, sonra geçmeli. BE-01 ve BE-02 sondaları (nakit sipariş + 31 dk; Expired + geç SUCCESS callback) silinmiş durumda; bu kurgular ilgili düzeltmeyle aynı değişiklikte **kalıcı regresyon testi** olarak depoya eklenmelidir.
+
+## 8. Ödeme dışı kullanım bulgularının değerlendirmesi
+
+**Kanıt sınırı:** Bu ek değerlendirme kaynak kod karşılaştırmasına dayanır; bu turda tarayıcıda yeniden üretim veya performans ölçümü yapılmadı. UI-04/UI-05'te onaysız formlar, Üyeler ve Randevu Talepleri listelerinde sınırsız `ToListAsync` sorguları görüldü. Bildirilen 24 ekranın tamamı bu turda yeniden sayılmadı. Sayfalama eksikliği doğrulandı; mevcut kullanıcıların ölçülmüş bir yavaşlık yaşadığı sonucu çıkarılmamalı.
+
+**Önerilen ödeme dışı sıra:**
+1. **Silme/çıkarma ve rezervasyon iptali:** Etkilenen üye/ders/tarih gösterilerek açık onay alınmalı. Vazgeçildiğinde istek gönderilmemeli; onaylandığında mevcut yetki, iptal süresi ve ders hakkı kuralları korunmalı. Hak iadesi yalnız bir kez uygulanmalı.
+2. **Mobil tablolar:** Önce ders hakkı geçmişi ve eğitmenin üye listesi, ardından seans ve Kitchen stok ekranları. Alan adları, uzun isimler ve işlem düğmeleri birlikte kontrol edilmeli; yalnız `data-label` bulunması yeterli kabul edilmemeli.
+3. **Kulüp tarihi:** Kitchen öğünleri, hedef kayıtları ve talep tarihlerinde Türkiye gün sınırı tutarlı olmalı. Eğitmen takviminin ana `Index` akışı zaten `ClubTime.Now` kullanıyor; sunucu tarihine dönen POST yönlendirmeleri ayrıca kontrol edilmeli.
+4. **Liste yönetimi:** Ödeme ayrı ele alınırken Üyeler ve talep listelerinden başlanmalı. Arama, durum filtresi ve sayfalama veritabanı sorgusunda uygulanmalı; eş isimli üyeler telefon/e-posta veya üye numarasıyla ayırt edilebilmeli. Sıralama kararlı olmalı, filtreler sayfa geçişinde korunmalı.
+5. **Çift gönderim:** Düğme kilidi kullanıcıya işlem durumunu göstermeli; doğrulama veya ağ hatasında yeniden denemeye izin vermeli. Her sunucu işleminin tekrar gönderim davranışı ayrıca incelenmeli; bütün formların mükerrer kayıt ürettiği varsayılmamalı.
+
+**Modülerleştirme yaklaşımı:** Modüler monolit bu uygulama için uygun bir yönelimdir. Modül sınırları iş kurallarının sahipliğini ve ortak işlemlerin transaction sorumluluğunu tanımlamalı. Klasör taşıma tek başına modülerlik sağlamaz. Önce davranış ve HTTP testleri eklenmeli, ardından küçük servis çıkarımları ve DI düzenlemesi yapılmalı; controller/view taşıma sırasında Area, route ve Razor view keşfi korunmalı. Ödeme ayrı çalışma alanı olarak bırakılırken Takvim/Rezervasyon ve Üyelik/Haklar üzerinde sınırlı bir başlangıç yapılabilir.
+
+Kaynaklar: [Microsoft — ortak web uygulaması mimarileri](https://learn.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/common-web-application-architectures), [Microsoft — bağımlılık enjeksiyonu rehberi](https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines).
