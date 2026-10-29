@@ -108,7 +108,7 @@
                                   asp-action="Cancel"
                                   asp-antiforgery="true"
                                   method="post"
-                                  class="member-reservation-action">
+                                  class="member-reservation-action" data-confirm="@($"{reservation.ClassName} / {localStart:dd.MM.yyyy HH:mm} rezervasyonunuz iptal edilsin mi? Ayrılmış ders hakkınız varsa iade edilir.")">
                                 <input type="hidden"
                                        name="reservationId"
                                        value="@reservation.ReservationId" />
@@ -486,7 +486,7 @@
                                         asp-antiforgery="true"
                                         method="post"
                                         class="member-reservation-action"
-                                        data-personal-training-cancel-form>
+                                        data-personal-training-cancel-form data-confirm="@(request.ScheduledAtUtc.HasValue ? $"{request.TrainerName} ile {NO23.Web.Services.ClubTime.ToLocal(request.ScheduledAtUtc.Value):dd.MM.yyyy HH:mm} tarihli randevunuz iptal edilsin mi?" : $"{request.TrainerName} için kişisel antrenman talebiniz iptal edilsin mi?")">
 
                                         <input type="hidden"
                                             name="requestId"

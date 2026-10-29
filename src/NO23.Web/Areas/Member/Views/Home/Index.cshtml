@@ -214,7 +214,7 @@
                                   asp-action="Cancel"
                                   asp-antiforgery="true"
                                   method="post"
-                                  class="member-reservation-action">
+                                  class="member-reservation-action" data-confirm="@($"{reservation.ClassName} / {localStart:dd.MM.yyyy HH:mm} rezervasyonunuz iptal edilsin mi? Ayrılmış ders hakkınız varsa iade edilir.")">
 
                                 <input type="hidden"
                                        name="reservationId"
