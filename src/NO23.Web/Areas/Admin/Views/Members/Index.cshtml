@@ -120,7 +120,7 @@
                                 <td data-label="Antrenör" class="member-trainer-cell">
                                     <div class="member-trainer-content">
                                     <strong class="member-trainer-name">@(member.AssignedTrainerName ?? "Antrenör atanmamış")</strong>
-                                    <form asp-action="AssignTrainer" method="post" class="member-trainer-form">
+                                    <form data-submit-once asp-action="AssignTrainer" method="post" class="member-trainer-form">
                                         <input type="hidden" name="memberProfileId" value="@member.MemberProfileId" />
                                         <input type="hidden" name="page" value="@navigation.Page" /><input type="hidden" name="query" value="@navigation.Query" /><input type="hidden" name="state" value="@navigation.State" />
                                         <select class="form-select form-select-sm" name="trainerId" aria-label="@($"{member.FullName} için antrenör seç")">

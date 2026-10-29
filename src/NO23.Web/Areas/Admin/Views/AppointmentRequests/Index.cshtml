@@ -13,7 +13,7 @@
         {
             <tr><td data-label="İletişim">@request.FullName<br />@request.PhoneNumber</td><td data-label="Hizmet">@request.Service</td>
                 <td data-label="Tercih edilen zaman">@request.PreferredDate.ToString("dd.MM.yyyy") @request.PreferredTime.ToString("HH:mm")</td><td data-label="Not">@(string.IsNullOrWhiteSpace(request.Notes) ? "—" : request.Notes)</td>
-                <td data-label="Durum"><form asp-action="UpdateStatus" method="post" class="d-flex gap-2">
+                <td data-label="Durum"><form data-submit-once asp-action="UpdateStatus" method="post" class="d-flex gap-2">
                     <input type="hidden" name="id" value="@request.Id" /><input type="hidden" name="page" value="@navigation.Page" /><input type="hidden" name="query" value="@navigation.Query" /><input type="hidden" name="state" value="@navigation.State" />
                     <select name="status" class="form-select" aria-label="@request.FullName talep durumu">
                         @foreach (var status in Enum.GetValues<ServicePackageApplicationStatus>())

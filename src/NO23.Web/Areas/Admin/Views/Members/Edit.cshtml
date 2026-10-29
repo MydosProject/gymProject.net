@@ -18,7 +18,7 @@
             <div class="d-flex flex-wrap gap-2"><a class="btn btn-outline-dark" asp-action="ResetPassword" asp-route-id="@Model.Id">Geçici parola yenile</a><a class="btn btn-outline-dark" asp-action="Index">Üyelere dön</a></div>
         </header>
 
-        <form method="post" class="admin-form-card">
+        <form method="post" class="admin-form-card" data-submit-once>
             <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
             <input type="hidden" asp-for="Id" />
             <div class="row g-3">

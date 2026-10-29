@@ -1,6 +1,6 @@
 @model ClassSessionFormViewModel
 
-<form method="post" class="bg-white border rounded-3 p-4 text-dark admin-form-card admin-session-form">
+<form data-submit-once method="post" class="bg-white border rounded-3 p-4 text-dark admin-form-card admin-session-form">
     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
     <input type="hidden" asp-for="Id" />
 
@@ -106,7 +106,7 @@
                             data-bs-dismiss="modal">
                         Vazgeç
                     </button>
-                    <form method="post"
+                    <form data-submit-once method="post"
                           asp-action="Cancel"
                           asp-route-id="@Model.Id">
                         <button type="submit"

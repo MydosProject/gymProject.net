@@ -115,7 +115,7 @@
                     }
                     else
                     {
-                        <form asp-action="Create" method="post" class="d-grid gap-3"><input type="hidden" name="IncludeCompleted" value="@Model.IncludeCompleted.ToString().ToLowerInvariant()" /><input type="hidden" name="FilterMemberId" value="@Model.MemberId" />
+                        <form data-submit-once asp-action="Create" method="post" class="d-grid gap-3"><input type="hidden" name="IncludeCompleted" value="@Model.IncludeCompleted.ToString().ToLowerInvariant()" /><input type="hidden" name="FilterMemberId" value="@Model.MemberId" />
                             <input type="hidden" name="Week" value="@Model.WeekStart.ToString("yyyy-MM-dd")" />
                             <div>
                                 <label class="form-label" for="MemberProfileId">Üye</label>
@@ -146,7 +146,7 @@
             <div class="col-lg-4">
                 <details class="admin-form-card">
                     <summary class="h5" style="cursor:pointer">Haftalık sabit ders planla</summary>
-                    <form asp-action="CreateWeekly" method="post" class="d-grid gap-2 mt-3" data-weekly-personal-schedule data-preview-url="@Url.Action("PreviewWeekly")"><input type="hidden" name="IncludeCompleted" value="@Model.IncludeCompleted.ToString().ToLowerInvariant()" /><input type="hidden" name="FilterMemberId" value="@Model.MemberId" />
+                    <form data-submit-once asp-action="CreateWeekly" method="post" class="d-grid gap-2 mt-3" data-weekly-personal-schedule data-preview-url="@Url.Action("PreviewWeekly")"><input type="hidden" name="IncludeCompleted" value="@Model.IncludeCompleted.ToString().ToLowerInvariant()" /><input type="hidden" name="FilterMemberId" value="@Model.MemberId" />
                         <label>Üye<select name="MemberProfileId" class="form-select" required data-schedule-member><option value="">Üye seç</option>
                             @foreach (var member in Model.Members) { <option value="@member.Id" data-package-start-utc="@member.MembershipStartsAtUtc?.ToString("yyyy-MM-ddTHH:mm:ss.fff'Z'")" data-package-end-utc="@member.MembershipEndsAtUtc?.ToString("yyyy-MM-ddTHH:mm:ss.fff'Z'")">@member.Name</option> }
                         </select></label>
@@ -234,7 +234,7 @@
                                     </details>
                                     @if (session.Status == PersonalTrainingSessionStatus.Scheduled)
                                     {
-                                        <form asp-action="Update" method="post" class="row g-2 align-items-end"><input type="hidden" name="IncludeCompleted" value="@Model.IncludeCompleted.ToString().ToLowerInvariant()" /><input type="hidden" name="FilterMemberId" value="@Model.MemberId" />
+                                        <form data-submit-once asp-action="Update" method="post" class="row g-2 align-items-end"><input type="hidden" name="IncludeCompleted" value="@Model.IncludeCompleted.ToString().ToLowerInvariant()" /><input type="hidden" name="FilterMemberId" value="@Model.MemberId" />
                                             <input type="hidden" name="Id" value="@session.Id" />
                                             <input type="hidden" name="Week" value="@Model.WeekStart.ToString("yyyy-MM-dd")" />
                                             <div class="col-sm-3">

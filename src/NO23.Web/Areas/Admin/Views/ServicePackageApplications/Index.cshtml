@@ -112,7 +112,7 @@
                                     </span>
                                 </td>
                                 <td data-label="Durum">
-                                    <form asp-action="UpdateStatus" method="post"
+                                    <form data-submit-once asp-action="UpdateStatus" method="post"
                                           class="d-flex gap-2 align-items-center">
                                         <input type="hidden" name="id" value="@item.Id" /><input type="hidden" name="page" value="@navigation.Page" /><input type="hidden" name="query" value="@navigation.Query" /><input type="hidden" name="state" value="@navigation.State" />
                                         <select name="status"

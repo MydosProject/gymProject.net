@@ -43,7 +43,7 @@
     {
         <h2>@Model.MemberName</h2>
         @if(latest is not null){<p>Son ölçüm: @latest.EntryDate.ToString("dd.MM.yyyy") · Sonraki aylık kontrol: @latest.EntryDate.AddMonths(1).ToString("dd.MM.yyyy")</p>}
-        <form asp-action="Save" method="post" class="bg-white text-dark border rounded p-3 mb-4">
+        <form data-submit-once asp-action="Save" method="post" class="bg-white text-dark border rounded p-3 mb-4">
             <h3>Ölçüm ekle / düzenle</h3><p>Aynı tarih seçilirse o günün ölçümü güncellenir. Yeni tarih seçilirse geçmiş kayıtlar korunur.</p>
             <div asp-validation-summary="All" class="text-danger"></div><input type="hidden" name="memberId" value="@Model.MemberId" />
             <label asp-for="Input.EntryDate"></label><input asp-for="Input.EntryDate" type="date" max="@ClubTime.Now.ToString("yyyy-MM-dd")" class="form-control" />
@@ -66,19 +66,19 @@
         </tbody></table></div>
         <h3>Önce / sonra fotoğrafları</h3>
         <p>Fotoğraflar halka açık yayınlanmaz; yönetici, ilgili üye ve atanmış aktif antrenör erişebilir.</p>
-        <form asp-action="Upload" method="post" enctype="multipart/form-data" class="bg-white text-dark border rounded p-3 mb-3">
+        <form data-submit-once asp-action="Upload" method="post" enctype="multipart/form-data" class="bg-white text-dark border rounded p-3 mb-3">
             <input type="hidden" name="MemberId" value="@Model.MemberId" />
             <label>Çekim tarihi<input name="TakenOn" type="date" value="@ClubTime.Now.ToString("yyyy-MM-dd")" max="@ClubTime.Now.ToString("yyyy-MM-dd")" required class="form-control" /></label>
             <label>Fotoğraf (JPEG / PNG, en fazla 5 MB)<input name="Photo" type="file" accept="image/jpeg,image/png" required class="form-control" /></label>
             <label>Açıklama<input name="Caption" maxlength="200" class="form-control" placeholder="Ön, yan veya arka görünüm" /></label><button class="btn btn-dark">Fotoğraf yükle</button>
         </form>
         @if(Model.Photos.Count>0){
-            <form method="get" class="d-flex flex-wrap gap-2 mb-3"><input name="memberId" type="hidden" value="@Model.MemberId" />
+            <form data-submit-once method="get" class="d-flex flex-wrap gap-2 mb-3"><input name="memberId" type="hidden" value="@Model.MemberId" />
                 <label>Önce<select name="before" class="form-select">@foreach(var p in Model.Photos){<option value="@p.Id" selected="@(p.Id==Model.Before)">@p.TakenOn.ToString("dd.MM.yyyy") — @p.Caption</option>}</select></label>
                 <label>Sonra<select name="after" class="form-select">@foreach(var p in Model.Photos){<option value="@p.Id" selected="@(p.Id==Model.After)">@p.TakenOn.ToString("dd.MM.yyyy") — @p.Caption</option>}</select></label><button class="btn btn-dark">Karşılaştır</button>
             </form>
             <div class="row g-3">@foreach(var choice in new[]{(Label:"Önce",Id:Model.Before),(Label:"Sonra",Id:Model.After)}){var p=Model.Photos.FirstOrDefault(x=>x.Id==choice.Id);if(p is not null){<figure class="col-md-6"><figcaption>@choice.Label · @p.TakenOn.ToString("dd.MM.yyyy") · @p.Caption</figcaption><img src="@Url.Action("Image","ProgressPhotos",new{area="",id=p.Id})" alt="@choice.Label gelişim fotoğrafı" style="width:100%;height:420px;object-fit:contain;background:#eee" /></figure>}}</div>
-            <details class="mt-3"><summary>Fotoğrafları yönet</summary>@foreach(var p in Model.Photos){<form asp-action="DeletePhoto" method="post" class="d-flex gap-2 mt-2" data-confirm="@($"{Model.MemberName} için {p.TakenOn:dd.MM.yyyy} tarihli gelişim fotoğrafı kalıcı olarak silinsin mi? Bu işlem geri alınamaz.")"><input name="id" type="hidden" value="@p.Id" /><input name="memberId" type="hidden" value="@Model.MemberId" /><span>@p.TakenOn.ToString("dd.MM.yyyy") — @p.Caption</span><button class="btn btn-sm btn-outline-danger">Fotoğrafı sil</button></form>}</details>
+            <details class="mt-3"><summary>Fotoğrafları yönet</summary>@foreach(var p in Model.Photos){<form data-submit-once asp-action="DeletePhoto" method="post" class="d-flex gap-2 mt-2" data-confirm="@($"{Model.MemberName} için {p.TakenOn:dd.MM.yyyy} tarihli gelişim fotoğrafı kalıcı olarak silinsin mi? Bu işlem geri alınamaz.")"><input name="id" type="hidden" value="@p.Id" /><input name="memberId" type="hidden" value="@Model.MemberId" /><span>@p.TakenOn.ToString("dd.MM.yyyy") — @p.Caption</span><button class="btn btn-sm btn-outline-danger">Fotoğrafı sil</button></form>}</details>
         }
     }
 </section>

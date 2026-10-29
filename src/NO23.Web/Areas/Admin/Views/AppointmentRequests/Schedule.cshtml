@@ -22,7 +22,7 @@
     </article>
     @if (Model.Request.ScheduleStatus != AppointmentScheduleStatus.Completed)
     {
-        <form asp-action="Schedule" asp-route-id="@Model.Id" method="post" class="admin-form-card mt-4">
+        <form data-submit-once asp-action="Schedule" asp-route-id="@Model.Id" method="post" class="admin-form-card mt-4">
             <h2>@(Model.Request.ScheduleStatus == AppointmentScheduleStatus.Scheduled ? "Gün / saat / antrenör değiştir" : "Takvime planla")</h2>
             <div asp-validation-summary="All" class="text-danger"></div>
             <input asp-for="Id" type="hidden" /><input asp-for="ExpectedVersion" type="hidden" />
@@ -39,8 +39,8 @@
     @if (Model.Request.ScheduleStatus == AppointmentScheduleStatus.Scheduled)
     {
         <div class="d-flex flex-wrap gap-3 my-4">
-            <form asp-action="Finish" method="post"><input name="id" type="hidden" value="@Model.Id" /><input name="expectedVersion" type="hidden" value="@Model.Request.Version" /><input name="status" type="hidden" value="Cancelled" /><button class="btn btn-outline-danger">Ön görüşmeyi iptal et</button></form>
-            <form asp-action="Finish" method="post"><input name="id" type="hidden" value="@Model.Id" /><input name="expectedVersion" type="hidden" value="@Model.Request.Version" /><input name="status" type="hidden" value="Completed" /><button class="btn btn-outline-light" disabled="@(Model.Request.ScheduledAtUtc!.Value.AddMinutes(Model.Request.DurationMinutes) > DateTime.UtcNow)">Görüşme tamamlandı</button></form>
+            <form data-submit-once asp-action="Finish" method="post"><input name="id" type="hidden" value="@Model.Id" /><input name="expectedVersion" type="hidden" value="@Model.Request.Version" /><input name="status" type="hidden" value="Cancelled" /><button class="btn btn-outline-danger">Ön görüşmeyi iptal et</button></form>
+            <form data-submit-once asp-action="Finish" method="post"><input name="id" type="hidden" value="@Model.Id" /><input name="expectedVersion" type="hidden" value="@Model.Request.Version" /><input name="status" type="hidden" value="Completed" /><button class="btn btn-outline-light" disabled="@(Model.Request.ScheduledAtUtc!.Value.AddMinutes(Model.Request.DurationMinutes) > DateTime.UtcNow)">Görüşme tamamlandı</button></form>
         </div>
     }
     <section class="mt-4"><h2>Görüşme geçmişi</h2>

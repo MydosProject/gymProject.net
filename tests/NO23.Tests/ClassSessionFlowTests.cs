@@ -11,6 +11,27 @@ namespace NO23.Tests;
 public class ClassSessionFlowTests
 {
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RepeatedCancellationRestoresReservedCreditOnlyOnce(bool byAdmin)
+    {
+        await using var db = CreateDbContext();
+        var member = await SeedMemberAsync(db);
+        var session = await SeedClassSessionAsync(db, true, DateTime.UtcNow.AddDays(3), ClassSessionStatus.Scheduled);
+        var service = new ClassReservationService(db);
+        Assert.True((await service.ReserveAsync(member.ApplicationUserId, session.Id)).Succeeded);
+        var reservation = await db.ClassReservations.SingleAsync();
+        var first = byAdmin ? await service.CancelByAdminAsync(session.Id, reservation.Id)
+            : await service.CancelAsync(member.ApplicationUserId, reservation.Id);
+        var second = byAdmin ? await service.CancelByAdminAsync(session.Id, reservation.Id)
+            : await service.CancelAsync(member.ApplicationUserId, reservation.Id);
+        Assert.True(first.Succeeded);
+        Assert.False(second.Succeeded);
+        Assert.Equal(4, member.RemainingClassCredits);
+        Assert.Equal(ClassReservationStatus.Cancelled, reservation.Status);
+    }
+
+    [Theory]
     [InlineData(-1, false)]
     [InlineData(0, true)]
     [InlineData(1, true)]
