@@ -1,4 +1,6 @@
-.admin-members-table { min-width: 1280px; }
+.admin-content .admin-members-table { min-width: 1280px; }
+.member-table-scroll { scrollbar-color: #c9a15b #141712; }
+.member-table-scroll:focus-visible { outline: 2px solid #c9a15b; outline-offset: 3px; }
 .admin-members-table .member-trainer-cell { min-width: 240px; width: 240px; }
 .member-trainer-content { display: grid; gap: 10px; min-width: 0; }
 .member-trainer-name { display: block; color: #f1e9d6; font-size: .8rem; line-height: 1.5; white-space: normal; overflow-wrap: anywhere; }
@@ -7,9 +9,19 @@
 .member-trainer-form button { justify-self: end; min-height: 36px; }
 .member-row-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; min-width: 200px; }
 .member-row-actions .btn { display: flex; align-items: center; justify-content: center; white-space: normal; line-height: 1.4; min-height: 40px; }
+@media (min-width: 992px) {
+    /* Keep actions reachable while the member details scroll horizontally. */
+    body.no23-admin-body .admin-members-table :is(th:last-child, td[data-label="İşlem"]) {
+        position: sticky;
+        right: 0;
+        z-index: 1;
+        background: #141712;
+        box-shadow: -8px 0 14px -10px #000;
+    }
+}
 @media (max-width: 991.98px) {
     body.no23-admin-body .admin-members-table tbody td[data-label="İşlem"] { background: #141712; }
-    .admin-members-table { min-width: 0; }
+    .admin-content .admin-members-table { min-width: 0; }
     .admin-members-table .member-trainer-cell { min-width: 0; width: auto; }
     .member-trainer-form .form-select { min-width: 0; }
     .member-row-actions { min-width: 0; }

@@ -1556,7 +1556,7 @@ body.no23-admin-body {
 }
 
 .admin-content .table-responsive {
-    overflow: hidden;
+    overflow-x: auto;
     background: var(--admin-card) !important;
     border: 1px solid var(--admin-line) !important;
     border-radius: var(--admin-radius) !important;
