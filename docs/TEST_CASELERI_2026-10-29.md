@@ -1,10 +1,10 @@
 # NO23 test senaryoları — 29 Ekim 2026
 
-İncelenen sürüm: `eee4bbf` (`no23-V8`). Bu liste, birim/servis testlerini ve gerçek tarayıcı kabulünü birlikte planlar. **60 senaryonun 4'ü geçti, 3'ü başarısız, 53'ü çalıştırılmayı bekliyor.** Bekleyen senaryolar hata bulunduğu anlamına gelmez.
+İlk inceleme sürümü: `eee4bbf` (`no23-V8`). Üç doğrulanmış hatanın düzeltmesi sonrasında **60 senaryonun 7'si geçti, 0'ı başarısız, 53'ü çalıştırılmayı bekliyor.** Bekleyen senaryolar hata bulunduğu anlamına gelmez. İlk turdaki başarısız sonuçlar ve düzeltme kanıtları bulgu raporunda korunmuştur.
 
-Mevcut otomatik test paketi bu incelemede yeniden çalıştırıldı: **664 geçti, 0 başarısız, 0 atlanan**. Bu sayı aşağıdaki 60 kabul senaryosunun tamamının geçtiği anlamına gelmez. Mevcut testler ağırlıklı olarak servis/controller davranışını kontrol ediyor; ekran genişliği, CSS, gerçek oturum ve tarayıcı etkileşimi ayrıca test edilmeli.
+Güncel otomatik test paketi: **673 geçti, 0 başarısız, 0 atlanan**; paket başlangıcı için 9 regresyon senaryosu eklendi. Bu sayı aşağıdaki 60 kabul senaryosunun tamamının geçtiği anlamına gelmez. Mevcut testler ağırlıklı olarak servis/controller davranışını kontrol ediyor; ekran genişliği, CSS, gerçek oturum ve tarayıcı etkileşimi ayrıca test edilmeli.
 
-Doğrulanmış yeni sorunlar ve tekrar üretme adımları: [QA bulguları](QA_BULGULARI_2026-10-29.md).
+Doğrulanmış sorunlar, tekrar üretme adımları ve yeniden test sonuçları: [QA bulguları](QA_BULGULARI_2026-10-29.md).
 
 ## Uygulama ve sonuç kuralları
 
@@ -38,8 +38,8 @@ Doğrulanmış yeni sorunlar ve tekrar üretme adımları: [QA bulguları](QA_BU
 | G-05 | P2 | Yönetici → Üyeler | 1024 px'de tablo bölgesine klavyeyle odaklan; iki kez sağ ok, sonra sol ok kullan. | Tablo gerçekten yatay kayar; işlem sütunu görünür ve odak belirgindir. | GEÇTİ |
 | G-06 | P1 | Üyeler / Paketler | 60 karakter ad, 80 karakter antrenör adı ve uzun paket/iletişim bilgisiyle 390/1024/1366 px'de aç. | Adın tam hali erişilebilir; seçim/kaydetme düğmeleri görünür; komşu hücreler bozulmaz. | BEKLİYOR |
 | G-07 | P2 | Yönetici / Eğitmen listeleri | Hiç kayıt olmayan ve filtrede sonuç çıkmayan durumları aç. | Anlaşılır boş durum gösterilir; tablo/işlem alanı kırılmaz; var olmayan kayıt sayılmaz. | BEKLİYOR |
-| G-08 | P2 | Yönetici → Randevu Talepleri | Tek randevuyu 390 px'de aç; tercih edilen zaman ile planlanan zamanı ayırt et. | Hizmet, not, durum, tercih ve kesin plan alanlarının etiketleri görünür. | BAŞARISIZ: BUG-03 |
-| G-09 | P1 | Yönetici → Ölçüm ve Gelişim; Eğitmen → Ölçümler | Üç tarihte 80/78/76 kg ölçüm girilmiş üyeyi 390 px'de aç; karşılaştırma ve geçmişi incele. | Her sayının ölçüm türü, tarihi ve ilk/önceki/son/değişim etiketi okunur. | BAŞARISIZ: BUG-02 |
+| G-08 | P2 | Yönetici → Randevu Talepleri | Tek randevuyu 390 px'de aç; tercih edilen zaman ile planlanan zamanı ayırt et. | Hizmet, not, durum, tercih ve kesin plan alanlarının etiketleri görünür. | GEÇTİ |
+| G-09 | P1 | Yönetici → Ölçüm ve Gelişim; Eğitmen → Ölçümler | Üç tarihte 80/78/76 kg ölçüm girilmiş üyeyi 390 px'de aç; karşılaştırma ve geçmişi incele. | Her sayının ölçüm türü, tarihi ve ilk/önceki/son/değişim etiketi okunur. | GEÇTİ |
 | G-10 | P1 | Ölçümde üye arama | 20 benzer sonuç, uzun adlar; alt sıradaki sonucu fare ve ok/Enter ile seç; Escape dene. | Liste kesilmeden kayar; telefon/#numara görünür; seçili ID doğrudur; kapanış/odak çalışır. | BEKLİYOR |
 | G-11 | P1 | Yönetici / Eğitmen → Takvim | 390 px'de Hafta'da iki güne bak, diğer günlere kaydır; Gün'e geçip detay aç. | Haftada iki gün; günde tek ajanda; saat, not, seçim ve kaydet düğmeleri erişilebilir. | BEKLİYOR |
 | G-12 | P1 | Üye/ödeme/ölçüm formları | Boş veya geçersiz alanlarla gönder; uzun hata metni ve %200 yakınlaştırma kullan. | Hata doğru alanla ilişkilidir; kaydedilmeyen veri korunur; hata/kaydet düğmesi ekrandan taşmaz. | BEKLİYOR |
@@ -55,11 +55,11 @@ Doğrulanmış yeni sorunlar ve tekrar üretme adımları: [QA bulguları](QA_BU
 | K-03 | P1 | Kayıt formu | Geçersiz parola ile gönder; alanları düzeltip yeniden kaydet; tarayıcı geri tuşunu dene. | Akış, seçili paket/öğünler ve yerel dönüş adresi korunur; iki hesap oluşmaz. | BEKLİYOR |
 | K-04 | P1 | Üye kaydı / yönetici | Doğum tarihini boş, gelecekte ve geçerli bir tarih olarak dene. | Yeni kayıtta tarih zorunlu; gelecek tarih reddedilir; geçerli tarih kaydedilip tekrar görünür. | BEKLİYOR |
 | K-05 | P1 | Parola doğrulama | Diğer kuralları sağlayan, yalnız bir büyük harf içeren parola kullan; Türkçe büyük harfle de dene. | Bir büyük harf yeterli olur; eksik diğer kurallar açıklanır; form ile sunucu tutarlıdır. | BEKLİYOR |
-| K-06 | P1 | Grup rezervasyonu / üye | Paket başlangıcı 03.11.2026 olan, 70 haklı üye için 31.10.2026 grup dersine rezervasyon isteği gönder. | Paket dönemi dışındaki ders reddedilir; rezervasyon açılmaz, 70 hak korunur. | BAŞARISIZ: BUG-01 |
+| K-06 | P1 | Grup rezervasyonu / üye | Paket başlangıcı 03.11.2026 olan, 70 haklı üye için 31.10.2026 grup dersine rezervasyon isteği gönder. | Paket dönemi dışındaki ders reddedilir; rezervasyon açılmaz, 70 hak korunur. | GEÇTİ |
 | K-07 | P1 | Yönetici → Geçici parola yenile | Test üyesine iki kez geçici parola üret; eski ve son parolayla girişleri dene. | Yeniden üretim mümkündür; yalnız son parola geçerlidir; başka üyenin hesabı etkilenmez. | BEKLİYOR |
 | K-08 | P0 | Kayıt / paket seçimi | İstek içinde başka pakete ait, pasif veya silinmiş varyant ID'si gönder; Kitchen akışına spor varyantı ekle. | Sunucu uyumsuz seçimi reddeder veya Kitchen'de spor seçimini yok sayar; fazladan hak oluşmaz. | BEKLİYOR |
 
-**Kısmi otomasyon:** `MemberRegistrationFlowTests`, `RegistrationPackageCatalogTests`, `MemberBirthDateTests`, `MemberTemporaryPasswordTests`, `MemberAccessAndLookupTests`. K-06 için başlangıç tarihi sınırı mevcut pakette kapsanmıyor; düzeltmeye bu hatayı önce üreten servis/entegrasyon testi eşlik etmeli.
+**Kısmi otomasyon:** `MemberRegistrationFlowTests`, `RegistrationPackageCatalogTests`, `MemberBirthDateTests`, `MemberTemporaryPasswordTests`, `MemberAccessAndLookupTests`. K-06 artık `ClassSessionFlowTests` içinde başlangıç/bitiş sınırları, sınırsız, başlangıcı bilinmeyen eski kayıt ve Kitchen hesabıyla kapsanıyor. Düzeltme öncesinde yeni testler iki hatayı üretti; düzeltme sonrasında hepsi geçti. Gerçek PostgreSQL'de dönem öncesi ret ve başlangıca eşit tarihte kabul ayrıca doğrulandı.
 
 ## T — Takvim, ders ve haklar (14)
 
@@ -131,9 +131,9 @@ Doğrulanmış yeni sorunlar ve tekrar üretme adımları: [QA bulguları](QA_BU
 
 ## Önerilen ilk test turu ve düzeltme sırası
 
-1. K-06: Paket başlangıcı dışındaki grup rezervasyonu; doğrulanmış hak etkisi nedeniyle ilk düzeltme.
-2. G-09: Yönetici/eğitmen ölçüm karşılaştırması ve geçmiş etiketleri.
-3. G-08: Randevu kartı etiketleri; ardından aynı ortak stili kullanan ödeme/talep listeleri.
+1. K-06 kapatıldı: Paket başlangıcı dışındaki grup rezervasyonu reddediliyor; başlangıca eşit tarihteki rezervasyon çalışıyor.
+2. G-09 kapatıldı: Yönetici/eğitmen ölçüm karşılaştırması ve geçmiş etiketleri 390/768/1366 px'de doğrulandı.
+3. G-08 kapatıldı: Randevu kartı etiketleri ve durum kaydetme doğrulandı. Aynı ortak stili kullanan diğer ödeme/talep listelerinin kapsamlı kabulü bekliyor.
 4. T-02/T-03/T-04/T-06/T-08 ve O-02/O-03/O-06: Hak/para değişimlerinin pozitif, negatif ve tekrar istek kontrolleri.
 5. Y-01/Y-02/Y-03/Y-04/Y-07: Yetki ve eşzamanlılık.
 6. G-04/G-06/G-10 ve N grubu: Kullanım, sınır veri ve Kitchen kabulü.

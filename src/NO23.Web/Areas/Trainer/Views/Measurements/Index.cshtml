@@ -8,6 +8,8 @@
     var culture = CultureInfo.GetCultureInfo("tr-TR");
     var latest = Model.Entries.FirstOrDefault();
     var previous = Model.Entries.Skip(1).FirstOrDefault();
+    var latestLabel = latest is null ? "Son ölçüm" : $"Son ({latest.EntryDate:dd.MM.yyyy})";
+    var previousLabel = previous is null ? "Önceki ölçüm" : $"Önceki ({previous.EntryDate:dd.MM.yyyy})";
     var metrics = new (string Field, string Label, string Unit, Func<MemberProgressEntry, decimal?> Read)[]
     {
         ("CaloriesConsumed", "Günlük kalori", "kcal", item => item.CaloriesConsumed),
@@ -102,14 +104,14 @@
         {
             <h3>Son ölçüm karşılaştırması</h3>
             <div class="table-responsive bg-white text-dark border rounded mb-4">
-                <table class="table mb-0">
-                    <thead><tr><th>Ölçüm</th><th>Son</th><th>Önceki</th><th>Değişim</th></tr></thead>
+                <table class="table mb-0" aria-label="Son ölçüm karşılaştırması">
+                    <thead><tr><th>Ölçüm</th><th>@latestLabel</th><th>@previousLabel</th><th>Değişim</th></tr></thead>
                     <tbody>
                     @foreach (var metric in metrics)
                     {
                         var current = metric.Read(latest);
                         var old = previous is null ? null : metric.Read(previous);
-                        <tr><td>@metric.Label (@metric.Unit)</td><td>@Value(current)</td><td>@Value(old)</td><td>@Change(current, old)</td></tr>
+                        <tr><td data-label="Ölçüm">@metric.Label (@metric.Unit)</td><td data-label="@latestLabel">@Value(current)</td><td data-label="@previousLabel">@Value(old)</td><td data-label="Değişim">@Change(current, old)</td></tr>
                     }
                     </tbody>
                 </table>
@@ -118,8 +120,8 @@
 
         <h3>Ölçüm geçmişi</h3>
         <div class="table-responsive bg-white text-dark border rounded">
-            <table class="table">
-                <thead><tr><th>Tarih</th>@foreach (var metric in metrics) { <th>@metric.Label</th> }</tr></thead>
+            <table class="table" aria-label="Ölçüm geçmişi">
+                <thead><tr><th>Tarih</th>@foreach (var metric in metrics) { <th>@metric.Label (@metric.Unit)</th> }</tr></thead>
                 <tbody>
                 @if (Model.Entries.Count == 0)
                 {
@@ -128,8 +130,8 @@
                 @foreach (var entry in Model.Entries)
                 {
                     <tr>
-                        <td><a asp-route-memberId="@Model.MemberId" asp-route-date="@entry.EntryDate.ToString("yyyy-MM-dd")">@entry.EntryDate.ToString("dd.MM.yyyy")</a></td>
-                        @foreach (var metric in metrics) { <td>@Value(metric.Read(entry))</td> }
+                        <td data-label="Tarih"><a asp-route-memberId="@Model.MemberId" asp-route-date="@entry.EntryDate.ToString("yyyy-MM-dd")">@entry.EntryDate.ToString("dd.MM.yyyy")</a></td>
+                        @foreach (var metric in metrics) { <td data-label="@($"{metric.Label} ({metric.Unit})")">@Value(metric.Read(entry))</td> }
                     </tr>
                 }
                 </tbody>

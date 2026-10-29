@@ -55,6 +55,9 @@ public class ClassReservationService(ApplicationDbContext dbContext)
             return ReservationResult.Fail("Ders programı bulunamadı.");
         }
 
+        if (profile.MembershipStartsAtUtc is { } starts && session.StartsAtUtc < starts)
+            return ReservationResult.Fail("Bu ders, paketinin başlangıç tarihinden önce. Paket dönemi içinden bir ders seçebilirsin.");
+
         if (!MemberPackageEntitlement.IsActive(profile, session.StartsAtUtc))
             return ReservationResult.Fail("Bu ders tarihinde üyeliğin aktif olmayacak.");
 

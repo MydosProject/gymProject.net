@@ -10,6 +10,65 @@ namespace NO23.Tests;
 
 public class ClassSessionFlowTests
 {
+    [Theory]
+    [InlineData(-1, false)]
+    [InlineData(0, true)]
+    [InlineData(1, true)]
+    [InlineData(9, true)]
+    [InlineData(10, false)]
+    [InlineData(11, false)]
+    public async Task ReserveAsync_RequiresLessonInsidePackagePeriod(int lessonOffset, bool allowed)
+    {
+        await using var db = CreateDbContext();
+        var member = await SeedMemberAsync(db);
+        var starts = DateTime.UtcNow.AddDays(5);
+        member.MembershipStartsAtUtc = starts;
+        member.MembershipEndsAtUtc = starts.AddDays(10);
+        await db.SaveChangesAsync();
+        var session = await SeedClassSessionAsync(db, true, starts.AddDays(lessonOffset), ClassSessionStatus.Scheduled);
+
+        var result = await new ClassReservationService(db).ReserveAsync(member.ApplicationUserId, session.Id);
+
+        Assert.Equal(allowed, result.Succeeded);
+        Assert.Equal(allowed ? 3 : 4, member.RemainingClassCredits);
+        Assert.Equal(allowed ? 1 : 0, await db.ClassReservations.CountAsync());
+    }
+
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public async Task ReserveAsync_UnlimitedCreditsStillRespectKnownStartAndSupportLegacyUnknownPeriod(bool knownStart, bool allowed)
+    {
+        await using var db = CreateDbContext();
+        var member = await SeedMemberAsync(db);
+        member.MembershipPackage.WeeklyClassLimit = null;
+        member.MembershipStartsAtUtc = knownStart ? DateTime.UtcNow.AddDays(5) : null;
+        await db.SaveChangesAsync();
+        var session = await SeedClassSessionAsync(db, true, DateTime.UtcNow.AddDays(2), ClassSessionStatus.Scheduled);
+
+        var result = await new ClassReservationService(db).ReserveAsync(member.ApplicationUserId, session.Id);
+
+        Assert.Equal(allowed, result.Succeeded);
+        Assert.Equal(4, member.RemainingClassCredits);
+        Assert.Equal(allowed ? 1 : 0, await db.ClassReservations.CountAsync());
+    }
+
+    [Fact]
+    public async Task ReserveAsync_KitchenAccountCannotBookSportsEvenWithinDates()
+    {
+        await using var db = CreateDbContext();
+        var member = await SeedMemberAsync(db);
+        member.MembershipPackage.Code = MembershipPackageCode.KitchenOnly;
+        member.MembershipStartsAtUtc = DateTime.UtcNow.AddDays(-1);
+        member.MembershipEndsAtUtc = DateTime.UtcNow.AddDays(10);
+        await db.SaveChangesAsync();
+        var session = await SeedClassSessionAsync(db, true, DateTime.UtcNow.AddDays(2), ClassSessionStatus.Scheduled);
+
+        Assert.False((await new ClassReservationService(db).ReserveAsync(member.ApplicationUserId, session.Id)).Succeeded);
+        Assert.Empty(db.ClassReservations);
+        Assert.Equal(4, member.RemainingClassCredits);
+    }
+
     [Fact]
     public async Task ReserveAsync_RejectsInactiveGroupClassSession()
     {

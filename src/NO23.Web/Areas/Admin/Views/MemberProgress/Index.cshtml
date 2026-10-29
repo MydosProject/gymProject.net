@@ -7,6 +7,9 @@
     var latest = Model.Entries.FirstOrDefault();
     var previous = Model.Entries.Skip(1).FirstOrDefault();
     var first = Model.Entries.LastOrDefault();
+    var firstLabel = first is null ? "İlk ölçüm" : $"İlk ({first.EntryDate:dd.MM.yyyy})";
+    var previousLabel = previous is null ? "Önceki ölçüm" : $"Önceki ({previous.EntryDate:dd.MM.yyyy})";
+    var latestLabel = latest is null ? "Son ölçüm" : $"Son ({latest.EntryDate:dd.MM.yyyy})";
     var metrics = new (string Field, string Label, string Unit, Func<MemberProgressEntry, decimal?> Read)[] {
         ("CaloriesConsumed", "Günlük kalori", "kcal", x => x.CaloriesConsumed),
         ("BodyWeightKg", "Vücut ağırlığı", "kg", x => x.BodyWeightKg),
@@ -52,14 +55,14 @@
         </form>
         <h3>Ölçüm karşılaştırması</h3>
         <p>Oran farkları yüzde puan olarak gösterilir. Boş ölçümler sıfır kabul edilmez.</p>
-        <div class="table-responsive bg-white text-dark border rounded mb-4"><table class="table mb-0"><thead><tr><th>Ölçüm</th><th>İlk (@first?.EntryDate.ToString("dd.MM.yyyy"))</th><th>Önceki (@previous?.EntryDate.ToString("dd.MM.yyyy"))</th><th>Son (@latest?.EntryDate.ToString("dd.MM.yyyy"))</th><th>Öncekiye göre</th><th>Başlangıca göre</th></tr></thead><tbody>
+        <div class="table-responsive bg-white text-dark border rounded mb-4"><table class="table mb-0" aria-label="Ölçüm karşılaştırması"><thead><tr><th>Ölçüm</th><th>@firstLabel</th><th>@previousLabel</th><th>@latestLabel</th><th>Öncekiye göre</th><th>Başlangıca göre</th></tr></thead><tbody>
             @foreach(var m in metrics){var a=latest is null?null:m.Read(latest);var b=previous is null?null:m.Read(previous);var c=first is null?null:m.Read(first);
-                <tr><td>@m.Label (@m.Unit)</td><td>@Value(c)</td><td>@Value(b)</td><td>@Value(a)</td><td>@Change(a,b)</td><td>@Change(a,c)</td></tr>}
+                <tr><td data-label="Ölçüm">@m.Label (@m.Unit)</td><td data-label="@firstLabel">@Value(c)</td><td data-label="@previousLabel">@Value(b)</td><td data-label="@latestLabel">@Value(a)</td><td data-label="Öncekiye göre">@Change(a,b)</td><td data-label="Başlangıca göre">@Change(a,c)</td></tr>}
         </tbody></table></div>
         <h3>Ölçüm geçmişi</h3>
-        <div class="table-responsive bg-white text-dark border rounded mb-4"><table class="table"><thead><tr><th>Tarih</th>@foreach(var m in metrics){<th>@m.Label (@m.Unit)</th>}<th></th></tr></thead><tbody>
+        <div class="table-responsive bg-white text-dark border rounded mb-4"><table class="table" aria-label="Ölçüm geçmişi"><thead><tr><th>Tarih</th>@foreach(var m in metrics){<th>@m.Label (@m.Unit)</th>}<th>İşlem</th></tr></thead><tbody>
             @if(Model.Entries.Count==0){<tr><td colspan="@(metrics.Length + 2)">Henüz ölçüm kaydı yok.</td></tr>}
-            @foreach(var entry in Model.Entries){<tr><td>@entry.EntryDate.ToString("dd.MM.yyyy")</td>@foreach(var m in metrics){<td>@Value(m.Read(entry))</td>}<td><a asp-route-memberId="@Model.MemberId" asp-route-date="@entry.EntryDate.ToString("yyyy-MM-dd")">Düzenle</a></td></tr>}
+            @foreach(var entry in Model.Entries){<tr><td data-label="Tarih">@entry.EntryDate.ToString("dd.MM.yyyy")</td>@foreach(var m in metrics){<td data-label="@($"{m.Label} ({m.Unit})")">@Value(m.Read(entry))</td>}<td data-label="İşlem"><a asp-route-memberId="@Model.MemberId" asp-route-date="@entry.EntryDate.ToString("yyyy-MM-dd")">Düzenle</a></td></tr>}
         </tbody></table></div>
         <h3>Önce / sonra fotoğrafları</h3>
         <p>Fotoğraflar halka açık yayınlanmaz; yönetici, ilgili üye ve atanmış aktif antrenör erişebilir.</p>

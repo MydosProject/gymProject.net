@@ -2099,6 +2099,10 @@ body.no23-admin-body {
         background: #f5f7f1;
     }
 
+    body.no23-admin-body .admin-content .table tbody td[data-label="İşlem"] {
+        background: #141712;
+    }
+
     .admin-content .table tbody td[data-label="İşlem"] :is(.btn, a, button, form) {
         min-width: 0;
         max-width: 100%;
