@@ -82,7 +82,7 @@
                             <span>@slot.Count() seans · @slot.Sum(session => session.ReservedCount) rezervasyon</span>
                         </summary>
                         <div class="table-responsive mt-3">
-                            <table class="table align-middle mb-0">
+                            <table class="table align-middle mb-0" mobile-labels="Tarih|Kontenjan|Durum|Katılımcılar|İşlem">
                                 <thead><tr><th>Tarih</th><th>Kontenjan</th><th>Durum</th><th>Katılımcılar</th><th class="text-end">İşlem</th></tr></thead>
                                 <tbody>
                                 @foreach (var session in slot.OrderBy(session => session.StartsAtUtc))

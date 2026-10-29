@@ -24,7 +24,7 @@
     }
     <a asp-action="Edit" asp-route-id="@summary.MemberId">Paket ve manuel bakiye bilgilerini düzenle →</a>
     <h2 class="h5 mt-4">Paket dönemindeki son 200 ders / rezervasyon</h2>
-    <div class="table-responsive"><table class="table"><thead><tr><th>Tarih / saat</th><th>Tür</th><th>Ders</th><th>Durum</th><th>Hak işlemi</th></tr></thead><tbody>
+    <div class="table-responsive"><table class="table" mobile-labels="Tarih / saat|Tür|Ders|Durum|Hak işlemi"><thead><tr><th>Tarih / saat</th><th>Tür</th><th>Ders</th><th>Durum</th><th>Hak işlemi</th></tr></thead><tbody>
     @foreach (var row in Model.History) { <tr><td>@ClubTime.ToLocal(row.StartsAtUtc).ToString("dd.MM.yyyy HH:mm")</td><td>@row.Kind</td><td>@row.Description</td><td>@row.Status</td><td>@row.CreditState</td></tr> }
     @if (Model.History.Count == 0) { <tr><td colspan="5">Bu paket dönemi için ders kaydı yok.</td></tr> }
     </tbody></table></div>
