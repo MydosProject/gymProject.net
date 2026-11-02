@@ -130,6 +130,24 @@ public class OrderDeliveryMethodTests
         Assert.Equal("Test Şehri", order.DeliveryCity);
     }
 
+    [Fact]
+    public async Task GuestShopOrder_DoesNotStoreDeliveryTimeSlot()
+    {
+        await using var dbContext = CreateDbContext();
+        var product = await SeedProductAsync(dbContext);
+        var service = new CommerceService(dbContext);
+
+        var result = await service.CreateGuestShopOrderAsync(
+            product.Id,
+            1,
+            ValidInput());
+
+        Assert.True(result.Succeeded);
+        var order = await dbContext.Orders.SingleAsync();
+        Assert.NotNull(order.DeliveryDate);
+        Assert.Null(order.DeliveryTimeSlot);
+    }
+
     private static GuestOrderInputViewModel ValidInput() => new()
     {
         DeliveryMethod = OrderDeliveryMethod.AddressDelivery,

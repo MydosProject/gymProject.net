@@ -259,6 +259,12 @@ public class CommerceService
             return CommerceResult.Fail("Sepet boş.");
         }
 
+        // A delivery time slot only applies when the cart contains Kitchen items.
+        if (cart.Items.All(item => item.ItemType != CartItemType.KitchenMenuItem))
+        {
+            deliveryDetails.DeliveryTimeSlot = null;
+        }
+
         var menuItemIds = cart.Items.Where(x => x.ItemType == CartItemType.KitchenMenuItem)
             .Select(x => x.KitchenMenuItemId).OfType<int>().ToList();
         var conflict = await dbContext.KitchenMenuItemAllergens.AsNoTracking()
@@ -510,6 +516,7 @@ public class CommerceService
         }
 
         var deliveryDetails = BuildDeliveryDetails(input);
+        deliveryDetails.DeliveryTimeSlot = null;
         var deliveryResult = NormalizeDeliveryDetails(deliveryDetails);
 
         if (!deliveryResult.Succeeded)

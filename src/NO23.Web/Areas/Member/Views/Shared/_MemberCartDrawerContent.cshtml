@@ -172,15 +172,18 @@ else
                     <input asp-for="CheckoutInput.DeliveryDate" type="date" />
                     <span asp-validation-for="CheckoutInput.DeliveryDate"></span>
                 </div>
-                <div class="shop-form-field">
-                    <label asp-for="CheckoutInput.DeliveryTimeSlot">Teslimat Saati</label>
-                    <select asp-for="CheckoutInput.DeliveryTimeSlot">
-                        <option value="10:00-13:00">10:00 – 13:00</option>
-                        <option value="13:00-16:00">13:00 – 16:00</option>
-                        <option value="16:00-19:00">16:00 – 19:00</option>
-                    </select>
-                    <span asp-validation-for="CheckoutInput.DeliveryTimeSlot"></span>
-                </div>
+                @if (Model.CartItems.Any(item => item.ItemType == "KitchenMenuItem"))
+                {
+                    <div class="shop-form-field">
+                        <label asp-for="CheckoutInput.DeliveryTimeSlot">Teslimat Saati</label>
+                        <select asp-for="CheckoutInput.DeliveryTimeSlot">
+                            <option value="10:00-13:00">10:00 – 13:00</option>
+                            <option value="13:00-16:00">13:00 – 16:00</option>
+                            <option value="16:00-19:00">16:00 – 19:00</option>
+                        </select>
+                        <span asp-validation-for="CheckoutInput.DeliveryTimeSlot"></span>
+                    </div>
+                }
                 <div class="shop-form-field shop-form-field-wide">
                     <label asp-for="CheckoutInput.DiscountCode">
                         İndirim Kodu <small>İsteğe bağlı</small>

@@ -163,8 +163,10 @@
                         <dd>
                             @Model.DeliveryMethodText<br />
                             @Model.DeliveryDate.ToString("dd.MM.yyyy")
-                            /
-                            @Model.DeliveryTimeSlot
+                            @if (!string.IsNullOrWhiteSpace(Model.DeliveryTimeSlot))
+                            {
+                                <text>/ @Model.DeliveryTimeSlot</text>
+                            }
                         </dd>
                     </div>
 

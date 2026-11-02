@@ -485,6 +485,17 @@ public static class DatabaseSeeder
             challenge.UpdatedAtUtc = DateTime.UtcNow;
         }
 
+        // Replace the retired START/PLUS package names in the demo post unless an admin already edited it.
+        const string legacyBeginnerSummary = "START ve PLUS üyeleri için sürdürülebilir haftalık antrenman planlama.";
+        var legacyPosts = await dbContext.BlogPosts
+            .Where(item => item.Slug == "yeni-baslayanlar-icin-haftalik-antrenman-ritmi" && item.Summary == legacyBeginnerSummary)
+            .ToListAsync();
+        foreach (var legacyPost in legacyPosts)
+        {
+            legacyPost.Summary = "Yeni başlayanlar için sürdürülebilir haftalık antrenman planlama.";
+            legacyPost.UpdatedAtUtc = DateTime.UtcNow;
+        }
+
         foreach (var defaultPost in CommunityContentSeed.BlogPosts)
         {
             if (!await dbContext.BlogPosts.AnyAsync(item => item.Slug == defaultPost.Slug))

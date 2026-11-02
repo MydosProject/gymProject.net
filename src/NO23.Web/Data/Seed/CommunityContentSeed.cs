@@ -81,7 +81,7 @@ public static class CommunityContentSeed
         {
             Title = "Yeni Başlayanlar İçin Haftalık Antrenman Ritmi",
             Slug = "yeni-baslayanlar-icin-haftalik-antrenman-ritmi",
-            Summary = "START ve PLUS üyeleri için sürdürülebilir haftalık antrenman planlama.",
+            Summary = "Yeni başlayanlar için sürdürülebilir haftalık antrenman planlama.",
             Content = "Yeni başlayanlar için en iyi plan, sürdürülebilir olan plandır. Haftada iki veya üç kaliteli seans, uyku ve beslenme ile desteklendiğinde güçlü bir temel oluşturur.",
             Category = "Antrenman",
             Tags = "antrenman, başlangıç, planlama",

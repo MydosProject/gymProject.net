@@ -168,7 +168,8 @@ public class ShopController(
             return NotFound();
         }
 
-        if (order.DeliveryDate is null ||string.IsNullOrWhiteSpace(order.DeliveryTimeSlot))
+        // Shop orders do not collect a delivery time slot; only the date is required.
+        if (order.DeliveryDate is null)
         {
             return NotFound();
         }
@@ -180,7 +181,7 @@ public class ShopController(
             Quantity = orderItem.Quantity,
             Total = order.Total,
             DeliveryDate = order.DeliveryDate.Value,
-            DeliveryTimeSlot = order.DeliveryTimeSlot,
+            DeliveryTimeSlot = order.DeliveryTimeSlot ?? string.Empty,
             DeliveryMethodText = GetDeliveryMethodLabel(order.DeliveryMethod),
             PaymentStatus = order.PaymentStatus,
             PaymentMethod = order.PaymentMethod,

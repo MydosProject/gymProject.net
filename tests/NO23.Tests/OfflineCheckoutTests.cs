@@ -122,6 +122,23 @@ public class OfflineCheckoutTests
         Assert.Empty(await db.Orders.ToListAsync());
     }
 
+    [Fact]
+    public async Task ShopOnlyCartOrder_DoesNotStoreDeliveryTimeSlot()
+    {
+        await using var db = CreateDbContext();
+        var product = await SeedProductAsync(db);
+        var member = await SeedMemberAsync(db);
+        var service = new CommerceService(db);
+        Assert.True((await service.AddShopProductToCartAsync(member.ApplicationUserId, product.Id, 1)).Succeeded);
+        var delivery = Delivery();
+        delivery.DeliveryTimeSlot = "10:00-13:00";
+
+        var result = await service.CreateOneTimeOrderFromCartAsync(member.ApplicationUserId, delivery, paymentMethod: PaymentMethod.Cash);
+
+        Assert.True(result.Succeeded);
+        Assert.Null((await db.Orders.SingleAsync()).DeliveryTimeSlot);
+    }
+
     [Theory]
     [InlineData(PaymentMethod.Cash)]
     [InlineData(PaymentMethod.BankTransfer)]

@@ -1,7 +1,6 @@
 @model NO23.Web.ViewModels.GuestOrders.GuestOrderPageViewModel
 @{
     ViewData["Title"] = $"{Model.ItemName} Siparişi";
-    var deliverySlots = new[] { "10:00-13:00", "13:00-16:00", "16:00-19:00" };
     var isOutOfStock = Model.StockQuantity is <= 0;
 }
 
@@ -163,16 +162,6 @@
                         <label for="guestDeliveryDate">Teslimat Tarihi</label>
                         <input id="guestDeliveryDate" name="input.DeliveryDate" type="date" value="@Model.Input.DeliveryDate.ToString("yyyy-MM-dd")" />
                         @Html.ValidationMessage("input.DeliveryDate", null, new { @class = "public-order-error" })
-                    </div>
-                    <div class="public-order-field public-order-field-wide">
-                        <label for="guestDeliveryTimeSlot">Teslimat Saati</label>
-                        <select id="guestDeliveryTimeSlot" name="input.DeliveryTimeSlot">
-                            @foreach (var slot in deliverySlots)
-                            {
-                                <option value="@slot" selected="@(slot == Model.Input.DeliveryTimeSlot ? "selected" : null)">@slot</option>
-                            }
-                        </select>
-                        @Html.ValidationMessage("input.DeliveryTimeSlot", null, new { @class = "public-order-error" })
                     </div>
                     <div class="public-order-field public-order-field-wide">
                         <label for="guestNotes">Sipariş Notu <small>İsteğe bağlı</small></label>
