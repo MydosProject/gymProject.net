@@ -64,6 +64,7 @@ public partial class PersonalTrainingCalendarServiceTests
         var (trainer, member) = await SeedAsync(db);
         var week = ClubTime.Monday(ClubTime.Now.AddDays(14));
         member.RemainingClassCredits = 20;
+        member.MembershipPackageOption!.PersonalTrainingSessionCount = 20;
         member.MembershipStartsAtUtc = DateTime.UtcNow.AddDays(-1);
         member.MembershipEndsAtUtc = ClubTime.ToUtc(week.AddDays(14).AddHours(12));
         await db.SaveChangesAsync();
@@ -95,6 +96,7 @@ public partial class PersonalTrainingCalendarServiceTests
         var (trainer, member) = await SeedAsync(db);
         var week = ClubTime.Monday(ClubTime.Now.AddDays(14));
         member.RemainingClassCredits = 60;
+        member.MembershipPackageOption!.PersonalTrainingSessionCount = 60;
         member.MembershipEndsAtUtc = ClubTime.ToUtc(week.AddDays(53 * 7));
         await db.SaveChangesAsync();
         var input = new WeeklyPersonalSessionInput
@@ -269,10 +271,11 @@ public partial class PersonalTrainingCalendarServiceTests
         var nextMonth = ClubTime.Now.AddMonths(1);
         var week = ClubTime.Monday(new DateTime(nextMonth.Year, nextMonth.Month, 1).AddDays(6));
         member.RemainingClassCredits = 20;
+        member.MembershipPackageOption!.PersonalTrainingSessionCount = 20;
         member.MembershipEndsAtUtc = ClubTime.ToUtc(week.AddDays(21));
         member.ServicePackageVariant = new ServicePackageVariant
         {
-            Name = "PT", TotalPrice = 1000, PersonalTrainingSessionCount = 2,
+            Name = "PT", TotalPrice = 1000, PersonalTrainingSessionCount = 2, GroupClassCreditCount = 18,
             LessonsRenewMonthly = lessonsRenewMonthly,
             ServicePackage = new ServicePackage
             {
@@ -305,6 +308,7 @@ public partial class PersonalTrainingCalendarServiceTests
         var week = ClubTime.Monday(ClubTime.Now.AddDays(14));
         var conflictingStart = ClubTime.ToUtc(week.AddDays(14).AddHours(11));
         member.RemainingClassCredits = 20;
+        member.MembershipPackageOption!.PersonalTrainingSessionCount = 20;
         member.MembershipEndsAtUtc = ClubTime.ToUtc(week.AddDays(21));
         db.PersonalTrainingSessions.Add(new PersonalTrainingSession
         {
@@ -538,7 +542,7 @@ public partial class PersonalTrainingCalendarServiceTests
         var (trainer, member) = await SeedAsync(db);
         var start = ClubTime.ToUtc(ClubTime.Monday(ClubTime.Now.AddDays(14)).AddHours(11));
         member.ServicePackageVariant = new ServicePackageVariant {
-            Name = "PT", TotalPrice = 1000, PersonalTrainingSessionCount = 1,
+            Name = "PT", TotalPrice = 1000, PersonalTrainingSessionCount = 1, GroupClassCreditCount = 3,
             LessonsRenewMonthly = renewsMonthly,
             ServicePackage = new ServicePackage { Name = "PT", Slug = "pt-test", Category = ServicePackageCategory.PersonalTraining }
         };
@@ -585,6 +589,8 @@ public partial class PersonalTrainingCalendarServiceTests
                 Code = MembershipPackageCode.Pro, Name = "Pro", Audience = "Test", Description = "Test",
                 WeeklyClassLimit = 4
             },
+            MembershipPackageOption = new MembershipPackageOption { Name = "4 PT", PersonalTrainingSessionCount = 4 },
+            MembershipStartsAtUtc = DateTime.UtcNow.AddYears(-2),
             AssignedTrainer = trainer,
             RemainingClassCredits = 4
         };

@@ -125,6 +125,12 @@ public class GroupClassesController(ApplicationDbContext dbContext) : Controller
             return NotFound();
         }
 
+        if (groupClass.CreditCategory != model.CreditCategory && await dbContext.ClassReservations.AnyAsync(x =>
+            x.ClassSession.GroupClassId == id && x.Status == ClassReservationStatus.Reserved))
+        {
+            ModelState.AddModelError(nameof(model.CreditCategory), "Rezervasyonu bulunan dersin kategorisi değiştirilemez. Önce rezervasyonları iptal edin.");
+            return View(await PopulateTrainerOptionsAsync(model));
+        }
         ApplyFormModel(groupClass, model);
         if (!groupClass.IsActive) await new GroupClassRemovalService(dbContext).DeactivateAsync(id);
         else await dbContext.SaveChangesAsync();
@@ -200,6 +206,7 @@ public class GroupClassesController(ApplicationDbContext dbContext) : Controller
     {
         groupClass.TrainerId = model.TrainerId;
         groupClass.Name = model.Name.Trim();
+        groupClass.CreditCategory = model.CreditCategory;
         groupClass.Description = model.Description?.Trim();
         groupClass.DurationMinutes = model.DurationMinutes;
         groupClass.DifficultyLevel = model.DifficultyLevel;
@@ -216,6 +223,7 @@ public class GroupClassesController(ApplicationDbContext dbContext) : Controller
             Id = groupClass.Id,
             TrainerId = groupClass.TrainerId,
             Name = groupClass.Name,
+            CreditCategory = groupClass.CreditCategory,
             Description = groupClass.Description,
             DurationMinutes = groupClass.DurationMinutes,
             DifficultyLevel = groupClass.DifficultyLevel,

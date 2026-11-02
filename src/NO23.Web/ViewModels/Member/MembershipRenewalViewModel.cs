@@ -4,15 +4,18 @@ namespace NO23.Web.ViewModels.Member;
 
 public sealed class MembershipRenewalViewModel
 {
+    public LessonCreditSummary? Credits { get; set; }
     public string CurrentPackageName { get; set; } = string.Empty;
     public DateTime? MembershipEndsAtUtc { get; set; }
     public bool PaymentEnabled { get; set; }
+    public bool ActivationPending { get; set; }
     public List<MembershipRenewalOptionViewModel> Options { get; set; } = [];
     public MembershipRenewalInputViewModel Input { get; set; } = new();
 }
 
 public sealed class MembershipRenewalOptionViewModel
 {
+    public string Category { get; set; } = "";
     public int Id { get; set; }
     public string PackageName { get; set; } = string.Empty;
     public string VariantName { get; set; } = string.Empty;
@@ -20,6 +23,9 @@ public sealed class MembershipRenewalOptionViewModel
     public int DurationMonths { get; set; }
     public int? DurationDays { get; set; }
     public int TotalCredits { get; set; }
+    public int PersonalTrainingCredits { get; set; }
+    public int GroupCredits { get; set; }
+    public string CategoryRights { get; set; } = "";
 }
 
 public sealed class MembershipRenewalInputViewModel

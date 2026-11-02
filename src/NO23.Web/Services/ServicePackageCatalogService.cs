@@ -135,7 +135,7 @@ public class ServicePackageCatalogService(ApplicationDbContext dbContext)
             PriceNote = variant.PriceOnRequest ? "Başvuru sonrası teklif" : monthly ? "aylık" : "tek seferlik",
             UnitPrice = unitPrice, Savings = savings, ComparisonNote = comparison,
             BillingNote = monthly
-                ? "Üyelik bedeli her ay karttan otomatik tahsil edilecek şekilde planlanır. Başvuru tek başına ödeme oluşturmaz; kart talimatı ve tahsilat koşulları üyelik aktivasyonunda ayrıca onaylanır."
+                ? "Aylık fiyat karşılaştırma içindir. Çevrimiçi satın almada seçilen dönemin toplam tutarı tek çekim tahsil edilir; otomatik aylık tahsilat başlatılmaz. Başvuru tek başına ödeme oluşturmaz."
                 : null,
             CommitmentNote = variant.BonusMonths > 0 && variant.DurationMonths is > 0
                 ? $"{variant.DurationMonths} aylık paketin {variant.BonusMonths} ayı hediye. Hediye ay dahil toplam kullanım süresi {variant.DurationMonths} ay."

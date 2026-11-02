@@ -40,6 +40,7 @@ public class HomeController(
 
         if (profile.MembershipPackage.Code == MembershipPackageCode.KitchenOnly)
             return RedirectToAction("Index", "Kitchen");
+        if (profile.MembershipActivationPending) return RedirectToAction("Index", "Membership", new { variant = profile.ServicePackageVariantId });
 
         var upcomingReservations = await dbContext.ClassReservations
             .AsNoTracking()
@@ -110,6 +111,7 @@ public class HomeController(
         var credits = await new LessonCreditSummaryService(dbContext).GetAsync(profile.Id);
         return View(new MemberDashboardViewModel
         {
+            UpcomingPersonalSessions = await new MemberPersonalScheduleService(dbContext).UpcomingAsync(profile.Id, DateTime.UtcNow),
             Credits = credits,
             MemberName = string.IsNullOrWhiteSpace(memberName) ? profile.ApplicationUser.Email ?? "NO23 Member" : memberName,
             PackageName = currentPackageName,

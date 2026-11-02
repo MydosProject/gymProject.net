@@ -32,7 +32,7 @@ public class CalendarNavigationTests
         var date = new DateTime(2026,10,21);
         var coach = new Trainer { ApplicationUserId = "coach", FirstName = "QA" };
         var member = new MemberProfile { ApplicationUser = new ApplicationUser { FirstName = "Deneme", LastName = "Üye" },
-            MembershipPackage = new MembershipPackage { WeeklyClassLimit = 3 }, AssignedTrainer = coach, RemainingClassCredits = 10 };
+            MembershipPackage = new MembershipPackage { WeeklyClassLimit = 3 }, MembershipPackageOption = new MembershipPackageOption { Name = "10 PT", PersonalTrainingSessionCount = 10 }, MembershipStartsAtUtc = DateTime.UtcNow.AddYears(-1), AssignedTrainer = coach, RemainingClassCredits = 10 };
         db.PersonalTrainingSessions.AddRange(
             new PersonalTrainingSession { MemberProfile = member, Trainer = coach, StartsAtUtc = ClubTime.ToUtc(date.AddHours(10)) },
             new PersonalTrainingSession { MemberProfile = member, Trainer = coach, StartsAtUtc = ClubTime.ToUtc(date.AddDays(1).AddHours(9)) });

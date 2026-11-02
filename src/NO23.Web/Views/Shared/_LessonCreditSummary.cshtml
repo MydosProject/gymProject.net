@@ -1,19 +1,36 @@
 @model NO23.Web.ViewModels.Member.LessonCreditSummary
+@using NO23.Web.Extensions
 <section class="lesson-credits" aria-label="Ders hakkı özeti">
     @if (!Model.HasSportsPackage)
     { <p>Kitchen hesabı · Spor üyeliği ve ders hakkı bulunmuyor.</p> }
     else
     {
+        @if (Model.Categories.Count > 0)
+        {
+            <div class="table-responsive"><table class="table" mobile-labels="Paket hakkı|Dönüşüm|Kullanılan|Kalan|Planlı|Yeni planlanabilir"><thead><tr><th>Kategori</th><th>Paket hakkı</th><th>Dönüşüm</th><th>Tamamlanan / katılmadı</th><th>Kalan</th><th>Planlı</th><th>Yeni planlanabilir</th></tr></thead><tbody>
+            @foreach (var category in Model.Categories) { <tr><th>@category.Category.GetDisplayName()@if (category.MonthlyLimit.HasValue) { <small class="d-block">Aylık sınır: @category.MonthlyLimit</small> }</th><td>@category.Granted</td><td>@category.Converted</td><td>@category.Completed</td><td>@category.Remaining</td><td>@category.Planned</td><td>@category.Available</td></tr> }
+            </tbody></table></div>
+            <p class="lesson-credit-note">Her kategori yalnız kendi hakkını kullanır. Planlanmış dersler kalan hakka dahildir; yeni planlanabilir sayı ayrılmış dersleri içermez.</p>
+        }
+        else {
+        <div class="lesson-credit-grid lesson-credit-categories" aria-label="Paket içeriği ve ders türüne göre kullanım">
+            <div><span>Birebir PT hakkı (paket toplamı)</span><strong>@(Model.PersonalTrainingTotal?.ToString() ?? "Kayıt yok")</strong><span>@Model.PersonalTrainingCompleted tamamlanan / katılmadı · @Model.PersonalTrainingPlanned planlanmış</span></div>
+            <div><span>Grup dersi hakkı (paket toplamı)</span><strong>@(Model.GroupTotal?.ToString() ?? "Kayıt yok")</strong><span>@Model.GroupCompleted tamamlanan · @Model.GroupPlanned planlanmış</span></div>
+        </div>
+        }
+        @if (Model.ConvertedCredits != 0) { <p class="lesson-credit-note">Kural dönüşümlerinin toplam hak farkı: @Model.ConvertedCredits · Dönüşüm sonrası toplam: @Model.EffectivePackageTotal</p> }
         <div class="lesson-credit-grid">
             <div><span>Paket toplamı</span><strong>@(Model.IsUnlimited ? "Sınırsız" : Model.PackageTotal?.ToString() ?? "Kayıt yok")</strong></div>
             <div><span>Tamamlanan / katılmadı</span><strong>@Model.Completed</strong></div>
-            <div><span>Kalan seans</span><strong>@(Model.IsUnlimited ? "Sınırsız" : Model.Remaining.ToString())</strong></div>
+            <div><span>Kalan toplam hak</span><strong>@(Model.IsUnlimited ? "Sınırsız" : Model.Remaining.ToString())</strong></div>
             <div><span>Planlanmış</span><strong>@Model.Planned</strong></div>
             <div><span>Yeni planlanabilir</span><strong>@(Model.IsUnlimited ? "Sınırsız" : Model.Available.ToString())</strong></div>
         </div>
         <p class="lesson-credit-note">Kalan seans planlanmış dersleri de içerir. Yeni planlanabilir sayı, ayrılmış dersler çıkarıldıktan sonraki haktır.</p>
-        @if (!Model.IsPackageActive) { <p class="lesson-credit-alert">Paket dönemi aktif değil. Kalan haklar kayıtta korunur; yeni ders için aktif paket gerekir.</p> }
-        @if (!Model.HasKnownPeriod) { <p class="lesson-credit-note">Eski kayıtta paket başlangıcı bulunmuyor; ders sayıları kayıtlı geçmişe göre gösteriliyor.</p> }
+        @if (Model.RequiresCategoryReview) { <p class="lesson-credit-alert">Eski ortak bakiye kategori dağılımı doğrulanmadan yeni rezervasyon yapılamaz. Yönetici ders haklarını incelemelidir.</p> }
+        @if (Model.IsActivationPending) { <p class="lesson-credit-note">Paket ödemesi / aktivasyonu bekleniyor. Ders hakları henüz kullanıma açılmadı.</p> }
+        else if (!Model.IsPackageActive) { <p class="lesson-credit-alert">Paket dönemi aktif değil. Kalan haklar kayıtta korunur; yeni ders için aktif paket gerekir.</p> }
+        @if (!Model.HasKnownPeriod && !Model.IsActivationPending) { <p class="lesson-credit-note">Eski kayıtta paket başlangıcı bulunmuyor; ders sayıları kayıtlı geçmişe göre gösteriliyor.</p> }
         @if (Model.NeedsReview)
         { <p class="lesson-credit-alert" role="status">Hak kaydı kontrol edilmeli. @if (Model.UnreviewedCompleted > 0) { <span>@Model.UnreviewedCompleted tamamlanmış/katılmadı dersin hak işlemi doğrulanmamış.</span> } @if (Model.HasTotalDifference) { <span>Paket toplamı ile kalan ve kullanılan hakların toplamı farklı; manuel düzenlemeler kontrol edilmeli.</span> } @if (Model.InvalidGroupReservations > 0) { <span>İptal seansında aktif rezervasyon kaydı var.</span> } Bakiyeyi otomatik değiştirmeden yöneticiye bildir.</p> }
     }

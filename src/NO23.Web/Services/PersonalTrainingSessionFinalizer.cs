@@ -16,12 +16,18 @@ internal static class PersonalTrainingSessionFinalizer
         var unlimited = MemberPackageEntitlement.HasUnlimitedClassAccess(member);
         if (status == PersonalTrainingSessionStatus.Cancelled)
         {
-            if (session.CreditConsumed && !unlimited) member.RemainingClassCredits++;
+            if (session.CreditConsumed && session.LessonAccount is { } refundAccount)
+                CategoryCreditService.Change(member, refundAccount, 1, changedByUserId, "Birebir iptal: aynı kategoriye hak iadesi.");
+            else if (session.CreditConsumed && member.LessonPeriodId is null && !unlimited) member.RemainingClassCredits++;
             session.CreditConsumed = false;
         }
         else if (!session.CreditConsumed)
         {
-            if (!unlimited) member.RemainingClassCredits--;
+            if (session.LessonAccount is null && member.LessonPeriodId.HasValue)
+                throw new InvalidOperationException("Birebir dersin kaynak hak hesabı doğrulanmalı.");
+            if (session.LessonAccount is { } account)
+                CategoryCreditService.Change(member, account, -1, changedByUserId, "Birebir tamamlandı / katılmadı.");
+            else if (member.LessonPeriodId is null && !unlimited) member.RemainingClassCredits--;
             session.CreditConsumed = true;
         }
 

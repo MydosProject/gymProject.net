@@ -154,6 +154,7 @@ public class MembersController(
             SiblingDiscountPercent = family.DiscountPercent,
             ReferralCode = $"NO23-{Guid.NewGuid():N}"[..13].ToUpperInvariant()
         };
+        CategoryCreditService.Initialize(profile, variant, User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "admin:manual-registration");
         dbContext.MemberProfiles.Add(profile);
         var paymentOrder = payment.Order!;
         paymentOrder.MemberProfile = profile;
@@ -197,7 +198,55 @@ public class MembersController(
             .Select(x => x.ApplicationUser.FirstName + " " + x.ApplicationUser.LastName).FirstOrDefaultAsync();
         if (member is null) return NotFound();
         var service = new LessonCreditSummaryService(dbContext);
-        return View(new MemberCreditsViewModel { MemberName = member, Summary = (await service.GetAsync(id))!, History = await service.HistoryAsync(id) });
+        var profile = await dbContext.MemberProfiles.AsNoTracking().Include(x => x.ServicePackageVariant).FirstAsync(x => x.Id == id);
+        var summary = (await service.GetAsync(id))!;
+        return View(new MemberCreditsViewModel { MemberName = member, Summary = summary, History = await service.HistoryAsync(id),
+            ConversionRules = await dbContext.LessonConversionRules.AsNoTracking().OrderByDescending(x => x.IsActive).ThenBy(x => x.Name).ToListAsync(),
+            Movements = await dbContext.LessonCreditMovements.AsNoTracking().Include(x => x.Account).Where(x => x.Account.MemberProfileId == id)
+                .OrderByDescending(x => x.Id).Take(100).ToListAsync(),
+            Migration = new CategoryMigrationInput { MemberId = id, ExpectedBalance = profile.RemainingClassCredits,
+                StartsOn = profile.MembershipStartsAtUtc.HasValue ? DateOnly.FromDateTime(ClubTime.ToLocal(profile.MembershipStartsAtUtc.Value)) : null,
+                Balances = Enum.GetValues<LessonCategory>().Select(category => new CategoryBalanceInput { Category = category,
+                    Granted = summary.Categories.FirstOrDefault(x => x.Category == category)?.Granted ?? (profile.ServicePackageVariant is { } v ? CategoryCreditService.Grant(v, category) : 0),
+                    Remaining = summary.Categories.FirstOrDefault(x => x.Category == category) is { } row ? row.Remaining - (category == LessonCategory.PersonalTraining ? 0 : row.Planned) : 0 }).ToList() }
+        });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> InitializeCategories(CategoryMigrationInput input)
+    {
+        if (!ModelState.IsValid) return BadRequest("Kategori bilgilerini kontrol edin.");
+        var result = await new CategoryCreditAdminService(dbContext).MigrateAsync(input, User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "");
+        TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] = result.Message;
+        return RedirectToAction(nameof(Credits), new { id = input.MemberId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> ConvertCredits(CreditConversionInput input)
+    {
+        if (!ModelState.IsValid) return BadRequest("Dönüşüm bilgilerini kontrol edin.");
+        var result = await new CategoryCreditAdminService(dbContext).ConvertAsync(input, User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "");
+        TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] = result.Message;
+        return RedirectToAction(nameof(Credits), new { id = input.MemberId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> AddCreditRule(int memberId, CreditRuleInput input)
+    {
+        if (!ModelState.IsValid || !Enum.IsDefined(input.From) || !Enum.IsDefined(input.To) || input.From == input.To) return BadRequest("Farklı iki kategori ve geçerli oran seçin.");
+        dbContext.LessonConversionRules.Add(new LessonConversionRule { Name = input.Name.Trim(), From = input.From, To = input.To,
+            SourceCredits = input.SourceCredits, TargetCredits = input.TargetCredits, IncreaseTargetMonthlyLimit = input.IncreaseTargetMonthlyLimit,
+            CreatedBy = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "" });
+        await dbContext.SaveChangesAsync();
+        return RedirectToAction(nameof(Credits), new { id = memberId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> DisableCreditRule(int memberId, int ruleId)
+    {
+        var rule = await dbContext.LessonConversionRules.FindAsync(ruleId); if (rule is null) return NotFound();
+        rule.IsActive = false; await dbContext.SaveChangesAsync();
+        return RedirectToAction(nameof(Credits), new { id = memberId });
     }
 
     [HttpPost, ValidateAntiForgeryToken]
@@ -321,7 +370,7 @@ public class MembersController(
             member.MembershipPackageId = await ResolveLegacyMembershipPackageIdAsync(variant);
             if (packageChanged)
             {
-                member.RemainingClassCredits = MemberPackageEntitlement.CalculateInitialCredits(variant);
+                CategoryCreditService.Initialize(member, variant, User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "admin:package-change");
                 member.LastMembershipOrderId = null;
                 member.MembershipStartsAtUtc = DateTime.UtcNow;
                 member.MembershipEndsAtUtc = member.MembershipStartsAtUtc.HasValue
@@ -330,6 +379,8 @@ public class MembersController(
             }
         }
         member.ServicePackageVariantId = model.ServicePackageVariantId;
+        if (!packageChanged && member.LessonPeriodId.HasValue && model.RemainingClassCredits != member.RemainingClassCredits)
+            return BadRequest("Kategori bakiyeleri Ders hakları ekranından gerekçeli olarak düzenlenmelidir.");
         if (!packageChanged)
         {
             var existingEndDay = member.MembershipEndsAtUtc.HasValue
@@ -403,6 +454,7 @@ public class MembersController(
             .Where(item => item.MemberProfileId == id)
             .ToListAsync();
         dbContext.PersonalTrainingSessions.RemoveRange(personalTrainingSessions);
+        dbContext.ClassReservations.RemoveRange(await dbContext.ClassReservations.Where(x => x.MemberProfileId == id).ToListAsync());
         await dbContext.SaveChangesAsync();
 
         var result = await userManager.DeleteAsync(member.ApplicationUser);

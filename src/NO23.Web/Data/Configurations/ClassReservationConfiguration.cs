@@ -8,6 +8,8 @@ public class ClassReservationConfiguration : IEntityTypeConfiguration<ClassReser
 {
     public void Configure(EntityTypeBuilder<ClassReservation> builder)
     {
+        builder.HasOne(x => x.LessonAccount).WithMany().HasForeignKey(x => x.LessonAccountId).OnDelete(DeleteBehavior.Restrict);
+        builder.Navigation(x => x.LessonAccount).AutoInclude();
         builder.Property(reservation => reservation.Status)
             .HasConversion<string>()
             .HasMaxLength(40);

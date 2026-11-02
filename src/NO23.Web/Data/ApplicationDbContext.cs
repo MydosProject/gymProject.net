@@ -7,6 +7,9 @@ namespace NO23.Web.Data;
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
     : IdentityDbContext<ApplicationUser>(options)
 {
+    public DbSet<MemberLessonAccount> MemberLessonAccounts => Set<MemberLessonAccount>();
+    public DbSet<LessonCreditMovement> LessonCreditMovements => Set<LessonCreditMovement>();
+    public DbSet<LessonConversionRule> LessonConversionRules => Set<LessonConversionRule>();
     public DbSet<MemberProgressPhoto> MemberProgressPhotos => Set<MemberProgressPhoto>();
     public DbSet<AppointmentRequest> AppointmentRequests => Set<AppointmentRequest>();
     public DbSet<AppointmentScheduleHistory> AppointmentScheduleHistories => Set<AppointmentScheduleHistory>();

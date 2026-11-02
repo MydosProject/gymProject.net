@@ -1,4 +1,6 @@
 @using NO23.Web.Services
+@using NO23.Web.Domain.Enums
+@using NO23.Web.Extensions
 @model NO23.Web.ViewModels.Admin.MemberCreditsViewModel
 @{ ViewData["Title"] = "Üye ders hakları"; var summary = Model.Summary; }
 <section class="admin-page"><div class="container">
@@ -6,8 +8,38 @@
     @foreach (var key in new[] { "SuccessMessage", "ErrorMessage" })
     { if (TempData[key] is string message) { <p class="alert @(key == "SuccessMessage" ? "alert-success" : "alert-danger")" role="status">@message</p> } }
     <partial name="/Views/Shared/_LessonCreditSummary.cshtml" model="summary" />
+    @if (!summary.HasCategoryAccounts)
+    {
+        <details class="admin-form-card"><summary>Kategori dağılımını doğrula ve ayrı hesaplara geçir</summary>
+        <p>Önce geçmişi inceleyin. Bu işlem yalnız doğruladığınız dağılımı kaydeder; geçmiş bakiye farkını gizlice düzeltmez. Grup derslerinin hak kategorilerini de kontrol edin.</p>
+        <form asp-action="InitializeCategories" method="post" data-submit-once>
+            <input type="hidden" name="MemberId" value="@summary.MemberId" /><input type="hidden" name="ExpectedBalance" value="@Model.Migration.ExpectedBalance" />
+            <label>Paket başlangıcı<input name="StartsOn" type="date" value="@Model.Migration.StartsOn?.ToString("yyyy-MM-dd")" required class="form-control" /></label>
+            @for (var i = 0; i < Model.Migration.Balances.Count; i++) { var row = Model.Migration.Balances[i]; <fieldset><legend class="h6">@row.Category.GetDisplayName()</legend><input type="hidden" name="Balances[@i].Category" value="@row.Category" /><label>Tanımlanan toplam hak<input name="Balances[@i].Granted" type="number" min="0" max="100000" value="@row.Granted" class="form-control" /></label><label>Kayıtlı kalan bakiye (grupta ayrılmış hak hariç)<input name="Balances[@i].Remaining" type="number" min="0" max="100000" value="@row.Remaining" class="form-control" /></label></fieldset> }
+            <label>Kontrol / düzeltme gerekçesi<textarea name="Reason" required minlength="5" maxlength="400" class="form-control"></textarea></label>
+            <label><input name="Confirmed" type="checkbox" value="true" required /> Paket tanımı, geçmiş ve dağılımı kontrol ettim.</label><button class="btn btn-dark">Kategori hesaplarını oluştur</button>
+        </form></details>
+    }
+    @if (summary.HasCategoryAccounts)
+    {
+        <section class="admin-form-card"><h2 class="h5">Kurala bağlı hak dönüşümü</h2>
+        <form asp-action="ConvertCredits" method="post" data-submit-once><input type="hidden" name="MemberId" value="@summary.MemberId" /><input type="hidden" name="OperationId" value="@Guid.NewGuid()" />
+            <label>Kural<select name="RuleId" class="form-select" required><option value="">Aktif kural seçin</option>@foreach (var rule in Model.ConversionRules.Where(x => x.IsActive)) { <option value="@rule.Id">@rule.Name: @rule.SourceCredits @rule.From.GetDisplayName() → @rule.TargetCredits @rule.To.GetDisplayName()</option> }</select></label>
+            <label>Kaç kez uygulanacak<input name="Times" type="number" min="1" max="1000" value="1" required class="form-control" /></label><label>Gerekçe<input name="Reason" minlength="5" maxlength="300" required class="form-control" /></label><button class="btn btn-dark">Kuralı uygula</button>
+        </form></section>
+    }
+    <details class="admin-form-card"><summary>Dönüşüm kurallarını yönet</summary>
+        @foreach (var rule in Model.ConversionRules) { <p>@rule.Name · @rule.SourceCredits @rule.From.GetDisplayName() → @rule.TargetCredits @rule.To.GetDisplayName() · @(rule.IsActive ? "Aktif" : "Pasif")</p>@if (rule.IsActive) { <form asp-action="DisableCreditRule" method="post"><input name="memberId" type="hidden" value="@summary.MemberId" /><input name="ruleId" type="hidden" value="@rule.Id" /><button class="btn btn-sm btn-outline-warning">Kuralı pasife al</button></form> } }
+        <form asp-action="AddCreditRule" method="post" data-submit-once><input name="memberId" type="hidden" value="@summary.MemberId" /><label>Kural adı<input name="Name" required maxlength="120" class="form-control" /></label>
+            <label>Kaynak kategori<select name="From" class="form-select">@foreach (var c in Enum.GetValues<LessonCategory>()) { <option value="@c">@c.GetDisplayName()</option> }</select></label>
+            <label>Hedef kategori<select name="To" class="form-select">@foreach (var c in Enum.GetValues<LessonCategory>()) { <option value="@c">@c.GetDisplayName()</option> }</select></label>
+            <label>Kaynak hak<input name="SourceCredits" type="number" min="1" max="1000" value="1" class="form-control" /></label><label>Hedef hak<input name="TargetCredits" type="number" min="1" max="1000" value="1" class="form-control" /></label>
+            <label><input name="IncreaseTargetMonthlyLimit" type="checkbox" value="true" /> Hedef aylık sınırına dönüştürülen hak kadar ekle</label><button class="btn btn-dark">Dönüşüm kuralını kaydet</button>
+        </form>
+    </details>
+    <details class="admin-form-card"><summary>Kategori hak hareketleri (@Model.Movements.Count)</summary>@foreach (var movement in Model.Movements) { <p>@ClubTime.ToLocal(movement.CreatedAtUtc).ToString("dd.MM.yyyy HH:mm") · @movement.Account.Category.GetDisplayName() · @movement.Delta · @movement.Actor<br />@movement.Reason</p> }</details>
     <p>Kayıtlı bakiye: <strong>@summary.StoredBalance</strong>. Grup rezervasyonu sırasında hak ayrılır; birebir ders tamamlandığında veya katılmadı olarak sonuçlandırıldığında hak düşer. İptal hak kaybettirmez.</p>
-    @if (summary.HasKnownPeriod && !summary.IsUnlimited && (summary.UnreviewedCompleted > 0 || summary.InvalidGroupReservations > 0))
+    @if (!summary.HasCategoryAccounts && summary.HasKnownPeriod && !summary.IsUnlimited && (summary.UnreviewedCompleted > 0 || summary.InvalidGroupReservations > 0))
     {
         @foreach (var cancelledGroups in new[] { false, true })
         {
@@ -22,7 +54,7 @@
             </form>
         }
     }
-    <a asp-action="Edit" asp-route-id="@summary.MemberId">Paket ve manuel bakiye bilgilerini düzenle →</a>
+    <a asp-action="Edit" asp-route-id="@summary.MemberId">Paket bilgilerini düzenle →</a>
     <h2 class="h5 mt-4">Paket dönemindeki son 200 ders / rezervasyon</h2>
     <div class="table-responsive"><table class="table" mobile-labels="Tarih / saat|Tür|Ders|Durum|Hak işlemi"><thead><tr><th>Tarih / saat</th><th>Tür</th><th>Ders</th><th>Durum</th><th>Hak işlemi</th></tr></thead><tbody>
     @foreach (var row in Model.History) { <tr><td>@ClubTime.ToLocal(row.StartsAtUtc).ToString("dd.MM.yyyy HH:mm")</td><td>@row.Kind</td><td>@row.Description</td><td>@row.Status</td><td>@row.CreditState</td></tr> }

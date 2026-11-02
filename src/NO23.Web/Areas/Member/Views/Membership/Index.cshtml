@@ -8,16 +8,18 @@
 }
 <section class="container py-5" style="max-width:980px">
     <p class="text-uppercase small">NO23 üyelik</p>
-    <h1>Üyeliğini yenile</h1>
+    <h1>Paket satın al / yenile</h1>
     <p>Mevcut paket: <strong>@Model.CurrentPackageName</strong></p>
+    @if (Model.Credits is not null) { <partial name="/Views/Shared/_LessonCreditSummary.cshtml" model="Model.Credits" /> }
     @if (Model.MembershipEndsAtUtc is { } end)
     {
         <p>Bitiş: <strong>@ClubTime.ToLocal(end).ToString("dd MMMM yyyy", culture)</strong></p>
     }
-    else
+    else if (!Model.ActivationPending)
     {
         <p class="alert alert-warning">Eski üyeliklerde bitiş tarihi kayıtlı olmayabilir. Satın alma tamamlandığında yeni paket hemen başlar ve kalan eski hakların yerini alır.</p>
     }
+    @if (Model.ActivationPending) { <p class="alert alert-info">Hesabın oluşturuldu. Paket ödemesi bekleniyor; ders hakları ödeme doğrulandıktan sonra başlayacak.</p> }
     @if (TempData["SuccessMessage"] is string success)
     { <div class="alert alert-success">@success</div> }
     @if (TempData["ErrorMessage"] is string error)
@@ -42,7 +44,9 @@
                     <div class="col-md-6">
                         <label class="card h-100 p-3" for="variant-@option.Id" style="cursor:pointer">
                             <span><input type="radio" asp-for="Input.VariantId" id="variant-@option.Id" value="@option.Id" /> <strong>@option.PackageName — @option.VariantName</strong></span>
+                            <small>@option.Category</small>
                             <span>@(option.DurationDays is > 0 ? $"{option.DurationDays} gün" : $"{option.DurationMonths} ay") · @option.TotalCredits ders hakkı</span>
+                            <span>Paket dağılımı: @option.CategoryRights</span>
                             <strong>@option.TotalPrice.ToString("C", culture)</strong>
                         </label>
                     </div>

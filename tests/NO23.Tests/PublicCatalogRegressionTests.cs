@@ -144,7 +144,7 @@ public class PublicCatalogRegressionTests
         Assert.DoesNotContain(package.Features, x => x.Contains("indirim", StringComparison.OrdinalIgnoreCase));
         Assert.All(package.Variants, x =>
         {
-            Assert.Contains("her ay karttan otomatik tahsil", x.BillingNote, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("toplam tutarı tek çekim tahsil", x.BillingNote, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("Başvuru tek başına ödeme oluşturmaz", x.BillingNote);
         });
     }

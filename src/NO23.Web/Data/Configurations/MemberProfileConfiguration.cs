@@ -9,6 +9,7 @@ public class MemberProfileConfiguration : IEntityTypeConfiguration<MemberProfile
     public void Configure(EntityTypeBuilder<MemberProfile> builder)
     {
         builder.Property(profile => profile.RemainingClassCredits).IsConcurrencyToken();
+        builder.Property(profile => profile.LessonPeriodId).IsConcurrencyToken();
         builder.HasIndex(profile => profile.ApplicationUserId)
             .IsUnique();
 

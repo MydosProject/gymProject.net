@@ -90,7 +90,8 @@
                 </div>
                 <div class="col-md-6">
                     <label asp-for="RemainingClassCredits" class="form-label"></label>
-                    <input asp-for="RemainingClassCredits" class="form-control" min="0" />
+                    <input asp-for="RemainingClassCredits" class="form-control" min="0" readonly />
+                    <small>Hak dağılımı ve dönüşümler için <a asp-action="Credits" asp-route-id="@Model.Id">Ders hakları</a> ekranını kullanın.</small>
                     <span asp-validation-for="RemainingClassCredits" class="text-danger"></span>
                 </div>
                 <div class="col-md-6">

@@ -39,6 +39,10 @@ public class MembershipRenewalServiceTests
         Assert.Equal(72, profile.RemainingClassCredits);
         Assert.Equal(11, profile.ServicePackageVariantId);
         Assert.Equal(2, profile.MembershipPackageId);
+        var credits = (await new LessonCreditSummaryService(db).GetAsync(profile.Id))!;
+        Assert.Equal(24, credits.PersonalTrainingTotal);
+        Assert.Equal(48, credits.GroupTotal);
+        Assert.Equal(72, credits.PackageTotal);
         Assert.Equal(order.Id, profile.LastMembershipOrderId);
         Assert.InRange(firstEnd!.Value, DateTime.UtcNow.AddMonths(6).AddMinutes(-1),
             DateTime.UtcNow.AddMonths(6).AddMinutes(1));

@@ -14,6 +14,8 @@ public class PersonalTrainingSession
     public int DurationMinutes { get; set; } = 50;
     public PersonalTrainingSessionStatus Status { get; set; } = PersonalTrainingSessionStatus.Scheduled;
     public bool CreditConsumed { get; set; }
+    public int? LessonAccountId { get; set; }
+    public MemberLessonAccount? LessonAccount { get; set; }
     public string? Note { get; set; }
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAtUtc { get; set; }

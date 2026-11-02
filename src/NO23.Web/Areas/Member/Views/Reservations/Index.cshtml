@@ -59,12 +59,15 @@
             </div>
         }
 
+        @if (Model.Credits is not null) { <partial name="/Views/Shared/_LessonCreditSummary.cshtml" model="Model.Credits" /> }
+        <partial name="/Views/Shared/_MemberPersonalSchedule.cshtml" model="Model.UpcomingPersonalSessions" />
+
         <section class="member-reservations-section"
                  id="upcoming-reservations">
             <div class="member-section-heading">
                 <div>
                     <p class="member-section-kicker">Takvimin</p>
-                    <h2>Yaklaşan rezervasyonların</h2>
+                    <h2>Yaklaşan grup rezervasyonların</h2>
                 </div>
                 <span class="member-section-count">
                     @Model.UpcomingReservations.Count.ToString("00")
@@ -76,7 +79,7 @@
                 <div class="member-empty-state">
                     <span class="member-empty-number">00</span>
                     <div>
-                        <h3>Henüz yaklaşan rezervasyonun yok.</h3>
+                        <h3>Henüz yaklaşan grup rezervasyonun yok.</h3>
                         <p>Aşağıdaki grup derslerinden sana uygun seansı seçebilirsin.</p>
                     </div>
                     <a href="#group-classes" class="member-empty-link">

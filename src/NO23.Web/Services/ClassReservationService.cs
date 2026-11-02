@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using NO23.Web.Data;
 using NO23.Web.Domain.Entities;
 using NO23.Web.Domain.Enums;
+using NO23.Web.Extensions;
 
 namespace NO23.Web.Services;
 
@@ -16,8 +17,7 @@ public class ClassReservationService(ApplicationDbContext dbContext)
             reservation.Status = ClassReservationStatus.Cancelled;
             reservation.CancelledAtUtc = nowUtc;
             reservation.CancellationReason = reason;
-            if (!MemberPackageEntitlement.HasUnlimitedClassAccess(reservation.MemberProfile))
-                reservation.MemberProfile.RemainingClassCredits++;
+            CategoryCreditService.Refund(reservation, "system:session-cancellation", reason);
             reservation.MemberProfile.UpdatedAtUtc = nowUtc;
             count++;
         }
@@ -32,6 +32,7 @@ public class ClassReservationService(ApplicationDbContext dbContext)
     {
         var profile = await dbContext.MemberProfiles
             .Include(member => member.MembershipPackage)
+            .Include(member => member.ServicePackageVariant)
             .FirstOrDefaultAsync(member => member.ApplicationUserId == userId);
 
         if (profile is null)
@@ -89,21 +90,37 @@ public class ClassReservationService(ApplicationDbContext dbContext)
             return ReservationResult.Fail("Ders kontenjanı dolu.");
         }
 
-        var isUnlimitedPackage = MemberPackageEntitlement.HasUnlimitedClassAccess(profile);
-
-        var credits = await new LessonCreditSummaryService(dbContext).GetAsync(profile.Id);
-        if (!isUnlimitedPackage && (credits?.Available ?? 0) <= 0)
+        if (!Enum.IsDefined(session.GroupClass.CreditCategory) || session.GroupClass.CreditCategory == LessonCategory.PersonalTraining)
+            return ReservationResult.Fail("Grup dersinin hak kategorisi yönetici tarafından düzeltilmeli.");
+        var creditService = new CategoryCreditService(dbContext);
+        var allocation = await creditService.PrepareAsync(profile, true);
+        if (allocation.Error is not null) return ReservationResult.Fail(allocation.Error);
+        var account = allocation.Accounts.Single(x => x.Category == session.GroupClass.CreditCategory);
+        if (!account.IsUnlimited && account.Remaining <= 0)
+            return ReservationResult.Fail($"{session.GroupClass.CreditCategory.GetDisplayName()} ders hakkın bulunmuyor. Başka kategorinin hakkı kullanılamaz.");
+        if (account.MonthlyLimit is { } monthlyLimit)
         {
-            return ReservationResult.Fail("Yeni ders için kullanılabilir hakkın bulunmuyor. Planlanmış birebir derslerin de aynı hak bakiyesinden ayrılır.");
+            var local = ClubTime.ToLocal(session.StartsAtUtc);
+            var monthStart = ClubTime.ToUtc(new DateTime(local.Year, local.Month, 1));
+            var monthEnd = ClubTime.ToUtc(new DateTime(local.Year, local.Month, 1).AddMonths(1));
+            var count = await dbContext.ClassReservations.CountAsync(x => x.MemberProfileId == profile.Id && x.Status == ClassReservationStatus.Reserved &&
+                x.ClassSession.Status != ClassSessionStatus.Cancelled &&
+                ((x.LessonAccount != null && x.LessonAccount.PeriodId == account.PeriodId && x.LessonAccount.Category == account.Category) ||
+                 (x.LessonAccountId == null && x.ClassSession.GroupClass.CreditCategory == account.Category)) &&
+                x.ClassSession.StartsAtUtc >= monthStart && x.ClassSession.StartsAtUtc < monthEnd &&
+                (!profile.MembershipStartsAtUtc.HasValue || x.ClassSession.StartsAtUtc >= profile.MembershipStartsAtUtc) &&
+                (!profile.MembershipEndsAtUtc.HasValue || x.ClassSession.StartsAtUtc < profile.MembershipEndsAtUtc));
+            if (count >= monthlyLimit) return ReservationResult.Fail("Bu kategorinin aylık ders sınırı dolu.");
         }
 
         if (existingReservation is null)
         {
-            dbContext.ClassReservations.Add(new ClassReservation
+            existingReservation = new ClassReservation
             {
                 ClassSessionId = classSessionId,
                 MemberProfileId = profile.Id
-            });
+            };
+            dbContext.ClassReservations.Add(existingReservation);
         }
         else
         {
@@ -113,10 +130,8 @@ public class ClassReservationService(ApplicationDbContext dbContext)
             existingReservation.CancellationReason = null;
         }
 
-        if (!isUnlimitedPackage)
-        {
-            profile.RemainingClassCredits--;
-        }
+        existingReservation.LessonAccount = account;
+        CategoryCreditService.Change(profile, account, -1, userId, $"Grup rezervasyonu: seans #{classSessionId}");
 
         profile.UpdatedAtUtc = DateTime.UtcNow;
 
@@ -156,10 +171,7 @@ public class ClassReservationService(ApplicationDbContext dbContext)
         reservation.CancelledAtUtc = DateTime.UtcNow;
         reservation.CancellationReason = "Member cancellation";
 
-        if (!MemberPackageEntitlement.HasUnlimitedClassAccess(reservation.MemberProfile))
-        {
-            reservation.MemberProfile.RemainingClassCredits++;
-        }
+        CategoryCreditService.Refund(reservation, userId, "Üye grup rezervasyonunu iptal etti.");
 
         reservation.MemberProfile.UpdatedAtUtc = DateTime.UtcNow;
 
@@ -198,10 +210,7 @@ public class ClassReservationService(ApplicationDbContext dbContext)
         reservation.CancellationReason =
             "Yönetici tarafından ders listesinden çıkarıldı.";
 
-        if (!MemberPackageEntitlement.HasUnlimitedClassAccess(reservation.MemberProfile))
-        {
-            reservation.MemberProfile.RemainingClassCredits++;
-        }
+        CategoryCreditService.Refund(reservation, "admin:reservation-cancellation", "Yönetici grup rezervasyonunu iptal etti.");
 
         reservation.MemberProfile.UpdatedAtUtc = nowUtc;
 

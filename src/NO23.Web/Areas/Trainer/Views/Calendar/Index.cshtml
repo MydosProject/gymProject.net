@@ -5,6 +5,7 @@
 }
 
 @section Styles {
+    <link rel="stylesheet" href="~/css/calendar-timeline.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/consultation-calendar.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/weekly-personal-schedule.css" asp-append-version="true" /><link rel="stylesheet" href="~/css/calendar-bulk.css" asp-append-version="true" />
     <style>
@@ -56,10 +57,10 @@
         @await Html.PartialAsync("_CalendarBulkToolbar", new NO23.Web.ViewModels.Admin.CalendarBulkInput { Week = Model.WeekStart, MemberId = Model.MemberId, IncludeCompleted = Model.IncludeCompleted })
         <div class="admin-form-card mb-4">
             <div class="trainer-week-scroll">
-                <div class="trainer-week-grid @(Model.ViewMode == "day" ? "is-day-view" : null)">
+                <div class="trainer-week-grid @(Model.ViewMode == "day" ? "is-day-view" : null)" data-calendar-timeline>
                     @foreach (var day in Model.VisibleDays)
                     {
-                        <section class="trainer-week-day @(day.IsToday ? "is-today" : "")">
+                        <section class="trainer-week-day @(day.IsToday ? "is-today" : "")" data-calendar-day>
                             <header class="trainer-week-day-head">
                                 <div>
                                     <a class="calendar-day-link" asp-action="Index" asp-route-view="day" asp-route-date="@day.Date.ToString("yyyy-MM-dd")" asp-route-memberId="@Model.MemberId" asp-route-includeCompleted="@Model.IncludeCompleted">@day.DayName</a>
@@ -78,7 +79,9 @@
                                 <div class="trainer-week-items">
                                     @foreach (var entry in day.Entries)
                                     {
-                                    <div class="calendar-entry"><time class="calendar-entry-clock">@NO23.Web.Services.ClubTime.ToLocal(entry.StartsAtUtc).ToString("HH:mm")</time>
+                                    var localStart = NO23.Web.Services.ClubTime.ToLocal(entry.StartsAtUtc);
+                                    var duration = entry.Personal?.DurationMinutes ?? entry.Group?.GroupClass.DurationMinutes ?? entry.Appointment?.DurationMinutes ?? 50;
+                                    <div class="calendar-entry" data-calendar-start="@(localStart.Hour * 60 + localStart.Minute)" data-calendar-duration="@duration" data-calendar-kind="@(entry.Personal is not null ? "personal" : entry.Group is not null ? "group" : "consultation")" data-calendar-title="@(entry.Personal?.MemberName ?? entry.Group?.GroupClass.Name ?? entry.Appointment?.FullName)"><time class="calendar-entry-clock">@localStart.ToString("HH:mm")</time>
                                     @if (entry.Appointment is { } appointment) {
                                         <partial name="/Views/Shared/_ConsultationCalendarCard.cshtml" model="appointment" />
                                     }
@@ -267,6 +270,7 @@
     </div>
 </section>
 @section Scripts {
+    <script src="~/js/calendar-timeline.js" asp-append-version="true"></script>
     <script src="~/js/calendar-bulk.js" asp-append-version="true"></script>
     <script src="~/js/weekly-personal-schedule.js" asp-append-version="true"></script>
 }

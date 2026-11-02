@@ -31,12 +31,10 @@ public class ReservationsController(
         var memberContext = await dbContext.MemberProfiles
             .AsNoTracking()
             .Include(member => member.MembershipPackage)
+            .Include(member => member.LessonAccounts)
+            .Include(member => member.ServicePackageVariant)
+            .Include(member => member.MembershipPackageOption)
             .Where(member => member.ApplicationUserId == userId)
-            .Select(member => new
-            {
-                member.Id,
-                member.MembershipPackage.IncludesPersonalTrainingSupport
-            })
             .FirstOrDefaultAsync();
         var profileId = memberContext?.Id;
 
@@ -156,6 +154,9 @@ public class ReservationsController(
 
         return View(new MemberReservationsIndexViewModel
         {
+            Credits = profileId.HasValue ? await new LessonCreditSummaryService(dbContext).GetAsync(profileId.Value) : null,
+            UpcomingPersonalSessions = profileId.HasValue
+                ? await new MemberPersonalScheduleService(dbContext).UpcomingAsync(profileId.Value, DateTime.UtcNow) : [],
             UpcomingReservations = upcomingReservations,
             AvailableSessions = availableSessions,
             Trainers = trainers,
@@ -169,7 +170,7 @@ public class ReservationsController(
             PreferredTimeWindows = PersonalTrainingRequestService.PreferredTimeWindows,
             PersonalTrainingRequests = personalTrainingRequests,
             CanRequestPersonalTraining =
-                memberContext?.IncludesPersonalTrainingSupport == true
+                memberContext is not null && MemberPackageEntitlement.IncludesPersonalTraining(memberContext)
         });
     }
 

@@ -21,4 +21,6 @@ public class ClassReservation
     public DateTime? CancelledAtUtc { get; set; }
 
     public string? CancellationReason { get; set; }
+    public int? LessonAccountId { get; set; }
+    public MemberLessonAccount? LessonAccount { get; set; }
 }

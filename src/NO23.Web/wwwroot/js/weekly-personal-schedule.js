@@ -12,13 +12,19 @@
         let controller, timer, ready = false;
         const showAccount = data => {
             const storedBalance = data.storedBalance ?? data.remainingCredits;
+            const summary = data.creditSummary;
             account.replaceChildren();
             const items = [
-                ['Paketin birebir hakkı', data.packageLessons ?? (data.isUnlimited ? 'Sınırsız' : 'Belirtilmemiş')],
+                ['Paketin toplam birebir hakkı', data.packageLessons ?? (data.isUnlimited ? 'Sınırsız' : 'Belirtilmemiş')],
                 ['Tamamlanan / kullanılan birebir', data.completedLessons],
                 ['Önceden planlanan birebir', data.plannedLessons],
-                ['Kalan toplam hak', data.isUnlimited ? 'Sınırsız' : data.remainingCredits],
-                ['Yeni planlanabilir birebir', data.availableLessons ?? 'Sınırsız']
+                ...(summary ? [
+                    ['Paket toplamı (birebir + grup)', data.isUnlimited ? 'Sınırsız' : (summary.packageTotal ?? 'Belirtilmemiş')],
+                    ['Tamamlanan / katılmadı (birebir + grup)', summary.completed]
+                ] : []),
+                ['Kalan toplam hak (birebir + grup)', data.isUnlimited ? 'Sınırsız' : data.remainingCredits],
+                ['Haklara göre birebir üst sınırı', data.availableLessons ?? 'Sınırsız'],
+                ['Bu seçimle planlanabilen yeni ders', data.lessonCount ?? 0]
             ];
             for (const [label, value] of items) {
                 const item = document.createElement('div');
@@ -29,6 +35,28 @@
                 name.textContent = label;
                 item.append(count, name);
                 account.append(item);
+            }
+            const note = document.createElement('p');
+            note.className = 'schedule-account-note';
+            const localDate = value => value ? new Intl.DateTimeFormat('tr-TR', {
+                timeZone: 'Europe/Istanbul', dateStyle: 'short', timeStyle: 'short'
+            }).format(new Date(value)) : 'Kayıtlı değil';
+            note.textContent = `Paket dönemi: ${localDate(data.packageStart)} - ${localDate(data.packageEnd)}. Birebir sayaçları yalnız birebir dersleri, ortak bakiye grup derslerini de kapsar. Hak üst sınırı tarih uygunluğu değildir; seçilen gün ve paket süresi planlanabilecek sayıyı ayrıca sınırlar.`;
+            account.append(note);
+            if (summary?.needsReview) {
+                const warning = document.createElement('p');
+                warning.className = 'schedule-account-warning';
+                warning.setAttribute('role', 'status');
+                warning.textContent = summary.hasTotalDifference
+                    ? `Hak kaydı kontrol edilmeli: paket toplamı ${summary.packageTotal}, tamamlanan/katılmadı ${summary.completed}, kalan ${summary.remaining}. Toplamlar uyuşmuyor. Ders geçmişi ve manuel hak değişiklikleri incelenmeli; bakiye otomatik değiştirilmedi.`
+                    : 'Hak kaydı kontrol edilmeli. İşlenmemiş dersler veya iptal rezervasyonları var; ders geçmişi ve bakiye incelenmeli.';
+                if (review) {
+                    const link = document.createElement('a');
+                    link.href = `/Admin/Members/Credits/${encodeURIComponent(member.value)}`;
+                    link.textContent = ' Ders hakları ve geçmişini aç';
+                    warning.append(link);
+                }
+                account.append(warning);
             }
             if (data.unchargedCompletedLessons && !data.isUnlimited) {
                 const warning = document.createElement('p');
@@ -69,6 +97,8 @@
                 submit.disabled = !ready;
             } catch (error) {
                 if (error.name === 'AbortError') return;
+                ready = false;
+                submit.disabled = true;
                 output.textContent = 'Hesaplama yapılamadı';
                 description.textContent = 'Bilgileri ve bağlantıyı kontrol edip tekrar deneyin. Sayfayı yenileyebilirsiniz.';
             }

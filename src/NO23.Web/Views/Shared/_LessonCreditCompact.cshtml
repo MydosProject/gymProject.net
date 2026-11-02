@@ -1,7 +1,11 @@
+@using NO23.Web.Extensions
 @model NO23.Web.ViewModels.Member.LessonCreditSummary
 <div class="lesson-credit-compact">
     <strong>@(!Model.HasSportsPackage ? "Spor üyeliği yok" : Model.IsUnlimited ? "Sınırsız" : Model.Remaining.ToString())</strong>
     @if (Model.HasSportsPackage)
     { <small>@Model.Planned planlı · @(Model.IsUnlimited ? "Sınırsız" : Model.Available.ToString()) yeni planlanabilir</small> }
+    @foreach (var row in Model.Categories.Where(x => x.Granted > 0 || x.Converted != 0 || x.Planned > 0))
+    { <small>@row.Category.GetDisplayName(): @row.Remaining kalan · @row.Available yeni planlanabilir</small> }
     @if (Model.NeedsReview) { <small class="lesson-credit-alert">Hak kontrolü gerekli</small> }
+    @if (Model.IsActivationPending) { <small>Ödeme / aktivasyon bekleniyor</small> }
 </div>

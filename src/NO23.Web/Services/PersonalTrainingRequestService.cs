@@ -31,14 +31,18 @@ public class PersonalTrainingRequestService(ApplicationDbContext dbContext, IClu
 
         var profile = await dbContext.MemberProfiles
             .Include(member => member.MembershipPackage)
+            .Include(member => member.LessonAccounts)
+            .Include(member => member.ServicePackageVariant)
+            .Include(member => member.MembershipPackageOption)
             .FirstOrDefaultAsync(member => member.ApplicationUserId == userId);
 
         if (profile is null)
         {
             return PersonalTrainingRequestResult.Fail("Üye profili bulunamadı.");
         }
+        if (profile.MembershipActivationPending) return PersonalTrainingRequestResult.Fail("Paket ödemesi bekleniyor.");
 
-        if (!profile.MembershipPackage.IncludesPersonalTrainingSupport)
+        if (!MemberPackageEntitlement.IncludesPersonalTraining(profile))
         {
             return PersonalTrainingRequestResult.Fail(
                 "Üyelik paketin birebir antrenman desteği içermiyor.");

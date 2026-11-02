@@ -14,6 +14,17 @@ namespace NO23.Web.Controllers;
 [Route("plans")]
 public class PlansController(ApplicationDbContext dbContext) : Controller
 {
+    [HttpGet("buy")]
+    public async Task<IActionResult> Buy(string package, int variant)
+    {
+        var selected = await dbContext.ServicePackageVariants.AsNoTracking().Include(x => x.ServicePackage)
+            .FirstOrDefaultAsync(x => x.Id == variant && x.IsActive && x.ServicePackage.IsActive && x.ServicePackage.Slug == package);
+        if (selected is null) return NotFound();
+        if (selected.PriceOnRequest || selected.TotalPrice <= 0) return RedirectToAction(nameof(Apply), new { package, variant });
+        return User.Identity?.IsAuthenticated == true
+            ? LocalRedirect($"/Member/Membership?variant={variant}")
+            : LocalRedirect($"/Identity/Account/Register?package={Uri.EscapeDataString(package)}&variant={variant}");
+    }
     [HttpGet("{category}")]
     public async Task<IActionResult> Index(string category)
     {

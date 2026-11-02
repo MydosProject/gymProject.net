@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using NO23.Web.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -21,13 +22,13 @@ public sealed class MembershipController(
     IOptions<IyzicoOptions> paymentOptions) : Controller
 {
     [HttpGet]
-    public async Task<IActionResult> Index(string? payment)
+    public async Task<IActionResult> Index(string? payment, int? variant = null)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrWhiteSpace(userId)) return Challenge();
         if (payment == "success") TempData["SuccessMessage"] = "Ödeme alındı; üyelik bilgileriniz güncellendi.";
         if (payment == "failed") TempData["ErrorMessage"] = "Ödeme doğrulanamadı. Siparişlerinizi kontrol edin.";
-        return View(await BuildModelAsync(userId, new MembershipRenewalInputViewModel()));
+        return View(await BuildModelAsync(userId, new MembershipRenewalInputViewModel { VariantId = variant ?? 0 }));
     }
 
     [HttpPost]
@@ -73,8 +74,8 @@ public sealed class MembershipController(
         var variants = await dbContext.ServicePackageVariants.AsNoTracking()
             .Include(x => x.ServicePackage)
             .Where(x => x.IsActive && x.ServicePackage.IsActive &&
-                x.ServicePackage.Category == ServicePackageCategory.Membership &&
-                x.ServicePackage.MembershipPackageId != null &&
+                (x.ServicePackage.Category == ServicePackageCategory.Membership || x.ServicePackage.Category == ServicePackageCategory.PersonalTraining ||
+                 x.ServicePackage.Category == ServicePackageCategory.GroupClasses || x.ServicePackage.Category == ServicePackageCategory.KidsClub) &&
                 !x.PriceOnRequest && x.TotalPrice > 0)
             .OrderBy(x => x.ServicePackage.DisplayOrder)
             .ThenBy(x => x.DisplayOrder)
@@ -87,6 +88,8 @@ public sealed class MembershipController(
 
         return new MembershipRenewalViewModel
         {
+            ActivationPending = profile?.MembershipActivationPending == true,
+            Credits = profile is not null ? await new LessonCreditSummaryService(dbContext).GetAsync(profile.Id) : null,
             CurrentPackageName = profile?.ServicePackageVariant is { } current
                 ? $"{current.ServicePackage.Name} - {current.Name}"
                 : profile?.MembershipPackage.Name ?? "Paket bulunamadı",
@@ -97,11 +100,15 @@ public sealed class MembershipController(
             {
                 Id = x.Id,
                 PackageName = x.ServicePackage.Name,
+                Category = ServicePackageCatalogService.CategoryTitle(x.ServicePackage.Category),
                 VariantName = x.Name,
                 TotalPrice = x.TotalPrice,
                 DurationMonths = x.DurationMonths ?? 1,
                 DurationDays = x.DurationDays,
-                TotalCredits = MemberPackageEntitlement.CalculateInitialCredits(x)
+                TotalCredits = MemberPackageEntitlement.CalculateInitialCredits(x),
+                PersonalTrainingCredits = MemberPackageEntitlement.CalculatePersonalTrainingCredits(x),
+                GroupCredits = MemberPackageEntitlement.CalculateGroupCredits(x),
+                CategoryRights = string.Join(" · ", Enum.GetValues<LessonCategory>().Select(c => (Category: c, Count: CategoryCreditService.Grant(x, c))).Where(v => v.Count > 0).Select(v => $"{v.Count} {v.Category.GetDisplayName()}"))
             }).ToList()
         };
     }

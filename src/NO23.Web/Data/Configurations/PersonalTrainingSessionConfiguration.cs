@@ -8,6 +8,8 @@ public class PersonalTrainingSessionConfiguration : IEntityTypeConfiguration<Per
 {
     public void Configure(EntityTypeBuilder<PersonalTrainingSession> builder)
     {
+        builder.HasOne(x => x.LessonAccount).WithMany().HasForeignKey(x => x.LessonAccountId).OnDelete(DeleteBehavior.Restrict);
+        builder.Navigation(x => x.LessonAccount).AutoInclude();
         builder.Property(item => item.Note).HasMaxLength(600);
         builder.Property(item => item.CreatedAtUtc).HasDefaultValueSql("NOW()");
         builder.HasIndex(item => new { item.TrainerId, item.StartsAtUtc });

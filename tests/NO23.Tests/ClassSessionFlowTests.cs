@@ -57,8 +57,8 @@ public class ClassSessionFlowTests
 
     [Theory]
     [InlineData(true, false)]
-    [InlineData(false, true)]
-    public async Task ReserveAsync_UnlimitedCreditsStillRespectKnownStartAndSupportLegacyUnknownPeriod(bool knownStart, bool allowed)
+    [InlineData(false, false)]
+    public async Task ReserveAsync_LegacyUnlimitedDoesNotBypassCategoryReview(bool knownStart, bool allowed)
     {
         await using var db = CreateDbContext();
         var member = await SeedMemberAsync(db);
@@ -232,6 +232,8 @@ public class ClassSessionFlowTests
         {
             ApplicationUser = user,
             MembershipPackage = package,
+            MembershipPackageOption = new MembershipPackageOption { Name = "4 Group", GroupClassCreditCount = 4 },
+            MembershipStartsAtUtc = DateTime.UtcNow.AddYears(-2),
             RemainingClassCredits = 4
         };
 

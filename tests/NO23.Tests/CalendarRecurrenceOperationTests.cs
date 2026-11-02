@@ -665,6 +665,7 @@ public class CalendarRecurrenceOperationTests
 
     private static MemberProfile Member(Trainer trainer, MembershipPackage package) => new() {
         AssignedTrainer = trainer, ApplicationUser = new() { UserName = Guid.NewGuid().ToString() }, MembershipPackage = package,
+        MembershipPackageOption = new MembershipPackageOption { Name = "1000 PT", PersonalTrainingSessionCount = 1000 },
         RemainingClassCredits = 1000, MembershipStartsAtUtc = DateTime.UtcNow.AddYears(-1), MembershipEndsAtUtc = DateTime.UtcNow.AddYears(15)
     };
 

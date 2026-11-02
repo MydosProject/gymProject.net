@@ -17,7 +17,7 @@ public partial class PersonalTrainingCalendarService
                 ? await dbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable) : null;
             await MemberCreditGuard.LockAsync(dbContext, memberId);
             var member = await dbContext.MemberProfiles.Include(x => x.MembershipPackage).FirstOrDefaultAsync(x => x.Id == memberId);
-            if (member?.MembershipStartsAtUtc is null || MemberPackageEntitlement.HasUnlimitedClassAccess(member))
+            if (member?.MembershipStartsAtUtc is null || member.LessonPeriodId.HasValue || MemberPackageEntitlement.HasUnlimitedClassAccess(member))
                 return (false, "Paket dönemi ve hakları üye kaydından kontrol edin.");
             var reservations = await dbContext.ClassReservations.Where(x => x.MemberProfileId == memberId &&
                 x.Status == ClassReservationStatus.Reserved && x.ClassSession.Status == ClassSessionStatus.Cancelled &&
@@ -56,7 +56,7 @@ public partial class PersonalTrainingCalendarService
             await MemberCreditGuard.LockAsync(dbContext, memberId);
             var member = await dbContext.MemberProfiles.Include(m => m.MembershipPackage)
                 .Include(m => m.ServicePackageVariant).FirstOrDefaultAsync(m => m.Id == memberId);
-            if (member is null || member.MembershipStartsAtUtc is null || MemberPackageEntitlement.HasUnlimitedClassAccess(member))
+            if (member is null || member.LessonPeriodId.HasValue || member.MembershipStartsAtUtc is null || MemberPackageEntitlement.HasUnlimitedClassAccess(member))
                 return (false, "Üyenin paket dönemi ve hakları üye kaydından kontrol edilmeli.");
             var lessons = await dbContext.PersonalTrainingSessions.Where(s => s.MemberProfileId == memberId &&
                 (s.Status == PersonalTrainingSessionStatus.Completed || s.Status == PersonalTrainingSessionStatus.NoShow) && !s.CreditConsumed &&

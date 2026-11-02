@@ -7,6 +7,8 @@ namespace NO23.Web.ViewModels.Admin;
 public class GroupClassFormViewModel
 {
     public int Id { get; set; }
+    [Range(2, 5), Display(Name = "Tüketilecek hak kategorisi")]
+    public LessonCategory CreditCategory { get; set; } = LessonCategory.Group;
 
     [Required]
     [Display(Name = "Eğitmen")]

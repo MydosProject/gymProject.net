@@ -43,7 +43,7 @@ else
         <aside class="service-billing-note" aria-label="Aylık ödeme bilgisi">
             <span class="service-billing-note-mark">AYLIK</span>
             <span>
-                <strong>Otomatik kart tahsilatı</strong>
+                <strong>Dönem toplamı ile satın alma</strong>
                 <small>@billingNote</small>
             </span>
         </aside>
@@ -78,7 +78,8 @@ else
                     </label>
                 }
             </fieldset>
-            <button type="submit" class="service-package-submit">Başvuru Yap <span aria-hidden="true">→</span></button>
+            <button type="submit" formaction="@Url.Action("Buy", "Plans", new { area = "" })" class="service-package-submit">Satın Al <span aria-hidden="true">→</span></button>
+            <button type="submit" class="service-package-submit">Bilgi al / başvuru gönder</button>
         </form>
     }
     else { <p class="service-package-unavailable">Bu paket için aktif seçenek bulunmuyor.</p> }

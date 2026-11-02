@@ -44,7 +44,7 @@ public class RegisterModel(
         {
             if (IsKitchenRegistration || IsKitchenReturnUrl(returnUrl))
                 return LocalRedirect(!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl) ? returnUrl : "/Member/Kitchen");
-            return LocalRedirect(Url.Content("~/plans/membership"));
+            return LocalRedirect(Url.Content($"~/Member/Membership?variant={variant}"));
         }
 
         ReturnUrl = Url.IsLocalUrl(returnUrl) ? returnUrl : null;
@@ -120,6 +120,8 @@ public class RegisterModel(
                     variant.ServicePackageId == selectedPackage.Id &&
                     variant.IsActive);
 
+            if (selectedVariant is { PriceOnRequest: true } || selectedVariant is { TotalPrice: <= 0 })
+                ModelState.AddModelError("Input.ServicePackageVariantId", "Bu seçenek için fiyat teklifi gerekiyor. Paketler sayfasından bilgi talebi gönderebilirsin.");
             if (selectedVariant is null)
             {
                 ModelState.AddModelError(
@@ -235,20 +237,22 @@ public class RegisterModel(
             }
         }
 
-        DateTime? membershipStartsAtUtc = IsKitchenRegistration ? null : DateTime.UtcNow;
+        var legacyPackageId = selectedPackage?.MembershipPackageId ?? (IsKitchenRegistration ? kitchenAccountPackage!.Id :
+            await dbContext.MembershipPackages.Where(x => x.Code == MembershipPackageCode.Start).Select(x => x.Id).SingleAsync());
+        DateTime? membershipStartsAtUtc = null;
         dbContext.MemberProfiles.Add(new MemberProfile
         {
             ApplicationUserId = user.Id,
             NationalIdentityNumber = Input.NationalIdentityNumber,
             BirthDate = Input.BirthDate,
-            MembershipPackageId = IsKitchenRegistration ? kitchenAccountPackage!.Id : selectedPackage!.MembershipPackageId!.Value,
+            MembershipPackageId = legacyPackageId,
             ServicePackageVariantId = selectedVariant?.Id,
             MembershipStartsAtUtc = membershipStartsAtUtc,
-            MembershipEndsAtUtc = selectedVariant is null ? null : MemberPackageEntitlement.CalculateEndDate(
-                selectedVariant, membershipStartsAtUtc!.Value),
+            MembershipEndsAtUtc = null,
+            MembershipActivationPending = !IsKitchenRegistration,
             FitnessGoal = Input.FitnessGoal,
             RemainingClassCredits =
-                selectedVariant is null ? 0 : MemberPackageEntitlement.CalculateInitialCredits(selectedVariant),
+                0,
             ReferralCode = await GenerateReferralCodeAsync(),
             ReferredByMemberProfileId = referringMember?.Id
         });
@@ -261,7 +265,7 @@ public class RegisterModel(
             isPersistent: false);
 
         return LocalRedirect(
-            ReturnUrl ?? (IsKitchenRegistration ? "/Member/Kitchen" : Url.Content("~/")));
+            ReturnUrl ?? (IsKitchenRegistration ? "/Member/Kitchen" : Url.Content($"~/Member/Membership?variant={selectedVariant!.Id}")));
     }
 
     private async Task LoadPackageOptionsAsync(
@@ -281,17 +285,17 @@ public class RegisterModel(
             .Include(package => package.MembershipPackage)
             .Include(package => package.Variants)
             .Where(package => package.IsActive &&
-                package.Category == ServicePackageCategory.Membership &&
-                package.MembershipPackageId != null &&
+                (package.Category == ServicePackageCategory.Membership || package.Category == ServicePackageCategory.PersonalTraining ||
+                 package.Category == ServicePackageCategory.GroupClasses || package.Category == ServicePackageCategory.KidsClub) &&
                 package.Variants.Any(variant => variant.IsActive))
-            .OrderBy(package => package.DisplayOrder)
+            .OrderBy(package => package.Category).ThenBy(package => package.DisplayOrder)
             .ToListAsync();
 
         PackageOptions = packages
             .Select(package => new PackageOption(
                 package.Slug,
                 package.Name,
-                package.Subtitle))
+                package.Subtitle, ServicePackageCatalogService.CategoryTitle(package.Category)))
             .ToList();
 
         // Old public links may contain a legacy code. Resolve it through the
@@ -299,8 +303,7 @@ public class RegisterModel(
         var selectedPackage = packages.FirstOrDefault(package =>
             package.Slug.Equals(selectedPackageCode, StringComparison.OrdinalIgnoreCase))
             ?? packages.FirstOrDefault(package =>
-                package.MembershipPackage!.Code.ToString()
-                    .Equals(selectedPackageCode, StringComparison.OrdinalIgnoreCase));
+                string.Equals(package.MembershipPackage?.Code.ToString(), selectedPackageCode, StringComparison.OrdinalIgnoreCase));
         Input.PackageCode = selectedPackage?.Slug
             ?? PackageOptions.FirstOrDefault()?.Code
             ?? string.Empty;
@@ -335,8 +338,8 @@ public class RegisterModel(
         return await dbContext.ServicePackages
             .FirstOrDefaultAsync(package =>
                 package.Slug == packageCode &&
-                package.Category == ServicePackageCategory.Membership &&
-                package.MembershipPackageId != null && package.IsActive);
+                (package.Category == ServicePackageCategory.Membership || package.Category == ServicePackageCategory.PersonalTraining ||
+                 package.Category == ServicePackageCategory.GroupClasses || package.Category == ServicePackageCategory.KidsClub) && package.IsActive);
     }
 
     private async Task<bool> HasExistingMemberWithSameNameAsync(
@@ -394,11 +397,11 @@ public class RegisterModel(
         [Display(Name = "Telefon")]
         public string? PhoneNumber { get; set; }
 
-        [Display(Name = "Spor üyelik paketi")]
+        [Display(Name = "Paket")]
         public string PackageCode { get; set; } = string.Empty;
 
         [Range(1, int.MaxValue)]
-        [Display(Name = "Üyelik süresi")]
+        [Display(Name = "Paket seçeneği / süre")]
         public int? ServicePackageVariantId { get; set; }
 
         [StringLength(160)]
@@ -440,7 +443,8 @@ public class RegisterModel(
     public record PackageOption(
         string Code,
         string Name,
-        string Audience);
+        string Audience,
+        string Category = "Üyelik");
 
     public record ServiceOption(
         int Id,

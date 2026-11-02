@@ -42,6 +42,7 @@ public partial class PersonalTrainingCalendarService(ApplicationDbContext dbCont
             var recurrenceIds = input.Days.Distinct().ToDictionary(day => day, _ => Guid.NewGuid());
             dbContext.PersonalTrainingSessions.AddRange(plan.Starts.Select(start => new PersonalTrainingSession
             {
+                LessonAccount = plan.PersonalAccount,
                 TrainerId = trainerId, MemberProfileId = input.MemberProfileId, StartsAtUtc = start,
                 RecurrenceId = recurrenceIds[ClubTime.ToLocal(start).DayOfWeek],
                 DurationMinutes = input.DurationMinutes, Note = input.Note?.Trim()
@@ -69,57 +70,24 @@ public partial class PersonalTrainingCalendarService(ApplicationDbContext dbCont
                 (member.MembershipEndsAtUtc.HasValue && start.AddMinutes(durationMinutes) > member.MembershipEndsAtUtc.Value)))
             return "Ders tarihleri üyenin aktif üyelik dönemi içinde olmalı.";
 
-        var unchargedLessons = await dbContext.PersonalTrainingSessions.CountAsync(session =>
-            session.MemberProfileId == member.Id &&
-            session.Id != excludedSessionId &&
-            !session.CreditConsumed &&
-            session.Status != PersonalTrainingSessionStatus.Cancelled &&
-            (!member.MembershipStartsAtUtc.HasValue || session.StartsAtUtc >= member.MembershipStartsAtUtc.Value) &&
-            (!member.MembershipEndsAtUtc.HasValue || session.StartsAtUtc < member.MembershipEndsAtUtc.Value));
-        if (!MemberPackageEntitlement.HasUnlimitedClassAccess(member) &&
-            starts.Count + unchargedLessons > member.RemainingClassCredits)
-            return "Planlanan ders sayısı üyenin kullanılabilir ders hakkını aşıyor.";
-
-        if (member.ServicePackageVariant is { } variant)
+        var creditService = new CategoryCreditService(dbContext);
+        var allocation = await creditService.PrepareAsync(member, true);
+        if (allocation.Error is not null) return allocation.Error;
+        var account = allocation.Accounts.Single(x => x.Category == LessonCategory.PersonalTraining);
+        if (starts.Count > await creditService.AvailableAsync(member, account, excludedSessionId))
+            return "Planlanan ders sayısı kullanılabilir PT hakkını aşıyor. Grup veya Reformer hakkı PT için kullanılamaz.";
+        if (account.MonthlyLimit is { } monthlyLimit)
         {
-            if (variant.PersonalTrainingSessionCount <= 0)
-                return "Üyenin seçili paketi birebir ders hakkı içermiyor.";
-
-            if (variant.LessonsRenewMonthly)
-            {
-                var firstLocal = ClubTime.ToLocal(starts[0]);
-                var lastLocal = ClubTime.ToLocal(starts[^1]);
-                var firstMonth = ClubTime.ToUtc(new DateTime(firstLocal.Year, firstLocal.Month, 1));
-                var lastMonthEnd = ClubTime.ToUtc(new DateTime(lastLocal.Year, lastLocal.Month, 1).AddMonths(1));
-                var existing = await dbContext.PersonalTrainingSessions.AsNoTracking()
-                    .Where(session => session.MemberProfileId == member.Id &&
-                        session.Status != PersonalTrainingSessionStatus.Cancelled &&
-                        session.Id != excludedSessionId &&
-                        session.StartsAtUtc >= firstMonth && session.StartsAtUtc < lastMonthEnd &&
-                        (!member.MembershipStartsAtUtc.HasValue || session.StartsAtUtc >= member.MembershipStartsAtUtc.Value))
-                    .Select(session => session.StartsAtUtc)
-                    .ToListAsync();
-                foreach (var month in starts.GroupBy(start =>
-                    (ClubTime.ToLocal(start).Year, ClubTime.ToLocal(start).Month)))
-                {
-                    var scheduledInMonth = existing.Count(start =>
-                        ClubTime.ToLocal(start).Year == month.Key.Year &&
-                        ClubTime.ToLocal(start).Month == month.Key.Month);
-                    if (scheduledInMonth + month.Count() > variant.PersonalTrainingSessionCount)
-                        return $"{month.Key.Month:00}.{month.Key.Year} ayında paket en fazla " +
-                            $"{variant.PersonalTrainingSessionCount} birebir ders içeriyor.";
-                }
-            }
-            else
-            {
-                var used = await dbContext.PersonalTrainingSessions.CountAsync(session =>
-                    session.MemberProfileId == member.Id &&
+            var existing = await dbContext.PersonalTrainingSessions.AsNoTracking()
+                .Where(session => session.MemberProfileId == member.Id && session.Id != excludedSessionId &&
                     session.Status != PersonalTrainingSessionStatus.Cancelled &&
-                    session.Id != excludedSessionId &&
-                    (!member.MembershipStartsAtUtc.HasValue || session.StartsAtUtc >= member.MembershipStartsAtUtc.Value));
-                if (used + starts.Count > variant.PersonalTrainingSessionCount)
-                    return "Planlanan dersler paketin birebir ders sayısını aşıyor.";
-            }
+                    ((session.LessonAccount != null && session.LessonAccount.PeriodId == account.PeriodId) ||
+                     (session.LessonAccountId == null && (!member.MembershipStartsAtUtc.HasValue || session.StartsAtUtc >= member.MembershipStartsAtUtc) &&
+                      (!member.MembershipEndsAtUtc.HasValue || session.StartsAtUtc < member.MembershipEndsAtUtc))))
+                .Select(session => session.StartsAtUtc).ToListAsync();
+            foreach (var month in starts.GroupBy(start => (ClubTime.ToLocal(start).Year, ClubTime.ToLocal(start).Month)))
+                if (existing.Count(start => (ClubTime.ToLocal(start).Year, ClubTime.ToLocal(start).Month) == month.Key) + month.Count() > monthlyLimit)
+                    return $"{month.Key.Month:00}.{month.Key.Year} ayında paket en fazla {monthlyLimit} birebir ders içeriyor.";
         }
         return null;
     }
@@ -199,6 +167,7 @@ public partial class PersonalTrainingCalendarService(ApplicationDbContext dbCont
 
         dbContext.PersonalTrainingSessions.Add(new PersonalTrainingSession
         {
+            LessonAccount = (await new CategoryCreditService(dbContext).PrepareAsync(member, true)).Accounts.Single(x => x.Category == LessonCategory.PersonalTraining),
             TrainerId = trainerId,
             MemberProfileId = memberProfileId,
             StartsAtUtc = startsAtUtc,
@@ -247,6 +216,8 @@ public partial class PersonalTrainingCalendarService(ApplicationDbContext dbCont
 
         if (status == PersonalTrainingSessionStatus.Postponed)
         {
+            if (session.LessonAccount is { } source && source.PeriodId != session.MemberProfile.LessonPeriodId)
+                return (false, "Eski paket dönemine ait ders yeni döneme taşınamaz. Dersi iptal edip yeni paketten planlayın.");
             if (postponedStartsAtUtc is null || postponedStartsAtUtc <= DateTime.UtcNow)
                 return (false, "Erteleme için ileri bir tarih ve saat seçmelisiniz.");
 
@@ -289,6 +260,14 @@ public partial class PersonalTrainingCalendarService(ApplicationDbContext dbCont
                  PersonalTrainingSessionStatus.Cancelled or
                  PersonalTrainingSessionStatus.NoShow)
         {
+            if (status != PersonalTrainingSessionStatus.Cancelled && session.LessonAccount is null)
+            {
+                var allocation = await new CategoryCreditService(dbContext).PrepareAsync(session.MemberProfile, true);
+                if (allocation.Error is not null) return (false, allocation.Error);
+                session.LessonAccount = allocation.Accounts.Single(x => x.Category == LessonCategory.PersonalTraining);
+            }
+            if (status != PersonalTrainingSessionStatus.Cancelled && !session.CreditConsumed && session.LessonAccount?.Remaining <= 0)
+                return (false, "Bu dersin kaynak PT hesabında yeterli hak yok. Kategori dağılımını kontrol edin.");
             PersonalTrainingSessionFinalizer.Apply(session, status, changedByUserId, note, now);
         }
         else

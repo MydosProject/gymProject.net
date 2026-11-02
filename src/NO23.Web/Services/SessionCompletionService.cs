@@ -32,12 +32,22 @@ public sealed class SessionCompletionService(ApplicationDbContext db)
             session.Status = ClassSessionStatus.Completed;
             session.UpdatedAtUtc = now;
         }
+        var personalCompleted = 0;
         foreach (var session in personal)
-            PersonalTrainingSessionFinalizer.Apply(session, PersonalTrainingSessionStatus.Completed,
-                SystemActor, "Ders süresi dolduğu için otomatik tamamlandı.", now);
+        {
+            if (session.LessonAccount is null && !MemberPackageEntitlement.HasUnlimitedClassAccess(session.MemberProfile))
+            {
+                var allocation = await new CategoryCreditService(db).PrepareAsync(session.MemberProfile, true);
+                if (allocation.Error is not null) continue; // Historical ambiguity requires explicit review, never a guessed debit.
+                session.LessonAccount = allocation.Accounts.Single(x => x.Category == LessonCategory.PersonalTraining);
+            }
+            if (!session.CreditConsumed && session.LessonAccount?.Remaining <= 0) continue;
+            PersonalTrainingSessionFinalizer.Apply(session, PersonalTrainingSessionStatus.Completed, SystemActor, "Ders süresi dolduğu için otomatik tamamlandı.", now);
+            personalCompleted++;
+        }
 
         if (groups.Count + personal.Count > 0) await db.SaveChangesAsync(cancellationToken);
         if (transaction is not null) await transaction.CommitAsync(cancellationToken);
-        return groups.Count + personal.Count;
+        return groups.Count + personalCompleted;
     }
 }

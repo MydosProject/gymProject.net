@@ -1,0 +1,20 @@
+@model IReadOnlyList<NO23.Web.ViewModels.Member.MemberPersonalSessionViewModel>
+@using NO23.Web.Services
+<section class="member-dashboard-section" aria-label="Planlanmış birebir PT seansları">
+    <div class="member-section-heading"><div><p class="member-section-kicker">Birebir PT takvimin</p><h2>Planlanmış birebir seansların</h2></div><span class="member-section-count">@Model.Count</span></div>
+    @if (Model.Count == 0)
+    { <p>Henüz ileri tarihli birebir seans planlanmamış. Paketindeki PT hakkı ile takvime atanmış seans sayısı farklıdır; planlama için eğitmeninle iletişime geçebilirsin.</p> }
+    else
+    {
+        <div class="member-reservation-list">
+        @foreach (var session in Model)
+        {
+            var local = ClubTime.ToLocal(session.StartsAtUtc);
+            <article class="member-reservation-card">
+                <div class="member-reservation-date"><strong>@local.ToString("dd")</strong><span>@local.ToString("MMM", System.Globalization.CultureInfo.GetCultureInfo("tr-TR"))</span></div>
+                <div class="member-reservation-info"><p>@local.ToString("dd.MM.yyyy HH:mm") - @local.AddMinutes(session.DurationMinutes).ToString("HH:mm")</p><h3>Birebir PT · @session.DurationMinutes dk</h3><span>Eğitmen: @session.TrainerName</span></div>
+            </article>
+        }
+        </div>
+    }
+</section>

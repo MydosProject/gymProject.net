@@ -88,7 +88,8 @@ public sealed class CalendarBulkOperationService(ApplicationDbContext db)
             {
                 if (session.CreditConsumed && !MemberPackageEntitlement.HasUnlimitedClassAccess(session.MemberProfile))
                 {
-                    session.MemberProfile.RemainingClassCredits++;
+                    if (session.LessonAccount is { } account) CategoryCreditService.Change(session.MemberProfile, account, 1, userId, "Toplu ders silme: PT hakkı iadesi.");
+                    else if (session.MemberProfile.LessonPeriodId is null) session.MemberProfile.RemainingClassCredits++;
                     session.MemberProfile.UpdatedAtUtc = now;
                 }
                 db.PersonalTrainingSessionHistories.RemoveRange(session.History);
@@ -114,6 +115,10 @@ public sealed class CalendarBulkOperationService(ApplicationDbContext db)
             }
             if (input.Day.HasValue && await ValidateMonthlyLimitsAsync(proposed, personalIds) is { } limitError)
                 return (false, limitError);
+            var groupMoves = proposed.Where(x => x.Group is not null).SelectMany(x => x.Group!.Reservations
+                .Where(r => r.Status == ClassReservationStatus.Reserved).Select(r => (r, x.Start))).ToList();
+            if (input.Day.HasValue && await CategoryScheduleGuard.GroupMovesAsync(db, groupMoves, groupIds) is { } groupLimitError)
+                return (false, groupLimitError);
             var trainers = proposed.Select(item => item.TrainerId).Distinct().ToArray();
             await TrainerScheduleGuard.LockAsync(db, trainers);
             var memberIds = proposed.SelectMany(item => item.MemberIds).Distinct().ToArray();
@@ -177,14 +182,20 @@ public sealed class CalendarBulkOperationService(ApplicationDbContext db)
         foreach (var memberSlots in proposed.Where(item => item.Personal is not null).GroupBy(item => item.Personal!.MemberProfileId))
         {
             var member = memberSlots.First().Personal!.MemberProfile;
-            if (member.ServicePackageVariant is not { LessonsRenewMonthly: true } variant) continue;
+            if (!member.LessonPeriodId.HasValue && member.ServicePackageVariant?.LessonsRenewMonthly != true) continue;
+            if (memberSlots.Any(x => x.Personal!.LessonAccount is { } source && source.PeriodId != member.LessonPeriodId))
+                return "Eski paket döneminin dersi yeni döneme taşınamaz.";
+            var allocation = await new CategoryCreditService(db).PrepareAsync(member, false);
+            if (allocation.Error is not null) return allocation.Error;
+            var account = allocation.Accounts.Single(x => x.Category == LessonCategory.PersonalTraining);
+            if (account.MonthlyLimit is not { } monthlyLimit) continue;
             var existing = await db.PersonalTrainingSessions.AsNoTracking().Where(item => item.MemberProfileId == member.Id &&
                 !personalIds.Contains(item.Id) && item.Status != PersonalTrainingSessionStatus.Cancelled &&
                 (!member.MembershipStartsAtUtc.HasValue || item.StartsAtUtc >= member.MembershipStartsAtUtc.Value))
                 .Select(item => item.StartsAtUtc).ToListAsync();
             foreach (var month in memberSlots.GroupBy(item => (ClubTime.ToLocal(item.Start).Year, ClubTime.ToLocal(item.Start).Month)))
-                if (existing.Count(start => (ClubTime.ToLocal(start).Year, ClubTime.ToLocal(start).Month) == month.Key) + month.Count() > variant.PersonalTrainingSessionCount)
-                    return $"{month.Key.Month:00}.{month.Key.Year} ayında paket en fazla {variant.PersonalTrainingSessionCount} birebir ders içeriyor. Hiçbir ders değiştirilmedi.";
+                if (existing.Count(start => (ClubTime.ToLocal(start).Year, ClubTime.ToLocal(start).Month) == month.Key) + month.Count() > monthlyLimit)
+                    return $"{month.Key.Month:00}.{month.Key.Year} ayında paket en fazla {monthlyLimit} birebir ders içeriyor. Hiçbir ders değiştirilmedi.";
         }
         return null;
     }

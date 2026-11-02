@@ -254,9 +254,9 @@ public class RegistrationPackageCatalogTests
 
         Assert.IsType<PageResult>(await page.OnGetAsync());
 
-        Assert.Equal(new[] { "HYBRID", "PRO", "BLACK" }, page.PackageOptions.Select(option => option.Name));
-        Assert.Equal(new[] { "hybrid", "pro-membership", "black" }, page.PackageOptions.Select(option => option.Code));
-        Assert.Equal(new[] { catalog.Hybrid.Id, catalog.Pro.Id, catalog.Black.Id }, page.ServiceOptions.Select(option => option.Id));
+        Assert.Equal(new[] { "HYBRID", "PRO", "BLACK", "FLEX" }, page.PackageOptions.Select(option => option.Name));
+        Assert.Equal(new[] { "hybrid", "pro-membership", "black", "pt-flex" }, page.PackageOptions.Select(option => option.Code));
+        Assert.Equal(new[] { catalog.Hybrid.Id, catalog.Pro.Id, catalog.Black.Id, catalog.Flex.Id }, page.ServiceOptions.Select(option => option.Id));
         Assert.Equal("hybrid", page.Input.PackageCode);
         Assert.Equal(catalog.Hybrid.Id, page.Input.ServicePackageVariantId);
         var hybrid = Assert.Single(page.ServiceOptions, option => option.Id == catalog.Hybrid.Id);
@@ -303,7 +303,7 @@ public class RegistrationPackageCatalogTests
         Assert.Equal(catalog.Pro.Id, page.Input.ServicePackageVariantId);
 
         await page.OnGetAsync(package: "START");
-        Assert.Equal("hybrid", page.Input.PackageCode);
+        Assert.Equal("pt-flex", page.Input.PackageCode);
         Assert.DoesNotContain(page.PackageOptions, option => option.Name == "START" || option.Name == "PLUS");
     }
 
@@ -362,10 +362,11 @@ public class RegistrationPackageCatalogTests
         Assert.Equal(catalog.Hybrid.Id, profile.ServicePackageVariantId);
         Assert.Equal(new DateOnly(1995, 6, 15), profile.BirthDate);
         Assert.Equal(catalog.Hybrid.ServicePackage.MembershipPackageId, profile.MembershipPackageId);
-        Assert.NotNull(profile.MembershipStartsAtUtc);
-        Assert.InRange(profile.MembershipStartsAtUtc.Value, beforeRegistration, DateTime.UtcNow);
-        Assert.Equal(profile.MembershipStartsAtUtc.Value.AddMonths(2), profile.MembershipEndsAtUtc);
-        Assert.Equal(48, profile.RemainingClassCredits);
+        Assert.True(profile.MembershipActivationPending);
+        Assert.Null(profile.MembershipStartsAtUtc);
+        Assert.Null(profile.MembershipEndsAtUtc);
+        Assert.Equal(0, profile.RemainingClassCredits);
+        Assert.Empty(profile.LessonAccounts);
         var user = await dbContext.Users.SingleAsync();
         Assert.Equal(user.Id, profile.ApplicationUserId);
         Assert.True(await provider.GetRequiredService<UserManager<ApplicationUser>>().IsInRoleAsync(user, ApplicationRoles.Member));
@@ -767,7 +768,7 @@ public class RegistrationPackageCatalogTests
         noActiveVariants.IsActive = false;
         await dbContext.SaveChangesAsync();
         Assert.True((await provider.GetRequiredService<RoleManager<IdentityRole>>().CreateAsync(new IdentityRole(ApplicationRoles.Member))).Succeeded);
-        return new Catalog(hybrid, pro, black, inactiveHybrid, retired);
+        return new Catalog(hybrid, pro, black, inactiveHybrid, retired, pt);
 
         ServicePackageVariant AddPackage(string slug, string name, MembershipPackageCode legacyCode, int order)
         {
@@ -797,8 +798,33 @@ public class RegistrationPackageCatalogTests
         }
     }
 
+    [Theory]
+    [InlineData(ServicePackageCategory.Membership)]
+    [InlineData(ServicePackageCategory.PersonalTraining)]
+    [InlineData(ServicePackageCategory.GroupClasses)]
+    [InlineData(ServicePackageCategory.KidsClub)]
+    public async Task EveryPackageCategory_CanRegisterAndContinueToPaymentWithoutFreeRights(ServicePackageCategory category)
+    {
+        await using var provider = CreateServices();
+        var catalog = await SeedCatalogAsync(provider);
+        var db = provider.GetRequiredService<ApplicationDbContext>();
+        var selected = category == ServicePackageCategory.Membership ? catalog.Hybrid : catalog.Flex;
+        selected.ServicePackage.Category = category;
+        await db.SaveChangesAsync();
+        var page = CreatePage(provider);
+        page.Input = ValidInput(selected.ServicePackage.Slug, selected.Id);
+        var result = Assert.IsType<LocalRedirectResult>(await page.OnPostAsync());
+        Assert.Equal($"/Member/Membership?variant={selected.Id}", result.Url);
+        var member = await db.MemberProfiles.SingleAsync();
+        Assert.True(member.MembershipActivationPending);
+        Assert.Equal(selected.Id, member.ServicePackageVariantId);
+        Assert.Equal(0, member.RemainingClassCredits);
+        Assert.Empty(await db.MemberLessonAccounts.ToListAsync());
+        Assert.Null(member.MembershipStartsAtUtc);
+    }
+
     private sealed record Catalog(ServicePackageVariant Hybrid, ServicePackageVariant Pro,
-        ServicePackageVariant Black, ServicePackageVariant InactiveHybrid, ServicePackageVariant Retired);
+        ServicePackageVariant Black, ServicePackageVariant InactiveHybrid, ServicePackageVariant Retired, ServicePackageVariant Flex);
 
     private sealed class MemoryTempDataProvider : ITempDataProvider
     {

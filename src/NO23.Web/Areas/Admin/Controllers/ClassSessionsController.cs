@@ -202,6 +202,18 @@ public class ClassSessionsController(
 
         var previousStartsAtUtc = session.StartsAtUtc;
 
+        if (session.GroupClassId != model.GroupClassId || previousStartsAtUtc != ClubTime.ToUtc(model.StartsAtLocal))
+        {
+            await dbContext.Entry(session).Collection(x => x.Reservations).Query().Include(x => x.MemberProfile)
+                .ThenInclude(x => x.MembershipPackage).LoadAsync();
+            if (session.GroupClassId != model.GroupClassId && session.Reservations.Any(x => x.Status == ClassReservationStatus.Reserved))
+                ModelState.AddModelError(string.Empty, "Katılımcısı olan seans başka derse çevrilemez. Önce rezervasyonları iptal edin.");
+            else if (await CategoryScheduleGuard.GroupMovesAsync(dbContext, session.Reservations.Where(x => x.Status == ClassReservationStatus.Reserved)
+                .Select(x => (x, ClubTime.ToUtc(model.StartsAtLocal))).ToList(), [session.Id]) is { } creditError)
+                ModelState.AddModelError(string.Empty, creditError);
+            if (!ModelState.IsValid) return View(await PopulateGroupClassOptionsAsync(model));
+        }
+
         if (session.RecurrenceId is null && session.GroupClassId == model.GroupClassId &&
             (previousStartsAtUtc != ClubTime.ToUtc(model.StartsAtLocal) || session.CapacityOverride != model.CapacityOverride))
         {
@@ -304,7 +316,7 @@ public class ClassSessionsController(
 
             if (hasLimitedPackage)
             {
-                reservation.MemberProfile.RemainingClassCredits++;
+                CategoryCreditService.Refund(reservation, "admin:session-cancellation", "Yönetici seansı iptal etti.");
             }
 
             reservation.MemberProfile.UpdatedAtUtc = nowUtc;

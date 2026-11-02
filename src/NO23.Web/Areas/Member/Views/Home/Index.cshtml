@@ -134,6 +134,7 @@
         </div>
 
         @if (Model.Credits is not null) { <partial name="/Views/Shared/_LessonCreditSummary.cshtml" model="Model.Credits" /> }
+        <partial name="/Views/Shared/_MemberPersonalSchedule.cshtml" model="Model.UpcomingPersonalSessions" />
         <section class="member-dashboard-section member-referral-card" id="referral">
             <div class="member-section-heading">
                 <div>
@@ -153,7 +154,7 @@
             <div class="member-section-heading">
                 <div>
                     <p class="member-section-kicker">Takvimin</p>
-                    <h2>Yaklaşan rezervasyonlar</h2>
+                    <h2>Yaklaşan grup rezervasyonları</h2>
                 </div>
 
                 <span class="member-section-count">
@@ -167,7 +168,7 @@
                     <span class="member-empty-number">00</span>
 
                     <div>
-                        <h3>Henüz yaklaşan rezervasyonun yok.</h3>
+                            <h3>Henüz yaklaşan grup rezervasyonun yok.</h3>
 
                         <p>
                             Aşağıdaki uygun dersleri inceleyerek ilk

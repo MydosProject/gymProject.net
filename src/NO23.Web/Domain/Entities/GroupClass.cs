@@ -11,6 +11,7 @@ public class GroupClass
     public Trainer Trainer { get; set; } = null!;
 
     public string Name { get; set; } = string.Empty;
+    public LessonCategory CreditCategory { get; set; } = LessonCategory.Group;
 
     public string? Description { get; set; }
 

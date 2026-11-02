@@ -8,6 +8,7 @@ public class GroupClassConfiguration : IEntityTypeConfiguration<GroupClass>
 {
     public void Configure(EntityTypeBuilder<GroupClass> builder)
     {
+        builder.Property(x => x.CreditCategory).HasDefaultValue(NO23.Web.Domain.Enums.LessonCategory.Group).HasSentinel(NO23.Web.Domain.Enums.LessonCategory.Group);
         builder.Property(groupClass => groupClass.Name)
             .HasMaxLength(120)
             .IsRequired();

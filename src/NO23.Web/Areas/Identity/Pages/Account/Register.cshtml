@@ -188,10 +188,10 @@
                                     <div class="no23-form-field no23-package-field">
                                         <label asp-for="Input.PackageCode"></label>
                                         <select asp-for="Input.PackageCode" class="form-select no23-form-select" data-package-choice required>
-                                            <option value="">Spor üyelik paketi seçin</option>
-                                            @foreach (var package in Model.PackageOptions)
+                                            <option value="">Paket seçin</option>
+                                            @foreach (var group in Model.PackageOptions.GroupBy(x => x.Category))
                                             {
-                                                <option value="@package.Code">@package.Name</option>
+                                                <optgroup label="@group.Key">@foreach (var package in group) { <option value="@package.Code">@package.Name</option> }</optgroup>
                                             }
                                         </select>
                                         <span asp-validation-for="Input.PackageCode"></span>
@@ -201,7 +201,7 @@
                                     <div class="no23-form-field no23-package-option-field">
                                         <label asp-for="Input.ServicePackageVariantId"></label>
                                         <select asp-for="Input.ServicePackageVariantId" class="form-select no23-form-select" data-package-variant required>
-                                            <option value="">Üyelik süresi seçin</option>
+                                            <option value="">Paket seçeneği seçin</option>
                                             @foreach (var package in Model.PackageOptions)
                                             {
                                                 <optgroup label="@package.Name">
@@ -218,7 +218,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <p class="form-text">Spor üyeliği için paket ve süre seçimi zorunludur.</p>
+                            <p class="form-text">Üyelik, yalnız birebir PT, grup/Reformer veya Kids Club paketi seçebilirsin. Hesabını oluşturduktan sonra ödemeye devam edeceksin; ödeme doğrulanmadan ders hakkı başlamaz.</p>
                             @if (Model.PackageOptions.Count == 0)
                             {
                                 <p class="register-validation-summary" role="status">Şu anda başvuruya açık üyelik paketi bulunmuyor.</p>

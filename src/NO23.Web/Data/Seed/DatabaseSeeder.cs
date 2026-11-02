@@ -214,6 +214,7 @@ public static class DatabaseSeeder
 
         var bootcamp = new GroupClass
         {
+            CreditCategory = LessonCategory.Performance,
             Name = "Bootcamp",
             Description = "Yüksek tempo, kuvvet ve kondisyon odaklı grup dersi.",
             DurationMinutes = 50,
@@ -225,6 +226,7 @@ public static class DatabaseSeeder
 
         var reformerPilates = new GroupClass
         {
+            CreditCategory = LessonCategory.Reformer,
             Name = "Reformer Pilates",
             Description = "Kontrollü güç, core stabilizasyonu ve mobilite odaklı ders.",
             DurationMinutes = 50,

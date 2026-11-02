@@ -208,7 +208,8 @@ public class SessionCompletionServiceTests
     private static MemberProfile Member(string name) => new()
     {
         ApplicationUser = new ApplicationUser { UserName = name }, ReferralCode = name,
-        MembershipPackage = new MembershipPackage { Name = "Test", WeeklyClassLimit = 4 }, RemainingClassCredits = 8
+        MembershipPackage = new MembershipPackage { Name = "Test", WeeklyClassLimit = 4 },
+        MembershipStartsAtUtc = Now.AddYears(-1), MembershipPackageOption = new MembershipPackageOption { Name = "8 PT", PersonalTrainingSessionCount = 8 }, RemainingClassCredits = 8
     };
 
     private static ApplicationDbContext Db() => new(new DbContextOptionsBuilder<ApplicationDbContext>()

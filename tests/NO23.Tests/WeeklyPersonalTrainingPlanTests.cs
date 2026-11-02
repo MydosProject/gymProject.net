@@ -8,6 +8,149 @@ namespace NO23.Tests;
 
 public partial class PersonalTrainingCalendarServiceTests
 {
+    [Fact]
+    public async Task Preview_EightTotalFourUsedThreeRemaining_ExposesMismatchWithoutRepairingTheBalance()
+    {
+        await using var db = CreateDbContext();
+        var (trainer, member) = await SeedAsync(db);
+        member.MembershipStartsAtUtc = ClubTime.ToUtc(new DateTime(2026, 10, 1));
+        member.MembershipEndsAtUtc = ClubTime.ToUtc(new DateTime(2026, 11, 16));
+        member.RemainingClassCredits = 3;
+        member.ServicePackageVariant = new ServicePackageVariant { Name = "8 PT", PersonalTrainingSessionCount = 8,
+            ServicePackage = new ServicePackage { Name = "PT", Slug = "8-pt" } };
+        db.PersonalTrainingSessions.AddRange(Enumerable.Range(0, 4).Select(day => new PersonalTrainingSession
+        {
+            Trainer = trainer, MemberProfile = member, StartsAtUtc = member.MembershipStartsAtUtc.Value.AddDays(day + 1),
+            Status = PersonalTrainingSessionStatus.Completed, CreditConsumed = true
+        }));
+        await db.SaveChangesAsync();
+        var input = ProgramFor(member.Id, new DateTime(2026, 11, 30));
+        var preview = await new PersonalTrainingCalendarService(db).PreviewWeeklyByAdminAsync(trainer.Id, input);
+        Assert.Equal(8, preview.PackageLessons);
+        Assert.Equal(4, preview.CompletedLessons);
+        Assert.Equal(3, preview.RemainingCredits);
+        Assert.NotNull(preview.CreditSummary);
+        Assert.True(preview.CreditSummary.HasTotalDifference);
+        Assert.True(preview.CreditSummary.NeedsReview);
+        Assert.Equal(member.MembershipStartsAtUtc, preview.PackageStart);
+        Assert.Contains("16.11.2026", preview.Message);
+        Assert.Contains("30.11.2026", preview.Message);
+        Assert.Equal(3, member.RemainingClassCredits);
+        Assert.Equal(4, await db.PersonalTrainingSessions.CountAsync());
+        input.Week = new DateTime(2026, 11, 2);
+        var inPeriod = await new PersonalTrainingCalendarService(db).PreviewWeeklyByAdminAsync(trainer.Id, input);
+        Assert.False(inPeriod.Succeeded);
+        Assert.Equal(0, inPeriod.LessonCount);
+        Assert.True(inPeriod.CreditSummary!.NeedsReview); // Changing the date must not conceal the separate balance discrepancy.
+    }
+
+    [Fact]
+    public async Task Preview_MixedPackage_ExposesOverallCountsSeparatelyFromPersonalTraining()
+    {
+        await using var db = CreateDbContext();
+        var (trainer, member) = await SeedAsync(db);
+        member.MembershipStartsAtUtc = ClubTime.ToUtc(new DateTime(2026, 10, 1));
+        member.MembershipEndsAtUtc = ClubTime.ToUtc(new DateTime(2026, 12, 1));
+        member.RemainingClassCredits = 5;
+        member.ServicePackageVariant = new ServicePackageVariant { Name = "Mixed", PersonalTrainingSessionCount = 8,
+            GroupClassCreditCount = 2, ServicePackage = new ServicePackage { Name = "Mixed", Slug = "mixed" } };
+        db.PersonalTrainingSessions.AddRange(Enumerable.Range(0, 4).Select(day => new PersonalTrainingSession
+        {
+            Trainer = trainer, MemberProfile = member, StartsAtUtc = member.MembershipStartsAtUtc.Value.AddDays(day + 1),
+            Status = PersonalTrainingSessionStatus.Completed, CreditConsumed = true
+        }));
+        db.ClassSessions.Add(new ClassSession
+        {
+            StartsAtUtc = member.MembershipStartsAtUtc.Value.AddDays(5), Status = ClassSessionStatus.Completed,
+            GroupClass = new GroupClass { Trainer = trainer, Name = "Group", DurationMinutes = 50, Capacity = 8 },
+            Reservations = [new ClassReservation { MemberProfile = member }]
+        });
+        await db.SaveChangesAsync();
+        var preview = await new PersonalTrainingCalendarService(db).PreviewWeeklyByAdminAsync(trainer.Id,
+            ProgramFor(member.Id, new DateTime(2026, 11, 2)));
+        Assert.Equal(8, preview.PackageLessons);
+        Assert.Equal(4, preview.CompletedLessons);
+        Assert.NotNull(preview.CreditSummary);
+        Assert.Equal(10, preview.CreditSummary.PackageTotal);
+        Assert.Equal(5, preview.CreditSummary.Completed);
+        Assert.Equal(5, preview.RemainingCredits);
+        Assert.False(preview.CreditSummary.NeedsReview);
+    }
+
+    [Fact]
+    public async Task Preview_MonthlyLimitReached_ExplainsWhyRemainingCreditsCannotBeScheduled()
+    {
+        await using var db = CreateDbContext();
+        var (trainer, member) = await SeedAsync(db);
+        member.MembershipStartsAtUtc = ClubTime.ToUtc(new DateTime(2026, 10, 1));
+        member.MembershipEndsAtUtc = ClubTime.ToUtc(new DateTime(2026, 12, 1));
+        member.RemainingClassCredits = 2;
+        member.ServicePackageVariant = new ServicePackageVariant { Name = "Monthly", PersonalTrainingSessionCount = 2,
+            LessonsRenewMonthly = true, DurationMonths = 2, ServicePackage = new ServicePackage { Name = "PT", Slug = "monthly" } };
+        db.PersonalTrainingSessions.AddRange(Enumerable.Range(0, 2).Select(day => new PersonalTrainingSession
+        {
+            Trainer = trainer, MemberProfile = member, StartsAtUtc = ClubTime.ToUtc(new DateTime(2026, 11, 1).AddDays(day)),
+            Status = PersonalTrainingSessionStatus.Completed, CreditConsumed = true
+        }));
+        await db.SaveChangesAsync();
+        var input = ProgramFor(member.Id, new DateTime(2026, 11, 9));
+        var service = new PersonalTrainingCalendarService(db);
+        var preview = await service.PreviewWeeklyByAdminAsync(trainer.Id, input);
+        Assert.False(preview.Succeeded);
+        Assert.Contains("aylık birebir ders sınırı (2)", preview.Message);
+        Assert.Equal(0, preview.LessonCount);
+        Assert.False((await service.CreateWeeklyByAdminAsync(trainer.Id, input)).Succeeded);
+        Assert.Equal(2, member.RemainingClassCredits);
+        Assert.Equal(2, await db.PersonalTrainingSessions.CountAsync());
+    }
+
+    [Fact]
+    public async Task TwentyFourCredits_WithSeventeenDates_ExplainsThePeriodAndPreservesAllCredits()
+    {
+        await using var db = CreateDbContext();
+        var (trainer, member) = await SeedAsync(db);
+        member.MembershipStartsAtUtc = ClubTime.ToUtc(new DateTime(2026, 10, 1));
+        member.MembershipEndsAtUtc = ClubTime.ToUtc(new DateTime(2026, 12, 1));
+        member.RemainingClassCredits = 24;
+        member.ServicePackageVariant = new ServicePackageVariant { Name = "24 PT", PersonalTrainingSessionCount = 24,
+            ServicePackage = new ServicePackage { Name = "PT", Slug = "24-pt" } };
+        await db.SaveChangesAsync();
+        var input = ProgramFor(member.Id, new DateTime(2026, 9, 28));
+        input.Days = [DayOfWeek.Tuesday, DayOfWeek.Thursday];
+        var service = new PersonalTrainingCalendarService(db);
+
+        var preview = await service.PreviewWeeklyByAdminAsync(trainer.Id, input);
+        Assert.True(preview.Succeeded, preview.Message);
+        Assert.Equal(17, preview.LessonCount);
+        Assert.Contains("7 hak", preview.Message);
+        Assert.Contains("01.10.2026", preview.Message);
+        Assert.Contains("01.12.2026", preview.Message);
+        Assert.True((await service.CreateWeeklyByAdminAsync(trainer.Id, input)).Succeeded);
+        Assert.Equal(17, await db.PersonalTrainingSessions.CountAsync());
+        Assert.Equal(24, member.RemainingClassCredits);
+    }
+
+    [Fact]
+    public async Task Preview_AfterPackageEnd_ExplainsWhichDatesPreventScheduling()
+    {
+        await using var db = CreateDbContext();
+        var (trainer, member) = await SeedAsync(db);
+        member.MembershipStartsAtUtc = ClubTime.ToUtc(new DateTime(2026, 10, 1));
+        member.MembershipEndsAtUtc = ClubTime.ToUtc(new DateTime(2026, 11, 30));
+        member.RemainingClassCredits = 3;
+        await db.SaveChangesAsync();
+        var input = ProgramFor(member.Id, new DateTime(2026, 11, 30));
+        input.Days = [DayOfWeek.Tuesday, DayOfWeek.Thursday];
+        var service = new PersonalTrainingCalendarService(db);
+        var preview = await service.PreviewWeeklyByAdminAsync(trainer.Id, input);
+        Assert.False(preview.Succeeded);
+        Assert.Contains("30.11.2026", preview.Message);
+        Assert.Contains("paket", preview.Message.ToLowerInvariant());
+        Assert.False((await service.CreateWeeklyByAdminAsync(trainer.Id, input)).Succeeded);
+        Assert.Empty(db.PersonalTrainingSessions);
+        Assert.Equal(3, member.RemainingClassCredits);
+    }
+
     private static WeeklyPersonalSessionInput ProgramFor(int memberId, DateTime week) => new()
     {
         MemberProfileId = memberId, Week = week, Time = new TimeOnly(11, 0),
@@ -71,14 +214,13 @@ public partial class PersonalTrainingCalendarServiceTests
             new() { TrainerId = trainer.Id, MemberProfile = member, StartsAtUtc = ClubTime.ToUtc(week.AddDays(2).AddHours(11)), Status = PersonalTrainingSessionStatus.Cancelled });
         await db.SaveChangesAsync();
         var preview = await new PersonalTrainingCalendarService(db).PreviewWeeklyByAdminAsync(trainer.Id, ProgramFor(member.Id, week));
-        Assert.True(preview.Succeeded, preview.Message);
+        Assert.False(preview.Succeeded);
+        Assert.Contains(CategoryCreditService.ReviewMessage, preview.Message);
         Assert.Equal(2, preview.CompletedLessons);
         Assert.Equal(2, preview.PlannedLessons);
         Assert.Equal(1, preview.UnchargedCompletedLessons);
-        Assert.Equal(6, preview.AvailableLessons);
-        Assert.Equal(6, preview.LessonCount);
-        Assert.DoesNotContain(ClubTime.ToUtc(week.AddDays(7).AddHours(11)), preview.Starts);
-        Assert.Contains(ClubTime.ToUtc(week.AddDays(2).AddHours(11)), preview.Starts);
+        Assert.Null(preview.AvailableLessons);
+        Assert.Empty(preview.Starts);
     }
 
     [Fact]
@@ -156,8 +298,8 @@ public partial class PersonalTrainingCalendarServiceTests
         Assert.Equal(4, (await service.PreviewWeeklyByAdminAsync(trainer.Id, input)).LessonCount);
         member.RemainingClassCredits = 2;
         await db.SaveChangesAsync();
-        Assert.True((await service.CreateWeeklyByAdminAsync(trainer.Id, input)).Succeeded);
-        Assert.Equal(2, await db.PersonalTrainingSessions.CountAsync());
+        Assert.False((await service.CreateWeeklyByAdminAsync(trainer.Id, input)).Succeeded);
+        Assert.Empty(db.PersonalTrainingSessions);
     }
 
     [Fact]
@@ -184,6 +326,8 @@ public partial class PersonalTrainingCalendarServiceTests
     {
         await using var db = CreateDbContext();
         var (_, member) = await SeedAsync(db);
+        member.MembershipStartsAtUtc = null;
+        await db.SaveChangesAsync();
         Assert.False((await new PersonalTrainingCalendarService(db).ApplyReviewedCreditsAsync(member.Id, 1, 4, true, "admin")).Succeeded);
         Assert.Equal(4, member.RemainingClassCredits);
     }

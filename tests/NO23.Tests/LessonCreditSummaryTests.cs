@@ -13,6 +13,8 @@ public class LessonCreditSummaryTests
     {
         await using var db = Db();
         var member = Member(db, 10);
+        member.ServicePackageVariant!.PersonalTrainingSessionCount = 6;
+        member.ServicePackageVariant.GroupClassCreditCount = 4;
         var coach = new Trainer { FirstName = "QA" };
         db.Trainers.Add(coach);
         var completed = Personal(member, coach, PersonalTrainingSessionStatus.Completed, true);
@@ -91,8 +93,8 @@ public class LessonCreditSummaryTests
         Assert.Empty(db.ClassReservations);
         Assert.True((await new PersonalTrainingCalendarService(db).ChangeStatusAsync(coach.Id, personal.Id,
             PersonalTrainingSessionStatus.Cancelled, null, "admin", null)).Succeeded);
-        Assert.True((await new ClassReservationService(db).ReserveAsync(member.ApplicationUserId, group.Id)).Succeeded);
-        Assert.Equal(0, member.RemainingClassCredits);
+        Assert.False((await new ClassReservationService(db).ReserveAsync(member.ApplicationUserId, group.Id)).Succeeded);
+        Assert.Equal(1, member.RemainingClassCredits); // Cancelling PT does not convert its right to Group.
     }
 
     [Theory]

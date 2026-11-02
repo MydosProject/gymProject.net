@@ -184,7 +184,8 @@ public class AdminOperationsTests
         var trainer = new Trainer { FirstName = "Test", LastName = "Coach", Specialty = "PT" };
         var group = new GroupClass { Name = "Reformer", Trainer = trainer, DurationMinutes = 60, Capacity = 8 };
         var member = new MemberProfile { ApplicationUser = new ApplicationUser { Id = "member", UserName = "member", FirstName = "Test", LastName = "Member" },
-            MembershipPackage = new MembershipPackage { Name = "PRO", Audience = "Test", Description = "Test", WeeklyClassLimit = 4 }, RemainingClassCredits = 5, AssignedTrainer = trainer };
+            MembershipPackage = new MembershipPackage { Name = "PRO", Audience = "Test", Description = "Test", WeeklyClassLimit = 4 }, MembershipStartsAtUtc = DateTime.UtcNow.AddYears(-1),
+            MembershipPackageOption = new MembershipPackageOption { Name = "Mixed", PersonalTrainingSessionCount = 1, GroupClassCreditCount = 4 }, RemainingClassCredits = 5, AssignedTrainer = trainer };
         db.GroupClasses.Add(group);
         db.MemberProfiles.Add(member);
         await db.SaveChangesAsync();

@@ -36,6 +36,7 @@ public class Order
     public KitchenSubscription? KitchenSubscription { get; set; }
 
     public int? ServicePackageVariantId { get; set; }
+    public string? LessonGrantSnapshotJson { get; set; }
 
     public ServicePackageVariant? ServicePackageVariant { get; set; }
 

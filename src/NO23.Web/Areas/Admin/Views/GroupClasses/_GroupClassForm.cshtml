@@ -1,4 +1,5 @@
 @model GroupClassFormViewModel
+@using NO23.Web.Extensions
 
 <form method="post" class="bg-white border rounded-3 p-4 text-dark admin-form-card">
     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
@@ -14,6 +15,7 @@
         </header>
 
         <div class="row g-3">
+            <div class="col-md-6"><label asp-for="CreditCategory" class="form-label"></label><select asp-for="CreditCategory" class="form-select">@foreach (var category in Enum.GetValues<NO23.Web.Domain.Enums.LessonCategory>().Where(x => x != NO23.Web.Domain.Enums.LessonCategory.PersonalTraining)) { <option value="@((int)category)">@category.GetDisplayName()</option> }</select><span asp-validation-for="CreditCategory" class="text-danger"></span></div>
             <div class="col-md-6">
                 <label asp-for="TrainerId" class="form-label"></label>
                 <select asp-for="TrainerId" asp-items="Model.TrainerOptions" class="form-select"></select>

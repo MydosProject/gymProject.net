@@ -1,5 +1,6 @@
 .lesson-credits { margin: 16px 0; padding: 20px; border: 1px solid #66583a; border-radius: 14px; background: #151912; color: #edece3; }
 .lesson-credit-grid { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 14px; }
+.lesson-credit-categories { grid-template-columns:repeat(2,minmax(0,1fr)); padding-bottom:18px; margin-bottom:18px; border-bottom:1px solid #494a3c; }
 .lesson-credit-grid > div { display: grid; gap: 8px; padding-right: 12px; border-right: 1px solid #494a3c; }
 .lesson-credit-grid > div:last-child { border-right: 0; }
 .lesson-credit-grid span { font-size: .7rem; color: #bfc4b4; }
@@ -10,3 +11,7 @@
 .lesson-credit-compact small { font-size: .68rem; line-height: 1.6; color: #bfc4b4; }
 .lesson-credit-compact .lesson-credit-alert { color: #ffda96; margin: 0; }
 @media(max-width:767px) { .lesson-credit-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } .lesson-credit-grid > div { border: 0; } .lesson-credits { padding: 16px; } }
+
+.lesson-credits .table { --bs-table-bg: transparent; --bs-table-color: #edece3; --bs-table-border-color: #494a3c; color: #edece3; font-size: .82rem; }
+.lesson-credits .table th, .lesson-credits .table td { padding: .7rem .5rem; vertical-align: middle; }
+.lesson-credits .table small { color: #bfc4b4; font-size: .65rem; font-weight: normal; margin-top: .25rem; }

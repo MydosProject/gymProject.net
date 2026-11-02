@@ -31,6 +31,9 @@ public class MemberProfile
     public string? FitnessGoal { get; set; }
 
     public int RemainingClassCredits { get; set; }
+    public Guid? LessonPeriodId { get; set; }
+    public bool MembershipActivationPending { get; set; }
+    public ICollection<MemberLessonAccount> LessonAccounts { get; set; } = [];
 
     public DateTime? MembershipStartsAtUtc { get; set; }
 
