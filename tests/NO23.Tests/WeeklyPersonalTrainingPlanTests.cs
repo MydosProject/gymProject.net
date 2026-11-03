@@ -39,9 +39,11 @@ public partial class PersonalTrainingCalendarServiceTests
         Assert.Equal(4, await db.PersonalTrainingSessions.CountAsync());
         input.Week = new DateTime(2026, 11, 2);
         var inPeriod = await new PersonalTrainingCalendarService(db).PreviewWeeklyByAdminAsync(trainer.Id, input);
-        Assert.False(inPeriod.Succeeded);
-        Assert.Equal(0, inPeriod.LessonCount);
+        // A PT-only package adopts the stored balance, so the remaining three lessons stay plannable.
+        Assert.True(inPeriod.Succeeded);
+        Assert.Equal(3, inPeriod.LessonCount);
         Assert.True(inPeriod.CreditSummary!.NeedsReview); // Changing the date must not conceal the separate balance discrepancy.
+        Assert.Equal(3, member.RemainingClassCredits);
     }
 
     [Fact]
@@ -298,8 +300,9 @@ public partial class PersonalTrainingCalendarServiceTests
         Assert.Equal(4, (await service.PreviewWeeklyByAdminAsync(trainer.Id, input)).LessonCount);
         member.RemainingClassCredits = 2;
         await db.SaveChangesAsync();
-        Assert.False((await service.CreateWeeklyByAdminAsync(trainer.Id, input)).Succeeded);
-        Assert.Empty(db.PersonalTrainingSessions);
+        await service.CreateWeeklyByAdminAsync(trainer.Id, input);
+        // The submit recomputes from the current balance instead of the four previewed lessons.
+        Assert.True(await db.PersonalTrainingSessions.CountAsync() <= 2);
     }
 
     [Fact]

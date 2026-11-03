@@ -228,6 +228,79 @@ public class CategoryCreditTests
         Assert.Equal(5, await db.MemberLessonAccounts.CountAsync());
     }
 
+    [Fact]
+    public async Task LegacyPtOnlyBalance_WithManualAdjustment_IsAdoptedAsPersonalTrainingRights()
+    {
+        await using var db = Db();
+        var member = LegacyMember(db, new ServicePackageVariant { Name = "COMMIT 70", TotalPrice = 98000, PersonalTrainingSessionCount = 70 }, storedBalance: 63);
+        AddPersonalSessions(db, member, PersonalTrainingSessionStatus.Completed, count: 12, creditConsumed: true, daysFromNow: -3);
+        AddPersonalSessions(db, member, PersonalTrainingSessionStatus.Scheduled, count: 2, creditConsumed: false, daysFromNow: 3);
+        await db.SaveChangesAsync();
+        var service = new CategoryCreditService(db);
+
+        var allocation = await service.PrepareAsync(member, true);
+        await db.SaveChangesAsync();
+
+        Assert.Null(allocation.Error);
+        Assert.NotNull(member.LessonPeriodId);
+        var pt = Account(member, LessonCategory.PersonalTraining);
+        Assert.Equal(70, pt.Granted);
+        Assert.Equal(63, pt.Remaining);
+        Assert.Equal(63, member.RemainingClassCredits);
+        Assert.All(member.LessonAccounts.Where(x => x.Category != LessonCategory.PersonalTraining), x => Assert.Equal(0, x.Remaining));
+        Assert.Contains(pt.Movements, x => x.Reason.Contains("kayıtlı bakiye olduğu gibi devralındı") && x.Reason.Contains("58"));
+        Assert.Equal(61, await service.AvailableAsync(member, pt));
+    }
+
+    [Fact]
+    public async Task LegacyPtOnlyBalance_WithUnchargedCompletedLesson_StillRequiresReview()
+    {
+        await using var db = Db();
+        var member = LegacyMember(db, new ServicePackageVariant { Name = "ROUTINE 36", TotalPrice = 54000, PersonalTrainingSessionCount = 36 }, storedBalance: 28);
+        AddPersonalSessions(db, member, PersonalTrainingSessionStatus.Completed, count: 8, creditConsumed: true, daysFromNow: -5);
+        AddPersonalSessions(db, member, PersonalTrainingSessionStatus.Completed, count: 1, creditConsumed: false, daysFromNow: -1);
+        await db.SaveChangesAsync();
+
+        var allocation = await new CategoryCreditService(db).PrepareAsync(member, true);
+
+        Assert.Equal(CategoryCreditService.ReviewMessage, allocation.Error);
+        Assert.Null(member.LessonPeriodId);
+    }
+
+    [Fact]
+    public async Task LegacyMixedPackageMismatch_StillRequiresReview()
+    {
+        await using var db = Db();
+        var member = LegacyMember(db, new ServicePackageVariant { Name = "HYBRID", TotalPrice = 13000, PersonalTrainingSessionCount = 4,
+            PerformanceClassCreditCount = 8 }, storedBalance: 10);
+        await db.SaveChangesAsync();
+
+        var allocation = await new CategoryCreditService(db).PrepareAsync(member, true);
+
+        Assert.Equal(CategoryCreditService.ReviewMessage, allocation.Error);
+        Assert.Null(member.LessonPeriodId);
+    }
+
+    private static MemberProfile LegacyMember(ApplicationDbContext db, ServicePackageVariant variant, int storedBalance)
+    {
+        variant.ServicePackage = new() { Slug = Guid.NewGuid().ToString(), Name = variant.Name, Category = ServicePackageCategory.PersonalTraining };
+        var member = new MemberProfile { ApplicationUser = new() { UserName = Guid.NewGuid().ToString() },
+            MembershipPackage = new() { Code = MembershipPackageCode.Start }, ServicePackageVariant = variant,
+            MembershipStartsAtUtc = DateTime.UtcNow.AddDays(-30), MembershipEndsAtUtc = DateTime.UtcNow.AddMonths(3),
+            RemainingClassCredits = storedBalance };
+        db.Add(member);
+        return member;
+    }
+
+    private static void AddPersonalSessions(ApplicationDbContext db, MemberProfile member, PersonalTrainingSessionStatus status,
+        int count, bool creditConsumed, int daysFromNow)
+    {
+        var trainer = new Trainer { FirstName = "QA", IsActive = true };
+        for (var index = 0; index < count; index++)
+            db.Add(new PersonalTrainingSession { Trainer = trainer, MemberProfile = member, Status = status, CreditConsumed = creditConsumed,
+                StartsAtUtc = DateTime.UtcNow.AddDays(daysFromNow).AddHours(index) });
+    }
+
     private static MemberLessonAccount Account(MemberProfile member, LessonCategory c) => member.LessonAccounts.Single(a => a.PeriodId == member.LessonPeriodId && a.Category == c);
     private static ApplicationDbContext Db() => new(new DbContextOptionsBuilder<ApplicationDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
     private static MemberProfile Member(ApplicationDbContext db, ServicePackageVariant definition)

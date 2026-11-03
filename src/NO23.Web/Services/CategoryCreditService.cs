@@ -68,13 +68,25 @@ public sealed class CategoryCreditService(ApplicationDbContext db)
                 reservations.Count(x => x.ClassSession.GroupClass.CreditCategory == category)),
             MonthlyLimit = variant.LessonsRenewMonthly ? Grant(variant, category) / Math.Max(1, variant.DurationMonths ?? 1) : null
         }).ToList();
-        if (projected.Any(x => x.Remaining < 0) || projected.Sum(x => x.Remaining) != member.RemainingClassCredits) return ([], ReviewMessage);
+        string? adoptedReason = null;
+        if (projected.Any(x => x.Remaining < 0) || projected.Sum(x => x.Remaining) != member.RemainingClassCredits)
+        {
+            // A single-category package leaves no doubt about where the stored balance belongs, so a manually
+            // adjusted legacy balance is adopted as-is. Mixed packages still require an explicit admin allocation.
+            var granted = projected.Where(x => x.Granted > 0).ToList();
+            if (granted.Count != 1 || projected.Except(granted).Any(x => x.Remaining != 0) ||
+                member.RemainingClassCredits < 0 || member.RemainingClassCredits > granted[0].Granted)
+                return ([], ReviewMessage);
+            adoptedReason = $"Eski dönem: tek kategorili paket, kayıtlı bakiye olduğu gibi devralındı (geçmişten hesaplanan: {granted[0].Remaining}).";
+            granted[0].Remaining = member.RemainingClassCredits;
+        }
         if (apply)
         {
             member.LessonPeriodId = key;
             foreach (var account in projected) {
                 member.LessonAccounts.Add(account);
-                account.Movements.Add(new LessonCreditMovement { Delta = account.Remaining, Actor = "system:legacy-reconciliation", Reason = "Eski dönem: kategori geçmişi ve kayıtlı bakiye eşleştirildi." });
+                account.Movements.Add(new LessonCreditMovement { Delta = account.Remaining, Actor = "system:legacy-reconciliation",
+                    Reason = account.Granted > 0 && adoptedReason is not null ? adoptedReason : "Eski dönem: kategori geçmişi ve kayıtlı bakiye eşleştirildi." });
             }
             foreach (var session in personal) session.LessonAccount = projected.Single(x => x.Category == LessonCategory.PersonalTraining);
             foreach (var reservation in reservations) reservation.LessonAccount = projected.Single(x => x.Category == reservation.ClassSession.GroupClass.CreditCategory);
