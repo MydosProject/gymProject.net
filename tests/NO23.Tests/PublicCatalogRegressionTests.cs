@@ -79,6 +79,21 @@ public class PublicCatalogRegressionTests
     }
 
     [Fact]
+    public void PtSavings_CompareLongerValidityBundlesWithFlexUnitPrice()
+    {
+        var flex = new ServicePackageVariant { BillingType = ServicePackageBillingType.OneTime, IsActive = true, TotalPrice = 14000, PersonalTrainingSessionCount = 8, DurationDays = 30 };
+        var routine = new ServicePackageVariant { BillingType = ServicePackageBillingType.OneTime, IsActive = true, TotalPrice = 36000, PersonalTrainingSessionCount = 24, DurationDays = 60 };
+        var commit = new ServicePackageVariant { BillingType = ServicePackageBillingType.OneTime, IsActive = true, TotalPrice = 70000, PersonalTrainingSessionCount = 50, DurationDays = 180 };
+
+        var routineCard = ServicePackageCatalogService.Present(routine, ptReference: flex);
+        var commitCard = ServicePackageCatalogService.Present(commit, ptReference: flex);
+
+        Assert.Contains("6.000,00", routineCard.Savings);
+        Assert.Contains("FLEX 8 dersin birim fiyatına göre", routineCard.ComparisonNote);
+        Assert.Contains("17.500,00", commitCard.Savings);
+    }
+
+    [Fact]
     public async Task GiftsAndLessonOptions_AppearInCatalogAndApplication()
     {
         await using var db = Db();

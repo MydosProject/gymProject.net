@@ -14,6 +14,8 @@ public class UpcomingClassSessionPublicViewModel
 
     public DateTime StartsAtLocal { get; init; }
 
+    public string DayName { get; init; } = string.Empty;
+
     public int Capacity { get; init; }
 
     public int ReservedCount { get; init; }

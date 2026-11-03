@@ -146,7 +146,7 @@
                                         @foreach (var session in groupClass.UpcomingSessions.Take(3))
                                         {
                                             <div class="class-session-row">
-                                                <span>@session.StartsAtLocal.ToString("dd.MM.yyyy")</span>
+                                                <span>@session.DayName · @session.StartsAtLocal.ToString("dd.MM.yyyy")</span>
                                                 <strong>@session.StartsAtLocal.ToString("HH:mm")</strong>
                                                 <small>@session.RemainingCapacity / @session.Capacity yer</small>
                                             </div>
@@ -174,12 +174,28 @@
                 </p>
             </div>
 
-            @if (Model.UpcomingSessions.Count == 0)
+            <nav class="classes-week-nav" aria-label="Hafta seçimi">
+                @if (Model.PreviousWeek is { } previousWeek)
+                {
+                    <a asp-action="Index" asp-route-week="@previousWeek.ToString("yyyy-MM-dd")" asp-fragment="class-schedule">← Önceki hafta</a>
+                }
+                <strong>
+                    @Model.WeekStart.ToString("dd.MM.yyyy") – @Model.WeekStart.AddDays(6).ToString("dd.MM.yyyy")
+                    @if (Model.IsCurrentWeek) { <small>Bu hafta</small> }
+                </strong>
+                @if (!Model.IsCurrentWeek)
+                {
+                    <a asp-action="Index" asp-fragment="class-schedule">Bu hafta</a>
+                }
+                <a asp-action="Index" asp-route-week="@Model.NextWeek.ToString("yyyy-MM-dd")" asp-fragment="class-schedule">Sonraki hafta →</a>
+            </nav>
+
+            @if (Model.WeekDays.All(day => day.Sessions.Count == 0))
             {
                 <div class="classes-empty-state classes-empty-state-dark">
                     <span>—</span>
                     <div>
-                        <h3>Yaklaşan planlı seans bulunmuyor.</h3>
+                        <h3>Bu hafta planlı seans bulunmuyor.</h3>
                         <p>Program güncellendiğinde yeni seanslar burada görünecek.</p>
                     </div>
                 </div>
@@ -190,37 +206,50 @@
                      role="region"
                      aria-label="Yaklaşan seanslar"
                      tabindex="0">
-                    @for (var index = 0; index < Model.UpcomingSessions.Count; index++)
+                    @foreach (var day in Model.WeekDays)
                     {
-                        var session = Model.UpcomingSessions[index];
-                        var isFull = session.RemainingCapacity == 0;
+                        <h3 class="classes-schedule-day">
+                            <span>@day.DayName</span>
+                            <small>@day.Date.ToString("dd.MM.yyyy")</small>
+                        </h3>
 
-                        <article class="classes-schedule-item">
-                            <div class="classes-schedule-number">@((index + 1).ToString("00"))</div>
+                        @if (day.Sessions.Count == 0)
+                        {
+                            <p class="classes-schedule-day-empty">Bu gün planlı ders yok.</p>
+                        }
 
-                            <time datetime="@session.StartsAtLocal.ToString("yyyy-MM-ddTHH:mm")" class="classes-schedule-date">
-                                <strong>@session.StartsAtLocal.ToString("dd.MM")</strong>
-                                <span>@session.StartsAtLocal.ToString("HH:mm")</span>
-                            </time>
+                        @for (var index = 0; index < day.Sessions.Count; index++)
+                        {
+                            var session = day.Sessions[index];
+                            var isFull = session.RemainingCapacity == 0;
 
-                            <div class="classes-schedule-class">
-                                <span>@session.TrainerName</span>
-                                <h3>@session.ClassName</h3>
-                            </div>
+                            <article class="classes-schedule-item">
+                                <div class="classes-schedule-number">@((index + 1).ToString("00"))</div>
 
-                            <div class="classes-capacity">
-                                <span>Kapasite</span>
-                                <strong>@session.ReservedCount / @session.Capacity</strong>
-                                <small class="@(isFull ? "is-full" : null)">
-                                    @(isFull ? "Kontenjan dolu" : $"{session.RemainingCapacity} yer kaldı")
-                                </small>
-                            </div>
+                                <time datetime="@session.StartsAtLocal.ToString("yyyy-MM-ddTHH:mm")" class="classes-schedule-date">
+                                    <strong>@session.StartsAtLocal.ToString("HH:mm")</strong>
+                                    <span>@session.DayName</span>
+                                </time>
 
-                            <a class="classes-reservation-link @(isFull ? "is-full" : null)"
-                               href="@Model.ReservationTargetUrl">
-                                @(isFull ? "Programı Gör" : "Rezervasyon Yap") <span>↗</span>
-                            </a>
-                        </article>
+                                <div class="classes-schedule-class">
+                                    <span>@session.TrainerName</span>
+                                    <h3>@session.ClassName</h3>
+                                </div>
+
+                                <div class="classes-capacity">
+                                    <span>Kapasite</span>
+                                    <strong>@session.ReservedCount / @session.Capacity</strong>
+                                    <small class="@(isFull ? "is-full" : null)">
+                                        @(isFull ? "Kontenjan dolu" : $"{session.RemainingCapacity} yer kaldı")
+                                    </small>
+                                </div>
+
+                                <a class="classes-reservation-link @(isFull ? "is-full" : null)"
+                                   href="@Model.ReservationTargetUrl">
+                                    @(isFull ? "Programı Gör" : "Rezervasyon Yap") <span>↗</span>
+                                </a>
+                            </article>
+                        }
                     }
                 </div>
             }

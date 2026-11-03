@@ -27,11 +27,11 @@
     <div class="container position-relative">
         <div class="hero-layout">
             <div class="hero-copy">
-                <p class="hero-kicker">
+                <p class="hero-kicker" lang="en">
                     Performance · Nutrition · Community
                 </p>
 
-                <h1 class="hero-title">
+                <h1 class="hero-title" lang="en">
                     <span>Train Better.</span>
                     <span class="hero-title-accent">Eat Better.</span>
                     <span>Live Better.</span>
@@ -95,8 +95,8 @@
                  decoding="async" />
             <span class="home-experience-shade" aria-hidden="true"></span>
             <span class="home-experience-copy">
-                <small>NO23 / Inside the club</small>
-                <strong id="home-experience-title">NO23 Experience</strong>
+                <small lang="en">NO23 / Inside the club</small>
+                <strong id="home-experience-title" lang="en">NO23 Experience</strong>
                 <span>Kulübü videoyla keşfet <i aria-hidden="true">▶</i></span>
             </span>
         </a>
@@ -661,16 +661,16 @@
 {
     <section class="memberships-section" id="kitchen-subscriptions">
         <div class="container">
-            <div class="memberships-heading"><div><p class="section-kicker">NO:23 Kitchen</p><h2>Öğünlerin hazır, günün sana kalsın.</h2></div><p>Alışveriş ve yemek hazırlama yükünü hafiflet. 5 veya 20 günlük paketini seç, günlük öğünlerini hedeflerine göre planla.</p></div>
+            <div class="memberships-heading"><div><p class="section-kicker" lang="en">NO:23 Kitchen</p><h2>Öğünlerin hazır, günün sana kalsın.</h2></div><p>Alışveriş ve yemek hazırlama yükünü hafiflet. 5 veya 20 günlük paketini seç, günlük öğünlerini hedeflerine göre planla.</p></div>
             <div class="service-catalog-cards">
                 @foreach (var package in Model.KitchenPackages)
                 {
                     <article class="service-package-card">
-                        <div class="service-package-head"><small>Kitchen aboneliği</small><h3>@package.Days Günlük</h3><strong>@package.Name</strong></div>
+                        <div class="service-package-head"><small><span lang="en">Kitchen</span> aboneliği</small><h3>@package.Days Günlük</h3><strong>@package.Name</strong></div>
                         <p>@package.Description</p>
                         <ul><li>1, 2 veya 3 ana öğün + 1 ara öğün seçimi</li><li>Kişisel kalori ve makro hedefine göre planlama</li><li>@package.DailyDeliveryFee.ToString("N0", CultureInfo.GetCultureInfo("tr-TR")) ₺ / gün kurye</li></ul>
                         <strong>@package.UnitPrice.ToString("N0", CultureInfo.GetCultureInfo("tr-TR")) – @package.ThreeMainMealsPrice.ToString("N0", CultureInfo.GetCultureInfo("tr-TR")) ₺ / paket</strong>
-                        <a asp-area="" asp-controller="Kitchen" asp-action="Index" asp-fragment="calorie-calculator">Kitchen menünü oluştur →</a>
+                        <a asp-area="" asp-controller="Kitchen" asp-action="Index" asp-fragment="calorie-calculator"><span lang="en">Kitchen</span> menünü oluştur →</a>
                     </article>
                 }
             </div>

@@ -88,6 +88,7 @@ public class KitchenController(
                 CarbohydrateGrams = item.CarbohydrateGrams,
                 FatGrams = item.FatGrams,
                 Ingredients = item.Ingredients,
+                item.Tags,
                 AllergenNames = item.MenuItemAllergens.OrderBy(x => x.KitchenAllergen.DisplayOrder)
                     .Select(x => x.KitchenAllergen.Name).ToList()
             })
@@ -106,7 +107,8 @@ public class KitchenController(
                 CarbohydrateGrams = item.CarbohydrateGrams,
                 FatGrams = item.FatGrams,
                 Ingredients = item.Ingredients,
-                Allergens = string.Join(", ", item.AllergenNames)
+                Allergens = string.Join(", ", item.AllergenNames),
+                Tags = item.Tags
             })
             .ToList();
     }

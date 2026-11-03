@@ -1,7 +1,9 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NO23.Web.Data;
 using NO23.Web.Domain.Enums;
+using NO23.Web.Services;
 using NO23.Web.ViewModels.Classes;
 
 namespace NO23.Web.Controllers;
@@ -9,10 +11,19 @@ namespace NO23.Web.Controllers;
 public class ClassesController(ApplicationDbContext dbContext) : Controller
 {
     private const string ReservationTargetUrl = "/Member/Reservations#group-classes";
+    private static readonly CultureInfo TurkishCulture = CultureInfo.GetCultureInfo("tr-TR");
 
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(DateOnly? week = null)
     {
         var nowUtc = DateTime.UtcNow;
+        var currentWeekStart = ClubTime.Monday(ClubTime.Today);
+        var weekStart = week is { } requestedWeek
+            ? ClubTime.Monday(requestedWeek.ToDateTime(TimeOnly.MinValue))
+            : currentWeekStart;
+        if (weekStart < currentWeekStart)
+        {
+            weekStart = currentWeekStart;
+        }
 
         var groupClasses = await dbContext.GroupClasses
             .AsNoTracking()
@@ -51,17 +62,32 @@ public class ClassesController(ApplicationDbContext dbContext) : Controller
             .ToListAsync();
 
         var sessionViewModels = upcomingSessions
-            .Select(session => new UpcomingClassSessionPublicViewModel
+            .Select(session =>
             {
-                ClassSessionId = session.ClassSessionId,
-                GroupClassId = session.GroupClassId,
-                ClassName = session.ClassName,
-                TrainerName = session.TrainerName,
-                StartsAtUtc = session.StartsAtUtc,
-                StartsAtLocal = session.StartsAtUtc.ToLocalTime(),
-                Capacity = session.Capacity,
-                ReservedCount = session.ReservedCount,
-                RemainingCapacity = Math.Max(0, session.Capacity - session.ReservedCount)
+                var startsAtLocal = ClubTime.ToLocal(session.StartsAtUtc);
+                return new UpcomingClassSessionPublicViewModel
+                {
+                    ClassSessionId = session.ClassSessionId,
+                    GroupClassId = session.GroupClassId,
+                    ClassName = session.ClassName,
+                    TrainerName = session.TrainerName,
+                    StartsAtUtc = session.StartsAtUtc,
+                    StartsAtLocal = startsAtLocal,
+                    DayName = startsAtLocal.ToString("dddd", TurkishCulture),
+                    Capacity = session.Capacity,
+                    ReservedCount = session.ReservedCount,
+                    RemainingCapacity = Math.Max(0, session.Capacity - session.ReservedCount)
+                };
+            })
+            .ToList();
+
+        var weekDays = Enumerable.Range(0, 7)
+            .Select(offset => weekStart.AddDays(offset))
+            .Select(day => new ClassScheduleDayViewModel
+            {
+                Date = day,
+                DayName = day.ToString("dddd", TurkishCulture),
+                Sessions = sessionViewModels.Where(session => session.StartsAtLocal.Date == day).ToList()
             })
             .ToList();
 
@@ -87,7 +113,12 @@ public class ClassesController(ApplicationDbContext dbContext) : Controller
         {
             GroupClasses = groupClassViewModels,
             UpcomingSessions = sessionViewModels,
-            ReservationTargetUrl = ReservationTargetUrl
+            ReservationTargetUrl = ReservationTargetUrl,
+            WeekStart = weekStart,
+            PreviousWeek = weekStart > currentWeekStart ? DateOnly.FromDateTime(weekStart.AddDays(-7)) : null,
+            NextWeek = DateOnly.FromDateTime(weekStart.AddDays(7)),
+            IsCurrentWeek = weekStart == currentWeekStart,
+            WeekDays = weekDays
         });
     }
 }

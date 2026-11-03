@@ -266,7 +266,8 @@
                     @for (var index = 0; index < Model.MenuItems.Count; index++)
                     {
                         var item = Model.MenuItems[index];
-                        var rawCategory = item.Category?.Trim().ToLowerInvariant() ?? string.Empty;
+                        var turkishCulture = CultureInfo.GetCultureInfo("tr-TR");
+                        var rawCategory = item.Category?.Trim().ToLower(turkishCulture) ?? string.Empty;
                         var categoryKey = rawCategory.Contains("breakfast") || rawCategory.Contains("kahvalt")
                             ? "breakfast"
                             : rawCategory.Contains("main") || rawCategory.Contains("ana")
@@ -296,9 +297,10 @@
                         var isLowCalorie = calorieValue > 0 && calorieValue <= 400;
                         var isGlutenFree = allergenText.Contains("gluten", StringComparison.OrdinalIgnoreCase) == false
                             && contentText.Contains("ekmek", StringComparison.OrdinalIgnoreCase) == false;
-                        var isVegetarian = contentText.Contains("tavuk", StringComparison.OrdinalIgnoreCase) == false
-                            && contentText.Contains("et ", StringComparison.OrdinalIgnoreCase) == false
-                            && contentText.Contains("balık", StringComparison.OrdinalIgnoreCase) == false;
+                        // Vegetarian is an admin-managed menu tag; ingredient keywords cannot reliably detect meat or fish.
+                        var isVegetarian = (item.Tags ?? string.Empty)
+                            .Split([',', ';', '|'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                            .Any(tag => string.Equals(tag.ToLower(turkishCulture), "vejetaryen", StringComparison.Ordinal));
                         var nutritionKeys = string.Join(" ", new[]
                         {
                             isHighProtein ? "high-protein" : null,

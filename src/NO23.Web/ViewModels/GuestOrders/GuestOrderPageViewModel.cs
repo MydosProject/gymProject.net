@@ -30,6 +30,8 @@ public class GuestOrderPageViewModel
 
     public string? Allergens { get; init; }
 
+    public string? Tags { get; init; }
+
     public IReadOnlyList<KitchenCustomizationOptionViewModel> RemovableIngredients { get; init; } = [];
 
     public IReadOnlyList<KitchenCustomizationOptionViewModel> AdditionalIngredients { get; init; } = [];

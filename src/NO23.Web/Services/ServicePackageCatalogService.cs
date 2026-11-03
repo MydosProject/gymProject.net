@@ -84,10 +84,10 @@ public class ServicePackageCatalogService(ApplicationDbContext dbContext)
             else if (!monthly && IsPricedPt(variant))
             {
                 unitPrice = $"{Money(variant.TotalPrice / variant.PersonalTrainingSessionCount)} / ders";
-                // Compare only equal validity periods and pure PT lesson bundles.
+                // Compare pure PT lesson bundles whose validity is not shorter than the reference.
                 if (ptReference is not null && IsPricedPt(ptReference) &&
                     variant.PersonalTrainingSessionCount > ptReference.PersonalTrainingSessionCount &&
-                    variant.DurationDays == ptReference.DurationDays && variant.DurationMonths == ptReference.DurationMonths)
+                    IsValidityNotShorter(variant, ptReference))
                 {
                     referenceTotal = ptReference.TotalPrice / ptReference.PersonalTrainingSessionCount * variant.PersonalTrainingSessionCount;
                     comparison = $"FLEX {ptReference.PersonalTrainingSessionCount} dersin birim fiyatına göre";
@@ -185,6 +185,15 @@ public class ServicePackageCatalogService(ApplicationDbContext dbContext)
     private static bool IsPricedPt(ServicePackageVariant x) => x.IsActive && !x.PriceOnRequest &&
         x.BillingType == ServicePackageBillingType.OneTime && x.TotalPrice > 0 &&
         x.PersonalTrainingSessionCount > 0 && LessonCount(x) == x.PersonalTrainingSessionCount;
+    // A missing period means the bundle does not expire, which is never shorter than a dated one.
+    private static bool IsValidityNotShorter(ServicePackageVariant variant, ServicePackageVariant reference)
+    {
+        var referenceDays = ValidityDays(reference);
+        var variantDays = ValidityDays(variant);
+        return referenceDays is null ? variantDays is null : variantDays is null || variantDays >= referenceDays;
+    }
+    private static int? ValidityDays(ServicePackageVariant x) =>
+        x.DurationDays is > 0 ? x.DurationDays : x.DurationMonths is > 0 ? x.DurationMonths * 30 : null;
     private static ServicePackageVariant? PtReference(ServicePackage package, ServicePackageVariant? regularReference) =>
         package.Slug == "duet-pt"
             ? package.Variants.Where(IsPricedPt).OrderBy(x => x.PersonalTrainingSessionCount).FirstOrDefault()
