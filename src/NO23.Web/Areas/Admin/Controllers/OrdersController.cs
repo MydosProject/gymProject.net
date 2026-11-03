@@ -38,6 +38,11 @@ public class OrdersController(
                 order.IsManualPayment,
                 InstallmentCount = order.PaymentInstallments.Count,
                 order.DeliveryMethod,
+                order.DeliveryFullName,
+                order.DeliveryPhoneNumber,
+                order.DeliveryAddressLine,
+                order.DeliveryDistrict,
+                order.DeliveryCity,
                 DeliveryDate = order.DeliveryDate,
                 DeliveryTimeSlot = order.DeliveryTimeSlot,
                 Total = order.Total,
@@ -82,6 +87,12 @@ public class OrdersController(
                 DeliveryDate = order.DeliveryDate,
                 DeliveryTimeSlot = order.DeliveryTimeSlot,
                 DeliveryMethod = order.DeliveryMethod.GetDisplayName(),
+                RecipientName = order.Type == OrderType.ServicePackagePurchase ? null : NullIfBlank(order.DeliveryFullName),
+                RecipientPhone = order.Type == OrderType.ServicePackagePurchase ? null : NullIfBlank(order.DeliveryPhoneNumber),
+                DeliveryAddress = order.Type != OrderType.ServicePackagePurchase && order.DeliveryMethod == OrderDeliveryMethod.AddressDelivery
+                    ? string.Join(", ", new[] { order.DeliveryAddressLine, $"{order.DeliveryDistrict} / {order.DeliveryCity}".Trim(' ', '/') }
+                        .Where(part => !string.IsNullOrWhiteSpace(part)))
+                    : null,
                 Total = order.Total,
                 DiscountCode = order.DiscountCode,
                 CampaignDiscountPercent = order.CampaignDiscountPercent,
@@ -160,4 +171,6 @@ public class OrdersController(
         TempData[error is null ? "SuccessMessage" : "ErrorMessage"] = error ?? "Kitchen paketi aktifleştirildi.";
         return RedirectToAction(nameof(Payment), new { id });
     }
+
+    private static string? NullIfBlank(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

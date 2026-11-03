@@ -95,6 +95,14 @@
                                 </td>
                                 <td data-label="Teslimat">
                                 <strong>@order.DeliveryMethod</strong>
+                                @if (order.RecipientName is not null || order.RecipientPhone is not null)
+                                {
+                                    <small class="admin-cell-note">@order.RecipientName @order.RecipientPhone</small>
+                                }
+                                @if (order.DeliveryAddress is not null)
+                                {
+                                    <small class="admin-cell-note">@order.DeliveryAddress</small>
+                                }
                                 @if (order.DeliveryDate.HasValue)
                                 {
                                     <small class="admin-cell-note">

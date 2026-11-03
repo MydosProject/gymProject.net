@@ -36,6 +36,13 @@ public class OrderListItemViewModel
 
     public string DeliveryMethod { get; init; } = string.Empty;
 
+    public string? RecipientName { get; init; }
+
+    public string? RecipientPhone { get; init; }
+
+    // Only set for orders delivered to the customer's address.
+    public string? DeliveryAddress { get; init; }
+
     public decimal Total { get; init; }
 
     public string? DiscountCode { get; init; }
