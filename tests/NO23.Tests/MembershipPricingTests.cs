@@ -116,4 +116,31 @@ public class MembershipPricingTests
         Assert.Equal(expected, order.Total);
         Assert.Equal(panel.CartItems.Select(x => x.UnitPrice).Order(), order.Items.Select(x => x.UnitPrice).Order());
     }
+
+    [Theory]
+    [InlineData("pending", 0)]
+    [InlineData("not-started", 0)]
+    [InlineData("ended", 0)]
+    [InlineData("active", 10)]
+    public async Task MemberDiscounts_ApplyOnlyWhileMembershipIsPaidAndInPeriod(string state, int expectedKitchen)
+    {
+        await using var db = new ApplicationDbContext(new DbContextOptionsBuilder<ApplicationDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
+        var package = ServicePackageSeed.Defaults.Single(x => x.Slug == "pro-membership");
+        db.ServicePackages.Add(package);
+        var now = DateTime.UtcNow;
+        var member = new MemberProfile
+        {
+            ApplicationUser = new ApplicationUser { UserName = "period-test", Email = "period@example.test" },
+            MembershipPackage = package.MembershipPackage!,
+            MembershipActivationPending = state == "pending",
+            MembershipStartsAtUtc = state == "not-started" ? now.AddDays(3) : now.AddDays(-3),
+            MembershipEndsAtUtc = state == "ended" ? now.AddDays(-1) : now.AddDays(27)
+        };
+        db.MemberProfiles.Add(member);
+        await db.SaveChangesAsync();
+
+        var discounts = await new MembershipPricingService(db).GetAsync(member.ApplicationUserId);
+
+        Assert.Equal(expectedKitchen, discounts.Kitchen);
+    }
 }

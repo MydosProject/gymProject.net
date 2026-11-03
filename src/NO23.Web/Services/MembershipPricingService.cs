@@ -12,11 +12,15 @@ public class MembershipPricingService(ApplicationDbContext dbContext)
         if (string.IsNullOrWhiteSpace(userId)) return new();
         var member = await dbContext.MemberProfiles.AsNoTracking()
             .Where(x => x.ApplicationUserId == userId)
-            .Select(x => new { x.Id, x.MembershipPackageId, x.MembershipEndsAtUtc, x.ReferredByMemberProfileId,
-                HasReferrals = x.ReferredMembers.Any() })
+            .Select(x => new { x.Id, x.MembershipPackageId, x.MembershipStartsAtUtc, x.MembershipEndsAtUtc,
+                x.MembershipActivationPending, x.ReferredByMemberProfileId, HasReferrals = x.ReferredMembers.Any() })
             .FirstOrDefaultAsync();
         if (member is null) return new();
-        if (member.MembershipEndsAtUtc.HasValue && member.MembershipEndsAtUtc <= DateTime.UtcNow)
+        // Benefits apply only while the membership is paid and inside its period.
+        var now = DateTime.UtcNow;
+        if (member.MembershipActivationPending ||
+            (member.MembershipStartsAtUtc.HasValue && member.MembershipStartsAtUtc > now) ||
+            (member.MembershipEndsAtUtc.HasValue && member.MembershipEndsAtUtc <= now))
             return new();
         var discounts = await dbContext.ServicePackages.AsNoTracking()
             .Where(x => x.Category == ServicePackageCategory.Membership && x.IsActive && x.MembershipPackageId == member.MembershipPackageId)
