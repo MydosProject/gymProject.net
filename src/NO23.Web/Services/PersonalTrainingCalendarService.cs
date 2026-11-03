@@ -213,6 +213,8 @@ public partial class PersonalTrainingCalendarService(ApplicationDbContext dbCont
         var previousStart = session.StartsAtUtc;
         var historyStatus = status;
         var now = DateTime.UtcNow;
+        if (status is PersonalTrainingSessionStatus.Completed or PersonalTrainingSessionStatus.NoShow && session.StartsAtUtc > now)
+            return (false, "Henüz başlamamış bir ders \"Tamamlandı\" veya \"Katılmadı\" olarak işaretlenemez.");
 
         if (status == PersonalTrainingSessionStatus.Postponed)
         {

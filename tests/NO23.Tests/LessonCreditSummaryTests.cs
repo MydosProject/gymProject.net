@@ -62,6 +62,8 @@ public class LessonCreditSummaryTests
         Assert.True((await reservations.ReserveAsync(member.ApplicationUserId, anotherGroup.Id)).Succeeded);
         summary = (await service.GetAsync(member.Id))!;
         Assert.Equal(8, summary.Remaining); Assert.Equal(3, summary.Planned); Assert.Equal(5, summary.Available);
+        pending.StartsAtUtc = DateTime.UtcNow.AddHours(-1); // The lesson has taken place before it is completed.
+        await db.SaveChangesAsync();
         Assert.True((await new PersonalTrainingCalendarService(db).ChangeStatusAsync(coach.Id, pending.Id,
             PersonalTrainingSessionStatus.Completed, null, "admin", null)).Succeeded);
         summary = (await service.GetAsync(member.Id))!;

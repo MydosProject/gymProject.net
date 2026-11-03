@@ -2,17 +2,19 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using NO23.Web.Data;
 using NO23.Web.Domain.Entities;
 using NO23.Web.Domain.Enums;
 using NO23.Web.ViewModels.Plans;
 using NO23.Web.Services;
+using NO23.Web.Services.Payments;
 
 namespace NO23.Web.Controllers;
 
 [AllowAnonymous]
 [Route("plans")]
-public class PlansController(ApplicationDbContext dbContext) : Controller
+public class PlansController(ApplicationDbContext dbContext, IOptions<IyzicoOptions>? paymentOptions = null) : Controller
 {
     [HttpGet("buy")]
     public async Task<IActionResult> Buy(string package, int variant)
@@ -20,7 +22,9 @@ public class PlansController(ApplicationDbContext dbContext) : Controller
         var selected = await dbContext.ServicePackageVariants.AsNoTracking().Include(x => x.ServicePackage)
             .FirstOrDefaultAsync(x => x.Id == variant && x.IsActive && x.ServicePackage.IsActive && x.ServicePackage.Slug == package);
         if (selected is null) return NotFound();
-        if (selected.PriceOnRequest || selected.TotalPrice <= 0) return RedirectToAction(nameof(Apply), new { package, variant });
+        // Without online payment the purchase cannot complete, so the request becomes an application.
+        if (selected.PriceOnRequest || selected.TotalPrice <= 0 || paymentOptions?.Value.Enabled != true)
+            return RedirectToAction(nameof(Apply), new { package, variant });
         return User.Identity?.IsAuthenticated == true
             ? LocalRedirect($"/Member/Membership?variant={variant}")
             : LocalRedirect($"/Identity/Account/Register?package={Uri.EscapeDataString(package)}&variant={variant}");

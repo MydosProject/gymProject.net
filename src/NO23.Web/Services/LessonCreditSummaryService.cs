@@ -25,7 +25,8 @@ public sealed class LessonCreditSummaryService(ApplicationDbContext db)
             .OrderByDescending(x => x.ClassSession.StartsAtUtc).Take(200)
             .Select(x => new { x.ClassSession.StartsAtUtc, ReservationStatus = x.Status, x.ClassSession.Status, x.ClassSession.GroupClass.Name }).ToListAsync();
         return personal.Select(x => new MemberCreditHistoryRow(x.StartsAtUtc, "Birebir", "Birebir seans", x.Status.GetDisplayName(),
-                x.CreditConsumed ? "Hak işlenmiş" : x.Status == PersonalTrainingSessionStatus.Cancelled ? "İptal" : "Hak ayrılmış / kontrol bekliyor"))
+                x.CreditConsumed ? "Hak işlenmiş" : x.Status == PersonalTrainingSessionStatus.Cancelled ? "İptal" :
+                x.Status is PersonalTrainingSessionStatus.Completed or PersonalTrainingSessionStatus.NoShow ? "Hak işlenmemiş / kontrol bekliyor" : "Hak ayrılmış"))
             .Concat(groups.Select(x => new MemberCreditHistoryRow(x.StartsAtUtc, "Grup", x.Name, x.Status.GetDisplayName(),
                 x.ReservationStatus == ClassReservationStatus.Cancelled ? "Rezervasyon iptal" :
                 x.Status == ClassSessionStatus.Cancelled ? "İade kontrol edilmeli" : x.Status == ClassSessionStatus.Completed ? "Hak kullanılmış" : "Hak ayrılmış")))

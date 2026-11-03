@@ -120,7 +120,7 @@ public class OrdersController(
         var result = await orderWorkflowService.UpdateOrderStatusAsync(id, status);
         TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] =
             result.Succeeded
-                ? "Siparis durumu guncellendi."
+                ? "Sipariş durumu güncellendi."
                 : result.Message;
 
         return RedirectToAction(nameof(Index));
@@ -133,7 +133,7 @@ public class OrdersController(
         var result = await orderWorkflowService.UpdatePaymentStatusAsync(id, paymentStatus);
         TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] =
             result.Succeeded
-                ? "Odeme durumu guncellendi."
+                ? "Ödeme durumu güncellendi."
                 : result.Message;
 
         return RedirectToAction(nameof(Index));

@@ -1,4 +1,5 @@
 @model NO23.Web.ViewModels.Plans.ServicePackageCardViewModel
+@inject Microsoft.Extensions.Options.IOptions<NO23.Web.Services.Payments.IyzicoOptions> PaymentOptions
 @{
     var selectedId = Model.Variants.FirstOrDefault(x => x.IsRecommended)?.Id ?? Model.Variants.FirstOrDefault()?.Id;
     var isDuet = string.Equals(Model.Slug, "duet-pt", StringComparison.OrdinalIgnoreCase);
@@ -79,7 +80,10 @@
                     </div>
                 }
             </details>
-            <button type="submit" formaction="@Url.Action("Buy", "Plans", new { area = "" })" class="service-package-submit">Satın Al <span aria-hidden="true">→</span></button>
+            @if (PaymentOptions.Value.Enabled)
+            {
+                <button type="submit" formaction="@Url.Action("Buy", "Plans", new { area = "" })" class="service-package-submit">Satın Al <span aria-hidden="true">→</span></button>
+            }
             <button type="submit" class="service-package-submit">Bilgi al / başvuru gönder</button>
         </form>
     }

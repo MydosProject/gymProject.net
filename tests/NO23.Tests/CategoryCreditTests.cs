@@ -112,11 +112,33 @@ public class CategoryCreditTests
         Assert.True((await service.CreateByAdminAsync(member.AssignedTrainerId!.Value, member.Id, DateTime.UtcNow.AddDays(1), 50, null)).Succeeded);
         Assert.False((await service.CreateByAdminAsync(member.AssignedTrainerId.Value, member.Id, DateTime.UtcNow.AddDays(2), 50, null)).Succeeded);
         var lesson = await db.PersonalTrainingSessions.SingleAsync();
+        lesson.StartsAtUtc = DateTime.UtcNow.AddHours(-1); // The lesson has taken place before it is completed.
+        await db.SaveChangesAsync();
         Assert.True((await service.ChangeStatusAsync(lesson.TrainerId, lesson.Id, PersonalTrainingSessionStatus.Completed, null, "admin", null)).Succeeded);
         Assert.False((await service.ChangeStatusAsync(lesson.TrainerId, lesson.Id, PersonalTrainingSessionStatus.Completed, null, "admin", null)).Succeeded);
         Assert.Equal(0, Account(member, LessonCategory.PersonalTraining).Remaining);
         Assert.Equal(5, Account(member, LessonCategory.Performance).Remaining);
         Assert.Equal(5, member.RemainingClassCredits);
+    }
+
+    [Theory]
+    [InlineData(PersonalTrainingSessionStatus.Completed)]
+    [InlineData(PersonalTrainingSessionStatus.NoShow)]
+    public async Task FuturePtLesson_CannotBeCompletedOrMarkedNoShow(PersonalTrainingSessionStatus status)
+    {
+        await using var db = Db();
+        var member = Member(db, new() { PersonalTrainingSessionCount = 2 });
+        await db.SaveChangesAsync();
+        var service = new PersonalTrainingCalendarService(db);
+        Assert.True((await service.CreateByAdminAsync(member.AssignedTrainerId!.Value, member.Id, DateTime.UtcNow.AddDays(1), 50, null)).Succeeded);
+        var lesson = await db.PersonalTrainingSessions.SingleAsync();
+
+        var result = await service.ChangeStatusAsync(lesson.TrainerId, lesson.Id, status, null, "admin", null);
+
+        Assert.False(result.Succeeded);
+        Assert.Contains("Henüz başlamamış", result.Message);
+        Assert.Equal(PersonalTrainingSessionStatus.Scheduled, lesson.Status);
+        Assert.Equal(2, Account(member, LessonCategory.PersonalTraining).Remaining);
     }
 
     [Fact]

@@ -64,7 +64,7 @@ UserNotificationRealtimeService? notificationService = null)
 
         if (order is null)
         {
-            return OrderWorkflowResult.Fail("Siparis bulunamadi.");
+            return OrderWorkflowResult.Fail("Sipariş bulunamadı.");
         }
 
         if (order.Status == requestedStatus)
@@ -102,7 +102,7 @@ UserNotificationRealtimeService? notificationService = null)
 
         if (order is null)
         {
-            return OrderWorkflowResult.Fail("Siparis bulunamadi.");
+            return OrderWorkflowResult.Fail("Sipariş bulunamadı.");
         }
 
         if (order.PaymentStatus == requestedPaymentStatus)
@@ -251,14 +251,14 @@ UserNotificationRealtimeService? notificationService = null)
             requestedStatus == OrderStatus.Confirmed &&
             order.PaymentStatus != PaymentStatus.Paid)
         {
-            return "Siparis onaylanmadan once odeme durumu odendi olmali.";
+            return "Sipariş onaylanmadan önce ödeme durumu \"Ödendi\" olmalı.";
         }
 
         if (order.Status != OrderStatus.Pending &&
             requestedStatus == OrderStatus.Cancelled &&
             order.PaymentStatus == PaymentStatus.Paid)
         {
-            return "Odenmis siparisi iptal etmek icin once odeme durumunu iade edildi yapmalisin.";
+            return "Ödenmiş siparişi iptal etmek için önce ödeme durumunu \"İade edildi\" yapmalısın.";
         }
 
         if (IsTerminal(order.Status))
@@ -280,15 +280,15 @@ UserNotificationRealtimeService? notificationService = null)
 
         if (IsTerminal(order.Status))
         {
-            return "Tamamlanmis veya iptal edilmis siparislerde odeme durumu degistirilemez.";
+            return "Tamamlanmış veya iptal edilmiş siparişlerde ödeme durumu değiştirilemez.";
         }
 
         if (order.PaymentStatus == PaymentStatus.Refunded)
         {
-            return "Iade edilmis odeme durumu degistirilemez.";
+            return "İade edilmiş ödeme durumu değiştirilemez.";
         }
 
-        return "Bu odeme durumu gecisine izin verilmiyor.";
+        return "Bu ödeme durumu geçişine izin verilmiyor.";
     }
 }
 

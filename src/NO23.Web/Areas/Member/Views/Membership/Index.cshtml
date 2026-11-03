@@ -30,7 +30,10 @@
     }
     else if (!Model.PaymentEnabled)
     {
-        <div class="alert alert-warning">Çevrimiçi ödeme şu anda kapalı. Yönetimle iletişime geçebilirsin.</div>
+        <div class="alert alert-warning">
+            Çevrimiçi ödeme şu anda kapalı. Yeni paket için başvuru gönderebilirsin; kulüp ödeme ve aktivasyon için seninle iletişime geçer.
+            <a asp-area="" asp-controller="Plans" asp-action="Index" asp-route-category="membership" class="d-block mt-2">Paketleri incele ve başvuru gönder →</a>
+        </div>
     }
     else
     {

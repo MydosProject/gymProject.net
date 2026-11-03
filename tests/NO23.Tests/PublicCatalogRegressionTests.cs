@@ -164,5 +164,28 @@ public class PublicCatalogRegressionTests
         });
     }
 
+    [Theory]
+    [InlineData(false, "Apply")]
+    [InlineData(true, null)]
+    public async Task Buy_FallsBackToApplicationWhenOnlinePaymentIsDisabled(bool paymentEnabled, string? expectedAction)
+    {
+        await using var db = Db();
+        db.ServicePackages.AddRange(ServicePackageSeed.Defaults);
+        await db.SaveChangesAsync();
+        var variant = await db.ServicePackageVariants.Include(x => x.ServicePackage).FirstAsync(x => x.ServicePackage.Slug == "hybrid");
+        var controller = new PlansController(db, Microsoft.Extensions.Options.Options.Create(
+            new NO23.Web.Services.Payments.IyzicoOptions { Enabled = paymentEnabled }))
+        {
+            ControllerContext = new ControllerContext { HttpContext = new Microsoft.AspNetCore.Http.DefaultHttpContext() }
+        };
+
+        var result = await controller.Buy("hybrid", variant.Id);
+
+        if (expectedAction is not null)
+            Assert.Equal(expectedAction, Assert.IsType<RedirectToActionResult>(result).ActionName);
+        else
+            Assert.StartsWith("/Identity/Account/Register", Assert.IsType<LocalRedirectResult>(result).Url);
+    }
+
     private static ApplicationDbContext Db() => new(new DbContextOptionsBuilder<ApplicationDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
 }
