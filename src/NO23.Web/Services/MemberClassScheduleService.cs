@@ -32,7 +32,9 @@ public sealed class MemberClassScheduleService(ApplicationDbContext db)
         var classes = await db.GroupClasses.AsNoTracking()
             .Where(groupClass => groupClass.IsActive)
             .OrderBy(groupClass => groupClass.Name)
-            .Select(groupClass => new MemberScheduleClassOption(groupClass.Id, groupClass.Name, groupClass.CreditCategory))
+            .ThenBy(groupClass => groupClass.Trainer.FirstName)
+            .Select(groupClass => new MemberScheduleClassOption(groupClass.Id, groupClass.Name, groupClass.CreditCategory,
+                groupClass.Trainer.FirstName + " " + groupClass.Trainer.LastName))
             .ToListAsync();
         LessonCategory? category = query.Category is { } requested && classes.Any(option => option.Category == requested)
             ? requested : null;

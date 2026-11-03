@@ -179,7 +179,7 @@
                         <option value="">Tüm dersler</option>
                         @foreach (var groupClass in schedule.Classes.Where(option => schedule.Category == null || option.Category == schedule.Category))
                         {
-                            <option value="@groupClass.Id" selected="@(groupClass.Id == schedule.ClassId)">@groupClass.Name</option>
+                            <option value="@groupClass.Id" selected="@(groupClass.Id == schedule.ClassId)">@groupClass.Name · @groupClass.TrainerName</option>
                         }
                     </select>
                 </label>

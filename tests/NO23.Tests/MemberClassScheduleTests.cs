@@ -86,6 +86,7 @@ public class MemberClassScheduleTests
         var all = await service.GetAsync(member.Id, new(), NowUtc);
         Assert.Equal(2, all.Sessions.Count);
         Assert.Equal([LessonCategory.Performance, LessonCategory.Reformer], all.Categories);
+        Assert.All(all.Classes, option => Assert.Equal("Test Coach", option.TrainerName));
 
         var reformerOnly = await service.GetAsync(member.Id, new(Category: LessonCategory.Reformer), NowUtc);
         var session = Assert.Single(reformerOnly.Sessions);

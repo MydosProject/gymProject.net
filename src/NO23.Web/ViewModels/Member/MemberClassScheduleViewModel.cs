@@ -8,7 +8,7 @@ public sealed record MemberClassScheduleQuery(
     LessonCategory? Category = null,
     int? ClassId = null);
 
-public sealed record MemberScheduleClassOption(int Id, string Name, LessonCategory Category);
+public sealed record MemberScheduleClassOption(int Id, string Name, LessonCategory Category, string TrainerName);
 
 public class MemberClassScheduleViewModel
 {
