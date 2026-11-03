@@ -32,11 +32,11 @@
 .fc-no23-mode button { padding: .4rem .9rem; border: 0; border-radius: 999px; background: transparent; color: #d8ddcf; font-size: .8rem; font-weight: 700; }
 .fc-no23-mode button[aria-pressed="true"] { background: var(--fc-no23-accent); color: var(--fc-no23-accent-ink); }
 
-.fc-no23-layout { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 1rem; align-items: start; }
-.fc-no23-layout > .fc-no23-host:only-child { grid-column: 1 / -1; }
-.fc-no23-side { padding: .75rem; border: 1px solid #3a4535; border-radius: 12px; background: #111711; }
+/* Trainers sit above the calendar so the week keeps the full width next to the panel menu. */
+.fc-no23-layout { display: grid; gap: .75rem; }
+.fc-no23-side { padding: .6rem .85rem; border: 1px solid #3a4535; border-radius: 12px; background: #111711; }
 .fc-no23-side summary { color: #f6f7f2; font-weight: 800; font-size: .85rem; cursor: pointer; }
-.fc-no23-side-list { display: grid; gap: .45rem; margin-top: .65rem; }
+.fc-no23-side-list { display: flex; flex-wrap: wrap; gap: .45rem 1.1rem; margin-top: .55rem; }
 .fc-no23-trainer { display: flex; align-items: center; gap: .5rem; color: #d8ddcf; font-size: .85rem; cursor: pointer; }
 .fc-no23-trainer input { accent-color: var(--fc-no23-accent); }
 .fc-no23-swatch { width: .8rem; height: .8rem; border-radius: 3px; flex: none; }
@@ -55,6 +55,7 @@
 .fc-no23 .fc .fc-list-event:hover td { background: #1e281e; }
 
 .fc-no23 .fc-event { cursor: pointer; border-width: 1px; border-radius: 6px; }
+.fc-no23 .fc-timegrid-event .fc-event-main { overflow: hidden; }
 .fc-no23 .fc-event.is-group { border-left-width: 4px; }
 .fc-no23 .fc-event.is-consultation { border-style: dashed; }
 .fc-no23 .fc-event.is-done { opacity: .5; }
@@ -92,7 +93,6 @@
 .fc-no23-toast-close { border: 0; background: transparent; color: #aab59d; font-size: 1.1rem; line-height: 1; }
 
 @media (max-width: 767.98px) {
-    .fc-no23-layout { grid-template-columns: 1fr; }
     .fc-no23-search { max-width: none; flex: 1 1 100%; }
     .fc-no23-host { padding: .4rem; }
     .fc-no23 .fc .fc-toolbar { gap: .4rem; }
