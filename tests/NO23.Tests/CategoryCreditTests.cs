@@ -223,6 +223,35 @@ public class CategoryCreditTests
     }
 
     [Fact]
+    public async Task RecordFix_ClosesTheGapWithoutChangingThePackageTotal()
+    {
+        await using var db = Db();
+        var member = Member(db, new() { PersonalTrainingSessionCount = 8 });
+        var account = Account(member, LessonCategory.PersonalTraining);
+        account.Remaining += 5; member.RemainingClassCredits += 5; // a balance that was never reduced
+        await db.SaveChangesAsync();
+        var service = new CategoryCreditAdminService(db);
+        Assert.True((await new LessonCreditSummaryService(db).GetAsync(member.Id))!.HasTotalDifference);
+        CreditAdjustmentInput Fix(int delta) => new() { MemberId = member.Id, Category = LessonCategory.PersonalTraining, Delta = delta,
+            FixesRecord = true, Reason = "Düşülmemiş dersler düzeltildi", OperationId = Guid.NewGuid() };
+
+        Assert.False((await service.AdjustAsync(Fix(-6), "admin")).Succeeded);
+        Assert.False((await service.AdjustAsync(Fix(1), "admin")).Succeeded);
+        var withLimit = Fix(-5); withLimit.ChangeMonthlyLimit = true; withLimit.MonthlyLimit = 4;
+        Assert.False((await service.AdjustAsync(withLimit, "admin")).Succeeded);
+        Assert.Equal(13, account.Remaining);
+
+        Assert.True((await service.AdjustAsync(Fix(-5), "admin")).Succeeded);
+        Assert.Equal(8, account.Remaining);
+        Assert.Equal(0, account.ConvertedCredits);
+        var summary = (await new LessonCreditSummaryService(db).GetAsync(member.Id))!;
+        Assert.False(summary.NeedsReview);
+        Assert.Equal(8, summary.EffectivePackageTotal);
+        Assert.Contains("Kayıt düzeltmesi", (await db.LessonCreditMovements.OrderBy(x => x.Id).LastAsync()).Reason);
+        Assert.False((await service.AdjustAsync(Fix(-1), "admin")).Succeeded);
+    }
+
+    [Fact]
     public async Task Adjustment_CannotRemoveAPlannedPtRight_OrRunWithoutReason()
     {
         await using var db = Db();

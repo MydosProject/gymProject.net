@@ -76,8 +76,9 @@ public sealed class CategoryCreditAdminService(ApplicationDbContext db)
         return (true, "Dönüşüm ve aylık sınır tercihi seçilen kurala göre uygulandı.");
     });
 
-    // Manual corrections (compensation, gifts, wrong records) are logged as movements and counted with
-    // conversions, so the package total keeps matching remaining plus completed lessons.
+    // Manual adjustments (compensation, gifts) are logged as movements and counted with conversions, so the
+    // package total keeps matching remaining plus completed lessons. A record fix instead repairs a balance that
+    // no longer matches that total: it leaves the total alone and may only close the visible gap.
     public Task<(bool Succeeded, string Message)> AdjustAsync(CreditAdjustmentInput input, string actor) => RunAsync(async () =>
     {
         if (input.OperationId == Guid.Empty || !Enum.IsDefined(input.Category) || input.Delta is < -1000 or > 1000 ||
@@ -85,6 +86,8 @@ public sealed class CategoryCreditAdminService(ApplicationDbContext db)
             input.Reason.Length > 300 || string.IsNullOrWhiteSpace(actor))
             return (false, "Düzeltme bilgilerini kontrol edin.");
         if (input.Delta == 0 && !input.ChangeMonthlyLimit) return (false, "Eklenecek veya çıkarılacak hak ya da yeni aylık sınır girin.");
+        if (input.FixesRecord && (input.Delta == 0 || input.ChangeMonthlyLimit))
+            return (false, "Kayıt düzeltmesinde yalnız hak farkı girilir; aylık sınırı ayrı bir düzeltmeyle değiştirin.");
         await MemberCreditGuard.LockAsync(db, input.MemberId);
         var member = await db.MemberProfiles.Include(x => x.MembershipPackage).FirstOrDefaultAsync(x => x.Id == input.MemberId);
         if (member?.LessonPeriodId is null) return (false, "Önce kategori dağılımını doğrulayın.");
@@ -98,14 +101,24 @@ public sealed class CategoryCreditAdminService(ApplicationDbContext db)
         if (input.Delta != 0 && account.IsUnlimited) return (false, "Sınırsız kategoride hak düzeltmesi yapılmaz.");
         if (input.Delta < 0 && -input.Delta > await new CategoryCreditService(db).AvailableAsync(member, account))
             return (false, "Çıkarılacak hak, kategorideki boş haktan fazla. Planlı derslere ayrılmış haklar çıkarılamaz.");
+        if (input.FixesRecord)
+        {
+            var row = (await new LessonCreditSummaryService(db).GetAsync(member.Id))?.Categories.FirstOrDefault(x => x.Category == input.Category);
+            var gap = row is null ? 0 : row.Granted + row.Converted - row.Completed - row.Remaining;
+            if (gap == 0)
+                return (false, "Bu kategoride paket toplamı ile kullanılan ve kalan haklar zaten tutuyor; düzeltilecek kayıt farkı yok.");
+            if (Math.Sign(gap) != Math.Sign(input.Delta) || Math.Abs(input.Delta) > Math.Abs(gap))
+                return (false, $"Kayıt farkı {gap:+#;-#} hak. Kayıt düzeltmesi bu farkla aynı yönde olmalı ve farkı aşmamalıdır.");
+        }
         // One movement per account and operation (unique index), so a limit change rides on the credit movement.
         var limitNote = limitChanges ? $"Aylık sınır {account.MonthlyLimit?.ToString() ?? "yok"} → {input.MonthlyLimit?.ToString() ?? "yok"}" : null;
         var reason = input.Reason.Trim();
         if (input.Delta != 0)
         {
             CategoryCreditService.Change(member, account, input.Delta, actor,
-                limitNote is null ? $"Yönetici düzeltmesi: {reason}" : $"Yönetici düzeltmesi, {limitNote}: {reason}", input.OperationId);
-            account.ConvertedCredits += input.Delta;
+                input.FixesRecord ? $"Kayıt düzeltmesi (paket toplamı değişmedi): {reason}"
+                : limitNote is null ? $"Yönetici düzeltmesi: {reason}" : $"Yönetici düzeltmesi, {limitNote}: {reason}", input.OperationId);
+            if (!input.FixesRecord) account.ConvertedCredits += input.Delta;
         }
         else if (limitNote is not null)
             account.Movements.Add(new LessonCreditMovement { Delta = 0, Actor = actor, OperationId = input.OperationId, Reason = $"{limitNote}: {reason}" });

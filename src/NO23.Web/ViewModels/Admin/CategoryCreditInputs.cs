@@ -30,6 +30,8 @@ public sealed class CreditAdjustmentInput
     public int MemberId { get; set; }
     public LessonCategory Category { get; set; }
     [Range(-1000, 1000)] public int Delta { get; set; }
+    // Repairs a wrong balance without changing the package total (only up to the visible gap).
+    public bool FixesRecord { get; set; }
     public bool ChangeMonthlyLimit { get; set; }
     // Null removes the monthly limit when ChangeMonthlyLimit is set.
     [Range(0, 1000)] public int? MonthlyLimit { get; set; }
