@@ -19,7 +19,12 @@ public class ReservationsController(
     PersonalTrainingRequestService personalTrainingRequestService,
     UserNotificationRealtimeService notificationService) : Controller
 {
-    public async Task<IActionResult> Index(int? trainerId = null)
+    public async Task<IActionResult> Index(
+        int? trainerId = null,
+        DateOnly? date = null,
+        string? view = null,
+        LessonCategory? category = null,
+        int? classId = null)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -60,34 +65,8 @@ public class ReservationsController(
                 })
                 .ToListAsync();
 
-        var availableSessions = await dbContext.ClassSessions
-            .AsNoTracking()
-            .Where(session =>
-                session.Status == ClassSessionStatus.Scheduled &&
-                session.StartsAtUtc >= DateTime.UtcNow &&
-                session.GroupClass.IsActive)
-            .OrderBy(session => session.StartsAtUtc)
-            .Take(20)
-            .Select(session => new AvailableClassSessionViewModel
-            {
-                SessionId = session.Id,
-                ClassName = session.GroupClass.Name,
-                TrainerName =
-                    session.GroupClass.Trainer.FirstName + " " +
-                    session.GroupClass.Trainer.LastName,
-                StartsAtUtc = session.StartsAtUtc,
-                DurationMinutes = session.GroupClass.DurationMinutes,
-                DifficultyLevel = session.GroupClass.DifficultyLevel.ToString(),
-                AverageCaloriesBurned = session.GroupClass.AverageCaloriesBurned,
-                Capacity = session.CapacityOverride ?? session.GroupClass.Capacity,
-                ReservedCount = session.Reservations.Count(reservation =>
-                    reservation.Status == ClassReservationStatus.Reserved),
-                IsReservedByMember = profileId != null &&
-                    session.Reservations.Any(reservation =>
-                        reservation.MemberProfileId == profileId &&
-                        reservation.Status == ClassReservationStatus.Reserved)
-            })
-            .ToListAsync();
+        var schedule = await new MemberClassScheduleService(dbContext).GetAsync(
+            profileId, new MemberClassScheduleQuery(date, view, category, classId), DateTime.UtcNow);
 
         var trainers = await dbContext.Trainers
             .AsNoTracking()
@@ -158,7 +137,8 @@ public class ReservationsController(
             UpcomingPersonalSessions = profileId.HasValue
                 ? await new MemberPersonalScheduleService(dbContext).UpcomingAsync(profileId.Value, DateTime.UtcNow) : [],
             UpcomingReservations = upcomingReservations,
-            AvailableSessions = availableSessions,
+            AvailableSessions = schedule.Sessions,
+            Schedule = schedule,
             Trainers = trainers,
             SelectedTrainerId = selectedTrainerId,
             PersonalTrainingRequestInput = new PersonalTrainingRequestInputViewModel
@@ -176,7 +156,12 @@ public class ReservationsController(
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Reserve(int classSessionId)
+    public async Task<IActionResult> Reserve(
+        int classSessionId,
+        DateOnly? date = null,
+        string? view = null,
+        LessonCategory? category = null,
+        int? classId = null)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -189,7 +174,9 @@ public class ReservationsController(
         TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] =
             result.Succeeded ? "Rezervasyon oluşturuldu." : result.ErrorMessage;
 
-        return LocalRedirect($"{Url.Action(nameof(Index))}#group-classes");
+        // Return to the same day/week and filters the member reserved from.
+        var scheduleUrl = Url.Action(nameof(Index), new { date = date?.ToString("yyyy-MM-dd"), view, category, classId });
+        return LocalRedirect($"{scheduleUrl}#group-classes");
     }
 
     [HttpPost]

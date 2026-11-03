@@ -8,6 +8,8 @@ public class MemberReservationsIndexViewModel
 
     public IReadOnlyList<AvailableClassSessionViewModel> AvailableSessions { get; init; } = [];
 
+    public MemberClassScheduleViewModel Schedule { get; init; } = new();
+
     public IReadOnlyList<PersonalTrainerOptionViewModel> Trainers { get; init; } = [];
 
     public int? SelectedTrainerId { get; init; }

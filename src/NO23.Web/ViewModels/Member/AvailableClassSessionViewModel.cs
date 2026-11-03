@@ -1,3 +1,5 @@
+using NO23.Web.Domain.Enums;
+
 namespace NO23.Web.ViewModels.Member;
 
 public class AvailableClassSessionViewModel
@@ -5,6 +7,8 @@ public class AvailableClassSessionViewModel
     public int SessionId { get; init; }
 
     public string ClassName { get; init; } = string.Empty;
+
+    public LessonCategory Category { get; init; } = LessonCategory.Group;
 
     public string TrainerName { get; init; } = string.Empty;
 

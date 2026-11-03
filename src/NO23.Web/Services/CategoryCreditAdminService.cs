@@ -76,6 +76,45 @@ public sealed class CategoryCreditAdminService(ApplicationDbContext db)
         return (true, "Dönüşüm ve aylık sınır tercihi seçilen kurala göre uygulandı.");
     });
 
+    // Manual corrections (compensation, gifts, wrong records) are logged as movements and counted with
+    // conversions, so the package total keeps matching remaining plus completed lessons.
+    public Task<(bool Succeeded, string Message)> AdjustAsync(CreditAdjustmentInput input, string actor) => RunAsync(async () =>
+    {
+        if (input.OperationId == Guid.Empty || !Enum.IsDefined(input.Category) || input.Delta is < -1000 or > 1000 ||
+            input.MonthlyLimit is < 0 or > 1000 || string.IsNullOrWhiteSpace(input.Reason) || input.Reason.Trim().Length < 5 ||
+            input.Reason.Length > 300 || string.IsNullOrWhiteSpace(actor))
+            return (false, "Düzeltme bilgilerini kontrol edin.");
+        if (input.Delta == 0 && !input.ChangeMonthlyLimit) return (false, "Eklenecek veya çıkarılacak hak ya da yeni aylık sınır girin.");
+        await MemberCreditGuard.LockAsync(db, input.MemberId);
+        var member = await db.MemberProfiles.Include(x => x.MembershipPackage).FirstOrDefaultAsync(x => x.Id == input.MemberId);
+        if (member?.LessonPeriodId is null) return (false, "Önce kategori dağılımını doğrulayın.");
+        if (await db.LessonCreditMovements.AnyAsync(x => x.Account.MemberProfileId == member.Id && x.OperationId == input.OperationId))
+            return (true, "Bu düzeltme daha önce işlendi; ikinci kez uygulanmadı.");
+        var account = await db.MemberLessonAccounts.FirstOrDefaultAsync(x =>
+            x.MemberProfileId == member.Id && x.PeriodId == member.LessonPeriodId && x.Category == input.Category);
+        if (account is null) return (false, CategoryCreditService.ReviewMessage);
+        var limitChanges = input.ChangeMonthlyLimit && account.MonthlyLimit != input.MonthlyLimit;
+        if (input.Delta == 0 && !limitChanges) return (false, "Aylık sınır zaten bu değerde.");
+        if (input.Delta != 0 && account.IsUnlimited) return (false, "Sınırsız kategoride hak düzeltmesi yapılmaz.");
+        if (input.Delta < 0 && -input.Delta > await new CategoryCreditService(db).AvailableAsync(member, account))
+            return (false, "Çıkarılacak hak, kategorideki boş haktan fazla. Planlı derslere ayrılmış haklar çıkarılamaz.");
+        // One movement per account and operation (unique index), so a limit change rides on the credit movement.
+        var limitNote = limitChanges ? $"Aylık sınır {account.MonthlyLimit?.ToString() ?? "yok"} → {input.MonthlyLimit?.ToString() ?? "yok"}" : null;
+        var reason = input.Reason.Trim();
+        if (input.Delta != 0)
+        {
+            CategoryCreditService.Change(member, account, input.Delta, actor,
+                limitNote is null ? $"Yönetici düzeltmesi: {reason}" : $"Yönetici düzeltmesi, {limitNote}: {reason}", input.OperationId);
+            account.ConvertedCredits += input.Delta;
+        }
+        else if (limitNote is not null)
+            account.Movements.Add(new LessonCreditMovement { Delta = 0, Actor = actor, OperationId = input.OperationId, Reason = $"{limitNote}: {reason}" });
+        if (limitChanges) account.MonthlyLimit = input.MonthlyLimit;
+        member.UpdatedAtUtc = DateTime.UtcNow;
+        await db.SaveChangesAsync();
+        return (true, "Hak düzeltmesi kaydedildi.");
+    });
+
     private async Task<(bool Succeeded, string Message)> RunAsync(Func<Task<(bool Succeeded, string Message)>> operation)
     {
         try {

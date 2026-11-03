@@ -12509,6 +12509,153 @@ button:focus-visible {
   margin-top: 4.25rem;
 }
 
+/* Member 14-day group class program */
+.member-schedule-filters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  align-items: end;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.member-schedule-filters label {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.member-schedule-filters label > span {
+  color: rgba(255, 255, 255, 0.52);
+  font-size: 0.58rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.member-schedule-filters input,
+.member-schedule-filters select {
+  width: 100%;
+  min-height: 45px;
+  padding: 0.7rem;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.045);
+  color: #fff;
+  color-scheme: dark;
+  font-size: 0.76rem;
+}
+
+.member-schedule-filters button {
+  min-height: 45px;
+  padding: 0 1.3rem;
+  border: 1px solid var(--member-accent);
+  border-radius: 10px;
+  background: var(--member-accent);
+  color: #090b09;
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.member-schedule-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.member-schedule-views {
+  display: inline-flex;
+  padding: 0.2rem;
+  border: 1px solid var(--member-border);
+  border-radius: 999px;
+}
+
+.member-schedule-views a {
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.member-schedule-views a.is-active {
+  background: var(--member-accent);
+  color: #090b09;
+}
+
+.member-schedule-nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: #fff;
+}
+
+.member-schedule-nav strong {
+  font-size: 0.85rem;
+}
+
+.member-schedule-nav a {
+  color: var(--member-accent);
+  font-size: 0.62rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.member-schedule-day + .member-schedule-day {
+  margin-top: 1.75rem;
+}
+
+.member-schedule-day-title {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin-bottom: 0.8rem;
+  color: #fff;
+  font-size: 1.05rem;
+}
+
+.member-schedule-day-title span {
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.75rem;
+}
+
+.member-schedule-empty {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  border: 1px dashed var(--member-border);
+  border-radius: 14px;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.75rem;
+}
+
+@media (max-width: 767.98px) {
+  .member-schedule-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .member-schedule-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .member-schedule-views a {
+    flex: 1;
+    text-align: center;
+  }
+
+  .member-schedule-nav {
+    justify-content: space-between;
+  }
+}
+
 .member-coming-pill {
   padding: 0.5rem 0.8rem;
   border: 1px solid rgba(197, 255, 32, 0.35);

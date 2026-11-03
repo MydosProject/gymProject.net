@@ -25,6 +25,17 @@ public sealed class CreditConversionInput
     [Required, StringLength(300, MinimumLength = 5)] public string Reason { get; set; } = "";
     public Guid OperationId { get; set; }
 }
+public sealed class CreditAdjustmentInput
+{
+    public int MemberId { get; set; }
+    public LessonCategory Category { get; set; }
+    [Range(-1000, 1000)] public int Delta { get; set; }
+    public bool ChangeMonthlyLimit { get; set; }
+    // Null removes the monthly limit when ChangeMonthlyLimit is set.
+    [Range(0, 1000)] public int? MonthlyLimit { get; set; }
+    [Required, StringLength(300, MinimumLength = 5)] public string Reason { get; set; } = "";
+    public Guid OperationId { get; set; }
+}
 public sealed class CreditRuleInput
 {
     public bool IncreaseTargetMonthlyLimit { get; set; }

@@ -22,6 +22,15 @@
     }
     @if (summary.HasCategoryAccounts)
     {
+        <section class="admin-form-card"><h2 class="h5">Hak düzeltme</h2>
+        <p>Telafi, hediye veya hatalı kayıt için kategoriye hak ekleyin ya da çıkarın; gerekirse aylık sınırı değiştirin. Planlı derslere ayrılmış haklar çıkarılamaz. Her düzeltme gerekçesiyle hak hareketlerine yazılır.</p>
+        <form asp-action="AdjustCredits" method="post" data-submit-once><input type="hidden" name="MemberId" value="@summary.MemberId" /><input type="hidden" name="OperationId" value="@Guid.NewGuid()" />
+            <label>Kategori<select name="Category" class="form-select" required>@foreach (var row in summary.Categories) { <option value="@row.Category">@row.Category.GetDisplayName() · kalan @row.Remaining · boş @row.Available@(row.MonthlyLimit.HasValue ? $" · aylık sınır {row.MonthlyLimit}" : "")</option> }</select></label>
+            <label>Hak değişimi (+ ekle / − çıkar)<input name="Delta" type="number" min="-1000" max="1000" value="0" required class="form-control" /></label>
+            <label><input name="ChangeMonthlyLimit" type="checkbox" value="true" /> Aylık sınırı değiştir</label>
+            <label>Yeni aylık sınır (boş bırakılırsa sınır kalkar)<input name="MonthlyLimit" type="number" min="0" max="1000" class="form-control" /></label>
+            <label>Gerekçe<input name="Reason" minlength="5" maxlength="300" required class="form-control" /></label><button class="btn btn-dark">Düzeltmeyi kaydet</button>
+        </form></section>
         <section class="admin-form-card"><h2 class="h5">Kurala bağlı hak dönüşümü</h2>
         <form asp-action="ConvertCredits" method="post" data-submit-once><input type="hidden" name="MemberId" value="@summary.MemberId" /><input type="hidden" name="OperationId" value="@Guid.NewGuid()" />
             <label>Kural<select name="RuleId" class="form-select" required><option value="">Aktif kural seçin</option>@foreach (var rule in Model.ConversionRules.Where(x => x.IsActive)) { <option value="@rule.Id">@rule.Name: @rule.SourceCredits @rule.From.GetDisplayName() → @rule.TargetCredits @rule.To.GetDisplayName()</option> }</select></label>

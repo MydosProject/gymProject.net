@@ -1,9 +1,20 @@
 @using System.Globalization
+@using NO23.Web.Extensions
 @model MemberReservationsIndexViewModel
 
 @{
     ViewData["Title"] = "Rezervasyonlarım";
     var turkishCulture = CultureInfo.GetCultureInfo("tr-TR");
+    var schedule = Model.Schedule;
+    string ScheduleUrl(string view, DateTime date) =>
+        Url.Action("Index", "Reservations", new
+        {
+            area = "Member",
+            view,
+            date = date.ToString("yyyy-MM-dd"),
+            category = schedule.Category,
+            classId = schedule.ClassId
+        }) + "#group-classes";
 }
 
 <section class="member-reservations-page">
@@ -129,7 +140,7 @@
                  id="group-classes">
             <div class="member-section-heading">
                 <div>
-                    <p class="member-section-kicker">01 / Grup dersleri</p>
+                    <p class="member-section-kicker">01 / Grup dersleri · 14 günlük program</p>
                     <h2>Programına uygun seansı seç</h2>
                 </div>
                 <span class="member-section-count">
@@ -137,20 +148,94 @@
                 </span>
             </div>
 
+            <form class="member-schedule-filters"
+                  asp-area="Member"
+                  asp-controller="Reservations"
+                  asp-action="Index"
+                  asp-fragment="group-classes"
+                  method="get">
+                <input type="hidden" name="view" value="@schedule.View" />
+                <label>
+                    <span>Tarih</span>
+                    <input type="date"
+                           name="date"
+                           min="@schedule.FirstDay.ToString("yyyy-MM-dd")"
+                           max="@schedule.LastDay.ToString("yyyy-MM-dd")"
+                           value="@schedule.SelectedDate.ToString("yyyy-MM-dd")" />
+                </label>
+                <label>
+                    <span>Ders türü</span>
+                    <select name="category">
+                        <option value="">Tüm türler</option>
+                        @foreach (var category in schedule.Categories)
+                        {
+                            <option value="@category" selected="@(category == schedule.Category)">@category.GetDisplayName()</option>
+                        }
+                    </select>
+                </label>
+                <label>
+                    <span>Ders</span>
+                    <select name="classId">
+                        <option value="">Tüm dersler</option>
+                        @foreach (var groupClass in schedule.Classes.Where(option => schedule.Category == null || option.Category == schedule.Category))
+                        {
+                            <option value="@groupClass.Id" selected="@(groupClass.Id == schedule.ClassId)">@groupClass.Name</option>
+                        }
+                    </select>
+                </label>
+                <button type="submit">Filtrele</button>
+            </form>
+
+            <div class="member-schedule-toolbar">
+                <nav class="member-schedule-views" aria-label="Program görünümü">
+                    <a href="@ScheduleUrl(MemberClassScheduleViewModel.DayView, schedule.IsDaily ? schedule.SelectedDate : schedule.RangeStart)"
+                       class="@(schedule.IsDaily ? "is-active" : null)"
+                       aria-current="@(schedule.IsDaily ? "page" : null)">Günlük</a>
+                    <a href="@ScheduleUrl(MemberClassScheduleViewModel.WeekView, schedule.SelectedDate)"
+                       class="@(schedule.IsDaily ? null : "is-active")"
+                       aria-current="@(schedule.IsDaily ? null : "page")">Haftalık</a>
+                </nav>
+                <div class="member-schedule-nav">
+                    @if (schedule.PreviousDate is { } previousDate)
+                    {
+                        <a href="@ScheduleUrl(schedule.View, previousDate.ToDateTime(TimeOnly.MinValue))">← @(schedule.IsDaily ? "Önceki gün" : "Önceki hafta")</a>
+                    }
+                    <strong>
+                        @(schedule.IsDaily
+                            ? schedule.RangeStart.ToString("d MMMM dddd", turkishCulture)
+                            : $"{schedule.RangeStart.ToString("d MMMM", turkishCulture)} – {schedule.RangeEnd.ToString("d MMMM", turkishCulture)}")
+                    </strong>
+                    @if (schedule.NextDate is { } nextDate)
+                    {
+                        <a href="@ScheduleUrl(schedule.View, nextDate.ToDateTime(TimeOnly.MinValue))">@(schedule.IsDaily ? "Sonraki gün" : "Sonraki hafta") →</a>
+                    }
+                </div>
+            </div>
+
             @if (Model.AvailableSessions.Count == 0)
             {
                 <div class="member-empty-state">
                     <span class="member-empty-number">—</span>
                     <div>
-                        <h3>Şu anda uygun ders bulunmuyor.</h3>
-                        <p>Yeni seanslar yayınlandığında burada görüntülenecek.</p>
+                        <h3>Bu aralıkta uygun ders bulunmuyor.</h3>
+                        <p>Başka bir tarih veya ders türü seçebilirsin. Yeni seanslar yayınlandığında burada görüntülenecek.</p>
                     </div>
                 </div>
             }
             else
             {
+                foreach (var day in schedule.Days)
+                {
+                <div class="member-schedule-day">
+                    <h3 class="member-schedule-day-title">@day.DayName <span>@day.Date.ToString("d MMMM", turkishCulture)</span></h3>
+                    @if (day.Sessions.Count == 0)
+                    {
+                        <p class="member-schedule-empty">Bu gün için uygun seans yok.</p>
+                    }
+                    else
+                    {
                 <div class="member-session-grid">
-                    @foreach (var session in Model.AvailableSessions)
+                    @foreach (var session in day.Sessions)
                     {
                         var isFull = session.ReservedCount >= session.Capacity;
                         var remainingCapacity = Math.Max(0, session.Capacity - session.ReservedCount);
@@ -176,6 +261,7 @@
                                 <span>Eğitmen: @session.TrainerName</span>
 
                                 <div class="member-session-details">
+                                    <span>@session.Category.GetDisplayName()</span>
                                     <span>@session.DurationMinutes dk</span>
                                     <span>@session.DifficultyLevel</span>
                                     <span>@session.AverageCaloriesBurned kcal</span>
@@ -202,6 +288,16 @@
                                         <input type="hidden"
                                                name="classSessionId"
                                                value="@session.SessionId" />
+                                        <input type="hidden" name="view" value="@schedule.View" />
+                                        <input type="hidden" name="date" value="@schedule.SelectedDate.ToString("yyyy-MM-dd")" />
+                                        @if (schedule.Category is { } selectedCategory)
+                                        {
+                                            <input type="hidden" name="category" value="@selectedCategory" />
+                                        }
+                                        @if (schedule.ClassId is { } selectedClassId)
+                                        {
+                                            <input type="hidden" name="classId" value="@selectedClassId" />
+                                        }
                                         <button type="submit"
                                                 class="member-reserve-button"
                                                 disabled="@isFull">
@@ -213,6 +309,9 @@
                         </article>
                     }
                 </div>
+                    }
+                </div>
+                }
             }
         </section>
 

@@ -199,6 +199,80 @@ public class CategoryCreditTests
     }
 
     [Fact]
+    public async Task Adjustment_AddsAndRemovesCategoryRights_KeepsTotalsConsistent_AndIsIdempotent()
+    {
+        await using var db = Db();
+        var member = Member(db, new() { PersonalTrainingSessionCount = 2, PerformanceClassCreditCount = 8 });
+        await db.SaveChangesAsync();
+        var service = new CategoryCreditAdminService(db);
+        var add = new CreditAdjustmentInput { MemberId = member.Id, Category = LessonCategory.Performance, Delta = 2,
+            Reason = "Kaçırılan ders telafisi", OperationId = Guid.NewGuid() };
+        Assert.True((await service.AdjustAsync(add, "admin")).Succeeded);
+        Assert.True((await service.AdjustAsync(add, "admin")).Succeeded);
+        Assert.Equal(10, Account(member, LessonCategory.Performance).Remaining);
+        Assert.Equal(1, await db.LessonCreditMovements.CountAsync(x => x.OperationId == add.OperationId));
+        Assert.True((await service.AdjustAsync(new() { MemberId = member.Id, Category = LessonCategory.PersonalTraining, Delta = -1,
+            Reason = "Hatalı tanımlanan hak", OperationId = Guid.NewGuid() }, "admin")).Succeeded);
+        Assert.Equal(1, Account(member, LessonCategory.PersonalTraining).Remaining);
+        Assert.Equal(11, member.RemainingClassCredits);
+        var summary = (await new LessonCreditSummaryService(db).GetAsync(member.Id))!;
+        Assert.Equal(10, summary.PackageTotal);
+        Assert.Equal(1, summary.ConvertedCredits);
+        Assert.Equal(11, summary.EffectivePackageTotal);
+        Assert.False(summary.NeedsReview);
+    }
+
+    [Fact]
+    public async Task Adjustment_CannotRemoveAPlannedPtRight_OrRunWithoutReason()
+    {
+        await using var db = Db();
+        var member = Member(db, new() { PersonalTrainingSessionCount = 1 });
+        db.PersonalTrainingSessions.Add(new() { MemberProfile = member, Trainer = member.AssignedTrainer!, StartsAtUtc = DateTime.UtcNow.AddDays(1),
+            LessonAccount = Account(member, LessonCategory.PersonalTraining) });
+        await db.SaveChangesAsync();
+        var service = new CategoryCreditAdminService(db);
+        Assert.False((await service.AdjustAsync(new() { MemberId = member.Id, Category = LessonCategory.PersonalTraining, Delta = -1,
+            Reason = "Planlı hakkı silme denemesi", OperationId = Guid.NewGuid() }, "admin")).Succeeded);
+        Assert.False((await service.AdjustAsync(new() { MemberId = member.Id, Category = LessonCategory.PersonalTraining, Delta = 1,
+            Reason = "kısa", OperationId = Guid.NewGuid() }, "admin")).Succeeded);
+        Assert.Equal(1, Account(member, LessonCategory.PersonalTraining).Remaining);
+        Assert.Empty(await db.LessonCreditMovements.Where(x => x.Reason.StartsWith("Yönetici düzeltmesi")).ToListAsync());
+    }
+
+    [Fact]
+    public async Task Adjustment_ChangesAndRemovesMonthlyLimit_WithAuditMovement()
+    {
+        await using var db = Db();
+        var member = Member(db, new() { PerformanceClassCreditCount = 8 });
+        await db.SaveChangesAsync();
+        var service = new CategoryCreditAdminService(db);
+        var account = Account(member, LessonCategory.Performance);
+        Assert.True((await service.AdjustAsync(new() { MemberId = member.Id, Category = LessonCategory.Performance,
+            ChangeMonthlyLimit = true, MonthlyLimit = 4, Reason = "Aylık plan sınırı", OperationId = Guid.NewGuid() }, "admin")).Succeeded);
+        Assert.Equal(4, account.MonthlyLimit);
+        Assert.False((await service.AdjustAsync(new() { MemberId = member.Id, Category = LessonCategory.Performance,
+            ChangeMonthlyLimit = true, MonthlyLimit = 4, Reason = "Aynı sınır tekrar", OperationId = Guid.NewGuid() }, "admin")).Succeeded);
+        Assert.True((await service.AdjustAsync(new() { MemberId = member.Id, Category = LessonCategory.Performance,
+            ChangeMonthlyLimit = true, MonthlyLimit = null, Reason = "Sınır kaldırıldı", OperationId = Guid.NewGuid() }, "admin")).Succeeded);
+        Assert.Null(account.MonthlyLimit);
+        Assert.Equal(8, account.Remaining);
+        var limitMovements = await db.LessonCreditMovements.Where(x => x.Reason.StartsWith("Aylık sınır")).ToListAsync();
+        Assert.Equal(2, limitMovements.Count);
+        Assert.All(limitMovements, movement => Assert.Equal(0, movement.Delta));
+
+        // Credits and limit together must stay one movement: (AccountId, OperationId) is unique in PostgreSQL.
+        var combined = new CreditAdjustmentInput { MemberId = member.Id, Category = LessonCategory.Performance, Delta = 2,
+            ChangeMonthlyLimit = true, MonthlyLimit = 5, Reason = "Telafi ve yeni sınır", OperationId = Guid.NewGuid() };
+        Assert.True((await service.AdjustAsync(combined, "admin")).Succeeded);
+        var movement = Assert.Single(await db.LessonCreditMovements.Where(x => x.OperationId == combined.OperationId).ToListAsync());
+        Assert.Equal(2, movement.Delta);
+        Assert.Contains("Aylık sınır yok → 5", movement.Reason);
+        Assert.Equal(5, account.MonthlyLimit);
+        Assert.Equal(10, account.Remaining);
+        Assert.False((await new LessonCreditSummaryService(db).GetAsync(member.Id))!.NeedsReview);
+    }
+
+    [Fact]
     public async Task AmbiguousLegacyBalance_IsBlockedUntilAnExplicitReviewedAllocation()
     {
         await using var db = Db();

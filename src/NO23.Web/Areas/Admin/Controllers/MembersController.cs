@@ -231,6 +231,16 @@ public class MembersController(
     }
 
     [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> AdjustCredits(CreditAdjustmentInput input)
+    {
+        var result = ModelState.IsValid
+            ? await new CategoryCreditAdminService(dbContext).AdjustAsync(input, User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "")
+            : (false, "Düzeltme bilgilerini kontrol edin. Gerekçe en az 5 karakter olmalı.");
+        TempData[result.Item1 ? "SuccessMessage" : "ErrorMessage"] = result.Item2;
+        return RedirectToAction(nameof(Credits), new { id = input.MemberId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> AddCreditRule(int memberId, CreditRuleInput input)
     {
         if (!ModelState.IsValid || !Enum.IsDefined(input.From) || !Enum.IsDefined(input.To) || input.From == input.To) return BadRequest("Farklı iki kategori ve geçerli oran seçin.");
