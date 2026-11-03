@@ -4,6 +4,7 @@
 @using NO23.Web.Domain.Enums
 @using NO23.Web.Extensions
 <link rel="stylesheet" href="~/css/calendar-timeline.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/calendar-fc.css" asp-append-version="true" />
 @{
     ViewData["Title"] = Model.ViewMode == "day" ? "Günlük Takvim" : "Haftalık Takvim";
     var culture = System.Globalization.CultureInfo.GetCultureInfo("tr-TR");
@@ -16,6 +17,30 @@
     { if (TempData[key] is string message) { <div class="alert @(key == "ErrorMessage" ? "alert-danger" : "alert-success")" role="status">@message</div> } }
     <partial name="/Views/Shared/_CalendarNavigation.cshtml" model="Model.Navigation" />
     @if (Model.Credits is not null) { <partial name="/Views/Shared/_LessonCreditSummary.cshtml" model="Model.Credits" /><p><a asp-controller="Members" asp-action="Credits" asp-route-id="@Model.MemberId">Ders hakkı kontrolü ve geçmişi →</a></p> }
+    <section class="fc-no23" data-fc-calendar aria-label="Takvim"
+             data-events-url="@Url.Action("Events")" data-move-url="@Url.Action("Move")" data-card-url="@Url.Action("Index")"
+             data-initial-date="@Model.SelectedDate.ToString("yyyy-MM-dd")" data-trainer-id="@Model.TrainerId" data-member-id="@Model.MemberId"
+             data-include-completed="@Model.IncludeCompleted.ToString().ToLowerInvariant()"
+             data-trainers="@System.Text.Json.JsonSerializer.Serialize(Model.Trainers.Select(x => new { id = int.Parse(x.Value), name = x.Text }))"></section>
+    <dialog class="fc-no23-dialog" data-fc-quick-add aria-labelledby="fc-quick-add-title">
+        <header class="fc-no23-dialog-head"><div><h2 id="fc-quick-add-title">Takvime ekle</h2><p data-fc-quick-title></p></div><button type="button" class="fc-no23-close" data-fc-close>Kapat</button></header>
+        <div class="fc-no23-tabs" role="tablist"><button type="button" role="tab" data-fc-tab="personal" aria-selected="true">Birebir ders</button><button type="button" role="tab" data-fc-tab="group" aria-selected="false">Grup dersi</button></div>
+        <form data-submit-once asp-action="CreatePersonal" method="post" class="fc-no23-form" data-fc-panel="personal"><input type="hidden" name="IncludeCompleted" value="@Model.IncludeCompleted.ToString().ToLowerInvariant()" /><input type="hidden" name="FilterMemberId" value="@Model.MemberId" /><input type="hidden" name="FilterTrainerId" value="@Model.TrainerId" />
+            <label>Antrenör<select name="TrainerId" asp-items="Model.Trainers" class="form-select" required data-fc-trainer><option value="">Antrenör seç</option></select></label>
+            <label>Üye<select name="MemberProfileId" asp-items="Model.Members" class="form-select" required><option value="">Üye seç</option></select></label>
+            <div class="fc-no23-form-row"><label>Tarih ve saat<input name="StartsAt" type="datetime-local" required class="form-control" data-fc-start /></label><label>Süre (dakika)<input name="DurationMinutes" type="number" min="15" max="240" value="50" required class="form-control" data-fc-duration /></label></div>
+            <label>Not<textarea name="Note" maxlength="600" rows="2" class="form-control"></textarea></label>
+            <p class="fc-no23-hint">Ders hakkı, paket dönemi ve çakışma kontrol edilir; uygun değilse ders eklenmez.</p>
+            <button class="btn btn-dark">Birebir dersi ekle</button>
+        </form>
+        <form data-submit-once asp-action="CreateGroup" method="post" class="fc-no23-form" data-fc-panel="group" hidden><input type="hidden" name="IncludeCompleted" value="@Model.IncludeCompleted.ToString().ToLowerInvariant()" /><input type="hidden" name="FilterMemberId" value="@Model.MemberId" /><input type="hidden" name="FilterTrainerId" value="@Model.TrainerId" /><input type="hidden" name="Days" data-fc-day />
+            <label>Grup dersi<select name="GroupClassId" asp-items="Model.Classes" class="form-select" required><option value="">Ders seç</option></select></label>
+            <div class="fc-no23-form-row"><label>Tarih<input name="Week" type="date" required class="form-control" data-fc-date /></label><label>Saat<input name="Time" type="time" required class="form-control" data-fc-time /></label></div>
+            <div class="fc-no23-form-row"><label>Kaç hafta tekrarlansın<input name="Weeks" type="number" min="1" max="52" value="1" required class="form-control" /></label><label>Kontenjan (boşsa dersin kontenjanı)<input name="Capacity" type="number" min="1" max="200" class="form-control" /></label></div>
+            <p class="fc-no23-hint">Tekrar 1 ise yalnız bu gün eklenir; daha fazlasında her hafta aynı gün ve saatte eklenir. Çakışma varsa hiçbir seans eklenmez.</p>
+            <button class="btn btn-dark">Grup dersini ekle</button>
+        </form>
+    </dialog>
     <div class="row g-3 mb-4">
         <div class="col-lg-6"><details class="border rounded p-3 bg-white text-dark"><summary>+ Haftalık grup dersi ekle</summary>
             <form data-submit-once asp-action="CreateGroup" method="post" class="mt-3"><input type="hidden" name="IncludeCompleted" value="@Model.IncludeCompleted.ToString().ToLowerInvariant()" /><input type="hidden" name="FilterMemberId" value="@Model.MemberId" /><input type="hidden" name="FilterTrainerId" value="@Model.TrainerId" />
@@ -85,11 +110,11 @@
         </form>
     </details>
     @await Html.PartialAsync("_CalendarBulkToolbar", new NO23.Web.ViewModels.Admin.CalendarBulkInput { Week = Model.Week, TrainerId = Model.TrainerId, MemberId = Model.MemberId, IncludeCompleted = Model.IncludeCompleted })
-    <div class="weekly-calendar-legend" aria-label="Ders türleri">
+    <div class="weekly-calendar-legend" aria-label="Ders türleri" data-fc-cards>
         <span class="calendar-kind is-personal">Birebir</span><span class="calendar-kind">Grup</span><span class="calendar-kind is-consultation">Ön görüşme</span>
         <p>Toplu işlem için ders kartındaki seçim kutusunu işaretleyin.</p>
     </div>
-    <div class="weekly-calendar @(Model.ViewMode == "day" ? "is-day-view" : null)" data-calendar-timeline>
+    <div class="weekly-calendar @(Model.ViewMode == "day" ? "is-day-view" : null)" data-calendar-timeline data-fc-cards>
     @foreach(var date in Model.DisplayDays)
     {
         var entries=Model.EntriesFor(date);
@@ -107,7 +132,7 @@
         var localStart = ClubTime.ToLocal(entry.StartsAtUtc);
         var entryDuration = entry.Personal?.DurationMinutes ?? entry.Group?.GroupClass.DurationMinutes ?? entry.Appointment?.DurationMinutes ?? 50;
         var entryTitle = entry.Personal is { } pt ? $"{pt.MemberProfile.ApplicationUser.FirstName} {pt.MemberProfile.ApplicationUser.LastName}" : entry.Group?.GroupClass.Name ?? entry.Appointment?.FullName;
-        <div class="calendar-entry" data-calendar-start="@(localStart.Hour * 60 + localStart.Minute)" data-calendar-duration="@entryDuration" data-calendar-kind="@(entry.Personal is not null ? "personal" : entry.Group is not null ? "group" : "consultation")" data-calendar-title="@entryTitle"><time class="calendar-entry-clock">@localStart.ToString("HH:mm")</time>
+        <div class="calendar-entry" data-calendar-entry="@(entry.Personal is { } entryPersonal ? $"personal-{entryPersonal.Id}" : entry.Group is { } entryGroup ? $"group-{entryGroup.Id}" : $"consultation-{entry.Appointment!.Id}")" data-calendar-start="@(localStart.Hour * 60 + localStart.Minute)" data-calendar-duration="@entryDuration" data-calendar-kind="@(entry.Personal is not null ? "personal" : entry.Group is not null ? "group" : "consultation")" data-calendar-title="@entryTitle"><time class="calendar-entry-clock">@localStart.ToString("HH:mm")</time>
         @if (entry.Appointment is { } appointment)
         {
             <partial name="/Views/Shared/_ConsultationCalendarCard.cshtml" model="appointment" />
@@ -140,6 +165,7 @@
                 <time class="calendar-session-time" datetime="@ClubTime.ToLocal(personalSession.StartsAtUtc).ToString("yyyy-MM-ddTHH:mm")">@ClubTime.ToLocal(personalSession.StartsAtUtc).ToString("HH:mm")</time>
                 <h3>@personalSession.MemberProfile.ApplicationUser.FirstName @personalSession.MemberProfile.ApplicationUser.LastName</h3>
                 <p class="calendar-session-trainer"><span>Eğitmen</span><strong>@personalSession.Trainer.FirstName @personalSession.Trainer.LastName</strong></p>
+                @if (Model.Progress.GetValueOrDefault(personalSession.Id)?.Describe() is { Length: > 0 } progressText) { <p class="calendar-session-progress">@progressText</p> }
                 <div class="calendar-session-state"><span class="calendar-status is-@personalSession.Status.ToString().ToLowerInvariant()">@personalSession.Status.GetDisplayName()</span></div>
                 <details class="calendar-read-details"><summary>Ders detayları ve geçmiş</summary>
                     <dl><dt>Başlangıç</dt><dd>@ClubTime.ToLocal(personalSession.StartsAtUtc).ToString("dd.MM.yyyy HH:mm")</dd><dt>Bitiş</dt><dd>@ClubTime.ToLocal(personalSession.StartsAtUtc.AddMinutes(personalSession.DurationMinutes)).ToString("HH:mm")</dd><dt>Hak işlemi</dt><dd>@(personalSession.CreditConsumed ? "İşlenmiş" : "Henüz işlenmemiş / ayrılmış")</dd><dt>Not</dt><dd>@(personalSession.Note ?? "—")</dd></dl>
@@ -165,7 +191,8 @@
     </div>
 </section>
 @section Scripts {
-    <script src="~/js/calendar-timeline.js" asp-append-version="true"></script>
+    <script src="~/lib/fullcalendar/index.global.min.js" asp-append-version="true"></script>
+    <script src="~/js/calendar-fc.js" asp-append-version="true"></script>
     <script src="~/js/calendar-bulk.js" asp-append-version="true"></script>
     <script src="~/js/weekly-personal-schedule.js" asp-append-version="true"></script>
 }

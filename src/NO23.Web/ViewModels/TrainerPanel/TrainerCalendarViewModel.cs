@@ -23,6 +23,8 @@ public class TrainerCalendarViewModel
     public DateTime WeekStart { get; init; }
     public DateTime WeekEnd { get; init; }
     public IReadOnlyList<TrainerCalendarDayViewModel> Days { get; init; } = [];
+    public IReadOnlyDictionary<int, NO23.Web.ViewModels.CalendarLessonProgress> Progress { get; init; } =
+        new Dictionary<int, NO23.Web.ViewModels.CalendarLessonProgress>();
 }
 
 public class TrainerCalendarDayViewModel

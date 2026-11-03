@@ -23,6 +23,8 @@ public class WeeklyCalendarViewModel
     public List<ClassSession> Groups { get; set; } = [];
     public List<PersonalTrainingSession> Personal { get; set; } = [];
     public List<AppointmentRequest> Appointments { get; set; } = [];
+    public IReadOnlyDictionary<int, NO23.Web.ViewModels.CalendarLessonProgress> Progress { get; set; } =
+        new Dictionary<int, NO23.Web.ViewModels.CalendarLessonProgress>();
 
     public IReadOnlyList<WeeklyCalendarEntryViewModel> EntriesFor(DateTime date) =>
         Groups.Where(session => NO23.Web.Services.ClubTime.ToLocal(session.StartsAtUtc).Date == date.Date)

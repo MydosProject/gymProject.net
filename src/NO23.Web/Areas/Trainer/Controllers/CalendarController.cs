@@ -19,7 +19,8 @@ namespace NO23.Web.Areas.Trainer.Controllers;
 [NO23.Web.Infrastructure.CalendarViewContext]
 public class CalendarController(
     ApplicationDbContext dbContext,
-    PersonalTrainingCalendarService calendarService) : Controller
+    PersonalTrainingCalendarService calendarService,
+    UserNotificationRealtimeService? notifications = null) : Controller
 {
     public async Task<IActionResult> Index(DateTime? week, int? memberId = null, bool includeCompleted = false, string view = "week", DateTime? date = null)
     {
@@ -124,7 +125,8 @@ public class CalendarController(
             Members = members,
             WeekStart = weekStart,
             WeekEnd = weekEnd,
-            Days = days
+            Days = days,
+            Progress = await new CalendarEventFeedService(dbContext).LoadProgressAsync(sessionEntities.Select(x => (x.Id, x.MemberProfileId)))
         };
         ViewData["CalendarNavigation"] = model.Navigation;
         return View(model);
@@ -212,6 +214,28 @@ public class CalendarController(
                 ? model.PostponedStartsAt.Value
                 : model.Week ?? NO23.Web.Services.ClubTime.Today;
         return RedirectToAction(nameof(Index), new { week = targetWeek.ToString("yyyy-MM-dd"), includeCompleted = model.IncludeCompleted, memberId = model.FilterMemberId });
+    }
+
+    public async Task<IActionResult> Events(string? start, string? end, int? memberId = null, bool includeCompleted = false)
+    {
+        var trainerId = await GetTrainerIdAsync();
+        if (trainerId is null) return Forbid();
+        if (!CalendarEventFeedService.TryParseRange(start, end, out var fromUtc, out var toUtc)) return BadRequest();
+        return Json(await new CalendarEventFeedService(dbContext).GetAsync(
+            new(fromUtc, toUtc, trainerId, memberId, includeCompleted), DateTime.UtcNow));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Move(NO23.Web.ViewModels.CalendarMoveInput input)
+    {
+        var trainerId = await GetTrainerIdAsync();
+        if (trainerId is null) return Forbid();
+        var result = ModelState.IsValid
+            ? await new CalendarMoveService(dbContext, calendarService).MoveAsync(input, User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "", trainerId)
+            : (false, "Taşınacak dersi ve yeni zamanı kontrol edin.");
+        if (result.Item1 && notifications is not null) await CalendarMoveNotifier.PublishAsync(dbContext, notifications, input, notifyTrainer: false);
+        return Json(new { succeeded = result.Item1, message = result.Item2 });
     }
 
     private async Task<int?> GetTrainerIdAsync()

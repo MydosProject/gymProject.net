@@ -22,8 +22,12 @@ public sealed class CalendarBulkOperationService(ApplicationDbContext db)
         if (!Enum.IsDefined(input.Operation) || !Enum.IsDefined(input.Scope) ||
             (input.Day.HasValue && !Enum.IsDefined(input.Day.Value)) || string.IsNullOrWhiteSpace(userId))
             return (false, "Geçerli bir toplu işlem, kapsam ve gün seçin.");
-        if (input.Operation == CalendarBulkOperation.UpdateTime && input.Time is null && input.Day is null)
+        if (input.Operation == CalendarBulkOperation.UpdateTime && input.Time is null && input.Day is null && input.Date is null)
             return (false, "Yeni ders gününü veya saatini girin.");
+        if (input.Date.HasValue && (input.Operation != CalendarBulkOperation.UpdateTime || input.Day.HasValue ||
+            input.Scope != CalendarBulkScope.SelectedLessons || input.AllMemberLessons || input.PersonalIds.Length + input.GroupIds.Length != 1 ||
+            input.Date.Value.Year is < 1900 or > 2100))
+            return (false, "Belirli bir tarihe yalnız tek ders taşınabilir.");
         if (input.AllMemberLessons && input.Scope != CalendarBulkScope.SelectedLessons)
             return (false, "Üyenin tarih aralığı ile ders tekrarları kapsamını birlikte seçemezsiniz.");
         if (input.PersonalIds.Length + input.GroupIds.Length > 500 || input.PersonalIds.Any(id => id <= 0) || input.GroupIds.Any(id => id <= 0))
@@ -102,8 +106,9 @@ public sealed class CalendarBulkOperationService(ApplicationDbContext db)
         }
         else
         {
-            var proposed = personal.Select(item => Slot.ForPersonal(item, AtNewSchedule(item.StartsAtUtc, input.Day, input.Time)))
-                .Concat(groups.Select(item => Slot.ForGroup(item, AtNewSchedule(item.StartsAtUtc, input.Day, input.Time)))).ToList();
+            var proposed = personal.Select(item => Slot.ForPersonal(item, AtNewSchedule(item.StartsAtUtc, input.Day, input.Time, input.Date)))
+                .Concat(groups.Select(item => Slot.ForGroup(item, AtNewSchedule(item.StartsAtUtc, input.Day, input.Time, input.Date)))).ToList();
+            var changesDate = input.Day.HasValue || input.Date.HasValue;
             if (proposed.Any(item => item.Start <= now)) return (false, "Yeni ders günü ve saati gelecekte olmalıdır.");
             foreach (var slot in proposed)
             {
@@ -113,11 +118,11 @@ public sealed class CalendarBulkOperationService(ApplicationDbContext db)
                     (member.MembershipEndsAtUtc.HasValue && slot.End > member.MembershipEndsAtUtc)))
                     return (false, "Yeni gün ve saat, katılımcıların paket başlangıç / bitiş sınırlarının içinde olmalıdır.");
             }
-            if (input.Day.HasValue && await ValidateMonthlyLimitsAsync(proposed, personalIds) is { } limitError)
+            if (changesDate && await ValidateMonthlyLimitsAsync(proposed, personalIds) is { } limitError)
                 return (false, limitError);
             var groupMoves = proposed.Where(x => x.Group is not null).SelectMany(x => x.Group!.Reservations
                 .Where(r => r.Status == ClassReservationStatus.Reserved).Select(r => (r, x.Start))).ToList();
-            if (input.Day.HasValue && await CategoryScheduleGuard.GroupMovesAsync(db, groupMoves, groupIds) is { } groupLimitError)
+            if (changesDate && await CategoryScheduleGuard.GroupMovesAsync(db, groupMoves, groupIds) is { } groupLimitError)
                 return (false, groupLimitError);
             var trainers = proposed.Select(item => item.TrainerId).Distinct().ToArray();
             await TrainerScheduleGuard.LockAsync(db, trainers);
@@ -153,7 +158,7 @@ public sealed class CalendarBulkOperationService(ApplicationDbContext db)
                     if (session.StartsAtUtc == slot.Start) continue;
                     session.History.Add(new PersonalTrainingSessionHistory {
                         PreviousStatus = session.Status, NewStatus = PersonalTrainingSessionStatus.Postponed, PreviousStartsAtUtc = session.StartsAtUtc,
-                        NewStartsAtUtc = slot.Start, ChangedByUserId = userId, Note = input.Day.HasValue ? "Toplu gün / saat güncellemesi" : "Toplu saat güncellemesi"
+                        NewStartsAtUtc = slot.Start, ChangedByUserId = userId, Note = changesDate ? "Toplu gün / saat güncellemesi" : "Toplu saat güncellemesi"
                     });
                     session.StartsAtUtc = slot.Start;
                     session.UpdatedAtUtc = now;
@@ -165,7 +170,7 @@ public sealed class CalendarBulkOperationService(ApplicationDbContext db)
         if (transaction is not null) await transaction.CommitAsync();
         return (true, $"{personal.Count + groups.Count} ders " + (input.Operation == CalendarBulkOperation.Delete
             ? "silindi; ders hakları korundu."
-            : input.Day.HasValue ? "günü / saati güncellendi; ders hakları korundu." : "saati güncellendi; ders tarihleri ve hakları korundu."));
+            : input.Day.HasValue || input.Date.HasValue ? "günü / saati güncellendi; ders hakları korundu." : "saati güncellendi; ders tarihleri ve hakları korundu."));
     }
 
     private Task<List<PersonalTrainingSession>> LoadPersonalAsync(int[] ids) => db.PersonalTrainingSessions.Include(item => item.History)
@@ -200,10 +205,11 @@ public sealed class CalendarBulkOperationService(ApplicationDbContext db)
         return null;
     }
 
-    private static DateTime AtNewSchedule(DateTime start, DayOfWeek? day, TimeOnly? time)
+    private static DateTime AtNewSchedule(DateTime start, DayOfWeek? day, TimeOnly? time, DateOnly? newDate)
     {
         var local = ClubTime.ToLocal(start);
-        var date = day.HasValue ? ClubTime.Monday(local).AddDays(((int)day.Value + 6) % 7) : local.Date;
+        var date = newDate?.ToDateTime(TimeOnly.MinValue) ??
+            (day.HasValue ? ClubTime.Monday(local).AddDays(((int)day.Value + 6) % 7) : local.Date);
         return ClubTime.ToUtc(date.Add(time?.ToTimeSpan() ?? local.TimeOfDay));
     }
     private static bool Conflicts(Slot first, Slot second) => first.Start < second.End && second.Start < first.End &&

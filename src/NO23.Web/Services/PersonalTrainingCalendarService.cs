@@ -182,9 +182,9 @@ public partial class PersonalTrainingCalendarService(ApplicationDbContext dbCont
 
     public async Task<(bool Succeeded, string Message)> ChangeStatusAsync(
         int trainerId, int sessionId, PersonalTrainingSessionStatus status,
-        DateTime? postponedStartsAtUtc, string changedByUserId, string? note)
+        DateTime? postponedStartsAtUtc, string changedByUserId, string? note, int? durationMinutes = null)
     {
-        try { return await ChangeStatusCoreAsync(trainerId, sessionId, status, postponedStartsAtUtc, changedByUserId, note); }
+        try { return await ChangeStatusCoreAsync(trainerId, sessionId, status, postponedStartsAtUtc, changedByUserId, note, durationMinutes); }
         catch (DbUpdateException) { return (false, "Ders başka bir işlemle değişti. Takvimi yenileyip tekrar deneyin."); }
         catch (InvalidOperationException exception) when (exception.GetBaseException() is Npgsql.PostgresException { SqlState: "40001" or "40P01" })
         { return (false, "Ders başka bir işlemle değişti. Takvimi yenileyip tekrar deneyin."); }
@@ -194,7 +194,7 @@ public partial class PersonalTrainingCalendarService(ApplicationDbContext dbCont
 
     private async Task<(bool Succeeded, string Message)> ChangeStatusCoreAsync(
         int trainerId, int sessionId, PersonalTrainingSessionStatus status,
-        DateTime? postponedStartsAtUtc, string changedByUserId, string? note)
+        DateTime? postponedStartsAtUtc, string changedByUserId, string? note, int? durationMinutes)
     {
         await using var transaction = dbContext.Database.IsRelational()
             ? await dbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable) : null;
@@ -222,14 +222,17 @@ public partial class PersonalTrainingCalendarService(ApplicationDbContext dbCont
                 return (false, "Eski paket dönemine ait ders yeni döneme taşınamaz. Dersi iptal edip yeni paketten planlayın.");
             if (postponedStartsAtUtc is null || postponedStartsAtUtc <= DateTime.UtcNow)
                 return (false, "Erteleme için ileri bir tarih ve saat seçmelisiniz.");
+            var duration = durationMinutes ?? session.DurationMinutes;
+            if (duration is < 15 or > 240)
+                return (false, "Ders süresi 15–240 dakika arasında olmalıdır.");
 
             var entitlementError = await ValidateEntitlementsAsync(session.MemberProfile,
-                [postponedStartsAtUtc.Value], DateTime.UtcNow, session.DurationMinutes,
+                [postponedStartsAtUtc.Value], DateTime.UtcNow, duration,
                 excludedSessionId: session.Id);
             if (entitlementError is not null)
                 return (false, entitlementError);
 
-            var newEnd = postponedStartsAtUtc.Value.AddMinutes(session.DurationMinutes);
+            var newEnd = postponedStartsAtUtc.Value.AddMinutes(duration);
             var hasConflict = await dbContext.PersonalTrainingSessions.AnyAsync(item =>
                 item.Id != session.Id && (item.TrainerId == trainerId || item.MemberProfileId == session.MemberProfileId) &&
                 item.Status == PersonalTrainingSessionStatus.Scheduled &&
@@ -245,6 +248,7 @@ public partial class PersonalTrainingCalendarService(ApplicationDbContext dbCont
                 await recurrences.AssignLegacyIdentitiesAsync();
             }
             session.StartsAtUtc = postponedStartsAtUtc.Value;
+            session.DurationMinutes = duration;
             session.Status = PersonalTrainingSessionStatus.Scheduled;
             session.UpdatedAtUtc = now;
             session.History.Add(new PersonalTrainingSessionHistory

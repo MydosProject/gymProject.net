@@ -14,6 +14,8 @@ public class CalendarBulkInput
     [EnumDataType(typeof(CalendarBulkOperation))] public CalendarBulkOperation Operation { get; set; }
     [EnumDataType(typeof(CalendarBulkScope))] public CalendarBulkScope Scope { get; set; }
     [EnumDataType(typeof(DayOfWeek))] public DayOfWeek? Day { get; set; }
+    // A concrete new date; only for moving a single lesson (calendar drag and drop).
+    public DateOnly? Date { get; set; }
     public TimeOnly? Time { get; set; }
     public DateTime Week { get; set; } = ClubTime.Now.Date;
     public int? TrainerId { get; set; }

@@ -13,7 +13,8 @@ namespace NO23.Web.Areas.Admin.Controllers;
 
 [Area("Admin"), Authorize(Roles = ApplicationRoles.Admin)]
 [NO23.Web.Infrastructure.CalendarViewContext]
-public class CalendarController(ApplicationDbContext db, PersonalTrainingCalendarService personal, ClassReservationService reservations) : Controller
+public class CalendarController(ApplicationDbContext db, PersonalTrainingCalendarService personal, ClassReservationService reservations,
+    UserNotificationRealtimeService? notifications = null) : Controller
 {
     public async Task<IActionResult> Index(DateTime? week, int? trainerId, int? memberId = null, bool includeCompleted = false, string view = "week", DateTime? date = null)
     {
@@ -51,8 +52,26 @@ public class CalendarController(ApplicationDbContext db, PersonalTrainingCalenda
                 .Where(x => x.Status != PersonalTrainingSessionStatus.Cancelled && (includeCompleted || x.Status != PersonalTrainingSessionStatus.Completed) && x.StartsAtUtc >= start && x.StartsAtUtc < end && (!trainerId.HasValue || x.TrainerId == trainerId) && (!memberId.HasValue || x.MemberProfileId == memberId))
                 .OrderBy(x => x.StartsAtUtc).ToListAsync()
         };
+        model.Progress = await new CalendarEventFeedService(db).LoadProgressAsync(model.Personal.Select(x => (x.Id, x.MemberProfileId)));
         ViewData["CalendarNavigation"] = model.Navigation;
         return View(model);
+    }
+
+    public async Task<IActionResult> Events(string? start, string? end, int? trainerId, int? memberId = null, bool includeCompleted = false)
+    {
+        if (!CalendarEventFeedService.TryParseRange(start, end, out var fromUtc, out var toUtc)) return BadRequest();
+        return Json(await new CalendarEventFeedService(db).GetAsync(
+            new(fromUtc, toUtc, trainerId, memberId, includeCompleted), DateTime.UtcNow));
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> Move(NO23.Web.ViewModels.CalendarMoveInput input)
+    {
+        var result = ModelState.IsValid
+            ? await new CalendarMoveService(db, personal).MoveAsync(input, User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "", null)
+            : (false, "Taşınacak dersi ve yeni zamanı kontrol edin.");
+        if (result.Item1 && notifications is not null) await CalendarMoveNotifier.PublishAsync(db, notifications, input, notifyTrainer: true);
+        return Json(new { succeeded = result.Item1, message = result.Item2 });
     }
 
     [HttpPost, ValidateAntiForgeryToken]
