@@ -171,6 +171,7 @@ builder.Services.AddScoped<PersonalTrainingRequestService>();
 builder.Services.AddScoped<PersonalTrainingCalendarService>();
 builder.Services.AddScoped<TrainerMessagingService>();
 builder.Services.AddScoped<CalorieCalculatorService>();
+builder.Services.AddScoped<UploadedImageService>();
 builder.Services.AddScoped<KitchenPlanMatchingService>();
 builder.Services.AddScoped<KitchenProductionPlanningService>();
 builder.Services.AddScoped<CommunityChallengeProgressService>();

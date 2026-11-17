@@ -91,6 +91,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<ShopProduct> ShopProducts => Set<ShopProduct>();
 
+    public DbSet<UploadedImage> UploadedImages => Set<UploadedImage>();
+
     public DbSet<ShopProductVariant> ShopProductVariants =>
         Set<ShopProductVariant>();
 

@@ -43,6 +43,7 @@
             <label asp-for="CoverImageUrl" class="form-label">Kapak görseli URL</label>
             <input asp-for="CoverImageUrl" class="form-control" />
             <span asp-validation-for="CoverImageUrl" class="text-danger"></span>
+            <partial name="_ImageUpload" model="nameof(Model.CoverImageUrl)" />
         </div>
         <div class="col-md-6">
             <label asp-for="Tags" class="form-label">Etiketler</label>

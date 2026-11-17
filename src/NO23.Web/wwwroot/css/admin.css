@@ -409,6 +409,23 @@ body.no23-admin-body .admin-recipe-details summary { color: #ecede9; }
 body.no23-admin-body .admin-content .form-label,
 body.no23-admin-body .admin-content .form-check { color: #a5aba3; }
 
+/* Helper text under fields was dark-on-dark and unreadable. */
+body.no23-admin-body .admin-content .form-text { color: #8f968d; }
+
+.admin-image-upload { margin-top: .5rem; }
+
+.admin-image-upload-status.is-error { color: #ff8f8f !important; }
+
+.admin-image-upload-preview:not([hidden]) {
+    display: block;
+    max-width: 100%;
+    max-height: 140px;
+    margin-top: .5rem;
+    border: 1px solid rgba(255, 255, 255, .13);
+    border-radius: 12px;
+    object-fit: cover;
+}
+
 body.no23-admin-body .admin-content .form-control,
 body.no23-admin-body .admin-content .form-select {
     color: #edf0eb;

@@ -1,0 +1,16 @@
+@model string
+@* Upload-from-computer control for an image link field. Model = the id of that field's input. *@
+<div class="admin-image-upload"
+     data-image-upload
+     data-image-upload-for="@Model"
+     data-upload-url="@Url.Action("Upload", "Media", new { area = "Admin" })">
+    <input type="file"
+           class="form-control form-control-sm"
+           accept="image/jpeg,image/png,image/webp"
+           aria-label="Bilgisayardan fotoğraf yükle"
+           data-image-upload-input />
+    <div class="form-text admin-image-upload-status" data-image-upload-status aria-live="polite">
+        Ya da bilgisayardan JPEG, PNG veya WebP fotoğraf seçin; yüklemeden önce otomatik küçültülür.
+    </div>
+    <img class="admin-image-upload-preview" alt="Görsel önizleme" data-image-upload-preview hidden />
+</div>

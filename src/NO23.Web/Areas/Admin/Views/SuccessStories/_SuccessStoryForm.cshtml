@@ -48,11 +48,13 @@
             <label asp-for="BeforeImageUrl" class="form-label">Önce görseli URL</label>
             <input asp-for="BeforeImageUrl" class="form-control" />
             <span asp-validation-for="BeforeImageUrl" class="text-danger"></span>
+            <partial name="_ImageUpload" model="nameof(Model.BeforeImageUrl)" />
         </div>
         <div class="col-md-4">
             <label asp-for="AfterImageUrl" class="form-label">Sonra görseli URL</label>
             <input asp-for="AfterImageUrl" class="form-control" />
             <span asp-validation-for="AfterImageUrl" class="text-danger"></span>
+            <partial name="_ImageUpload" model="nameof(Model.AfterImageUrl)" />
         </div>
         <div class="col-md-4">
             <label asp-for="VideoUrl" class="form-label">Video URL</label>
