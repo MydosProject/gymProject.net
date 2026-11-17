@@ -34,5 +34,7 @@ public class KitchenMenuItemCardViewModel
 
     public string? Tags { get; init; }
 
+    public string? ImageUrl { get; init; }
+
     public IReadOnlyList<string> TagList { get; init; } = [];
 }

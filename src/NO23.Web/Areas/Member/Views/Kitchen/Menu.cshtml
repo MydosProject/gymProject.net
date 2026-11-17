@@ -179,7 +179,11 @@
                              data-kitchen-allergen-conflict="@item.HasAllergenConflict.ToString().ToLowerInvariant()"
                              data-kitchen-search="@($"{item.Name} {item.Ingredients} {tagText}")">
                             <article class="kitchen-menu-card">
-                                <div class="kitchen-menu-visual">
+                                <div class="kitchen-menu-visual@(string.IsNullOrWhiteSpace(item.ImageUrl) ? "" : " has-photo")">
+                                    @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
+                                    {
+                                        <img class="kitchen-menu-photo" src="@item.ImageUrl" alt="@item.Name" loading="lazy" />
+                                    }
                                     <span class="kitchen-menu-category">
                                         @GetCategoryName(item.Category)
                                     </span>

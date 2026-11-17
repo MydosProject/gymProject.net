@@ -30,6 +30,8 @@ public class KitchenMenuItem
 
     public string? Tags { get; set; }
 
+    public string? ImageUrl { get; set; }
+
     public bool IsActive { get; set; } = true;
 
     public bool IsPlanEligible { get; set; } = true;

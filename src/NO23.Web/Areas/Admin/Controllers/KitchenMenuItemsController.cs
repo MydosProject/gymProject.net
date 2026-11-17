@@ -186,6 +186,7 @@ public class KitchenMenuItemsController(ApplicationDbContext dbContext) : Contro
         item.FatGrams = model.FatGrams;
         item.Ingredients = model.Ingredients.Trim();
         item.Tags = model.Tags?.Trim();
+        item.ImageUrl = string.IsNullOrWhiteSpace(model.ImageUrl) ? null : model.ImageUrl.Trim();
         item.IsActive = model.IsActive;
         item.DisplayOrder = model.DisplayOrder;
         item.UpdatedAtUtc = DateTime.UtcNow;
@@ -206,6 +207,7 @@ public class KitchenMenuItemsController(ApplicationDbContext dbContext) : Contro
             FatGrams = item.FatGrams,
             Ingredients = item.Ingredients,
             Tags = item.Tags,
+            ImageUrl = item.ImageUrl,
             IsActive = item.IsActive,
             DisplayOrder = item.DisplayOrder
         };

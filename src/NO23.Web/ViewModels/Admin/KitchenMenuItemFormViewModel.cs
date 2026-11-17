@@ -3,7 +3,7 @@ using NO23.Web.Domain.Enums;
 
 namespace NO23.Web.ViewModels.Admin;
 
-public class KitchenMenuItemFormViewModel
+public class KitchenMenuItemFormViewModel : IValidatableObject
 {
     public int Id { get; set; }
 
@@ -48,6 +48,10 @@ public class KitchenMenuItemFormViewModel
     [Display(Name = "Etiketler")]
     public string? Tags { get; set; }
 
+    [StringLength(500)]
+    [Display(Name = "Görsel URL")]
+    public string? ImageUrl { get; set; }
+
     [Display(Name = "Aktif")]
     public bool IsActive { get; set; } = true;
 
@@ -61,4 +65,32 @@ public class KitchenMenuItemFormViewModel
     public List<int> SelectedAllergenIds { get; set; } = [];
 
     public List<KitchenAllergenOptionViewModel> AllergenOptions { get; set; } = [];
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (!IsAllowedImageUrl(ImageUrl))
+        {
+            yield return new ValidationResult(
+                "Görsel bağlantısı https:// ile başlamalı.",
+                [nameof(ImageUrl)]);
+        }
+    }
+
+    // Empty, an http(s) link, or a path on this site ("/images/...").
+    public static bool IsAllowedImageUrl(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return true;
+        }
+
+        var url = value.Trim();
+        if (url.StartsWith('/') && !url.StartsWith("//"))
+        {
+            return true;
+        }
+
+        return Uri.TryCreate(url, UriKind.Absolute, out var uri) &&
+               (uri.Scheme == Uri.UriSchemeHttps || uri.Scheme == Uri.UriSchemeHttp);
+    }
 }

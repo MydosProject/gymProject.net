@@ -1312,6 +1312,7 @@ public class KitchenController(
                 item.FatGrams,
                 item.Ingredients,
                 item.Tags,
+                item.ImageUrl,
                 RecipeIngredients = item.RecipeIngredients
                     .OrderBy(recipe => recipe.KitchenIngredient.Name)
                     .Select(recipe => new KitchenCustomizationOptionViewModel
@@ -1352,7 +1353,8 @@ public class KitchenController(
                             .Any(recipe => recipe.Id == ingredient.Id))
                         .ToList(),
                     Tags = string.Join(", ", tagList),
-                    TagList = tagList
+                    TagList = tagList,
+                    ImageUrl = item.ImageUrl
                 };
             })
             .ToList();

@@ -89,6 +89,7 @@ public class KitchenController(
                 FatGrams = item.FatGrams,
                 Ingredients = item.Ingredients,
                 item.Tags,
+                item.ImageUrl,
                 AllergenNames = item.MenuItemAllergens.OrderBy(x => x.KitchenAllergen.DisplayOrder)
                     .Select(x => x.KitchenAllergen.Name).ToList()
             })
@@ -108,7 +109,8 @@ public class KitchenController(
                 FatGrams = item.FatGrams,
                 Ingredients = item.Ingredients,
                 Allergens = string.Join(", ", item.AllergenNames),
-                Tags = item.Tags
+                Tags = item.Tags,
+                ImageUrl = item.ImageUrl
             })
             .ToList();
     }
@@ -500,6 +502,7 @@ public class KitchenController(
                 CarbohydrateGrams = item.CarbohydrateGrams,
                 FatGrams = item.FatGrams,
                 Ingredients = item.Ingredients,
+                item.ImageUrl,
                 RemovableIngredients = item.RecipeIngredients
                     .OrderBy(recipe => recipe.KitchenIngredient.Name)
                     .Select(recipe => new KitchenCustomizationOptionViewModel
@@ -545,6 +548,7 @@ public class KitchenController(
                 FatGrams = menuItem.FatGrams,
                 Ingredients = menuItem.Ingredients,
                 Allergens = string.Join(", ", menuItem.AllergenNames),
+                ImageUrl = menuItem.ImageUrl,
                 RemovableIngredients = menuItem.RemovableIngredients,
                 AdditionalIngredients = additionalIngredients,
                 IsPaymentAvailable = paymentSettings.Enabled,

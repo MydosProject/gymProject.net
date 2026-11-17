@@ -326,7 +326,8 @@ if (app.Environment.IsDevelopment())
                 Ingredients = item.Ingredients,
                 AllergenNames = item.MenuItemAllergens.OrderBy(x => x.KitchenAllergen.DisplayOrder)
                     .Select(x => x.KitchenAllergen.Name).ToList(),
-                Tags = item.Tags
+                Tags = item.Tags,
+                item.ImageUrl
             })
             .ToListAsync();
         return items.Select(item => new KitchenMenuItemResponse
@@ -335,7 +336,8 @@ if (app.Environment.IsDevelopment())
             Calories = item.Calories, UnitPrice = item.UnitPrice,
             ProteinGrams = item.ProteinGrams, CarbohydrateGrams = item.CarbohydrateGrams,
             FatGrams = item.FatGrams, Ingredients = item.Ingredients,
-            Allergens = string.Join(", ", item.AllergenNames), Tags = item.Tags
+            Allergens = string.Join(", ", item.AllergenNames), Tags = item.Tags,
+            ImageUrl = item.ImageUrl
         }).ToList();
     })
     .WithName("GetKitchenMenuItems")

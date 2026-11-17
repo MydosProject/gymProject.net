@@ -262,6 +262,10 @@
                         var item = Model.KitchenMenuItems[index];
 
                         <article class="shop-kitchen-card">
+                            @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
+                            {
+                                <img class="shop-kitchen-card-photo" src="@item.ImageUrl" alt="@item.Name" loading="lazy" />
+                            }
                             <div class="shop-kitchen-card-top">
                                 <span>@GetKitchenCategoryName(item.Category)</span>
                                 <strong>@((index + 1).ToString("00"))</strong>

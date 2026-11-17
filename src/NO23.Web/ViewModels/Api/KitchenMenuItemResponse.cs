@@ -23,4 +23,6 @@ public class KitchenMenuItemResponse
     public string? Allergens { get; init; }
 
     public string? Tags { get; init; }
+
+    public string? ImageUrl { get; init; }
 }

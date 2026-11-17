@@ -30,6 +30,10 @@
                     <span>@Model.Category</span>
                     <strong>NO23 / Nutrition</strong>
                 </div>
+                @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
+                {
+                    <img class="public-order-kitchen-photo" src="@Model.ImageUrl" alt="@Model.ItemName" />
+                }
                 <div class="public-order-product-main">
                     <span>@(Model.Calories ?? 0) <small>kcal</small></span>
                     <h2>@Model.ItemName</h2>

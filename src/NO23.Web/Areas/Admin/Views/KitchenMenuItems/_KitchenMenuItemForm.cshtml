@@ -179,6 +179,17 @@
             <span asp-validation-for="Tags" class="text-danger"></span>
         </div>
 
+        <div class="col-md-6">
+            <label asp-for="ImageUrl" class="form-label"></label>
+            <input asp-for="ImageUrl" class="form-control" placeholder="https://..." />
+            <div class="form-text">Ürün fotoğrafının bağlantısını yapıştırın. Boş bırakılırsa kartta renkli alan görünür.</div>
+            <span asp-validation-for="ImageUrl" class="text-danger"></span>
+            @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
+            {
+                <img src="@Model.ImageUrl" alt="@Model.Name görseli" class="img-thumbnail mt-2" style="max-height: 120px;" />
+            }
+        </div>
+
         <div class="col-12">
             <label class="form-check">
                 <input asp-for="IsActive" class="form-check-input" />

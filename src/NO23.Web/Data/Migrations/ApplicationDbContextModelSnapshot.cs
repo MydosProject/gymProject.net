@@ -1318,6 +1318,10 @@ namespace NO23.Web.Data.Migrations
                         .HasPrecision(6, 2)
                         .HasColumnType("numeric(6,2)");
 
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
                     b.Property<string>("Ingredients")
                         .IsRequired()
                         .HasMaxLength(1000)

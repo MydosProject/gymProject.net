@@ -7551,6 +7551,56 @@ button:focus-visible {
   font-weight: 850;
 }
 
+/* Product photo set in the admin panel; a dark overlay keeps the labels readable. */
+.kitchen-menu-visual.has-photo {
+  color: #fff;
+  background: #111410;
+}
+
+.kitchen-menu-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.kitchen-menu-visual.has-photo::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.45), transparent 45%, rgba(0, 0, 0, 0.6));
+  content: "";
+}
+
+.kitchen-menu-visual.has-photo > .kitchen-menu-category {
+  position: relative;
+  z-index: 1;
+  border-color: rgba(255, 255, 255, 0.55);
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.kitchen-menu-visual.has-photo > strong {
+  display: none;
+}
+
+.shop-kitchen-card-photo {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  margin-bottom: 0.75rem;
+  border-radius: 18px;
+  object-fit: cover;
+}
+
+.public-order-kitchen-photo {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  margin-top: 1rem;
+  border-radius: 18px;
+  object-fit: cover;
+}
+
 .kitchen-menu-card-content {
   display: flex;
   min-height: 250px;

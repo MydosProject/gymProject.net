@@ -285,6 +285,7 @@ public class ShopController(
             {
                 Id = item.Id,
                 Name = item.Name,
+                ImageUrl = item.ImageUrl,
                 Category = item.Category.ToString(),
                 Calories = item.Calories,
                 UnitPrice = item.UnitPrice,
